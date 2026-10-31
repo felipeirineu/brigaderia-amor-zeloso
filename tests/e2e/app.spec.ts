@@ -37,9 +37,12 @@ test('catálogo e login não simulam funcionalidades entregues', async ({
   await expect(
     page.getByRole('heading', { name: 'Catálogo indisponível' }),
   ).toBeVisible();
+  await page.route('**/api/auth/config', (route) =>
+    route.fulfill({ json: { configured: false, login_url: null } }),
+  );
   await page.goto('/login');
   await expect(
-    page.getByRole('heading', { name: 'Login ainda não implementado' }),
+    page.getByRole('heading', { name: 'Entrar na gestão' }),
   ).toBeVisible();
   await expect(page.locator('input')).toHaveCount(0);
 });

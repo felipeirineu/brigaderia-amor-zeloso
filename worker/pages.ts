@@ -1,11 +1,11 @@
-import api from './index';
+import api, { type Env } from './index';
 
-interface PagesEnv {
+interface PagesEnv extends Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
   PUBLIC_CATALOG_ENABLED?: string;
 }
 
-// Entrada exclusiva da demonstração no Pages. Não possui binding de banco.
+// Assets públicos contêm apenas o shell; dados privados vêm da API autenticada.
 export default {
   async fetch(request: Request, env: PagesEnv): Promise<Response> {
     const path = new URL(request.url).pathname;

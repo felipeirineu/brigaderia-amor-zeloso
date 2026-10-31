@@ -2,7 +2,7 @@
 
 PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com preparação para catálogo público e atendimento assistido pelo WhatsApp.
 
-> **Estado:** Fase 0 implementada localmente, com validação WebKit/dispositivos reais pendente. Demonstração sem produção, autenticação ou banco remoto provisionado.
+> **Estado:** Fase 1 implementada para homologação local. A demonstração da Fase 0 está publicada no Pages; ativação de D1/Access e homologação online da gestão permanecem pendentes.
 
 ## Objetivos
 
@@ -29,7 +29,7 @@ PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com prepara
 - Mensagem comercial: brigadeiros tradicionais, receitas com mais de 20 anos de tradição, **de Campo Grande para João Pessoa**.
 - Contato exibido na bio: `https://wa.me/558398211759` — **confirmar o número com os proprietários antes de publicar**.
 - Logo exibido nas capturas: círculo marrom-escuro, lettering creme e subtítulo dourado; referência não equivale a arquivo original em qualidade de produção.
-- Fotos mostram doces variados e caixas, mas sabores, pesos, preços, alérgenos e rendimentos **não foram confirmados**.
+- Fotos não confirmam sabores, pesos, preços, alérgenos ou rendimentos. Posteriormente, o responsável informou o Tradicional de 30 g, caixa com 12 por R$ 42,00; veja [Informações comerciais](docs/INFORMACOES_COMERCIAIS.md). Outros dados permanecem a confirmar.
 
 ## Organização inicial
 
@@ -37,7 +37,7 @@ A criação do código de aplicação e infraestrutura será conduzida pelo Code
 
 ## Desenvolvimento — Fase 0
 
-O scaffold de demonstração está implementado. Não há login, cadastros persistentes, integração de WhatsApp, deploy ou banco remoto. Veja o [relatório e decisões da Fase 0](docs/FASE_0.md).
+A demonstração pública continua sem dados privados ou cadastros. A gestão autenticada da Fase 1 é separada; ativação remota depende de D1/Access. WhatsApp fica para a Fase 2. Veja o [relatório e decisões da Fase 0](docs/FASE_0.md).
 
 Requisitos: Node.js 24 (mínimo 22.12), npm e Python 3 para testes de SQL. Use o checkout existente; o ambiente de nuvem já é isolado, sem necessidade de criar worktrees.
 
@@ -97,3 +97,9 @@ Isso não executa WebKit nem valida Safari/iPhone real. Para a suíte completa, 
 ## Testar online
 
 O projeto está preparado para publicar **somente a demonstração** no Cloudflare Pages por integração com GitHub. Use o comando de build `npm run build:pages`, saída `dist` e Node 24. O guia [Testar online](docs/TESTAR_ONLINE.md) explica a conexão da conta, publicação e roteiro de testes. Catálogo e acesso privado da API continuam bloqueados; nenhum banco real é necessário.
+
+## Fase 1 — Gestão privada
+
+A área `/gestao` implementa clientes, produtos/variantes e rascunhos de pedidos com sessões e permissões no servidor. O login `/login` depende de **Cloudflare Access e D1 configurados**; sem isso, a demonstração continua pública e os dados privados são negados. Não há senha de demonstração ou usuário padrão.
+
+Consulte [Fase 1: configuração e homologação](docs/FASE_1.md) para conectar o banco, configurar o Access, autorizar o primeiro administrador e testar dois usuários. `npm run test:api` executa integração real em workerd/D1 locais; a CI também executa os E2E da gestão. A publicação da Fase 0 foi validada por HTTP e pelo responsável, mas isso não valida a autenticação/banco da Fase 1.

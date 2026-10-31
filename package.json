@@ -20,12 +20,16 @@
     "worker:dev": "wrangler dev --config worker/wrangler.jsonc --local --ip 127.0.0.1",
     "db:migrate:local": "wrangler d1 migrations apply brigaderia-local --config worker/wrangler.jsonc --local",
     "build:pages": "npm run build && node scripts/build-pages.mjs",
-    "preview:pages": "wrangler pages dev dist --ip 127.0.0.1"
+    "preview:pages": "wrangler pages dev dist --ip 127.0.0.1",
+    "test:api": "node tests/integration/management.mjs",
+    "admin:prepare": "node scripts/prepare-admin.mjs"
   },
   "dependencies": {
+    "jose": "^6.2.14",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "react-router-dom": "^7.18.5"
+    "react-router-dom": "^7.18.5",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20261031.1",
@@ -40,6 +44,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.7",
     "globals": "^17.13.0",
+    "miniflare": "^5.20261023.3-beta",
     "prettier": "^3.9.10",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",

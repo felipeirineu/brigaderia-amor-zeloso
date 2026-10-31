@@ -7,6 +7,7 @@ import {
   Routes,
   useLocation,
 } from 'react-router-dom';
+import { Login, Management } from './features/Management';
 import { RuntimeStatus } from './components/RuntimeStatus';
 import { demoSteps, modules } from './features/modules';
 
@@ -164,13 +165,29 @@ export function App() {
   const previousPath = useRef(location.pathname);
   useEffect(() => {
     const current = modules.find((m) => location.pathname === `/app/${m.slug}`);
-    document.title = `${current?.title ?? 'Início'} | Brigaderia Amor Zeloso · Demonstração`;
+    document.title = location.pathname.startsWith('/gestao')
+      ? 'Gestão privada | Brigaderia Amor Zeloso'
+      : `${current?.title ?? 'Início'} | Brigaderia Amor Zeloso · Demonstração`;
     if (previousPath.current !== location.pathname) {
       main.current?.focus();
       previousPath.current = location.pathname;
     }
     window.scrollTo(0, 0);
   }, [location.pathname]);
+  if (location.pathname.startsWith('/gestao'))
+    return (
+      <main
+        className="private-workspace"
+        id="conteudo"
+        ref={main}
+        tabIndex={-1}
+      >
+        <Link to="/app">Amor Zeloso · Demonstração</Link>
+        <Routes>
+          <Route path="/gestao/*" element={<Management />} />
+        </Routes>
+      </main>
+    );
   return (
     <>
       <a className="skip-link" href="#conteudo">
@@ -212,7 +229,9 @@ export function App() {
           <span>
             Brigaderia Amor Zeloso <span className="muted">/ Gestão</span>
           </span>
-          <span className="demo-label">Demonstração</span>
+          <Link className="demo-label" to="/login">
+            Entrar na gestão
+          </Link>
         </header>
         <div className="demo-banner">
           <strong>Ambiente de demonstração.</strong> Conteúdo fictício, sem
@@ -230,7 +249,7 @@ export function App() {
                 element={<ModulePage slug={m.slug} />}
               />
             ))}
-            <Route path="/login" element={<Unavailable />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/catalogo/*" element={<Unavailable catalog />} />
             <Route
               path="*"

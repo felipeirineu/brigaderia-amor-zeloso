@@ -8,7 +8,7 @@ export default tseslint.config(
     ignores: [
       'dist/**',
       'node_modules/**',
-      '.wrangler/**',
+      '**/.wrangler/**',
       'playwright-report/**',
       'test-results/**',
     ],
@@ -16,7 +16,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.{ts,tsx,js}'],
+    files: ['**/*.{ts,tsx,js,mjs}'],
     languageOptions: { globals: { ...globals.browser, ...globals.node } },
   },
   {

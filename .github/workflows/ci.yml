@@ -1,4 +1,4 @@
-name: Validação da Fase 0
+name: Validação da gestão
 on:
   push:
   pull_request:
@@ -22,6 +22,7 @@ jobs:
       - run: npm run format:check
       - run: npm run typecheck
       - run: npm test
+      - run: npm run test:api
       - run: npm run test:migrations
       - run: npm run db:migrate:local
       - run: npm run build:pages

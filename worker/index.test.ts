@@ -9,7 +9,7 @@ describe('Worker da Fase 0: negação por padrão', () => {
     );
     expect(result.status).toBe(200);
     expect(await result.json()).toMatchObject({
-      phase: 0,
+      phase: 1,
       database: 'not-connected',
     });
     expect(result.headers.get('Cache-Control')).toBe('no-store');

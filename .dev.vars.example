@@ -1,0 +1,4 @@
+# Copie para .dev.vars (ignorado) ou worker/.dev.vars para o Worker local.
+# Exige uma aplicação Cloudflare Access real para login manual.
+ACCESS_TEAM_DOMAIN=TODO-CONFIRMAR.cloudflareaccess.com
+ACCESS_AUD=TODO-CONFIRMAR
