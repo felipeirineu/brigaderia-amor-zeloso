@@ -1,0 +1,13 @@
+node_modules
+dist
+package-lock.json
+.wrangler
+playwright-report
+test-results
+coverage
+
+# Planejamento original preservado
+SPEC.md
+docs/ARQUITETURA.md
+docs/PLANO_DE_EXECUCAO.md
+docs/SEGURANCA_E_OPERACAO.md

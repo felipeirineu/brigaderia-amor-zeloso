@@ -1,0 +1,9 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "brigaderia-amor-zeloso",
+  "pages_build_output_dir": "./dist",
+  "compatibility_date": "2026-10-30",
+  "vars": {
+    "PUBLIC_CATALOG_ENABLED": "false",
+  },
+}
