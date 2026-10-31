@@ -6,4 +6,12 @@
   "vars": {
     "PUBLIC_CATALOG_ENABLED": "false",
   },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "brigaderia-amor-zeloso-homologacao",
+      "database_id": "36e18df9-761a-4828-b41d-1a0aadf0b20f",
+      "migrations_dir": "database/migrations",
+    },
+  ],
 }
