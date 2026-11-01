@@ -171,9 +171,13 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
         exact: true,
       })
       .click();
+    // R3: zero inicial fica vazio; o valor anterior é restaurado ao sair vazio.
     await expect(page.getByLabel('Taxa padrão do entregador (R$)')).toHaveValue(
-      '0,00',
+      '',
     );
+    await expect(
+      page.getByLabel('Taxa padrão do entregador (R$)'),
+    ).toHaveAttribute('placeholder', 'Informe valor');
     await page.getByLabel('Taxa padrão do entregador (R$)').fill('2,50');
     await page
       .getByRole('combobox', { name: 'Entregador padrão', exact: true })
