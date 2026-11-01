@@ -31,6 +31,11 @@ export const recurringSchema = z
     notes: z.string().trim().max(2000).default(''),
     delivery_type: z.enum(['delivery', 'pickup']).default('delivery'),
     delivery_address: z.string().trim().max(1000).default(''),
+    courier: z
+      .enum(['unassigned', 'owner', 'partner', 'courier'])
+      .default('unassigned'),
+    courier_name: z.string().trim().max(100).default(''),
+    courier_fee_cents: z.number().int().min(0).max(100000000).default(0),
     active: z.boolean().default(true),
     version: z.number().int().positive().optional(),
     items: z
@@ -49,6 +54,10 @@ export const recurringSchema = z
   .refine(
     (v) => new Set(v.items.map((i) => i.variant_id)).size === v.items.length,
     'Variante duplicada.',
+  )
+  .refine(
+    (v) => v.courier !== 'courier' || !!v.courier_name,
+    'Informe o nome do motoboy.',
   );
 export const daySchema = z.iso.date();
 export function addDays(day: string, count: number) {

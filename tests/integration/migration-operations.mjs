@@ -72,6 +72,11 @@ try {
       .replace(/--[^\n]*/g, '')
       .replace(/\n/g, ' '),
   );
+  await t.db.exec(
+    (await readFile('database/migrations/0004_recurring_courier.sql', 'utf8'))
+      .replace(/--[^\n]*/g, '')
+      .replace(/\n/g, ' '),
+  );
   const after = await t.db
     .prepare('SELECT * FROM orders WHERE id=?')
     .bind(order)

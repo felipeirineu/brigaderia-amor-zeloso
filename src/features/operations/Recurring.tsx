@@ -1,7 +1,7 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus } from 'lucide-react';
-import { api } from '../api';
+import { api, parsePrice } from '../api';
 import { HelpTip } from '../../components/HelpTip';
 import { useRemote, Failure, localDay } from './common';
 interface Plan {
@@ -14,6 +14,9 @@ interface Plan {
   notes: string;
   delivery_type: 'delivery' | 'pickup';
   delivery_address: string;
+  courier: 'unassigned' | 'owner' | 'partner' | 'courier';
+  courier_name: string;
+  courier_fee_cents: number;
   active: number;
   version: number;
   items: { variant_id: string; quantity: number }[];
@@ -51,6 +54,9 @@ export function Recurring() {
     [time, setTime] = useState('10:00'),
     [type, setType] = useState<'delivery' | 'pickup'>('delivery'),
     [address, setAddress] = useState(''),
+    [courier, setCourier] = useState<Plan['courier']>('unassigned'),
+    [courierName, setCourierName] = useState(''),
+    [courierFee, setCourierFee] = useState('0,00'),
     [items, setItems] = useState([{ variant_id: '', quantity: 1 }]),
     [week, setWeek] = useState(monday),
     [error, setError] = useState(''),
@@ -70,6 +76,9 @@ export function Recurring() {
     setWeekday(1);
     setType('delivery');
     setAddress('');
+    setCourier('unassigned');
+    setCourierName('');
+    setCourierFee('0,00');
     setItems([{ variant_id: '', quantity: 1 }]);
     key.current = crypto.randomUUID();
   }
@@ -99,6 +108,9 @@ export function Recurring() {
           time,
           delivery_type: type,
           delivery_address: address,
+          courier,
+          courier_name: courierName,
+          courier_fee_cents: parsePrice(courierFee),
           notes: editing?.notes ?? '',
           items,
           ...(editing
@@ -237,6 +249,38 @@ export function Recurring() {
             onChange={(e) => setAddress(e.target.value)}
           />
         </label>
+        <label>
+          Entregador padrão
+          <select
+            value={courier}
+            onChange={(e) => setCourier(e.target.value as Plan['courier'])}
+          >
+            <option value="unassigned">A definir</option>
+            <option value="owner">Proprietário</option>
+            <option value="partner">Esposa</option>
+            <option value="courier">Motoboy</option>
+          </select>
+        </label>
+        {courier === 'courier' && (
+          <label>
+            Nome do motoboy
+            <input
+              required
+              maxLength={100}
+              value={courierName}
+              onChange={(e) => setCourierName(e.target.value)}
+            />
+          </label>
+        )}
+        <label>
+          Taxa padrão do entregador (R$)
+          <input
+            inputMode="decimal"
+            value={courierFee}
+            onChange={(e) => setCourierFee(e.target.value)}
+          />
+        </label>
+        <p>Copiado aos novos pedidos e sempre revisável; não cria despesa.</p>
         {items.map((item, i) => (
           <fieldset key={i}>
             <legend>Item {i + 1}</legend>
@@ -355,6 +399,9 @@ export function Recurring() {
                 setTime(p.time);
                 setType(p.delivery_type);
                 setAddress(p.delivery_address);
+                setCourier(p.courier);
+                setCourierName(p.courier_name);
+                setCourierFee((p.courier_fee_cents / 100).toFixed(2));
                 setItems(
                   p.items.map((i) => ({
                     variant_id: i.variant_id,
@@ -377,6 +424,9 @@ export function Recurring() {
                     notes: p.notes,
                     delivery_type: p.delivery_type,
                     delivery_address: p.delivery_address,
+                    courier: p.courier,
+                    courier_name: p.courier_name,
+                    courier_fee_cents: p.courier_fee_cents,
                     items: p.items.map((i) => ({
                       variant_id: i.variant_id,
                       quantity: i.quantity,

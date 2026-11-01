@@ -247,6 +247,8 @@ try {
   );
   const plan = {
     name: 'Modelo DEMONSTRAÇÃO',
+    courier: 'partner',
+    courier_fee_cents: 150,
     customer_id: customer.id,
     weekday: 1,
     time: '10:00',
@@ -266,6 +268,8 @@ try {
       const generated = orders.find((o) => o.order_type === 'recurring');
       assert(generated);
       assert.equal(generated.status, 'draft');
+      assert.equal(generated.courier, 'partner');
+      assert.equal(generated.courier_fee_cents, 150);
       assert.equal(generated.total_cents, 3702);
       assert.equal(generated.items[0].quantity, 3);
       await t.db

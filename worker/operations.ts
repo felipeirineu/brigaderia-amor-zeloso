@@ -171,7 +171,7 @@ export async function operations(
     const first = id
       ? db
           .prepare(
-            'UPDATE recurring_templates SET name=?,customer_id=?,weekday=?,time=?,notes=?,delivery_type=?,delivery_address=?,active=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?',
+            'UPDATE recurring_templates SET name=?,customer_id=?,weekday=?,time=?,notes=?,delivery_type=?,delivery_address=?,courier=?,courier_name=?,courier_fee_cents=?,active=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?',
           )
           .bind(
             data.name,
@@ -181,6 +181,9 @@ export async function operations(
             data.notes,
             data.delivery_type,
             data.delivery_address,
+            data.courier,
+            data.courier_name,
+            data.courier_fee_cents,
             +data.active,
             mutation,
             org,
@@ -189,7 +192,7 @@ export async function operations(
           )
       : db
           .prepare(
-            'INSERT OR IGNORE INTO recurring_templates(id,organization_id,name,customer_id,weekday,time,notes,delivery_type,delivery_address,active,mutation_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT OR IGNORE INTO recurring_templates(id,organization_id,name,customer_id,weekday,time,notes,delivery_type,delivery_address,courier,courier_name,courier_fee_cents,active,mutation_id) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
           )
           .bind(
             templateId,
@@ -201,6 +204,9 @@ export async function operations(
             data.notes,
             data.delivery_type,
             data.delivery_address,
+            data.courier,
+            data.courier_name,
+            data.courier_fee_cents,
             +data.active,
             mutation,
           );
@@ -326,6 +332,9 @@ export async function operations(
         total_cents: total,
         delivery_type: plan.delivery_type,
         delivery_address: plan.delivery_address,
+        courier: plan.courier,
+        courier_name: plan.courier_name,
+        courier_fee_cents: plan.courier_fee_cents,
         recurrence_key: `${plan.id}:${data.week}`,
         request_key: crypto.randomUUID(),
       });
@@ -349,7 +358,7 @@ export async function operations(
     const result = await db.batch([
       db
         .prepare(
-          "INSERT OR IGNORE INTO orders(id,organization_id,customer_id,customer_name,due_at,notes,total_cents,request_key,request_hash,mutation_id,order_type,delivery_type,delivery_address,recurrence_key) SELECT json_extract(value,'$.id'),?,json_extract(value,'$.customer_id'),json_extract(value,'$.customer_name'),json_extract(value,'$.due_at'),json_extract(value,'$.notes'),json_extract(value,'$.total_cents'),json_extract(value,'$.request_key'),'recurring',?,'recurring',json_extract(value,'$.delivery_type'),json_extract(value,'$.delivery_address'),json_extract(value,'$.recurrence_key') FROM json_each(?)",
+          "INSERT OR IGNORE INTO orders(id,organization_id,customer_id,customer_name,due_at,notes,total_cents,request_key,request_hash,mutation_id,order_type,delivery_type,delivery_address,courier,courier_name,courier_fee_cents,recurrence_key) SELECT json_extract(value,'$.id'),?,json_extract(value,'$.customer_id'),json_extract(value,'$.customer_name'),json_extract(value,'$.due_at'),json_extract(value,'$.notes'),json_extract(value,'$.total_cents'),json_extract(value,'$.request_key'),'recurring',?,'recurring',json_extract(value,'$.delivery_type'),json_extract(value,'$.delivery_address'),json_extract(value,'$.courier'),json_extract(value,'$.courier_name'),json_extract(value,'$.courier_fee_cents'),json_extract(value,'$.recurrence_key') FROM json_each(?)",
         )
         .bind(org, nonce, ordersJSON),
       db
