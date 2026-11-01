@@ -86,6 +86,11 @@ try {
       .replace(/--[^\n]*/g, '')
       .replace(/\n/g, ' '),
   );
+  await t.db.exec(
+    (await readFile('database/migrations/0006_finance_r2.sql', 'utf8'))
+      .replace(/--[^\n]*/g, '')
+      .replace(/\n/g, ' '),
+  );
   assert.equal(
     (await (await t.request('capabilities', { cookie })).json()).finance,
     true,

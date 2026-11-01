@@ -644,6 +644,16 @@ export async function operations(
     )
       throw new HttpError(409, 'Transição de status não permitida.');
     if (await financeReady(env)) {
+      if (
+        action === 'undo' &&
+        (await db
+          .prepare(
+            'SELECT 1 FROM combined_receipts WHERE organization_id=? AND status_event_id=? AND undo_id IS NULL',
+          )
+          .bind(org, (data as { event_id: string }).event_id)
+          .first())
+      )
+        throw new HttpError(409, 'Use Desfazer entrega e recebimento no Hoje.');
       if (target === 'cancelled') {
         const paid = await db
           .prepare(

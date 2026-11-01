@@ -29,7 +29,8 @@
     "test:operations": "node tests/integration/migration-operations.mjs && node tests/integration/operations.mjs",
     "test:finance": "node tests/integration/finance.mjs",
     "ops:preflight": "node scripts/ops-preflight.mjs",
-    "ops:restore-check": "node scripts/restore-check.mjs"
+    "ops:restore-check": "node scripts/restore-check.mjs",
+    "test:r2": "node tests/integration/review-r2.mjs"
   },
   "dependencies": {
     "jose": "^6.2.14",

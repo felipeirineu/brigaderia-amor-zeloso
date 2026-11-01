@@ -1,3 +1,4 @@
+import { financeR2 } from './finance-r2';
 import { canReverse } from './reversal-policy';
 import { z } from 'zod';
 import { body, hash, HttpError, json, type Actor, type Env } from './security';
@@ -118,7 +119,64 @@ export async function accountView(
       .bind(org, customer)
       .all<Row>()
   ).results;
+  const credits = (
+    await db
+      .prepare(
+        'SELECT c.event_id,e.amount_cents,e.method,e.created_at,COALESCE((SELECT SUM(p.amount_cents) FROM payment_allocations p WHERE p.organization_id=c.organization_id AND p.event_id=c.event_id),0) AS allocated_cents,COALESCE((SELECT SUM(e2.amount_cents) FROM credit_refunds r JOIN payment_events e2 ON e2.organization_id=r.organization_id AND e2.id=r.refund_event_id WHERE r.organization_id=c.organization_id AND r.credit_event_id=c.event_id),0) AS refunded_cents FROM customer_credits c JOIN payment_events e ON e.organization_id=c.organization_id AND e.id=c.event_id WHERE c.organization_id=? AND c.customer_id=?',
+      )
+      .bind(org, customer)
+      .all<{
+        event_id: string;
+        amount_cents: number;
+        method: string;
+        created_at: string;
+        allocated_cents: number;
+        refunded_cents: number;
+      }>()
+  ).results.map((c) => ({
+    ...c,
+    available_cents: c.amount_cents - c.allocated_cents - c.refunded_cents,
+  }));
+  if (credits.some((c) => c.available_cents < 0))
+    throw new HttpError(
+      500,
+      'Inconsistência no crédito. Solicite conferência.',
+    );
+  const creditAllocations = (
+    await db
+      .prepare(
+        'SELECT p.event_id,p.order_id,p.amount_cents FROM payment_allocations p JOIN customer_credits c ON c.organization_id=p.organization_id AND c.event_id=p.event_id WHERE c.organization_id=? AND c.customer_id=?',
+      )
+      .bind(org, customer)
+      .all()
+  ).results;
+  const annulments = (
+    await db
+      .prepare(
+        'SELECT x.closing_id,x.reason,x.created_at,x.user_id FROM closing_annulments x JOIN closings c ON c.organization_id=x.organization_id AND c.id=x.closing_id WHERE c.organization_id=? AND c.customer_id=?',
+      )
+      .bind(org, customer)
+      .all()
+  ).results;
+  const closingHistory = (
+    await db
+      .prepare(
+        'SELECT h.closing_id,h.order_id,h.total_cents FROM closing_order_history h JOIN closings c ON c.organization_id=h.organization_id AND c.id=h.closing_id WHERE h.organization_id=? AND c.customer_id=? LIMIT 1001',
+      )
+      .bind(org, customer)
+      .all()
+  ).results;
+  if (closingHistory.length > 1000)
+    throw new HttpError(
+      409,
+      'Histórico de fechamento excede 1000 vínculos; paginação necessária.',
+    );
   return {
+    credits,
+    credit_allocations: creditAllocations,
+    annulments,
+    closing_history: closingHistory,
+    available_credit_cents: credits.reduce((n, c) => n + c.available_cents, 0),
     profile: profile ? JSON.parse(profile.data) : emptyProfile(),
     profile_version: profile?.version ?? 0,
     version: account?.version ?? 1,
@@ -127,6 +185,7 @@ export async function accountView(
     closings: closings.map((c) => ({
       ...c,
       id: String(c.id),
+      status: String(c.status),
       period_start: String(c.period_start),
       period_end: String(c.period_end),
       due_on: String(c.due_on),
@@ -238,6 +297,9 @@ export async function finance(
           balance_cents: number;
           overdue_days: number;
           unconfigured: number;
+          overdue_cents: number;
+          week_cents: number;
+          received_cents: number;
         }
       >(),
       today = businessDay();
@@ -263,8 +325,16 @@ export async function finance(
         balance_cents: 0,
         overdue_days: 0,
         unconfigured: 0,
+        overdue_cents: 0,
+        week_cents: 0,
+        received_cents: 0,
       };
       row.balance_cents += balance;
+      const sunday = new Date(today + 'T12:00:00Z');
+      sunday.setUTCDate(sunday.getUTCDate() + 7 - (sunday.getUTCDay() || 7));
+      const weekEnd = sunday.toISOString().slice(0, 10);
+      if (due && due < today) row.overdue_cents += balance;
+      if (due && due >= today && due <= weekEnd) row.week_cents += balance;
       if (balance && due && due < today)
         row.overdue_days = Math.max(
           row.overdue_days,
@@ -282,14 +352,50 @@ export async function finance(
       )
       .bind(org, today)
       .first<{ cents: number }>();
+    const receivedClients = (
+      await db
+        .prepare(
+          "SELECT c.id,c.name,SUM(CASE WHEN e.kind='reversal' THEN -e.amount_cents ELSE e.amount_cents END) AS received_cents FROM payment_events e JOIN customers c ON c.organization_id=e.organization_id AND c.id=e.customer_id WHERE e.organization_id=? AND e.paid_on=? GROUP BY c.id,c.name",
+        )
+        .bind(org, today)
+        .all<{ id: string; name: string; received_cents: number }>()
+    ).results;
+    for (const r of receivedClients) {
+      const item = clients.get(r.id) ?? {
+        id: r.id,
+        name: r.name,
+        balance_cents: 0,
+        overdue_days: 0,
+        unconfigured: 0,
+        overdue_cents: 0,
+        week_cents: 0,
+        received_cents: 0,
+      };
+      item.received_cents = r.received_cents;
+      clients.set(r.id, item);
+    }
+    const filter = url.searchParams.get('filter');
     return json({
+      overdue_cents: [...clients.values()].reduce(
+        (n, c) => n + c.overdue_cents,
+        0,
+      ),
+      week_cents: [...clients.values()].reduce((n, c) => n + c.week_cents, 0),
       day: today,
       received_cents: received?.cents ?? 0,
       receivable_cents: [...clients.values()].reduce(
         (n, c) => n + c.balance_cents,
         0,
       ),
-      customers: [...clients.values()],
+      customers: [...clients.values()].filter((c) =>
+        filter === 'overdue'
+          ? c.overdue_cents > 0
+          : filter === 'week'
+            ? c.week_cents > 0
+            : filter === 'received'
+              ? c.received_cents !== 0
+              : true,
+      ),
     });
   }
   if (resource === 'orders' && id && z.uuid().safeParse(id).success) {
@@ -423,7 +529,27 @@ export async function finance(
     });
   }
   const view = await accountView(db, org, id);
-  if (!action && req.method === 'GET') return json({ customer, ...view });
+  if (!action && req.method === 'GET')
+    return json({
+      customer,
+      ...view,
+      credits: view.credits.map((c) => ({
+        ...c,
+        can_refund: canReverse(a, {
+          user_id: view.events.find((e) => e.id === c.event_id)?.user_id,
+          created_at: c.created_at,
+        }),
+      })),
+      actor: { user_id: a.user_id, role: a.role },
+      events: view.events.map((e) => ({
+        ...e,
+        can_reverse:
+          canReverse(a, { user_id: e.user_id, created_at: e.created_at }) &&
+          !view.credits.some((c) => c.event_id === e.id),
+      })),
+    });
+  const extension = await financeR2(req, env, a, id, view, action);
+  if (extension) return extension;
   if (action === 'charge' && req.method === 'POST') {
     const d = await body(
       req,
@@ -432,6 +558,8 @@ export async function finance(
     const closing = d.closing_id
       ? view.closings.find((c) => c.id === d.closing_id)
       : null;
+    if (closing && closing.status !== 'active')
+      throw new HttpError(409, 'Fechamento anulado não pode ser cobrado.');
     if (d.closing_id && !closing)
       throw new HttpError(404, 'Fechamento não encontrado.');
     const balance = closing
@@ -578,9 +706,16 @@ export async function finance(
       .parse(raw);
     version = d.version;
     const original = view.events.find((e) => e.id === d.event_id);
+    if (view.credits.some((c) => c.event_id === d.event_id))
+      throw new HttpError(409, 'Use o estorno de crédito não alocado.');
     if (!original || original.kind === 'reversal')
       throw new HttpError(404, 'Recebimento não encontrado.');
-    if (!canReverse(a, original))
+    if (
+      !canReverse(a, {
+        user_id: original.user_id,
+        created_at: original.created_at,
+      })
+    )
       throw new HttpError(
         403,
         'Operador só estorna recebimento próprio registrado hoje. Solicite ao administrador.',
@@ -653,7 +788,7 @@ export async function finance(
     statements.push(
       db
         .prepare(
-          `INSERT INTO closings(id,organization_id,customer_id,period_start,period_end,due_on,terms,total_cents,user_id) SELECT ?,?,?,?,?,?,?,?,? WHERE ${guard}`,
+          `INSERT INTO closings(id,organization_id,customer_id,period_start,period_end,due_on,terms,total_cents,user_id,active_key) SELECT ?,?,?,?,?,?,?,?,?,? WHERE ${guard}`,
         )
         .bind(
           closing,
@@ -665,6 +800,7 @@ export async function finance(
           JSON.stringify(anchor.terms),
           total,
           a.user_id,
+          period.start + ':' + period.end + ':' + JSON.stringify(anchor.terms),
           ...guardArgs,
         ),
     );
@@ -719,6 +855,15 @@ export async function finance(
         ...guardArgs,
       ),
     ...statements,
+    ...(action === 'close'
+      ? [
+          db
+            .prepare(
+              `INSERT INTO closing_order_history(organization_id,closing_id,order_id,total_cents) SELECT organization_id,closing_id,order_id,total_cents FROM closing_orders WHERE organization_id=? AND closing_id=? AND ${guard}`,
+            )
+            .bind(org, response.closing_id, ...guardArgs),
+        ]
+      : []),
     db
       .prepare(
         `INSERT INTO finance_requests(organization_id,request_key,request_hash,response) SELECT ?,?,?,? WHERE ${guard}`,
