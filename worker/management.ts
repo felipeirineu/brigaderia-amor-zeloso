@@ -1,3 +1,4 @@
+import { p1Ready } from './p1-ready';
 import { financeReady } from './finance-ready';
 import { orderDefaults } from './finance';
 import { operationalReady } from './operational-ready';
@@ -38,6 +39,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       role: a.role,
       operations: await operationalReady(env),
       finance: await financeReady(env),
+      p1: await p1Ready(env),
       user_id: a.user_id,
       organization_id: a.organization_id,
     });

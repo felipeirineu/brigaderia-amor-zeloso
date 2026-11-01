@@ -1,3 +1,4 @@
+import { p1 } from './p1';
 import { finance } from './finance';
 import { financeReady } from './finance-ready';
 import { operationalReady } from './operational-ready';
@@ -75,6 +76,7 @@ export default {
           .run();
         return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie('', 0) });
       }
+      if (pathname.startsWith('/api/p1/')) return await p1(req, env, user);
       if (pathname.startsWith('/api/finance/'))
         return await finance(req, env, user);
       if (
