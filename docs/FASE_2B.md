@@ -35,6 +35,7 @@ Não usar rollback para backend que desconheça pagamentos. Desligar a flag só 
 - API financeira: oito grupos de verificações aprovados, com sinal/parcial, snapshot e exceção de condição, defaults de cliente/modelo, isolamento, permissão Pix, concorrência, excesso de saldo, estorno, CSRF e bloqueio antes da migração. Alterações de cliente/arquivamento com histórico financeiro rejeitadas. CRC também comparado com `binascii.crc_hqx` em Python.
 - Volume: listagens com 65 produtos e 65 pedidos/filhos; seis testes SQLite e teste de preservação nas migrações.
 - E2E completo: **23 aprovados e um ignorado** (offline WebKit já ignorado na suíte anterior). Gestão, R1/recorrência/confirmação em lote e financeiro passaram em Chromium mobile/desktop e WebKit mobile. Inspeção da captura financeira mobile e verificação de ausência de overflow.
+- Após a suíte completa, os três E2E financeiros passaram novamente cobrindo troca de cliente sem reaproveitar o modelo anterior; os três operacionais passaram novamente cobrindo edição/salvamento da taxa de entregador com vírgula.
 - Runner D1 local aplicou 0004/0005. Pré-checagem passou. Exportação/restauração de fixture local (uma organização e um cliente DEMONSTRAÇÃO) em diretório novo preservou contagens e cinco migrações, com zero violações de FK. Isso não substitui o backup real.
 - Ícones PWA e contraste AA permanecem aprovados. Nenhum teste enviou mensagem real ou movimentou dinheiro.
 

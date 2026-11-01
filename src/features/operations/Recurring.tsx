@@ -499,7 +499,9 @@ export function Recurring() {
                 setAddress(p.delivery_address);
                 setCourier(p.courier);
                 setCourierName(p.courier_name);
-                setCourierFee((p.courier_fee_cents / 100).toFixed(2));
+                setCourierFee(
+                  (p.courier_fee_cents / 100).toFixed(2).replace('.', ','),
+                );
                 setItems(
                   p.items.map((i) => ({
                     variant_id: i.variant_id,

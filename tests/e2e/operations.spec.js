@@ -165,6 +165,25 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
     await expect(
       page.getByRole('heading', { name: 'Modelo semanal DEMONSTRAÇÃO' }),
     ).toBeVisible();
+    await page
+      .getByRole('button', {
+        name: 'Editar Modelo semanal DEMONSTRAÇÃO',
+        exact: true,
+      })
+      .click();
+    await expect(page.getByLabel('Taxa padrão do entregador (R$)')).toHaveValue(
+      '0,00',
+    );
+    await page.getByLabel('Taxa padrão do entregador (R$)').fill('2,50');
+    await page
+      .getByRole('combobox', { name: 'Entregador padrão', exact: true })
+      .selectOption('partner');
+    await page
+      .getByRole('button', { name: 'Salvar pedido padrão', exact: true })
+      .click();
+    await expect(
+      page.getByRole('heading', { name: 'Editar modelo', exact: true }),
+    ).toHaveCount(0);
     await page.getByLabel('Segunda-feira da semana').fill('2030-01-07');
     await page
       .getByRole('button', { name: 'Gerar pedidos da semana', exact: true })

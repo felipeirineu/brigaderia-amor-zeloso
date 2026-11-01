@@ -66,6 +66,8 @@ Relatórios: `docs/FASE_2A.md` (R1 + ativação) e `docs/FASE_2B.md` (Produzido,
 
 ## Histórico
 
+- **2026-11-01 — Regressões finais de formulário:** troca de cliente limpa itens/data do modelo anterior e descarta resposta antiga de defaults; edição de taxa do pedido padrão mantém vírgula antes de validar preço. Três E2E financeiros e três operacionais repetidos em Chromium/WebKit passaram. Código, guia e resposta já enviados ao main; resultado final da nova CI deve ser conferido na aba Actions.
+
 - **2026-11-01 — R1 e Fase 2B:** revisão `d13618c` integrada por fast-forward, sem conflito. R1-1…R1-7 atendidos conforme tabela acima. Núcleo financeiro/P0-4, B2B/P0-5 e tutorial entregues no código. Condições são snapshots; sinal/parciais/estorno usam eventos e alocações. CAS da conta/pedido impede pagamento concorrente acima do saldo; cliente com histórico financeiro não pode ser trocado. Fechamento usa data efetiva da entrega, não apenas data prometida. Flags OFF; nenhum dado, migração ou pagamento remoto foi alterado.
 
 - **2026-11-01 — Testes R1/2B:** 36 unitários; 28 verificações API base; 14 operacionais; oito grupos financeiros; migração 0003–0005 com preservação; 65 produtos/65 pedidos; seis SQLite; marca/AA; build/tipos/lint/formato. E2E completo: 23 aprovados, um offline WebKit já ignorado; gestão, operação/lote e financeiro executados em WebKit e Chromium mobile/desktop. CRC Pix confere exemplo oficial BACEN 1D3D e Python independente. Preflight e exportação/restauração de fixture local em estado novo passaram, com zero FKs inválidas. Não equivalem a backup real ou iPhone físico. CI nova após push ainda não observada nesta redação.
