@@ -4,8 +4,8 @@ export async function toolsReady(env: Env) {
   if (env.P1_TOOLS_ENABLED !== 'true' || !(await p1Ready(env))) return false;
   const r = await env
     .DB!.prepare(
-      "SELECT COUNT(*) n FROM sqlite_schema WHERE type='table' AND name IN('inventory_balances','inventory_events')",
+      "SELECT COUNT(*) n FROM sqlite_schema WHERE type='table' AND name IN('inventory_balances','inventory_events','customer_imports')",
     )
     .first<{ n: number }>();
-  return r?.n === 2;
+  return r?.n === 3;
 }

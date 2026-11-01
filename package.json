@@ -34,9 +34,12 @@
     "test:p1": "node tests/integration/planning.mjs && node tests/integration/reports.mjs && node tests/integration/expenses.mjs && node tests/integration/recipes.mjs",
     "test:mobile": "node tests/integration/mobile.mjs",
     "test:field": "node tests/integration/field.mjs",
-    "test:inventory": "node tests/integration/inventory.mjs"
+    "test:inventory": "node tests/integration/inventory.mjs",
+    "test:import": "node tests/integration/customer-import.mjs",
+    "test:backup": "node tests/integration/backup.mjs"
   },
   "dependencies": {
+    "fflate": "^0.8.3",
     "jose": "^6.2.14",
     "lucide-react": "^1.66.0",
     "react": "^19.3.1",
