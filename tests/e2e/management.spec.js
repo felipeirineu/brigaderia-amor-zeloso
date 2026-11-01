@@ -185,6 +185,8 @@ test('gestão privada: login, cadastros, duas sessões, snapshots e logout', asy
       page.getByRole('heading', { name: 'Produto DEMONSTRAÇÃO E2E' }),
     ).toHaveCount(0);
     await expect(page.getByText('Nenhum produto cadastrado.')).toBeVisible();
+    const menu = second.getByRole('button', { name: /Abrir menu de/ });
+    if (await menu.isVisible()) await menu.click();
     await Promise.all([
       second.waitForURL('**/cdn-cgi/access/logout'),
       second.getByRole('button', { name: 'Sair', exact: true }).click(),

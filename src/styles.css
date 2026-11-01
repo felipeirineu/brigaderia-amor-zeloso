@@ -1261,3 +1261,59 @@ button,
 .customer-tile .initial-avatar .initial-avatar {
   background: transparent;
 }
+
+/* R5-1: uma única linha no celular; cabeçalhos do computador preservados. */
+.compact-header {
+  display: none;
+}
+@media (max-width: 700px) {
+  .private-workspace {
+    padding: 0 16px 24px;
+  }
+  .private-workspace > .private-brand,
+  .management-header,
+  .tour-invite {
+    display: none;
+  }
+  .compact-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 56px;
+    margin-bottom: 8px;
+  }
+  .compact-header > a {
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    min-height: 48px;
+  }
+  .compact-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 1rem;
+  }
+  .profile-menu-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 45%;
+    padding: 6px;
+    border: 0;
+    background: transparent;
+  }
+  .profile-menu-trigger span {
+    max-width: 8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+  }
+  .profile-menu .sheet-body {
+    display: grid;
+    gap: 8px;
+  }
+}

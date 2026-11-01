@@ -103,7 +103,23 @@ Relatórios por etapa em docs/REVISAO_R2.md e docs/P1_ETAPAS.md. Todos os itens 
 
 R2-1 a R2-7 e P1-1 a P1-5/P1-7 já publicados com a entrega afbdb39, CI aprovada (41316631301). Relatórios P1-3 estão estáveis nessa base. Sem ativação remota. R3 requer 0010 e flag MOBILE_ENABLED; ver FASE_R3.md.
 
+## R5 — escopo desta sessão
+
+Plano: R5-1 (CompactHeader, Management, Tour e CSS; linha móvel ≤56 px e menu acessível) → R5-12 (Button único e estilos/estados compartilhados) → R5-3 (Totem e ordenação privada de sabores; foco/5 cartões em 390×844) → R5-2 (Today; entregas antes de lembretes e data compacta) → R5-4 (Customers; lista e folha de cadastro). Um commit/push por item. Sem deploy, migração ou alteração no Cloudflare. R5-5…11 ficam para outra sessão.
+
+| Item  | Status   | Evidência                                                                                                                                                                                                                                            |
+| ----- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R5-1  | entregue | Cabeçalho móvel de 56 px, logo/título/menu, perfil quando cadastrado; Ajuda, passeio e Sair no menu. PC preservado. Build/tipagem/lint e seis E2E de cabeçalho/operação passaram nos três projetos; gestão/logout também passaram nos três projetos. |
+| R5-12 | pendente | Próximo item.                                                                                                                                                                                                                                        |
+| R5-3  | pendente | Depois de Button.                                                                                                                                                                                                                                    |
+| R5-2  | pendente | Entregas primeiro.                                                                                                                                                                                                                                   |
+| R5-4  | pendente | Lista/folha.                                                                                                                                                                                                                                         |
+
+Limitação: validação em navegador simulado, aparelho físico pendente.
+
 ## Histórico
+
+- **2026-11-01 — R5-1:** revisão 0ffe98a incorporada por fast-forward; cabeçalho compacto e menu testados. Restam, nesta ordem, R5-12, R5-3, R5-2 e R5-4.
 
 - **2026-11-01 — Verificação final R2/R3/R4/P1:** build, tipagem, lint e formatação aprovados; 50 unitários; todas as suítes de integração (API, 65 registros por listagem, R2, P1, financeiro, operações, móvel, campo, estoque, importação, backup, migrações e marca) passaram. 47 E2E aprovados nos três projetos; um offline WebKit permanece ignorado. Restauração adicional por Wrangler D1 local com FKs zero. Ajustes finais preservam condições financeiras quando omitidas em edição móvel, aguardam sua leitura antes de confirmar, restauram validade nativa dos campos e permitem mínimo zero explícito. Status do CI do commit publicado deve ser conferido em [Actions do main](https://github.com/felipeirineu/brigaderia-amor-zeloso/actions/workflows/ci.yml?query=branch%3Amain). Não foram executadas migrações/ativações remotas; aparelho físico/links externos reais ainda requerem homologação. P2 e transferência/Fase 6 continuam fora desta entrega.
 

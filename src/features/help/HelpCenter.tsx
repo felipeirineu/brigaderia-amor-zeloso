@@ -12,6 +12,14 @@ export function Tour({ role }: { role: string }) {
   const location = useLocation();
   const dialog = useRef<HTMLDialogElement>(null),
     trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const open = () => {
+      setStep(0);
+      dialog.current?.showModal();
+    };
+    window.addEventListener('start-tour', open);
+    return () => window.removeEventListener('start-tour', open);
+  }, []);
   const steps = useMemo(
     () => [
       {
@@ -59,7 +67,11 @@ export function Tour({ role }: { role: string }) {
     setStep(-1);
     setDone(true);
     localStorage.setItem(`az-tour-${role}`, 'done');
-    trigger.current?.focus();
+    const menu = document.querySelector<HTMLButtonElement>(
+      '.profile-menu-trigger',
+    );
+    if (menu && matchMedia('(max-width:700px)').matches) menu.focus();
+    else trigger.current?.focus();
   }
   return (
     <>

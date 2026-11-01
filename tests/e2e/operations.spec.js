@@ -227,6 +227,8 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
       'Exemplo marcado como entregue',
     );
     expect(writes).toHaveLength(0);
+    const menu = page.getByRole('button', { name: /Abrir menu de/ });
+    if (await menu.isVisible()) await menu.click();
     await page
       .getByRole('button', { name: 'Conhecer o app', exact: true })
       .click();

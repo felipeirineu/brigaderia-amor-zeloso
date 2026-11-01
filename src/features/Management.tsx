@@ -1,3 +1,4 @@
+import { CompactHeader } from './mobile/CompactHeader';
 import { Backup } from './p1/Backup';
 import { ImportCustomers } from './p1/ImportCustomers';
 import { Stock } from './p1/Stock';
@@ -1317,6 +1318,12 @@ export function Management() {
       <section
         className={`management ${session.operations ? 'operations-active' : ''}`}
       >
+        <CompactHeader
+          role={session.role}
+          online={online}
+          operations={!!session.operations}
+          onLogout={() => void logout()}
+        />
         <header className="management-header">
           <p>
             Área privada ·{' '}
