@@ -67,6 +67,11 @@ Fazer **depois da R5**. Ajustes pedidos pelo responsável após ver a prévia.
     - **dias passados:** o que foi entregue;
     - **estado vazio** com "Novo pedido".
   - No administrador, "Produzir…" passa a usar o dia escolhido e o seguinte.
+  - **Fora do dia atual:**
+    - o título do cabeçalho muda de "Hoje" para **"Agenda"**;
+    - a saudação dá lugar a "Entregas do dia" (operadora) ou "Planejamento do dia" (administrador);
+    - aparece o botão **"Voltar para hoje"**.
+  - Tocar em "Hoje" na barra inferior também volta para o dia atual.
   - Trocar de perfil ou reabrir o app volta para Hoje.
   - Datas no fuso de Fortaleza. Teste da contagem por dia e da virada de mês.
 - **Aceite:**
