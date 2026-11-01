@@ -427,6 +427,20 @@ export async function management(req: Request, env: Env, a: Actor) {
       throw new HttpError(400, 'Total excede o limite permitido.');
     const financial = await financeReady(env);
     if (financial && id) {
+      if (
+        d.customer_id !== previous!.customer_id &&
+        (await db
+          .prepare(
+            'SELECT 1 FROM payment_allocations WHERE organization_id=? AND order_id=? LIMIT 1',
+          )
+          .bind(org, id)
+          .first())
+      )
+        throw new HttpError(
+          409,
+          'Pedido com histórico financeiro não pode trocar de cliente.',
+        );
+
       const paid = await db
         .prepare(
           "SELECT COALESCE(SUM(CASE WHEN e.kind='reversal' THEN -p.amount_cents ELSE p.amount_cents END),0) AS cents FROM payment_allocations p JOIN payment_events e ON e.organization_id=p.organization_id AND e.id=p.event_id WHERE p.organization_id=? AND p.order_id=?",
@@ -507,14 +521,24 @@ export async function management(req: Request, env: Env, a: Actor) {
   }
   if (
     resource === 'orders' &&
-    req.method === 'POST' &&
+    req.method !== 'DELETE' &&
     (await financeReady(env))
   ) {
     const d = await body(original, orderSchema);
-    statements.push(
-      ...orderDefaults(db, org, entityId, d.customer_id, mutation),
-    );
-    if (d.template_id) {
+    if (!id || d.customer_id !== previous!.customer_id) {
+      if (id)
+        statements.push(
+          db
+            .prepare(
+              `DELETE FROM order_terms WHERE organization_id=? AND order_id=? AND ${guard}`,
+            )
+            .bind(org, id, ...guardArgs),
+        );
+      statements.push(
+        ...orderDefaults(db, org, entityId, d.customer_id, mutation),
+      );
+    }
+    if (!id && d.template_id) {
       const plan = await db
         .prepare(
           'SELECT id FROM recurring_templates WHERE organization_id=? AND id=? AND customer_id=? AND active=1',

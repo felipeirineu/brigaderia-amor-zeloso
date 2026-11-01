@@ -588,7 +588,9 @@ export async function operations(
               })
               .strict(),
           );
-    const fingerprint = await hash(JSON.stringify({id,action,user:a.user_id,data}));
+    const fingerprint = await hash(
+      JSON.stringify({ id, action, user: a.user_id, data }),
+    );
     const repeated = await db
       .prepare(
         'SELECT id,request_hash FROM order_status_events WHERE organization_id=? AND request_key=?',

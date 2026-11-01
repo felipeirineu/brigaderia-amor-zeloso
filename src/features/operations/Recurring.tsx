@@ -230,15 +230,13 @@ export function Recurring() {
                 const results: { id: string; ok: boolean; error?: string }[] =
                   [];
                 for (let i = 0; i < chosen.length; i += 3) {
-                  const chunk = chosen
-                    .slice(i, i + 3)
-                    .map((o) => ({
-                      id: o.id,
-                      version: o.version,
-                      key:
-                        confirmKeys.current[o.id] ??
-                        (confirmKeys.current[o.id] = crypto.randomUUID()),
-                    }));
+                  const chunk = chosen.slice(i, i + 3).map((o) => ({
+                    id: o.id,
+                    version: o.version,
+                    key:
+                      confirmKeys.current[o.id] ??
+                      (confirmKeys.current[o.id] = crypto.randomUUID()),
+                  }));
                   const response = await api<{ results: typeof results }>(
                     'confirm-reviewed',
                     'POST',

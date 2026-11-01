@@ -196,6 +196,13 @@ try {
       assert.equal(history.length, 5);
       assert(history.every((e) => e.user_id));
       const last = history.at(-1);
+      await t.db
+        .prepare(
+          'UPDATE order_status_events SET created_at=unixepoch()-20 WHERE id=?',
+        )
+        .bind(last.id)
+        .run();
+
       await call(
         `orders/${order.id}/undo`,
         { version, event_id: last.id },
@@ -211,6 +218,43 @@ try {
       );
       assert.equal(updated.at(-1).undo_of, last.id);
       assert.equal(updated.length, 6);
+      const expired = await call(
+        `orders/${order.id}/status`,
+        { version, to: 'delivered' },
+        'POST',
+        operator,
+      );
+      version++;
+      await t.db
+        .prepare(
+          'UPDATE order_status_events SET created_at=unixepoch()-31 WHERE id=?',
+        )
+        .bind(expired.event_id)
+        .run();
+      assert.equal(
+        (
+          await t.request(`orders/${order.id}/undo`, {
+            cookie: operator,
+            method: 'POST',
+            key: crypto.randomUUID(),
+            data: { version, event_id: expired.event_id },
+          })
+        ).status,
+        409,
+      );
+      await t.db
+        .prepare(
+          'UPDATE order_status_events SET created_at=unixepoch() WHERE id=?',
+        )
+        .bind(expired.event_id)
+        .run();
+      await call(
+        `orders/${order.id}/undo`,
+        { version, event_id: expired.event_id },
+        'POST',
+        operator,
+      );
+      version++;
     },
   );
   await check(

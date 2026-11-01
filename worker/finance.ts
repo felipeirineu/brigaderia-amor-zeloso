@@ -37,7 +37,7 @@ export async function accountView(
   const orders = (
     await db
       .prepare(
-        "SELECT o.id,o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents FROM orders o LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=? AND o.customer_id=? ORDER BY o.due_at,o.id LIMIT 1001",
+        "SELECT o.id,o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,(SELECT MAX(e.created_at) FROM order_status_events e WHERE e.organization_id=o.organization_id AND e.order_id=o.id AND e.to_status IN ('delivered','picked_up')) AS completed_at,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents FROM orders o LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=? AND o.customer_id=? ORDER BY o.due_at,o.id LIMIT 1001",
       )
       .bind(org, customer)
       .all<Row>()
@@ -51,7 +51,11 @@ export async function accountView(
   const enriched = orders.map((o) => {
     const terms = readTerms(o.terms as string | null),
       day = String(o.due_at).slice(0, 10),
-      businessDate = new Date(Date.parse(String(o.due_at)) - 10800000)
+      businessDate = new Date(
+        (o.completed_at
+          ? Number(o.completed_at) * 1000
+          : Date.parse(String(o.due_at))) - 10800000,
+      )
         .toISOString()
         .slice(0, 10);
     const delivered =
@@ -215,7 +219,7 @@ export async function finance(
     const rows = (
       await db
         .prepare(
-          "SELECT c.id,c.name,COALESCE(t.data,'') AS terms,o.id AS order_id,o.status,o.active,o.total_cents,o.due_at,cl.due_on,COALESCE(p.paid,0) AS paid FROM customers c JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings cl ON cl.organization_id=co.organization_id AND cl.id=co.closing_id LEFT JOIN (SELECT x.organization_id,x.order_id,SUM(CASE WHEN e.kind='reversal' THEN -x.amount_cents ELSE x.amount_cents END) AS paid FROM payment_allocations x JOIN payment_events e ON e.organization_id=x.organization_id AND e.id=x.event_id GROUP BY x.organization_id,x.order_id) p ON p.organization_id=o.organization_id AND p.order_id=o.id WHERE c.organization_id=? AND o.active=1 AND o.status IN ('delivered','picked_up') LIMIT 5001",
+          "SELECT c.id,c.name,COALESCE(t.data,'') AS terms,o.id AS order_id,o.status,o.active,o.total_cents,o.due_at,(SELECT MAX(e.created_at) FROM order_status_events e WHERE e.organization_id=o.organization_id AND e.order_id=o.id AND e.to_status IN ('delivered','picked_up')) AS completed_at,cl.due_on,COALESCE(p.paid,0) AS paid FROM customers c JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings cl ON cl.organization_id=co.organization_id AND cl.id=co.closing_id LEFT JOIN (SELECT x.organization_id,x.order_id,SUM(CASE WHEN e.kind='reversal' THEN -x.amount_cents ELSE x.amount_cents END) AS paid FROM payment_allocations x JOIN payment_events e ON e.organization_id=x.organization_id AND e.id=x.event_id GROUP BY x.organization_id,x.order_id) p ON p.organization_id=o.organization_id AND p.order_id=o.id WHERE c.organization_id=? AND o.active=1 AND o.status IN ('delivered','picked_up') LIMIT 5001",
         )
         .bind(org)
         .all<Row>()
@@ -238,7 +242,11 @@ export async function finance(
       today = businessDay();
     for (const o of rows) {
       const t = readTerms(String(o.terms) || null),
-        day = new Date(Date.parse(String(o.due_at)) - 10800000)
+        day = new Date(
+          (o.completed_at
+            ? Number(o.completed_at) * 1000
+            : Date.parse(String(o.due_at))) - 10800000,
+        )
           .toISOString()
           .slice(0, 10),
         due =

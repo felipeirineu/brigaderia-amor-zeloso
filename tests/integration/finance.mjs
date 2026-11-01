@@ -154,6 +154,40 @@ try {
     ).status,
     409,
   );
+  const second = await call('customers', {
+    name: 'Outro cliente DEMONSTRAÇÃO financeiro',
+    phone: '+5511900000001',
+  });
+  await call(`orders/${o.id}/status`, {
+    version: order.version,
+    to: 'awaiting_confirmation',
+    reason: 'Revisão DEMONSTRAÇÃO',
+  });
+  order = await call('orders/' + o.id, undefined, 'GET');
+  assert.equal(
+    (
+      await t.request('orders/' + o.id, {
+        cookie: owner,
+        method: 'PUT',
+        data: { ...draft, customer_id: second.id, version: order.version },
+      })
+    ).status,
+    409,
+  );
+  assert.equal(
+    (
+      await t.request('orders/' + o.id, {
+        cookie: owner,
+        method: 'DELETE',
+        data: { version: order.version },
+      })
+    ).status,
+    409,
+  );
+  await call(`orders/${o.id}/status`, {
+    version: order.version,
+    to: 'confirmed',
+  });
   for (const to of [
     'in_production',
     'ready',
@@ -163,6 +197,12 @@ try {
     order = await call('orders/' + o.id, undefined, 'GET');
     await call(`orders/${o.id}/status`, { version: order.version, to });
   }
+  await t.db
+    .prepare(
+      "UPDATE order_status_events SET created_at=unixepoch('2025-01-07T13:00:00Z') WHERE organization_id=? AND order_id=?",
+    )
+    .bind(t.org, o.id)
+    .run();
   account = await call(root, undefined, 'GET');
   assert.equal(account.receivable_cents, 2000);
   assert(account.overdue_days > 0);
@@ -240,6 +280,12 @@ try {
     event_id: last.id,
     reason: 'Correção DEMONSTRAÇÃO',
   });
+  await t.db
+    .prepare(
+      "UPDATE order_status_events SET created_at=unixepoch('2025-01-07T13:00:00Z') WHERE organization_id=? AND order_id=?",
+    )
+    .bind(t.org, o.id)
+    .run();
   account = await call(root, undefined, 'GET');
   assert.equal(account.receivable_cents, 2000);
   assert.equal(account.received_cents, 468);
@@ -293,6 +339,20 @@ try {
     [],
   );
   checks++;
+  const gated = await runtime({ financeEnabled: true, migrationLimit: 4 });
+  try {
+    const cookie = await gated.login('owner@example.test');
+    assert.equal(
+      (await (await gated.request('capabilities', { cookie })).json()).finance,
+      false,
+    );
+    assert.equal(
+      (await gated.request('finance/summary', { cookie })).status,
+      503,
+    );
+  } finally {
+    await gated.dispose();
+  }
   console.log(
     `${checks} verificações financeiras: condições/snapshots, isolamento, sinal/idempotência, fechamento, Pix/CRC independente, concorrência, estorno, limites e CSRF passaram.`,
   );

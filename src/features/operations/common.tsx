@@ -28,11 +28,11 @@ export interface OperationalOrder {
   items: Item[];
 }
 export function useRemote<T>(path: string) {
-  const [data, setData] = useState<T | null>(null),
+  const [data, setData] = useState<{ path: string; value: T } | null>(null),
     [error, setError] = useState('');
   const refresh = useCallback(async () => {
     try {
-      setData(await api<T>(path));
+      setData({ path, value: await api<T>(path) });
       setError('');
     } catch (e) {
       setError((e as Error).message);
@@ -43,7 +43,7 @@ export function useRemote<T>(path: string) {
     api<T>(path)
       .then((d) => {
         if (current) {
-          setData(d);
+          setData({ path, value: d });
           setError('');
         }
       })
@@ -54,7 +54,7 @@ export function useRemote<T>(path: string) {
       current = false;
     };
   }, [path]);
-  return { data, error, refresh };
+  return { data: data?.path === path ? data.value : null, error, refresh };
 }
 export function Failure({ message }: { message: string }) {
   return message ? (
