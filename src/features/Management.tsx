@@ -1,3 +1,9 @@
+import { Recipes, Supplies } from './p1/Recipes';
+import { Shopping } from './p1/Shopping';
+import { Expenses } from './p1/Expenses';
+import { Reports } from './p1/Reports';
+import { Reminders } from './p1/Reminders';
+import { Agenda } from './p1/Agenda';
 import { Finance, PixSettings, type Summary } from './finance/Finance';
 import { Account } from './finance/Account';
 import { CustomerProfile } from './finance/Profile';
@@ -23,6 +29,7 @@ interface Session {
   role: 'owner' | 'operator';
   operations?: boolean;
   finance?: boolean;
+  p1?: boolean;
 }
 interface Customer {
   id: string;
@@ -1222,7 +1229,11 @@ export function Management() {
             index
             element={
               session.operations ? (
-                <Today role={session.role} financial={session.finance} />
+                <Today
+                  role={session.role}
+                  financial={session.finance}
+                  p1={session.p1}
+                />
               ) : (
                 <Overview />
               )
@@ -1242,6 +1253,17 @@ export function Management() {
               />
             }
           />
+          {session.p1 && (
+            <>
+              <Route path="agenda" element={<Agenda />} />
+              <Route path="relatorios" element={<Reports />} />
+              <Route path="despesas" element={<Expenses />} />
+              <Route path="fichas" element={<Recipes />} />
+              <Route path="insumos" element={<Supplies />} />
+              <Route path="compras" element={<Shopping />} />
+              <Route path="lembretes" element={<Reminders />} />
+            </>
+          )}
           {session.finance && (
             <>
               <Route
@@ -1265,12 +1287,18 @@ export function Management() {
               <Route path="mensagens" element={<MessageTemplates />} />
               <Route
                 path="ajuda"
-                element={<HelpCenter financial={session.finance} />}
+                element={
+                  <HelpCenter financial={session.finance} p1={session.p1} />
+                }
               />
               <Route
                 path="mais"
                 element={
-                  <More role={session.role} financial={session.finance} />
+                  <More
+                    role={session.role}
+                    financial={session.finance}
+                    p1={session.p1}
+                  />
                 }
               />
             </>
@@ -1327,9 +1355,19 @@ export function Management() {
                   Novo cliente
                 </Link>
               </div>
+              {session.p1 && (
+                <Link
+                  className="button"
+                  to="/gestao/lembretes"
+                  onClick={() => quick.current?.close()}
+                >
+                  Novo lembrete
+                </Link>
+              )}
               <p>
-                Recebimentos e lembretes estarão disponíveis nas próximas
-                etapas.
+                {session.finance
+                  ? 'Recebimentos rápidos ficam no Hoje, no cartão do pedido.'
+                  : 'Recebimentos dependem da ativação financeira.'}
               </p>
               <button onClick={() => quick.current?.close()}>Fechar</button>
             </div>
@@ -1343,15 +1381,28 @@ export function Management() {
 function More({
   role,
   financial = false,
+  p1 = false,
 }: {
   role: string;
   financial?: boolean;
+  p1?: boolean;
 }) {
   return (
     <>
       <h1>Mais</h1>
       <div className="more-grid">
         {[
+          ...(p1
+            ? [
+                ['agenda', 'Agenda', 'agenda'],
+                ['lembretes', 'Lembretes', 'agenda'],
+                ['relatorios', 'Relatórios', 'financeiro'],
+                ['despesas', 'Despesas e fluxo', 'financeiro'],
+                ['fichas', 'Fichas e preço sugerido', 'producao'],
+                ['insumos', 'Insumos e embalagens', 'produtos'],
+                ['compras', 'Lista de compras', 'produtos'],
+              ]
+            : []),
           ...(financial ? [['financeiro', 'Financeiro', 'financeiro']] : []),
           ['recorrentes', 'Pedidos padrão', 'recorrentes'],
           ['produtos', 'Produtos', 'produtos'],
@@ -1368,9 +1419,11 @@ function More({
         ))}
       </div>
       <p>
-        {financial
-          ? 'Agenda, receitas e estoque serão entregues em etapas próprias.'
-          : 'Financeiro, agenda, receitas e estoque serão entregues em etapas próprias.'}
+        {p1
+          ? 'Escolha uma rotina acima.'
+          : financial
+            ? 'Agenda, receitas e estoque dependem da próxima ativação.'
+            : 'Financeiro, agenda, receitas e estoque serão entregues em etapas próprias.'}
       </p>
     </>
   );

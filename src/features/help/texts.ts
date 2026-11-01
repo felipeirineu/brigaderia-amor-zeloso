@@ -37,11 +37,11 @@ export const helpTexts = {
   },
   profit: {
     title: 'Lucro estimado',
-    text: 'Receita menos custos estimados não equivale ao dinheiro em caixa. Custos e lucro serão tratados na etapa financeira.',
+    text: 'Receita menos custos estimados não equivale ao dinheiro em caixa. A ficha calcula custos estimados; o fluxo mostra recebimentos menos despesas registrados, sem afirmar saldo bancário ou lucro.',
   },
   recipe: {
     title: 'Ficha técnica',
-    text: 'Registra ingredientes e rendimento para estimar custos. O módulo ainda será implementado; nenhuma receita foi inferida a partir de fotos.',
+    text: 'Registra ingredientes e rendimento para estimar custos. Com P1 ativado, cadastre insumos e custos informados, sem inferir receitas a partir de fotos. Custo ausente deixa a estimativa pendente.',
   },
   stock: {
     title: 'Estoque mínimo',

@@ -49,7 +49,7 @@ export function CreditTools({
     <section className="panel">
       <h2>Saldo a favor: {money(data.available_credit_cents)}</h2>
       <Failure message={error} />
-      <p role="status">{notice}</p>
+      {notice && <p role="status">{notice}</p>}
       <p>
         Adiantamento sem pedido. Usar crédito é uma escolha humana e não
         registra novo dinheiro entrando.

@@ -110,7 +110,13 @@ export function Tour({ role }: { role: string }) {
     </>
   );
 }
-export function HelpCenter({ financial = false }: { financial?: boolean }) {
+export function HelpCenter({
+  financial = false,
+  p1 = false,
+}: {
+  financial?: boolean;
+  p1?: boolean;
+}) {
   const [example, setExample] = useState(false);
   return (
     <>
@@ -146,13 +152,70 @@ export function HelpCenter({ financial = false }: { financial?: boolean }) {
           </li>
         </ol>
         <p>
-          {financial
-            ? 'Recebimentos e fechamentos têm roteiro abaixo. Ficha técnica segue em preparação.'
-            : 'Recebimentos e fechamentos dependem da ativação financeira; ficha técnica segue em preparação.'}
+          {p1
+            ? 'Consulte também os roteiros de agenda, custos e compras abaixo.'
+            : financial
+              ? 'Recebimentos e fechamentos têm roteiro abaixo. Ficha técnica depende da ativação P1.'
+              : 'Recebimentos e fechamentos dependem da ativação financeira; ficha técnica segue em preparação.'}
         </p>
         <Link to="/gestao/recorrentes">Preparar pedido padrão</Link>
       </section>
       {financial && <FinancialTutorial />}
+      {p1 && (
+        <section className="panel">
+          <h2>Rotinas P1</h2>
+          <details>
+            <summary>Agenda e lembretes</summary>
+            <ol>
+              <li>
+                Em Mais → Agenda, escolha uma data e Semana/Mês; filtre o tipo
+                de evento.
+              </li>
+              <li>
+                Para calendário do aparelho, exporte ICS e importe somente no
+                calendário autorizado. Não há push do aplicativo.
+              </li>
+              <li>
+                Em Lembretes, registre título/prazo e cliente opcional.
+                Pendentes vencidos e do dia aparecem no Hoje; conclua quando
+                realizado.
+              </li>
+            </ol>
+            <Link to="/gestao/agenda">Abrir agenda</Link>
+          </details>
+          <details>
+            <summary>Relatórios e fluxo</summary>
+            <p>
+              Vendas usam entregas efetivas. Aging é posição atual. Recebimentos
+              e despesas registrados formam fluxo, não saldo bancário ou lucro.
+              O administrador registra/estorna despesas; a taxa de entrega não
+              vira gasto sozinha.
+            </p>
+            <Link to="/gestao/relatorios">Abrir relatórios</Link>
+          </details>
+          <details>
+            <summary>Ficha, preço estimado e compras</summary>
+            <ol>
+              <li>
+                O administrador cadastra insumos, quantidade da embalagem e
+                preço informado. Sem preço conhecido, deixe vazio.
+              </li>
+              <li>
+                Cadastre uma ficha, rendimento e quantidades na unidade do
+                insumo; informe custos adicionais e margem desejada. O preço
+                sugerido não altera produtos.
+              </li>
+              <li>
+                Na Lista de compras, escolha o prazo dos confirmados/em
+                produção. Confira lotes, pendências e estoque manual antes de
+                comprar. Não há compra nem baixa automática.
+              </li>
+            </ol>
+            <Link to="/gestao/fichas">Abrir fichas</Link>
+          </details>
+        </section>
+      )}
+
       {Object.entries(helpTexts).map(([key, text]) => (
         <details className="panel" key={key}>
           <summary>{text.title}</summary>

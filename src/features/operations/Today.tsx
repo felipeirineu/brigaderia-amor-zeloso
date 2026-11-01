@@ -1,3 +1,4 @@
+import { TodayReminders } from '../p1/Reminders';
 import { QuickReceipt, type ReceiptResult } from '../finance/QuickReceipt';
 import { FinanceSummary } from '../finance/Finance';
 import { useEffect, useRef, useState } from 'react';
@@ -60,9 +61,11 @@ function DayTotals({
 export function Today({
   role,
   financial = false,
+  p1 = false,
 }: {
   role: string;
   financial?: boolean;
+  p1?: boolean;
 }) {
   const [receipt, setReceipt] = useState<OperationalOrder | null>(null),
     [combinedUndo, setCombinedUndo] = useState<
@@ -207,6 +210,7 @@ export function Today({
         </button>
       )}
 
+      {p1 && <TodayReminders day={day} />}
       {undo && (
         <button
           disabled={busy}
