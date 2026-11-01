@@ -1,3 +1,4 @@
+import { canReverse } from './reversal-policy';
 import { z } from 'zod';
 import { body, hash, HttpError, json, type Actor, type Env } from './security';
 import { financeReady } from './finance-ready';
@@ -579,6 +580,11 @@ export async function finance(
     const original = view.events.find((e) => e.id === d.event_id);
     if (!original || original.kind === 'reversal')
       throw new HttpError(404, 'Recebimento não encontrado.');
+    if (!canReverse(a, original))
+      throw new HttpError(
+        403,
+        'Operador só estorna recebimento próprio registrado hoje. Solicite ao administrador.',
+      );
     if (view.events.some((e) => e.reversal_of === d.event_id))
       throw new HttpError(409, 'Recebimento já estornado.');
     const event = crypto.randomUUID();

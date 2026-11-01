@@ -76,3 +76,20 @@ Arquivos 2B: worker/finance*, shared/finance*, database/migrations/0005*, Manage
 ## Resultado da R1/2B (2026-11-01)
 
 R1-1…R1-7 implementados/documentados. A Fase 2B entregou o núcleo P0-4, campos/padrões B2B P0-5, Hoje financeiro e tutorial, conforme docs/FASE_2B.md. Exceção de condição é definida antes de confirmar; registros legados não recebem condição inventada. Toques e uso físico ainda pendentes de homologação. Próximos incrementos: ativação remota com backup e, depois, P1-1 agenda/ICS e P1-2 lembretes. Limites de volume, estorno integral, ausência de integração bancária e itens fora do escopo estão explícitos no relatório. Catálogo e demais módulos P2 continuam OFF.
+
+## R2 e módulos P1 — plano de 2026-11-01 (somente local)
+
+Revisão 132ba36 integrada com ff-only. Não aplicar migrações, alterar flags ou dados no Cloudflare; preparar código, testes locais e guia para Felipe. Sem seeds reais, mensagens automáticas, catálogo ou gastos provisionados.
+
+1. R2-4: permissão de estorno por autor/dia civil America/Fortaleza; administrador pode corrigir outros registros. Aceite: operador próprio hoje permitido, outro autor/outro dia negado, CSRF/isolamento preservados.
+2. R2-1: bottom sheet acessível no Hoje, saldo/versões lidos do servidor, chips e valor/data pré-preenchidos; ação combinada entrega+recebimento em uma transação, undo conjunto até 30 s. Mesmas regras de transição e CAS conta/pedido. Arquivos: worker/finance*, operations/Today, finance/QuickReceipt e migração 0006. Aceite: repetição/concorrência, transição inválida, desfazer conjunto e contexto da rota preservado.
+3. R2-2: crédito não alocado, uso humano nos próximos pedidos, histórico de alocação, estorno apenas do disponível (sem desfazer dinheiro já alocado). Aceite: saldo nunca negativo, uso não conta como novo recebimento, retentativa/conflito e permissão auditados.
+4. R2-3: anulação por administrador com motivo/evento, membros preservados em histórico e liberados no vínculo ativo; bloquear enquanto pagamentos vinculados impedirem a correção. Aceite: re-fechamento sem duplicar membros e sem apagar extratos.
+5. R2-5/6/7: resumo recebido/vencido/semana com filtros; colunas geradas virtuais e índices de condição/periodicidade antes de relatórios; ATIVACAO.md como índice e flags em ordem (operação → financeiro → P1), migrações históricas preservadas.
+6. P1-1: agenda semana/mês de prazos de pedidos/produção, fechamentos/vencimentos e exportação ICS privada, com escaping, folding UTF-8, UID estável e datas no fuso do negócio. Sem URLs públicas com dados privados.
+7. P1-2: lembretes manuais privados, prazo, concluir/reabrir/arquivar com versão/auditoria e idempotência, visíveis no Hoje e agenda. Migração 0007.
+8. P1-3: vendas entregues por período, cliente/sabor/condição, ranking e aging; CSV com proteção de fórmulas, aspas, separadores e quebras, contagens/limites explícitos. Não misturar previsto com recebido. Sem PDF prometido nesta etapa.
+9. P1-7: despesas registradas somente por ação humana, eventos de estorno e fluxo de caixa de recebimentos/despesas por período. Sem pagar, criar conta paga, débito automático ou inferir taxa como despesa. Migração 0008.
+10. P1-4/P1-5: insumos/preços por unidade de referência, fichas e rendimento, custo e sugestão com margem explícita; lista de compras a partir dos confirmados e receitas vinculadas, sem estoque/compra automática. Migração 0009. Falta de ficha/custo é avisada, não vira custo zero/lucro inventado.
+
+P1 usa flag independente P1_ENABLED=false e verificação das tabelas. Cada etapa terá commit, testes de regras/integração/E2E adequados e relatório com Produzido, Testes executados, Limitações e Pendências. Histórico/status no arquivo Codex, preservando os arquivos de autoria Claude. Homologação física e ativação permanecem com Felipe.
