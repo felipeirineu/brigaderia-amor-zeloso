@@ -74,6 +74,29 @@ Fazer **depois da R5**. Ajustes pedidos pelo responsável após ver a prévia.
   - Tocar em "Hoje" na barra inferior também volta para o dia atual.
   - Trocar de perfil ou reabrir o app volta para Hoje.
   - Datas no fuso de Fortaleza. Teste da contagem por dia e da virada de mês.
+- **R6-7 — Lembretes com aviso no celular** (complementa P1-2; referência: folha "Novo lembrete" da prévia).
+  - **Folha "Novo lembrete":**
+    - texto;
+    - **Quando:** chips Hoje / Amanhã e um seletor de data;
+    - **Horário:** chips 09:00 / 14:00 / 18:00 e um seletor de hora;
+    - **Avisar no celular:** Na hora · 15 min antes · 1 h antes · 1 dia antes · **Outro horário** (data e hora do aviso livres) · Não avisar;
+    - **Para quem:** Alda / Tiago / Os dois, pelo nome de exibição e foto.
+  - A lista no Hoje mostra horário, aviso e responsável, com um círculo para concluir ou reabrir.
+  - **Notificação real (Web Push), custo zero:**
+    - **Assinatura:** Push API + Service Worker, com chaves VAPID geradas pelo administrador e guardadas como secret (nunca no bundle). Assinatura por aparelho e por usuário, gravada no D1 e removível.
+    - **Envio:** Cron Trigger da Cloudflare (ex.: a cada 5 minutos) que envia os avisos vencidos e marca cada um como enviado, sem enviar duas vezes. Conferir os limites do plano gratuito.
+    - **Conteúdo:** só título e horário, sem dados de cliente além do necessário.
+    - **Limitações (documentar e explicar no `HelpTip`):**
+      - **iPhone:** só funciona com o app **instalado na Tela de Início** (iOS 16.4+) e com a permissão concedida;
+      - **Android/Chrome:** funciona no navegador ou instalado;
+      - o horário pode variar alguns minutos, conforme o intervalo do cron.
+    - **Permissão:** pedir só quando o usuário escolher um aviso pela primeira vez, nunca ao abrir o app. Mostrar o estado ("Avisos ativados neste aparelho") e o botão "Enviar aviso de teste".
+  - **Alternativa garantida:** botão "Adicionar ao calendário do celular" no lembrete, gerando `.ics` com `VALARM` no horário do aviso. Usa o alarme nativo do aparelho, sem depender de push.
+  - Isso substitui o "P2-3 push adiado" **apenas para lembretes**. Nenhuma mensagem é enviada a clientes.
+  - **Aceite:**
+    - aviso de teste recebido em Android real e em iPhone com o app instalado;
+    - cron idempotente testado;
+    - assinatura revogada ao sair da conta.
 - **Aceite:**
   - Cliente salvo → rota calculada uma vez e exibida.
   - Provedor indisponível → linha reta rotulada.
