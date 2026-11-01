@@ -123,6 +123,7 @@ export async function runtime() {
     } = options;
     return mf.dispatchFetch(url + '/api/' + path, {
       method,
+      redirect: 'manual',
       headers: {
         ...(method !== 'GET'
           ? { Origin: origin, 'Content-Type': 'application/json' }

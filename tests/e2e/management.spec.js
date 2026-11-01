@@ -24,9 +24,7 @@ test('gestão privada: login, cadastros, duas sessões, snapshots e logout', asy
       page.getByRole('heading', { name: 'Gestão restrita' }),
     ).toBeVisible();
     await page.goto(t.url + '/login');
-    await page
-      .getByRole('button', { name: '2. Entrar após a verificação' })
-      .click();
+    await page.getByRole('link', { name: 'Entrar com acesso seguro' }).click();
     await expect(
       page.getByRole('heading', { name: 'Visão geral' }),
     ).toBeVisible();
@@ -90,7 +88,7 @@ test('gestão privada: login, cadastros, duas sessões, snapshots e logout', asy
     await expect(page.locator('.record-list')).toContainText('24,68');
     await second.goto(t.url + '/login');
     await second
-      .getByRole('button', { name: '2. Entrar após a verificação' })
+      .getByRole('link', { name: 'Entrar com acesso seguro' })
       .click();
     await expect(
       second.getByRole('heading', { name: 'Visão geral' }),

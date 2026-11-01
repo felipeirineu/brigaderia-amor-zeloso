@@ -36,6 +36,27 @@ try {
       assert(sessions.results.every((s) => s.token_hash.length === 64));
     },
   );
+  await check(
+    'retorno Access em navegação completa emite sessão e volta à gestão',
+    async () => {
+      const result = await t.request('access/start', { jwt: await t.token() });
+      assert.equal(result.status, 303);
+      assert.equal(new URL(result.headers.get('Location')).pathname, '/gestao');
+      assert.match(
+        result.headers.get('Set-Cookie'),
+        /__Host-session=.*HttpOnly; Secure; SameSite=Lax/,
+      );
+      assert.equal(result.headers.get('Cache-Control'), 'no-store');
+    },
+  );
+  await check(
+    'retorno de login não autentica sem identidade assinada',
+    async () => {
+      const result = await t.request('access/start');
+      assert.equal(result.status, 401);
+      assert.equal(result.headers.get('Set-Cookie'), null);
+    },
+  );
   await check('anônimo e cookie forjado negados', async () => {
     assert.equal((await t.request('customers')).status, 401);
     assert.equal(

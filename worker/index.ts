@@ -1,5 +1,4 @@
 import {
-  accessIdentity,
   actor,
   body,
   configured,
@@ -39,11 +38,14 @@ export default {
             : null,
         });
       if (pathname === '/api/access/start' && req.method === 'GET') {
-        await accessIdentity(req, env);
+        // Navegação completa: o Access verifica a identidade antes de chegar aqui.
+        // A sessão só é emitida após assinatura JWT e allowlist verificadas no login.
+        const result = await login(req, env);
         return new Response(null, {
           status: 303,
           headers: {
-            Location: new URL('/login', req.url).href,
+            Location: new URL('/gestao', req.url).href,
+            'Set-Cookie': result.headers.get('Set-Cookie')!,
             'Cache-Control': 'no-store',
           },
         });

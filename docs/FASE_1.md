@@ -26,7 +26,7 @@ O código está preparado; nenhuma conta Access, banco remoto ou credencial foi 
 5. Obter o **Application Audience (AUD)** dessa aplicação e o domínio da equipe `nome.cloudflareaccess.com`. Atualizar o arquivo/configuração do Pages com os valores. O servidor verifica JWT independentemente da política da borda; sem assinatura/emissor/audiência corretos, o login falha.
 6. Preparar o primeiro administrador como descrito abaixo. Não colocar e-mails pessoais em migrations ou em commits.
 7. Manter build `npm run build:pages`, saída `dist`, Node 24; publicar a configuração no GitHub/Pages e conferir `/api/auth/config` (`configured: true`). Isso confirma presença das configurações, não a validade do Access ou a migração do banco.
-8. Abrir `/login`, selecionar **Verificar identidade** (GET protegido pelo Access), autenticar e, após voltar à página, selecionar **Entrar após a verificação**. O fluxo não precisa expor tokens a JavaScript. O operador também precisa constar na allowlist D1, além da política Access.
+8. Abrir `/login`, selecionar **Entrar com acesso seguro** (navegação GET protegida pelo Access) e autenticar. O retorno verifica JWT/allowlist, emite a sessão HttpOnly e redireciona diretamente para `/gestao`, sem etapa de login via fetch ou exposição de tokens a JavaScript. O operador também precisa constar na allowlist D1, além da política Access.
 9. Executar o roteiro de homologação abaixo com dois usuários autorizados e uma terceira identidade não autorizada. Antes disso, a prontidão online da Fase 1 permanece pendente.
 
 Se a interface do Cloudflare indicar que bindings/variáveis são gerenciados pelo Wrangler, manter os valores no arquivo raiz e fazer novo deploy, em vez de configurar somente o painel. Guardar arquivos locais alternativos com credenciais fora do Git. Nenhuma chave de API é necessária no frontend.
@@ -100,3 +100,9 @@ Resultados locais e limitações serão mantidos no relatório da entrega. Não 
 ## Pendências
 
 Conectar banco e Access, autorizar responsáveis, homologar o fluxo online, testar instalação Android/iPhone e restauração de backup remoto antes de dados reais. A Fase 2 ainda não foi iniciada. Limitações funcionais desta etapa (campos avançados de clientes, paginação e manutenção de acessos existentes) estão explicitadas acima.
+
+### Correção do retorno de login
+
+O POST de login sem cookie Access pode ser redirecionado pela borda para outro domínio; em fetch, isso provoca erro de rede/CORS no navegador. O botão agora usa navegação completa e o retorno GET protegido `/api/access/start` estabelece somente a sessão, após verificar assinatura, emissor, audiência, expiração e allowlist. O Access continua responsável pela autenticação da identidade e sua proteção de fluxo. As operações de dados continuam exigindo sessão e Origin/JSON; nenhuma gravação operacional passa a usar GET. Testes cobrem emissão de sessão no retorno, negação sem identidade e entrada de duas sessões pela nova navegação.
+
+Validação da correção do retorno: lint, typecheck e build passaram; 25 testes unitários, 28 verificações de integração e dois E2E de gestão em Chromium (mobile/desktop) passaram. A autenticação real com o método de login da conta Cloudflare ainda requer homologação; conferir a opção One-time PIN por e-mail no Access. O provisionamento de banco e política foi realizado pelo responsável no painel, com validação de 12 tabelas, coluna de e-mail e administrador autorizado. Não há validação de login real concluída pelo agente.

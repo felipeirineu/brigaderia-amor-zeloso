@@ -126,30 +126,20 @@ function useSave(reload: () => Promise<void>) {
   return { save, busy, error, notice };
 }
 export function Login() {
-  const navigate = useNavigate();
   const [config, setConfig] = useState<{
     configured: boolean;
     login_url: string | null;
   } | null>(null);
   const [error, setError] = useState('');
-  const [busy, setBusy] = useState(false);
   useEffect(() => {
     api<{ configured: boolean; login_url: string | null }>('auth/config')
       .then(setConfig)
-      .catch((e) => setError(e.message));
+      .catch(() =>
+        setError(
+          'Não foi possível verificar o acesso. Confira sua conexão e recarregue a página.',
+        ),
+      );
   }, []);
-  async function enter() {
-    setBusy(true);
-    setError('');
-    try {
-      await api('access/login', 'POST', {});
-      navigate('/gestao');
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
   return (
     <section className="panel auth-panel">
       <p className="eyebrow">ACESSO RESTRITO</p>
@@ -162,18 +152,11 @@ export function Login() {
       {config?.configured ? (
         <>
           <a className="button" href={config.login_url!}>
-            1. Verificar identidade
+            Entrar com acesso seguro
           </a>
-          <button
-            className="button secondary"
-            disabled={busy}
-            onClick={() => void enter()}
-          >
-            {busy ? 'Entrando…' : '2. Entrar após a verificação'}
-          </button>
           <p>
-            Após validar a identidade no Cloudflare Access, volte a esta página
-            e selecione “Entrar”. A sessão expira em até 8 horas.
+            Após verificar sua identidade no Cloudflare Access, você entra
+            diretamente na gestão. A sessão expira em até 8 horas.
           </p>
         </>
       ) : (

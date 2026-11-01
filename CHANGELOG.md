@@ -22,3 +22,8 @@
 - Testes de integração workerd/D1 e E2E com duas sessões fictícias.
 - Registro do Tradicional fornecido pelo responsável, separado da demonstração pública.
 - Ativação D1/Access e homologação online pendentes; catálogo continua bloqueado.
+
+## Correção do retorno do Access
+
+- Entrada por navegação completa, com sessão emitida no retorno validado e redirecionamento direto para a gestão.
+- Removida a segunda etapa por fetch, que podia falhar ao ser redirecionada para o domínio do Access.
