@@ -1,3 +1,4 @@
+import { MoneyField, QuantityField } from '../../components/NumericInputs';
 import { priceForMargin } from '../../../shared/costing';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -130,10 +131,9 @@ export function Supplies() {
           </label>
           <label>
             Preço da embalagem (R$, vazio se desconhecido)
-            <input
-              inputMode="decimal"
+            <MoneyField
               value={price}
-              onChange={(e) => setPrice(e.target.value)}
+              onValueChange={(value) => setPrice(value)}
             />
           </label>
           <label>
@@ -295,13 +295,12 @@ export function Recipes() {
           </label>
           <label>
             Rendimento do lote (unidades produzidas)
-            <input
-              type="number"
+            <QuantityField
               min={1}
               max={1000000}
               required
               value={form.yield}
-              onChange={(e) => setForm({ ...form, yield: e.target.value })}
+              onValueChange={(value) => setForm({ ...form, yield: value })}
             />
           </label>
           {components.map((c, i) => (
@@ -380,11 +379,10 @@ export function Recipes() {
           ).map(([key, label]) => (
             <label key={key}>
               {label}
-              <input
+              <MoneyField
                 required
-                inputMode="decimal"
                 value={form[key]}
-                onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                onValueChange={(value) => setForm({ ...form, [key]: value })}
               />
             </label>
           ))}
@@ -411,10 +409,9 @@ export function Recipes() {
         <h2>Simulador de margem</h2>
         <label>
           Simular margem (%)
-          <input
-            inputMode="decimal"
+          <MoneyField
             value={simulation}
-            onChange={(e) => setSimulation(e.target.value)}
+            onValueChange={(value) => setSimulation(value)}
           />
         </label>
         <p>

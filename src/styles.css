@@ -1066,3 +1066,168 @@ button:disabled {
     grid-column: 1/-1;
   }
 }
+
+/* Campos de toque: sem dependência de tecla de envio no teclado numérico. */
+.numeric-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+.numeric-control input {
+  flex: 1;
+  min-width: 4rem;
+  width: 6rem;
+}
+.numeric-control button {
+  min-width: 3rem;
+  min-height: 3rem;
+}
+.numeric-control small {
+  flex-basis: 100%;
+  color: var(--color-text, #321d10);
+}
+button,
+.button {
+  min-height: 3rem;
+}
+.primary-action {
+  min-height: 3.5rem;
+}
+
+.totem {
+  padding-bottom: 8rem;
+}
+.step-indicator {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+.step-indicator [aria-current] {
+  font-weight: bold;
+  border-bottom: 3px solid #76532f;
+}
+.customer-tiles,
+.flavor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.customer-tile {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.initial-avatar,
+.flavor-placeholder {
+  display: grid;
+  place-items: center;
+  background: #321d10;
+  color: #f9ecd7;
+  border-radius: 50%;
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+}
+.flavor-placeholder {
+  width: 8rem;
+  height: 8rem;
+  max-width: 100%;
+  font-size: 2rem;
+}
+.flavor-card {
+  position: relative;
+  background: #fffdf9;
+  border: 1px solid #dacdbb;
+  border-radius: 1rem;
+  padding: 0.5rem;
+  min-width: 0;
+}
+.flavor-card .flavor-add {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  border: 0;
+  padding: 0.25rem;
+}
+.flavor-card img {
+  max-width: 100%;
+  width: 10rem;
+  height: auto;
+  border-radius: 0.7rem;
+}
+.quantity-badge {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  background: #321d10;
+  color: #f9ecd7;
+  border-radius: 50%;
+  padding: 0.4rem 0.7rem;
+}
+.flavor-card .numeric-control {
+  gap: 0.2rem;
+}
+.flavor-card .numeric-control input {
+  width: 3rem;
+  min-width: 2rem;
+}
+.flavor-card .numeric-control button {
+  padding: 0.3rem;
+}
+.flavor-card .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+.flavor-card .chips button {
+  font-size: 0.85rem;
+  flex: 1;
+}
+.totem-bar {
+  position: fixed;
+  bottom: 4.8rem;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: #fffdf9;
+  border-top: 1px solid #dacdbb;
+  padding: 0.7rem max(1rem, env(safe-area-inset-left));
+}
+.review-line {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.photo-choices {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.photo-choices button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+@media (min-width: 701px) {
+  .totem-bar {
+    position: sticky;
+    bottom: 0;
+  }
+  .flavor-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

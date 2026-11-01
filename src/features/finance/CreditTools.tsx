@@ -1,3 +1,4 @@
+import { MoneyField } from '../../components/NumericInputs';
 import { useRef, useState } from 'react';
 import { api, money, parsePrice } from '../api';
 import { Failure, localDay } from '../operations/common';
@@ -79,11 +80,10 @@ export function CreditTools({
         >
           <label>
             Crédito recebido (R$)
-            <input
+            <MoneyField
               required
-              inputMode="decimal"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onValueChange={(value) => setAmount(value)}
             />
           </label>
           <label>
@@ -176,11 +176,10 @@ export function CreditTools({
           </label>
           <label>
             Valor a alocar (R$)
-            <input
+            <MoneyField
               required
-              inputMode="decimal"
               value={useAmount}
-              onChange={(e) => setUseAmount(e.target.value)}
+              onValueChange={(value) => setUseAmount(value)}
             />
           </label>
           <button disabled={busy}>Usar crédito selecionado</button>

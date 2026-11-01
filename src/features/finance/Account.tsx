@@ -1,3 +1,4 @@
+import { MoneyField } from '../../components/NumericInputs';
 import { CreditTools } from './CreditTools';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
@@ -235,12 +236,11 @@ export function Account() {
             </label>
             <label>
               Valor recebido (R$)
-              <input
+              <MoneyField
                 required
-                inputMode="decimal"
                 value={amount}
-                onChange={(e) => {
-                  setAmount(e.target.value);
+                onValueChange={(value) => {
+                  setAmount(value);
                   key.current = crypto.randomUUID();
                 }}
               />

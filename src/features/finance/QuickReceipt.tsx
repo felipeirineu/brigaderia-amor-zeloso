@@ -1,3 +1,4 @@
+import { MoneyField } from '../../components/NumericInputs';
 import { useEffect, useRef, useState } from 'react';
 import { api, money, parsePrice } from '../api';
 import { useRemote, Failure, localDay } from '../operations/common';
@@ -115,12 +116,7 @@ export function QuickReceipt({
             </p>
             <label>
               Valor recebido (R$)
-              <input
-                required
-                inputMode="decimal"
-                value={value}
-                onChange={(e) => setAmount(e.target.value)}
-              />
+              <MoneyField required value={value} onValueChange={setAmount} />
             </label>
             <div className="chips" role="group" aria-label="Forma de pagamento">
               {Object.entries(paymentMethods).map(([v, label]) => (

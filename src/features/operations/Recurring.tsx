@@ -1,3 +1,4 @@
+import { MoneyField, QuantityField } from '../../components/NumericInputs';
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus } from 'lucide-react';
@@ -372,10 +373,9 @@ export function Recurring() {
         )}
         <label>
           Taxa padrão do entregador (R$)
-          <input
-            inputMode="decimal"
+          <MoneyField
             value={courierFee}
-            onChange={(e) => setCourierFee(e.target.value)}
+            onValueChange={(value) => setCourierFee(value)}
           />
         </label>
         <p>Copiado aos novos pedidos e sempre revisável; não cria despesa.</p>
@@ -420,22 +420,19 @@ export function Recurring() {
               </button>
               <label>
                 Embalagens
-                <input
-                  inputMode="numeric"
-                  type="number"
+                <QuantityField
                   min="1"
                   max="10000"
                   required
                   value={item.quantity}
-                  onChange={(e) =>
+                  onValueChange={(value) =>
                     setItems(
                       items.map((v, j) =>
-                        j === i
-                          ? { ...v, quantity: Number(e.target.value) }
-                          : v,
+                        j === i ? { ...v, quantity: Number(value) } : v,
                       ),
                     )
                   }
+                  steppers={false}
                 />
               </label>
               <button

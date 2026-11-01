@@ -1,3 +1,4 @@
+import { MoneyField } from '../../components/NumericInputs';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { api, parsePrice } from '../api';
@@ -146,8 +147,7 @@ export function CustomerProfile() {
             )}
             <label>
               Taxa padrão (R$)
-              <input
-                inputMode="decimal"
+              <MoneyField
                 value={
                   form
                     ? fee
@@ -155,9 +155,9 @@ export function CustomerProfile() {
                         .toFixed(2)
                         .replace('.', ',')
                 }
-                onChange={(e) => {
+                onValueChange={(value) => {
                   change({});
-                  setFee(e.target.value);
+                  setFee(value);
                 }}
               />
             </label>

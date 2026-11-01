@@ -1,3 +1,4 @@
+import { MoneyField } from '../../components/NumericInputs';
 import { useRef, useState } from 'react';
 import { useRemote, Failure, localDay } from '../operations/common';
 import { api, money, parsePrice, civilDate } from '../api';
@@ -155,11 +156,10 @@ export function Expenses() {
               <h2>Registrar despesa realizada</h2>
               <label>
                 Valor da despesa (R$)
-                <input
+                <MoneyField
                   required
-                  inputMode="decimal"
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  onValueChange={(value) => setAmount(value)}
                 />
               </label>
               <label>
