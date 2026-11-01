@@ -10,7 +10,11 @@ import {
 } from 'lucide-react';
 import { api, dateTime, money } from '../api';
 import { HelpTip } from '../../components/HelpTip';
-import { statusLabels, type Status } from '../../../shared/order-state';
+import {
+  statusLabels,
+  UNDO_SECONDS,
+  type Status,
+} from '../../../shared/order-state';
 import {
   useRemote,
   Failure,
@@ -74,7 +78,7 @@ export function Today({ role }: { role: string }) {
   } | null>(null);
   useEffect(() => {
     if (!undo) return;
-    const timer = setTimeout(() => setUndo(null), 10000);
+    const timer = setTimeout(() => setUndo(null), UNDO_SECONDS * 1000);
     return () => clearTimeout(timer);
   }, [undo]);
   async function quick(order: OperationalOrder, to: Status) {

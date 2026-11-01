@@ -4,6 +4,7 @@ import { ArrowLeft, MessageCircle, ChevronRight, Undo2 } from 'lucide-react';
 import { api, dateTime, money, parsePrice } from '../api';
 import { HelpTip } from '../../components/HelpTip';
 import {
+  UNDO_SECONDS,
   nextStatuses,
   statusLabels,
   type Status,
@@ -47,7 +48,7 @@ export function OrderDetail() {
   } | null>(null);
   useEffect(() => {
     if (!undo) return;
-    const timer = setTimeout(() => setUndo(null), 10000);
+    const timer = setTimeout(() => setUndo(null), UNDO_SECONDS * 1000);
     return () => clearTimeout(timer);
   }, [undo]);
   async function act(fn: () => Promise<unknown>) {
@@ -408,6 +409,25 @@ export function OrderDetail() {
               >
                 {nextLabel[next] || statusLabels[next]}{' '}
                 <ChevronRight size={20} aria-hidden="true" />
+              </button>
+            )}
+            {order.status === 'confirmed' && (
+              <button
+                disabled={busy}
+                onClick={() => {
+                  const reason = prompt(
+                    'Motivo para ajustar o pedido confirmado:',
+                  );
+                  if (
+                    reason?.trim() &&
+                    confirm(
+                      'Voltar para aguardando confirmação? Revise os itens em Pedidos e confirme novamente.',
+                    )
+                  )
+                    void advance('awaiting_confirmation', reason.trim());
+                }}
+              >
+                Reabrir para ajustar quantidades
               </button>
             )}
             {!final && (

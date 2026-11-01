@@ -245,6 +245,61 @@ try {
       );
     },
   );
+  await check(
+    'R1-3 reabertura com motivo antes da produção, versão e histórico',
+    async () => {
+      const o = await call('orders', draft);
+      await call(
+        `orders/${o.id}/delivery`,
+        { version: 1, delivery_type: 'pickup', courier: 'unassigned' },
+        'PUT',
+      );
+      await call(`orders/${o.id}/status`, { version: 2, to: 'confirmed' });
+      const invalid = await t.request(`orders/${o.id}/status`, {
+        cookie: owner,
+        method: 'POST',
+        key: crypto.randomUUID(),
+        data: { version: 3, to: 'awaiting_confirmation' },
+      });
+      assert.equal(invalid.status, 400);
+      await call(`orders/${o.id}/status`, {
+        version: 3,
+        to: 'awaiting_confirmation',
+        reason: 'Ajuste DEMONSTRAÇÃO',
+      });
+      await call(
+        `orders/${o.id}`,
+        { ...draft, version: 4, items: [{ variant_id: variant, quantity: 3 }] },
+        'PUT',
+      );
+      const adjusted = await call(`orders/${o.id}`, undefined, 'GET');
+      assert.equal(adjusted.total_cents, 3702);
+      await call(`orders/${o.id}/status`, { version: 5, to: 'confirmed' });
+      await call(`orders/${o.id}/status`, { version: 6, to: 'in_production' });
+      assert.equal(
+        (
+          await t.request(`orders/${o.id}/status`, {
+            cookie: owner,
+            method: 'POST',
+            key: crypto.randomUUID(),
+            data: {
+              version: 7,
+              to: 'awaiting_confirmation',
+              reason: 'DEMONSTRAÇÃO',
+            },
+          })
+        ).status,
+        409,
+      );
+      const events = await call(`orders/${o.id}/history`, undefined, 'GET');
+      assert(events.some((e) => e.reason === 'Ajuste DEMONSTRAÇÃO'));
+      await call(`orders/${o.id}/status`, {
+        version: 7,
+        to: 'cancelled',
+        reason: 'Fim do teste DEMONSTRAÇÃO',
+      });
+    },
+  );
   const plan = {
     name: 'Modelo DEMONSTRAÇÃO',
     courier: 'partner',

@@ -25,7 +25,7 @@ export function nextStatuses(status: Status, type: string): Status[] {
   const allowed: Record<Status, Status[]> = {
     draft: ['awaiting_confirmation', 'confirmed', 'cancelled'],
     awaiting_confirmation: ['draft', 'confirmed', 'cancelled'],
-    confirmed: ['in_production', 'cancelled'],
+    confirmed: ['in_production', 'awaiting_confirmation', 'cancelled'],
     in_production: ['ready', 'cancelled'],
     ready:
       type === 'pickup'
@@ -41,3 +41,6 @@ export function nextStatuses(status: Status, type: string): Status[] {
 
 export type MessageKind =
   'confirmation' | 'on_the_way' | 'delivered' | 'pickup' | 'after_sale';
+
+// Mesma janela na UI e servidor; timestamps epoch evitam parsing na comparação.
+export const UNDO_SECONDS = 30;

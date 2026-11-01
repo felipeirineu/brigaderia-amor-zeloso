@@ -1,3 +1,4 @@
+import { UNDO_SECONDS } from '../shared/order-state';
 import { operationalReady } from './operational-ready';
 import { z } from 'zod';
 import { body, hash, HttpError, json, type Actor, type Env } from './security';
@@ -532,14 +533,14 @@ export async function operations(
         event.to_status !== order.status ||
         event.order_version !== order.version ||
         !['delivered', 'picked_up'].includes(String(event.to_status)) ||
-        Number(event.created_at) < Math.floor(Date.now() / 1000) - 10
+        Number(event.created_at) < Math.floor(Date.now() / 1000) - UNDO_SECONDS
       )
         throw new HttpError(
           409,
           'A janela para desfazer terminou ou o pedido foi alterado.',
         );
       target = event.from_status as Status;
-      reason = 'Entrega desfeita pelo operador dentro de 10 segundos.';
+      reason = `Entrega desfeita pelo operador dentro de ${UNDO_SECONDS} segundos.`;
       undoOf = String(event.id);
     } else {
       const change = data as z.infer<typeof transitionSchema>;
@@ -558,6 +559,12 @@ export async function operations(
       throw new HttpError(409, 'Transição de status não permitida.');
     if (target === 'out_for_delivery' && order.courier === 'unassigned')
       throw new HttpError(400, 'Selecione quem fará a entrega antes da saída.');
+    if (
+      target === 'awaiting_confirmation' &&
+      order.status === 'confirmed' &&
+      !reason.trim()
+    )
+      throw new HttpError(400, 'Informe o motivo da reabertura.');
     if (target === 'cancelled' && !reason.trim())
       throw new HttpError(400, 'Informe o motivo do cancelamento.');
     if (
@@ -606,7 +613,9 @@ export async function operations(
       throw new HttpError(409, 'Pedido alterado. Atualize.');
     return json({
       event_id: eventId,
-      undo_seconds: ['delivered', 'picked_up'].includes(target) ? 10 : 0,
+      undo_seconds: ['delivered', 'picked_up'].includes(target)
+        ? UNDO_SECONDS
+        : 0,
     });
   }
   if (action === 'message' && req.method === 'POST') {
