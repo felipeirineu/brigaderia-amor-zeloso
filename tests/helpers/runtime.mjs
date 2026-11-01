@@ -10,6 +10,7 @@ export async function runtime({
   browserHTTP = false,
   migrationLimit = Infinity,
   operationsEnabled = true,
+  financeEnabled = false,
 } = {}) {
   const issuer = 'https://demonstracao-teste.cloudflareaccess.com';
   const { privateKey, publicKey } = await generateKeyPair('RS256');
@@ -39,6 +40,7 @@ export async function runtime({
         ACCESS_TEAM_DOMAIN: 'demonstracao-teste.cloudflareaccess.com',
         ACCESS_AUD: 'test-audience',
         OPERATIONS_ENABLED: operationsEnabled ? 'true' : 'false',
+        FINANCE_ENABLED: financeEnabled ? 'true' : 'false',
       },
       outboundService: async (req) =>
         new URL(req.url).href === `${issuer}/cdn-cgi/access/certs`

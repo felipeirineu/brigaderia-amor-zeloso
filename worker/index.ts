@@ -1,3 +1,5 @@
+import { finance } from './finance';
+import { financeReady } from './finance-ready';
 import { operationalReady } from './operational-ready';
 import {
   actor,
@@ -61,7 +63,10 @@ export default {
         return json({ error: 'NOT_FOUND' }, 404);
       const user = await actor(req, env);
       if (pathname === '/api/capabilities' && req.method === 'GET')
-        return json({ operations: await operationalReady(env) });
+        return json({
+          operations: await operationalReady(env),
+          finance: await financeReady(env),
+        });
       if (req.method !== 'GET') writeGuard(req);
       if (pathname === '/api/auth/logout' && req.method === 'POST') {
         await env
@@ -70,6 +75,8 @@ export default {
           .run();
         return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie('', 0) });
       }
+      if (pathname.startsWith('/api/finance/'))
+        return await finance(req, env, user);
       if (
         /^\/api\/(today|recurring|generate-week|confirm-reviewed|message-templates)(?:\/|$)/.test(
           pathname,
@@ -79,6 +86,19 @@ export default {
         return await operations(req, env, user);
       return await management(req, env, user);
     } catch (e) {
+      if (e instanceof z.ZodError)
+        return json(
+          {
+            error:
+              'Dados financeiros inválidos. Confira os campos obrigatórios.',
+          },
+          400,
+        );
+      if (String(e).includes('UNIQUE constraint failed'))
+        return json(
+          { error: 'Registro já existente. Atualize antes de repetir.' },
+          409,
+        );
       if (e instanceof HttpError) return json({ error: e.message }, e.status);
       // Não registrar requisições, JWT, cookies ou dados pessoais.
       return json(

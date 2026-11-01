@@ -1,3 +1,5 @@
+import { financeReady } from './finance-ready';
+import { orderDefaults } from './finance';
 import { operationalReady } from './operational-ready';
 import { z } from 'zod';
 import { childrenByParent } from './listing';
@@ -20,6 +22,7 @@ type Snapshot = {
   quantity: number;
 };
 export async function management(req: Request, env: Env, a: Actor) {
+  const original = req.clone();
   const db = env.DB!;
   const url = new URL(req.url);
   const [, , resource, id] = url.pathname.split('/');
@@ -34,6 +37,7 @@ export async function management(req: Request, env: Env, a: Actor) {
     return json({
       role: a.role,
       operations: await operationalReady(env),
+      finance: await financeReady(env),
       user_id: a.user_id,
       organization_id: a.organization_id,
     });
@@ -183,6 +187,20 @@ export async function management(req: Request, env: Env, a: Actor) {
   const statements: D1PreparedStatement[] = [];
   const guard = `EXISTS (SELECT 1 FROM ${resource} WHERE organization_id=? AND id=? AND mutation_id=?)`;
   const guardArgs = [org, entityId, mutation];
+  if (
+    resource === 'orders' &&
+    req.method === 'DELETE' &&
+    (await financeReady(env))
+  ) {
+    const paid = await db
+      .prepare(
+        "SELECT COALESCE(SUM(CASE WHEN e.kind='reversal' THEN -p.amount_cents ELSE p.amount_cents END),0) AS cents FROM payment_allocations p JOIN payment_events e ON e.organization_id=p.organization_id AND e.id=p.event_id WHERE p.organization_id=? AND p.order_id=?",
+      )
+      .bind(org, id)
+      .first<{ cents: number }>();
+    if ((paid?.cents ?? 0) > 0)
+      throw new HttpError(409, 'Estorne os recebimentos antes de arquivar.');
+  }
   if (req.method === 'DELETE') {
     const data = await body(
       req,
@@ -407,6 +425,20 @@ export async function management(req: Request, env: Env, a: Actor) {
     );
     if (!Number.isSafeInteger(total) || total > 1000000000)
       throw new HttpError(400, 'Total excede o limite permitido.');
+    const financial = await financeReady(env);
+    if (financial && id) {
+      const paid = await db
+        .prepare(
+          "SELECT COALESCE(SUM(CASE WHEN e.kind='reversal' THEN -p.amount_cents ELSE p.amount_cents END),0) AS cents FROM payment_allocations p JOIN payment_events e ON e.organization_id=p.organization_id AND e.id=p.event_id WHERE p.organization_id=? AND p.order_id=?",
+        )
+        .bind(org, id)
+        .first<{ cents: number }>();
+      if (total < (paid?.cents ?? 0))
+        throw new HttpError(
+          409,
+          'Total menor que os recebimentos. Estorne o recebimento antes de reduzir.',
+        );
+    }
     const name =
       id && d.customer_id === previous!.customer_id
         ? previous!.customer_name
@@ -472,6 +504,36 @@ export async function management(req: Request, env: Env, a: Actor) {
             ...guardArgs,
           ),
       );
+  }
+  if (
+    resource === 'orders' &&
+    req.method === 'POST' &&
+    (await financeReady(env))
+  ) {
+    const d = await body(original, orderSchema);
+    statements.push(
+      ...orderDefaults(db, org, entityId, d.customer_id, mutation),
+    );
+    if (d.template_id) {
+      const plan = await db
+        .prepare(
+          'SELECT id FROM recurring_templates WHERE organization_id=? AND id=? AND customer_id=? AND active=1',
+        )
+        .bind(org, d.template_id, d.customer_id)
+        .first();
+      if (!plan)
+        throw new HttpError(
+          400,
+          'Modelo não pertence ao cliente ou está inativo.',
+        );
+      statements.push(
+        db
+          .prepare(
+            `UPDATE orders SET delivery_type=t.delivery_type,delivery_address=t.delivery_address,courier=t.courier,courier_name=t.courier_name,courier_fee_cents=t.courier_fee_cents FROM recurring_templates t WHERE t.organization_id=? AND t.id=? AND orders.organization_id=? AND orders.id=? AND orders.mutation_id=?`,
+          )
+          .bind(org, d.template_id, org, entityId, mutation),
+      );
+    }
   }
   statements.push(
     db

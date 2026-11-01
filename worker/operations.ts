@@ -1,3 +1,5 @@
+import { financeReady } from './finance-ready';
+import { emptyTerms } from '../shared/finance';
 import { UNDO_SECONDS } from '../shared/order-state';
 import { operationalReady } from './operational-ready';
 import { z } from 'zod';
@@ -410,6 +412,7 @@ export async function operations(
       itemsJSON = JSON.stringify(items);
     if (ordersJSON.length + itemsJSON.length > 900000)
       throw new HttpError(400, 'Reduza os modelos desta geração.');
+    const financial = await financeReady(env);
     const result = await db.batch([
       db
         .prepare(
@@ -421,6 +424,15 @@ export async function operations(
           "INSERT INTO order_items(id,organization_id,order_id,variant_id,product_name,variant_label,weight_grams,units_per_box,unit_price_cents,quantity) SELECT json_extract(j.value,'$.id'),?,json_extract(j.value,'$.order_id'),json_extract(j.value,'$.variant_id'),json_extract(j.value,'$.product_name'),json_extract(j.value,'$.variant_label'),json_extract(j.value,'$.weight_grams'),json_extract(j.value,'$.units_per_box'),json_extract(j.value,'$.unit_price_cents'),json_extract(j.value,'$.quantity') FROM json_each(?) j JOIN orders o ON o.organization_id=? AND o.id=json_extract(j.value,'$.order_id') AND o.mutation_id=?",
         )
         .bind(org, itemsJSON, org, nonce),
+      ...(financial
+        ? [
+            db
+              .prepare(
+                "INSERT OR IGNORE INTO order_terms(organization_id,order_id,data) SELECT o.organization_id,o.id,COALESCE(json_extract(p.data,'$.terms'),?) FROM orders o LEFT JOIN customer_profiles p ON p.organization_id=o.organization_id AND p.customer_id=o.customer_id WHERE o.organization_id=? AND o.mutation_id=?",
+              )
+              .bind(JSON.stringify(emptyTerms()), org, nonce),
+          ]
+        : []),
       db
         .prepare(
           "INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT lower(hex(randomblob(16))),organization_id,?,'recurring.generated',id FROM orders WHERE organization_id=? AND mutation_id=?",
@@ -576,7 +588,7 @@ export async function operations(
               })
               .strict(),
           );
-    const fingerprint = await hash(JSON.stringify(data));
+    const fingerprint = await hash(JSON.stringify({id,action,user:a.user_id,data}));
     const repeated = await db
       .prepare(
         'SELECT id,request_hash FROM order_status_events WHERE organization_id=? AND request_key=?',
@@ -629,6 +641,31 @@ export async function operations(
       ).includes(target)
     )
       throw new HttpError(409, 'Transição de status não permitida.');
+    if (await financeReady(env)) {
+      if (target === 'cancelled') {
+        const paid = await db
+          .prepare(
+            "SELECT COALESCE(SUM(CASE WHEN e.kind='reversal' THEN -p.amount_cents ELSE p.amount_cents END),0) AS cents FROM payment_allocations p JOIN payment_events e ON e.organization_id=p.organization_id AND e.id=p.event_id WHERE p.organization_id=? AND p.order_id=?",
+          )
+          .bind(org, id)
+          .first<{ cents: number }>();
+        if ((paid?.cents ?? 0) > 0)
+          throw new HttpError(
+            409,
+            'Estorne os recebimentos antes de cancelar.',
+          );
+      }
+      if (
+        action === 'undo' &&
+        (await db
+          .prepare(
+            'SELECT 1 FROM closing_orders WHERE organization_id=? AND order_id=?',
+          )
+          .bind(org, id)
+          .first())
+      )
+        throw new HttpError(409, 'Entrega já incluída em fechamento.');
+    }
     if (target === 'out_for_delivery' && order.courier === 'unassigned')
       throw new HttpError(400, 'Selecione quem fará a entrega antes da saída.');
     if (

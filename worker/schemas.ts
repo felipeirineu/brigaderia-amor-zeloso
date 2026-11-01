@@ -52,6 +52,7 @@ export const productSchema = z
 export const orderSchema = z
   .object({
     customer_id: z.uuid(),
+    template_id: z.uuid().optional(),
     due_at: z.iso
       .datetime({ offset: true })
       .transform((s) => new Date(s).toISOString()),
