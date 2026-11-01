@@ -57,3 +57,17 @@ Cada grupo exige relatório com Produzido, Testes executados, Limitações e Pen
 ## Homologação e entrega
 
 Testar Android Chrome/iPhone Safari físicos, instalação, navegação com dois usuários, backup/restauração, custos/limites atuais, transferência de contas, LGPD, retenção e rollback. Reconfirmar marca e informações comerciais com os proprietários, preservando a surpresa. Não ativar recursos pagos, domínio, catálogo ou marketing sem autorização.
+
+## Revisão R1 e Fase 2B — execução autorizada em 2026-11-01
+
+Antes da codificação: integrar R1 do Claude, preservar dados remotos e migrações históricas.
+
+1. R1-6: separar Operations por tela e utilitários, sem alterar comportamento. Arquivos: src/features/operations/. Aceite: tipos/lint/E2E operacional.
+2. R1-1: gerar válidos e listar ignorados por modelo/motivo, com edição na UI. Aceite: modelo inativo não bloqueia outro; repetir não duplica.
+3. R1-2: migração 0004 para entregador padrão no modelo, snapshot no pedido, edição mantida. Aceite: motoboy exige nome, migração preserva legado.
+4. R1-3: alternativa conservadora confirmed → awaiting_confirmation com motivo; sem regressão após produção. Aceite: versão, auditoria e novo aceite humano.
+5. R1-4: seleção explícita dos pedidos gerados, confirmação única na UI e validação individual no servidor, resposta por pedido; lotes limitados para D1 Free. R1-5: constante compartilhada de 30 segundos. R1-7: documentar epoch para janela de undo.
+6. Ativação: guia para iniciante com comandos/saídas/erros; scripts somente leitura para schema, migrações, FKs e contagens, sem PII. Não executar no remoto sem credenciais e backup.
+7. Fase 2B: migração 0005, flag financeira independente OFF e detecção de schema; perfis B2B/condições por cliente e exceção/snapshot por pedido. Datas de fechamento semanais, mensais, dias fixos ou blocos de 14 dias; prazo explícito obrigatório a prazo. Pagamentos positivos em centavos, sinal, parciais e estorno compensatório, chaves idempotentes e exclusão mútua por versão da conta. Fechamentos imutáveis agrupam entregas sem duplicar. Extrato, saldo e aging verdadeiros. Pix vazio por padrão, apenas administrador configura; cobrança somente prévia e link humano, BR Code com CRC testado. Novos pedidos preenchem modelo/endereço/entregador/condição privados, sempre revisáveis. Ajuda financeira com treino em memória.
+
+Arquivos 2B: worker/finance*, shared/finance*, database/migrations/0005*, Management/operations e src/features/finance/, testes unitários/integração/E2E, scripts/ops-preflight.mjs e relatórios. Aceite: isolamento/CSRF, idempotência, concorrência, nenhum pagamento acima de saldo, estorno auditado, pagamentos independentes de entrega, períodos em limites de mês/ano/quinzena, zero dados privados em público/offline, sem despesas nem envio automático. Medir caminho de três toques apenas com modelo válido; não afirmar a meta universalmente.
