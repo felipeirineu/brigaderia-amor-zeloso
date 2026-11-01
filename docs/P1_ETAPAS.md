@@ -1,0 +1,51 @@
+# Entregas P1 — execução local
+
+Todos os dados de testes são DEMONSTRAÇÃO. Nenhuma migração/flag/pagamento/compra remota, push ou publicação nesta rodada. P1_ENABLED=false permanece no arquivo raiz, com dependência de operação/financeiro e schema completo.
+
+## P1-1 — Agenda e ICS
+
+- **Produzido:** semana/mês com prazos de pedidos, produção planejada para o prazo, calendário configurado de fechamentos, fechamentos registrados, vencimentos e lembretes; filtro por tipo e ICS privado. UID estável, UTC nos horários, dias civis em Fortaleza, escaping e folding por bytes UTF-8.
+- **Testes executados:** integração de datas, eventos, isolamento e limite; unitários de CRLF/escaping/folding; E2E de agenda/exportação nos três projetos (Chromium mobile/desktop e WebKit mobile).
+- **Limitações:** janela máxima de 45 dias, até 1000 pedidos/fechamentos, 200 calendários de clientes e 500 lembretes; erro explícito ao exceder. Não cria horário de produção independente nem notificação automática. ICS contém dados privados e só é exportado por ação humana.
+- **Pendências:** teste físico de importação ICS no calendário escolhido por cada proprietário; ativação pelo Felipe.
+
+## P1-2 — Lembretes manuais
+
+- **Produzido:** cadastro, edição, cliente opcional, prazo, concluir/reabrir/arquivar, Hoje com vencidos e lembretes do dia e participação na agenda. Versão, idempotência, organização e trilha por usuário.
+- **Testes executados:** API com retentativa sem duplicar, conclusão, versão antiga rejeitada, agenda/Hoje e isolamento; E2E criar/visualizar/concluir sem sair da gestão nos três projetos.
+- **Limitações:** sem push, fila offline ou envio de mensagem. Limite explícito de 500 na consulta, sem truncar silenciosamente.
+- **Pendências:** notificações nativas só por calendário/ICS escolhido pelo responsável; push segue P2 e OFF.
+
+## P1-3 — Relatórios e CSV
+
+- **Produzido:** vendas entregues por data efetiva, cliente, produto/sabor/variante e condição; ranking por cliente e unidades, comparação com período anterior de mesma duração, série semana a semana e clientes sem novas entregas; recebimentos líquidos por período/cliente e aging atual. CSV privado por conjunto, BOM UTF-8, separador ponto e vírgula, aspas e proteção contra fórmulas com prefixos/whitespace. Valores exportados em centavos, com cabeçalhos explícitos.
+- **Testes executados:** integração de totais sem duplicar itens, recebido parcial, saldo, ranking, isolamento; CSV malicioso com fórmula/aspas/newline lido também pelo csv do Python. Unitário de escaping/fórmulas.
+- **Limitações:** máximo de 1000 vendas por período e base de 5000 entregas na posição; reduzir período/paginar antes de ampliar. Aging é posição atual, não saldo histórico reconstruído. Filtro de condição aplica às vendas/aging; dinheiro não alocado não recebe condição inventada. PDF e reconstrução de saldo histórico ficam para evolução. Cliente sem novas entregas não é tratado como abandono ou ausência de pedidos futuros.
+- **Pendências:** homologação de CSV nas planilhas dos proprietários e filtros reais; execução E2E consolidada ao final.
+
+## P1-7 — Despesas e fluxo de caixa registrado
+
+- **Produzido:** registro manual pelo administrador, categoria/forma/data e vínculo opcional com pedido; evento original preservado e estorno integral com motivo. Fluxo por dia/período com entradas, saídas, acumulado anterior e líquido registrado; CSV privado. Uso de crédito não duplica entrada de caixa.
+- **Testes executados:** integração de recebimento/saída/estorno, idempotência, data futura, isolamento e operador sem permissão de despesa. E2E de registro/estorno aprovado em Chromium mobile/desktop e WebKit mobile.
+- **Limitações:** não movimenta dinheiro, não importa extratos, não é saldo bancário ou lucro e não gera despesa a partir de taxa de motoboy. Administrador registra/estorna; operador consulta. Sem despesas futuras/contas a pagar ou estorno parcial nesta entrega. Limite de 1000 eventos na listagem; fluxo agregado não é calculado sobre amostra truncada.
+- **Pendências:** conferência de categorias e saldos históricos reais com os proprietários; homologação física e ativação pelo Felipe.
+
+## P1-4 — Insumos, ficha técnica e sugestão de preço
+
+- **Produzido:** insumos em g/mL/unidade, quantidade/preço da embalagem (preço desconhecido nullable), ficha/rendimento e componentes, custos adicionais por lote e margem alvo informados. Aritmética inteira/BigInt e arredondamento para cima; custo por lote/unidade/embalagem e preço sugerido pela margem sobre venda, com simulador local sem escrita. Um vínculo ativo por variante; preço comercial nunca alterado automaticamente. Unidade de insumo em uso é protegida contra troca simples.
+- **Testes executados:** unitários de custo/centavos/arredondamento/margem e custo ausente; integração de snapshot de preço preservado, isolamento, permissões, unidade protegida e idempotência. E2E de cadastro/estimativa nos três projetos aprovado.
+- **Limitações:** estimativa atual, sem custo histórico por venda, densidade/unidades cruzadas, receita inferida, estoque ou lucro real. Componentes devem estar na unidade do insumo. Preço/custo ausente ou insumo inativo deixa cálculo pendente; zero adicional só por escolha explícita. Até 500 insumos, 200 fichas e 50 componentes por ficha. Administrador altera, operador consulta. Campos adicionais são por lote: não contar embalagem duas vezes.
+- **Pendências:** proprietários fornecerem receitas, rendimento, custos e margem reais. Não há qualquer ficha ou valor comercial semeado no banco real.
+
+## P1-5 — Lista de compras
+
+- **Produzido:** agrega unidades dos pedidos confirmados/em produção pelo prazo, usando unidades/embalagem do snapshot; calcula lotes inteiros por variante, insumos e embalagens de compra arredondados para cima. Avisa produto sem ficha, insumo inativo e preço pendente; total incompleto não vira zero. Mostra excesso produzido previsto pelo arredondamento.
+- **Testes executados:** integração de lotes/embalagens, ficha/custo ausentes e ausência de gasto/alteração de preço; E2E da lista calculada nos três projetos aprovado.
+- **Limitações:** lista bruta antes de conferir estoque; P1-6 não implementado. Não compra, gera gasto ou baixa insumo. Até 31 dias e 1000 vínculos produto/pedido; limite explícito. Fichas distintas por variante não compartilham um lote automaticamente.
+- **Pendências:** conferir rendimento/estoque real antes de usar a lista e adaptar o planejamento de lotes se os proprietários fornecerem regras adicionais.
+
+## Verificação consolidada e ativação
+
+Todas as etapas usam API privada, validação backend, CSRF/organização, no-store, limites explícitos e histórico. O serviço worker não armazena dados privados. Push, catálogo, festas, importação e movimentação de estoque permanecem fora desta rodada.
+
+Execução consolidada: 42 unitários, 28 verificações API base, 14 operacionais, oito grupos financeiros, integrações R2/P1, seis SQLite e volume de 65 produtos/65 pedidos aprovados. E2E completo: 32 aprovados e um offline WebKit já ignorado. Os fluxos novos passaram em Chromium mobile/desktop e WebKit mobile. Build/tipos/lint/formato e marca/AA aprovados. Runner local aplicou 0006–0009; preflight e exportação/restauração de fixture em estado novo preservaram nove migrações, contagens e zero violações de FK. Não equivalem a homologação física ou backup real. Migrações/backup/ativação reais, CI remota e aparelhos físicos ficam com Felipe, conforme [índice único de ativação](ATIVACAO.md). Nada remoto foi executado nesta rodada, inclusive envio de commits; os commits são locais e revisáveis.

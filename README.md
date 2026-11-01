@@ -130,3 +130,16 @@ npm run ops:preflight -- --local brigaderia-local
 ```
 
 A pré-checagem é somente leitura. O guia também explica como exportar um backup real e ensaiar restauração em estado local separado, sem enviar arquivos privados ao GitHub ou ao chat. Não há compra, envio automático de mensagem ou integração bancária nesta entrega.
+
+## R2 e módulos P1 — código local, sem ativação remota
+
+A [revisão R2](docs/REVISAO_R2.md) inclui recebimento rápido no Hoje, entrega/recebimento atômicos com desfazer, saldo a favor, uso de crédito, anulação de fechamento e estorno por autor/dia. As [etapas P1](docs/P1_ETAPAS.md) acrescentam agenda/ICS, lembretes, relatórios/CSV, despesas/fluxo registrado e ficha/custo/preço estimado/lista de compras.
+
+O [índice único de ativação](docs/ATIVACAO.md) orienta Felipe: backup/restauração, migrações pendentes, flags OPERATIONS → FINANCE → P1 em etapas. `P1_ENABLED=false` permanece no repositório. A rodada R2/P1 foi solicitada somente local, sem push, deploy ou alterações remotas. Dados reais, receitas e custos não são semeados.
+
+```bash
+npm run test:r2
+npm run test:p1
+```
+
+Todos os exports são privados, por ação humana, e devem ser guardados em destinos autorizados. Arquivos CSV protegem fórmulas e valores em centavos são identificados nos cabeçalhos. Não há estoque, push ou compra automática nesta entrega.

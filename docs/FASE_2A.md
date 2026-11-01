@@ -19,7 +19,9 @@ O código foi testado localmente. A migração remota **não foi executada**: n�
 
 ### Ativação — passos curtos no Windows (PowerShell)
 
-Faça isto no seu computador. Não envie backup, chave Pix, senha ou token pelo chat. Os comandos com `--remote` abaixo usam o banco online; o agente **não os executou**. A pré-checagem só lê metadados/contagens. A restauração de ensaio só usa um banco local separado. Como a R1 acrescenta a migração 0004 e a 2B acrescenta 0005, use sempre o código atualizado.
+Índice/checklist único: [ATIVACAO.md](ATIVACAO.md). A revisão R2 exige 0006 para o financeiro; P1 usa também 0007–0009. **Ordem obrigatória de flags: OPERATIONS_ENABLED primeiro; FINANCE_ENABLED depois; P1_ENABLED por último.** Cada passo requer deploy e teste antes do próximo.
+
+Faça isto no seu computador. Não envie backup, chave Pix, senha ou token pelo chat. Os comandos com `--remote` abaixo usam o banco online; o agente **não os executou**. A pré-checagem só lê metadados/contagens. A restauração de ensaio só usa um banco local separado. Como a R1 acrescenta a migração 0004 e a 2B acrescenta 0005 e R2/P1 acrescentam 0006–0009, use sempre o código atualizado.
 
 **1. Preparar o terminal.** Instale Git e Node.js 24 se ainda não tiver. Abra o PowerShell e execute, um comando de cada vez:
 
@@ -56,7 +58,7 @@ Esperado: o navegador pede autorização para Wrangler; depois o terminal mostra
 npm run ops:preflight -- --remote brigaderia-amor-zeloso-homologacao
 ```
 
-Esperado: JSON com `mode: "remoto"`, nomes das migrações, contagens e `foreign_key_violations: 0`. Guarde o resultado em arquivo privado para comparar depois. Nesta etapa é normal `schema_operations_ready`/`schema_finance_ready` serem `false` e haver 0003/0004/0005 pendentes. Se 0003 já estiver aplicada, somente 0004/0005 devem estar pendentes. **Se 0001 ou 0002 aparecerem pendentes em um banco já cadastrado, pare**: o histórico precisa ser conciliado com o schema por quem configurou o banco. Não reaplique essas duas por tentativa. Se ocorrer erro ou violações de FK, pare e mantenha as flags desligadas; confira conta, nome e login, sem apagar tabelas.
+Esperado: JSON com `mode: "remoto"`, nomes das migrações, contagens e `foreign_key_violations: 0`. Guarde o resultado em arquivo privado para comparar depois. Nesta etapa é normal `schema_operations_ready`/`schema_finance_ready` serem `false` e haver 0003–0009 pendentes (somente as ainda ausentes). Se 0003 já estiver aplicada, 0004–0009 ainda ausentes devem estar pendentes. **Se 0001 ou 0002 aparecerem pendentes em um banco já cadastrado, pare**: o histórico precisa ser conciliado com o schema por quem configurou o banco. Não reaplique essas duas por tentativa. Se ocorrer erro ou violações de FK, pare e mantenha as flags desligadas; confira conta, nome e login, sem apagar tabelas.
 
 **5. Fazer backup.**
 
@@ -82,7 +84,7 @@ Esperado: “Restauração LOCAL concluída”, zero violações e as mesmas con
 npx wrangler d1 migrations list brigaderia-amor-zeloso-homologacao --config wrangler.jsonc --remote
 ```
 
-Esperado: apenas migrações novas ainda ausentes (0003, 0004 e/ou 0005). Se listar 0001/0002, pare conforme passo 4. Se a lista estiver correta e o backup foi restaurado com sucesso:
+Esperado: apenas migrações novas ainda ausentes: 0003 (status/recorrência), 0004 (entregador), 0005 (financeiro), 0006 (R2/crédito/anulação), 0007 (lembretes), 0008 (despesas) e 0009 (fichas). Se listar 0001/0002, pare conforme passo 4. Se a lista estiver correta e o backup foi restaurado com sucesso:
 
 ```powershell
 npx wrangler d1 migrations apply brigaderia-amor-zeloso-homologacao --config wrangler.jsonc --remote
@@ -96,16 +98,15 @@ Confirme `y` quando perguntado. Esperado: cada migração com símbolo de sucess
 npm run ops:preflight -- --remote brigaderia-amor-zeloso-homologacao
 ```
 
-Esperado: `pending: []`, `foreign_key_violations: 0`, `schema_operations_ready: true` e `schema_finance_ready: true`; as contagens de clientes/produtos/variantes/pedidos/itens devem ser iguais às do passo 4. As tabelas novas começam vazias, sem pagamentos inventados. Se algo diferir, mantenha OFF e investigue antes de retomar os cadastros. A pré-checagem não valida valores de vendas; confira amostras no painel privado contra o backup, sem publicar seus dados.
+Esperado: `pending: []`, `foreign_key_violations: 0`, `schema_operations_ready: true`, `schema_finance_ready: true` e `schema_p1_ready: true`; as contagens de clientes/produtos/variantes/pedidos/itens devem ser iguais às do passo 4. As tabelas novas começam vazias, sem pagamentos inventados. Se algo diferir, mantenha OFF e investigue antes de retomar os cadastros. A pré-checagem não valida valores de vendas; confira amostras no painel privado contra o backup, sem publicar seus dados.
 
-**9. Ativar no GitHub e aguardar publicação.** No repositório, branch `main`, abra `wrangler.jsonc` e clique no lápis. Troque somente:
+**9. Ativar uma flag de cada vez e aguardar publicação.** Estes passos são do Felipe, depois que o código local desta rodada estiver disponível no repositório. No GitHub, branch main, abra `wrangler.jsonc` e use o lápis:
 
-```json
-"OPERATIONS_ENABLED": "true",
-"FINANCE_ENABLED": "true"
-```
+1. Troque somente `"OPERATIONS_ENABLED": "false"` por `"OPERATIONS_ENABLED": "true"`; deixe FINANCE/P1 false. Salve, aguarde o deploy correto no Pages e teste login, Hoje e status.
+2. Com operações aprovadas e migrações 0005 **e 0006** conferidas, troque `"FINANCE_ENABLED": "false"` por `"FINANCE_ENABLED": "true"`. Aguarde outro deploy e teste conta, sinal, crédito, recebimento/desfazer e estorno com DEMONSTRAÇÃO.
+3. Com as anteriores aprovadas, 0007/0008/0009 aplicadas e `schema_p1_ready: true`, troque `"P1_ENABLED": "false"` por `"P1_ENABLED": "true"`. Aguarde o deploy e teste Mais → Agenda/Lembretes/Relatórios/Despesas/Fichas/Compras.
 
-Mantenha `PUBLIC_CATALOG_ENABLED: "false"`, o banco e o Access como estão. Salve com mensagem “Ativar operação e financeiro após migrações”. Se quiser primeiro testar só a operação, deixe `FINANCE_ENABLED: "false"` e ative depois. Espere Cloudflare → Workers & Pages → brigaderia-amor-zeloso → Deployments mostrar o commit novo com sucesso. Não basta o site antigo continuar abrindo. Se a build falhar, deixe as flags OFF enquanto o erro é corrigido; não altere o banco para resolver erro de build.
+Em todos: manter `PUBLIC_CATALOG_ENABLED: "false"`, banco e Access intactos. Confira o commit publicado em Cloudflare → Workers & Pages → projeto → Deployments. Se a build falhar, não altere o banco para tentar corrigir: volte a flag recém-ativada para false e peça análise da build. A gestão anterior deve continuar disponível com a flag P1 OFF. Se falhar financeiro/estado com dados já gravados, pause cadastros, preserve os registros e consulte o rollback; não opere cegamente por backend antigo.
 
 **10. Validar e liberar o uso.** Abra o site, aceite a atualização do PWA se oferecida, saia e entre novamente. Esperado: Hoje e Pedidos padrão; com financeiro ativo, Mais → Financeiro e links de conta no cliente. Use registros identificados como DEMONSTRAÇÃO para conferir geração repetida sem duplicar, revisão/confirmação, entrega/desfazer, recebimento parcial, estorno e cobrança sem envio real. Faça os ensaios em Android e iPhone físicos. Não cadastre uma chave Pix fictícia na empresa real: sem chave, a cobrança deve funcionar sem Pix. Confira os registros anteriores antes de liberar novos cadastros. Se surgir erro, preserve os registros, desative a função conforme rollback e anote a mensagem/etapa sem dados pessoais.
 
@@ -113,7 +114,7 @@ Os scripts não ativam flags, não enviam mensagens, não registram pagamentos e
 
 ### Rollback
 
-Desativar `FINANCE_ENABLED` e/ou `OPERATIONS_ENABLED` mantendo o backend atual. Se já houver recebimentos, não operar pedidos pela versão antiga enquanto o financeiro estiver OFF: preserve os dados e resolva a falha antes de retomar alterações financeiras/status. Isso oculta as novas ações e preserva os registros; pedidos confirmados/encerrados não voltam a ser editáveis como rascunhos. Não voltar cegamente a um backend anterior que desconheça os novos estados e não remover tabelas/colunas com DROP para “desfazer”. Restauração de dados, se necessária, deve usar o backup/Time Travel com avaliação dos registros criados desde o ponto de retorno, em ambiente separado primeiro. Nenhum rollback remoto foi ensaiado nesta tarefa. Desligar flags não desfaz migrações nem estorna pagamentos.
+Desativar primeiro `P1_ENABLED`; se necessário, depois `FINANCE_ENABLED` e por último `OPERATIONS_ENABLED`, mantendo o backend atual. Se já houver recebimentos, não operar pedidos pela versão antiga enquanto o financeiro estiver OFF: preserve os dados e resolva a falha antes de retomar alterações financeiras/status. Isso oculta as novas ações e preserva os registros; pedidos confirmados/encerrados não voltam a ser editáveis como rascunhos. Não voltar cegamente a um backend anterior que desconheça os novos estados e não remover tabelas/colunas com DROP para “desfazer”. Restauração de dados, se necessária, deve usar o backup/Time Travel com avaliação dos registros criados desde o ponto de retorno, em ambiente separado primeiro. Nenhum rollback remoto foi ensaiado nesta tarefa. Desligar flags não desfaz migrações nem estorna pagamentos.
 
 ## Testes executados
 

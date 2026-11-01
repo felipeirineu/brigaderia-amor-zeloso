@@ -10,7 +10,7 @@ Operador estorna somente seus registros do dia civil atual de Fortaleza; adminis
 
 ## Testes executados
 
-37 unitários e integrações anteriores de operação/financeiro passaram. Integração R2: entrega/pagamento e undo conjuntos, idempotência, crédito/alocação/liberação parcial/refundo, anulação/refechamento, pagamentos bloqueando anulação, permissão, isolamento e FKs. E2E R2: três projetos aprovados (Chromium mobile/desktop, WebKit mobile), preservando a rota Hoje.
+Pacote final: 42 unitários e integrações anteriores de operação/financeiro passaram. Integração R2: entrega/pagamento e undo conjuntos, idempotência, crédito/alocação/liberação parcial/refundo, anulação/refechamento, pagamentos bloqueando anulação, permissão, isolamento e FKs. E2E R2: três projetos aprovados (Chromium mobile/desktop, WebKit mobile), preservando a rota Hoje.
 
 ## Limitações
 
@@ -18,4 +18,4 @@ WebKit Linux não é iPhone físico. Crédito não é alocado automaticamente. L
 
 ## Pendências
 
-Homologação física, revisão Claude e ativação pelo Felipe após backup/ensaio/migrações. Nada remoto nesta tarefa, inclusive push; commits e testes no checkout local. Agenda e demais P1 seguem em etapas separadas.
+Homologação física, revisão Claude e ativação pelo Felipe após backup/ensaio/migrações. Nada remoto nesta tarefa, inclusive push; commits e testes no checkout local. Agenda e demais P1 foram concluídos em etapas separadas, relatadas em P1_ETAPAS.md. A suíte consolidada terminou com 32 E2E aprovados e um offline WebKit já ignorado.

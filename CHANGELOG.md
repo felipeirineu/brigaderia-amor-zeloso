@@ -49,3 +49,11 @@
 - Conta B2B e condições copiadas por pedido, sinal/parciais/estorno por eventos, fechamentos configuráveis e cobrança/Pix assistidos.
 - Cadastro B2B e preenchimento por modelo, Hoje com recebimentos/saldo e tutorial financeiro sem gravação.
 - Pré-checagem somente leitura, ensaio de restauração local isolado e guia Windows com resultados/erros por passo. Flags operacionais/financeiras permanecem OFF até ativação remota.
+
+## 2026-11-01 — R2 e P1 (somente local)
+
+- Hoje com bottom sheet de recebimento, saldo preenchido/chips e entrega+recebimento com undo atômico.
+- Crédito do cliente, alocação manual, estorno do disponível, anulação auditada de fechamento e restrição de estorno do operador.
+- Agenda/ICS, lembretes/Hoje, relatórios/rankings/aging e CSV protegido.
+- Despesas humanas/estorno/fluxo registrado e fichas/custo/preço estimado/compras sem automações financeiras/estoque.
+- Migrações 0006–0009, flags OFF, guia único ATIVACAO.md e preflight completo. Nenhuma mutação remota nesta rodada.

@@ -93,3 +93,8 @@ Revisão 132ba36 integrada com ff-only. Não aplicar migrações, alterar flags 
 10. P1-4/P1-5: insumos/preços por unidade de referência, fichas e rendimento, custo e sugestão com margem explícita; lista de compras a partir dos confirmados e receitas vinculadas, sem estoque/compra automática. Migração 0009. Falta de ficha/custo é avisada, não vira custo zero/lucro inventado.
 
 P1 usa flag independente P1_ENABLED=false e verificação das tabelas. Cada etapa terá commit, testes de regras/integração/E2E adequados e relatório com Produzido, Testes executados, Limitações e Pendências. Histórico/status no arquivo Codex, preservando os arquivos de autoria Claude. Homologação física e ativação permanecem com Felipe.
+
+
+## Fechamento local da R2/P1
+
+Todos os ajustes R2-1…7 e módulos P1-1, P1-2, P1-3, P1-7, P1-4/P1-5 solicitados foram implementados nesta ordem de etapas. Relatórios e limitações por módulo em docs/REVISAO_R2.md e docs/P1_ETAPAS.md; status/histórico na resposta ao Claude. Guia único ATIVACAO.md. Operação/financeiro/P1 e catálogo permanecem OFF no arquivo raiz. Nada remoto, inclusive push/CI remota, executado. Revisão, homologação física, backup/migrações/ativação reais com Felipe; P1-6/8/9 e P2 não foram iniciados automaticamente.
