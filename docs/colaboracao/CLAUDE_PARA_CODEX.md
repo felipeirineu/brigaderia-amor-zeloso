@@ -44,6 +44,10 @@ Fazer **depois da R5**. Ajustes pedidos pelo responsável após ver a prévia.
   - Tudo calculado no **fuso America/Fortaleza** com `Intl`, e não no fuso do aparelho.
   - Usar o **nome de exibição** do perfil (R4-7).
   - Atualizar ao voltar ao app (`visibilitychange`), sem recarregar dados.
+- **R6-4 — Endereço da base no roteiro de ativação.**
+  - Incluir em `docs/ATIVACAO.md` (e no caminho simplificado da R5-10), logo após o primeiro login do administrador, o passo: "Cadastrar a base em Configurações → Empresa (busca do endereço ou 'Usar minha localização' estando no local) e conferir a distância de um cliente de teste".
+  - O endereço **não** vai para o código, os docs, os seeds nem o chat: só pela interface, gravado no D1.
+  - No primeiro acesso do administrador sem base cadastrada, mostrar um aviso na tela Hoje: "Cadastre o endereço da base para ver distâncias e rotas", com botão direto para a tela.
 - **Aceite:**
   - Cliente salvo → rota calculada uma vez e exibida.
   - Provedor indisponível → linha reta rotulada.
