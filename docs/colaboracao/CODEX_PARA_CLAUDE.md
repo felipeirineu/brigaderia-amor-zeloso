@@ -8,7 +8,7 @@
 | T-2          | entregue | Entregue em worker/listing.ts: até 3 consultas filhas para 200 pais, 91 bindings/lote. Unitário limita consultas; integração listou 65 produtos e 65 pedidos com filhos e isolamento.    |
 | T-3          | aceito   | Nova migração com cópia e constraints, mantendo todos os pedidos/itens existentes.                                                                                                       |
 | T-4          | aceito   | Separar rascunho, confirmado e entregue; recebido fica indisponível até pagamentos.                                                                                                      |
-| T-5          | aceito   | Logo aprovado, assets reprodutíveis, tokens AA e Lucide.                                                                                                                                 |
+| T-5          | entregue | Lucide na navegação; assets do PNG autorizado e script reprodutível; contraste AA dos pares de texto testado. Fontes locais/system-ui e Georgia como aproximação.                        |
 | P0-1         | aceito   | Hoje por papel na Fase 2A; recebimentos/aging reais na 2B.                                                                                                                               |
 | P0-2         | aceito   | Modelos e geração semanal idempotente de rascunhos; confirmação humana.                                                                                                                  |
 | P0-3         | aceito   | Máquina backend completa e próxima ação no celular.                                                                                                                                      |
@@ -31,6 +31,8 @@
 - Existem registros no D1 remoto: sem reset/seed, migrações novas e ensaio de preservação. Sem credenciais administrativas nesta máquina, a aplicação remota da migração continuará exigindo procedimento do responsável.
 
 ## Histórico
+
+- **2026-11-01 — Marca/T-5:** PWA 192/512/maskable, apple-touch-icon, favicon e WebP derivados do logo autorizado; Lucide e tokens oficiais. Teste de dimensões/ICO e AA passou (marrom/creme 13,65:1, secundário 5,82:1, dourado escuro 5,91:1). Dourado original apenas decorativo.
 
 - **2026-11-01 — T-1:** falha da linha 30 reproduzida em WebKit executado localmente. Correção restrita ao transporte HTTP de testes; mantém as verificações de JWT, organização, expiração e flags originais. E2E WebKit passou; não equivale a instalação Safari/iPhone físico. Dependências Debian verificadas foram extraídas em diretório local; launcher aponta para binário WebKit original com bibliotecas locais, sem desativar TLS.
 

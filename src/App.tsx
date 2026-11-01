@@ -8,6 +8,7 @@ import {
   useLocation,
 } from 'react-router-dom';
 import { Login, Management } from './features/Management';
+import { Icon } from './components/Icon';
 import { RuntimeStatus } from './components/RuntimeStatus';
 import { demoSteps, modules } from './features/modules';
 
@@ -35,12 +36,11 @@ function Dashboard() {
             serão construídos em etapas, com segurança e atenção à sua rotina.
           </p>
           <Link className="button" to="/app/configuracoes">
-            Ver próximos passos <span aria-hidden="true">→</span>
+            Ver próximos passos <Icon name="seta" />
           </Link>
         </div>
         <div className="brand-art" aria-hidden="true">
-          <span>AZ</span>
-          <small>AMOR ZELOSO</small>
+          <img src="/brand/logo.webp" alt="" width="200" height="205" />
         </div>
       </section>
       <section aria-labelledby="areas-title">
@@ -54,12 +54,12 @@ function Dashboard() {
             .map((m) => (
               <Link className="module-card" key={m.slug} to={`/app/${m.slug}`}>
                 <span className="module-icon" aria-hidden="true">
-                  {m.symbol}
+                  <Icon name={m.slug} />
                 </span>
                 <h3>{m.title}</h3>
                 <p>{m.description}</p>
                 <span className="card-footer">
-                  Explorar estrutura <span aria-hidden="true">→</span>
+                  Explorar estrutura <Icon name="seta" />
                 </span>
               </Link>
             ))}
@@ -95,7 +95,8 @@ function ModulePage({ slug }: { slug: string }) {
         <section className="panel">
           <h2>Informações a confirmar</h2>
           <p>
-            Paleta e monograma provisórios. O monograma não é o logo oficial.
+            Logo autorizado pelo Felipe. Informações comerciais e operacionais
+            aguardam reconfirmação dos proprietários.
           </p>
           <ul className="confirmation-list">
             {[
@@ -123,7 +124,7 @@ function ModulePage({ slug }: { slug: string }) {
       ) : (
         <section className="empty-state">
           <span className="empty-icon" aria-hidden="true">
-            {module.symbol}
+            <Icon name={module.slug} />
           </span>
           <h2>Este espaço está em preparação</h2>
           <p>
@@ -195,9 +196,13 @@ export function App() {
       </a>
       <aside className="sidebar">
         <Link className="brand" to="/app" aria-label="Amor Zeloso — início">
-          <span className="monogram" aria-hidden="true">
-            AZ
-          </span>
+          <img
+            className="brand-logo"
+            src="/brand/logo.webp"
+            alt=""
+            width="52"
+            height="54"
+          />
           <span>
             Amor Zeloso<small>BRIGADERIA · GESTÃO</small>
           </span>
@@ -205,23 +210,26 @@ export function App() {
         <p className="nav-caption">ESPAÇO DE TRABALHO</p>
         <nav aria-label="Navegação principal">
           <NavLink to="/app" end>
-            <span aria-hidden="true">⌂</span>Início
+            <Icon name="inicio" />
+            Início
           </NavLink>
           {modules.map((m) => (
             <NavLink to={`/app/${m.slug}`} key={m.slug}>
-              <span aria-hidden="true">{m.symbol}</span>
+              <span aria-hidden="true">
+                <Icon name={m.slug} />
+              </span>
               {m.title}
             </NavLink>
           ))}
         </nav>
         <div className="sidebar-note">
-          <span aria-hidden="true">✧</span>
+          <Icon name="brilho" />
           <p>
             O sabor das
             <br />
             <strong>boas lembranças.</strong>
           </p>
-          <small>Identidade visual provisória</small>
+          <small>Marca autorizada pelo Felipe</small>
         </div>
       </aside>
       <div className="workspace">

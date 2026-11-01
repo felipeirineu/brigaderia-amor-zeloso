@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['icons/*.png'],
+      includeAssets: ['icons/*.png', 'brand/*.webp', 'favicon.ico'],
       manifest: {
         id: '/',
         name: 'Brigaderia Amor Zeloso | Gestão',
@@ -19,8 +19,8 @@ export default defineConfig({
         start_url: '/app',
         scope: '/',
         display: 'standalone',
-        background_color: '#F6EBDD',
-        theme_color: '#351C13',
+        background_color: '#F9ECD7',
+        theme_color: '#321D10',
         icons: [
           {
             src: '/icons/icon-192.png',
@@ -44,7 +44,7 @@ export default defineConfig({
       },
       workbox: {
         cleanupOutdatedCaches: true,
-        globPatterns: ['**/*.{js,css,html,png,woff2}'],
+        globPatterns: ['**/*.{js,css,html,png,webp,ico,woff2}'],
         navigateFallback: '/index.html',
         // Rotas reservadas da Cloudflare, incluindo callback/logout do Access,
         // devem sempre chegar à rede, mesmo quando o shell está em cache.
