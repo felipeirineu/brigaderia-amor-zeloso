@@ -1,3 +1,4 @@
+import { Stock } from './p1/Stock';
 import { FieldProvider, useField } from './field/FieldContext';
 import { SiteEditor, CompanyEditor, SiteInfo } from './field/SiteEditor';
 import { PlaceFields } from './field/PlaceFields';
@@ -54,6 +55,7 @@ interface Session {
   p1?: boolean;
   mobile?: boolean;
   field?: boolean;
+  tools?: boolean;
 }
 interface Customer {
   id: string;
@@ -1425,6 +1427,9 @@ export function Management() {
                 element={<Totem financial={session.finance} />}
               />
             )}
+            {session.tools && (
+              <Route path="estoque" element={<Stock role={session.role} />} />
+            )}
             {session.field && (
               <>
                 <Route path="clientes/:id/local" element={<SiteEditor />} />
@@ -1483,6 +1488,7 @@ export function Management() {
                       financial={session.finance}
                       p1={session.p1}
                       field={session.field}
+                      tools={session.tools}
                       mobile={session.mobile}
                     />
                   }
@@ -1578,12 +1584,14 @@ function More({
   financial = false,
   p1 = false,
   field = false,
+  tools = false,
   mobile = false,
 }: {
   role: string;
   financial?: boolean;
   p1?: boolean;
   field?: boolean;
+  tools?: boolean;
   mobile?: boolean;
 }) {
   return (
@@ -1591,6 +1599,7 @@ function More({
       <h1>Mais</h1>
       <div className="more-grid">
         {[
+          ...(tools ? [['estoque', 'Estoque', 'produtos']] : []),
           ...(field ? [['deslocamentos', 'Deslocamentos', 'entregas']] : []),
           ...(p1
             ? [

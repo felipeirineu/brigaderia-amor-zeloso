@@ -7,6 +7,7 @@
     "PUBLIC_CATALOG_ENABLED": "false",
     "FINANCE_ENABLED": "false",
     "P1_ENABLED": "false",
+    "P1_TOOLS_ENABLED": "false",
     "MOBILE_ENABLED": "false",
     "FIELD_ENABLED": "false",
     "OPERATIONS_ENABLED": "false",

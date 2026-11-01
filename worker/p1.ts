@@ -1,3 +1,5 @@
+import { toolsReady } from './tools-ready';
+import { inventory } from './inventory';
 import { recipes } from './recipes';
 import { expenses } from './expenses';
 import { reports } from './reports';
@@ -9,6 +11,11 @@ export async function p1(req: Request, env: Env, a: Actor) {
   if (!(await p1Ready(env)))
     throw new HttpError(503, 'Módulos P1 ainda não ativados.');
   const [, , , resource, id] = new URL(req.url).pathname.split('/');
+  if (resource === 'inventory') {
+    if (!(await toolsReady(env)))
+      throw new HttpError(503, 'Estoque ainda não ativado.');
+    return inventory(req, env.DB!, a, id);
+  }
   if (['reports', 'reports.csv'].includes(resource) && req.method === 'GET')
     return reports(req, env.DB!, a);
   if (['expenses', 'cashflow', 'cashflow.csv'].includes(resource))

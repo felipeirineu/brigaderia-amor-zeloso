@@ -6,6 +6,7 @@ export interface Env {
   OPERATIONS_ENABLED?: string;
   FINANCE_ENABLED?: string;
   P1_ENABLED?: string;
+  P1_TOOLS_ENABLED?: string;
   MOBILE_ENABLED?: string;
   FIELD_ENABLED?: string;
   ASSETS?: { fetch: (r: Request) => Promise<Response> };

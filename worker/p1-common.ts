@@ -42,7 +42,8 @@ export async function p1Mutation(
       | 'customer_sites'
       | 'company_places'
       | 'display_profiles'
-      | 'displacements';
+      | 'displacements'
+      | 'inventory_balances';
     id: string;
     action: string;
   }>,

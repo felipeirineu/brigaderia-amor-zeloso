@@ -23,7 +23,7 @@
 | P1-3         | entregue local                      | Implementado/testado na rodada R2/P1; ver tabela de status e relatório por etapa abaixo.                                                                                            |
 | P1-4         | entregue local                      | Implementado/testado na rodada R2/P1; ver tabela de status e relatório por etapa abaixo.                                                                                            |
 | P1-5         | entregue local                      | Implementado/testado na rodada R2/P1; ver tabela de status e relatório por etapa abaixo.                                                                                            |
-| P1-6         | adiado                              | Estoque/embalagens.                                                                                                                                                                 |
+| P1-6         | entregue no código                  | Estoque manual auditável, mínimo, sem negativo e sem baixa/despesa implícita.                                                                                                       |
 | P1-7         | entregue local                      | Implementado/testado na rodada R2/P1; ver tabela de status e relatório por etapa abaixo.                                                                                            |
 | P1-8         | adiado                              | Importação com preview e deduplicação.                                                                                                                                              |
 | P1-9         | adiado                              | Interface de backup/exportação; backup e ensaio de restauração administrativos são pré-requisitos da ativação.                                                                      |
@@ -104,6 +104,8 @@ Relatórios por etapa em docs/REVISAO_R2.md e docs/P1_ETAPAS.md. Todos os itens 
 R2-1 a R2-7 e P1-1 a P1-5/P1-7 já publicados com a entrega afbdb39, CI aprovada (41316631301). Relatórios P1-3 estão estáveis nessa base. Sem ativação remota. R3 requer 0010 e flag MOBILE_ENABLED; ver FASE_R3.md.
 
 ## Histórico
+
+- **2026-11-01 — P1-6:** R3/R4 enviadas, CI de f83918a aprovada (41321032479). Estoque por insumo/embalagem em milésimos, entradas/consumo/perda/ajuste/estorno, mínimo e bloqueio de troca da unidade com histórico. Integração de concorrência/negativo/idempotência/isolamento/FKs e três E2E de entrada/consumo/alerta aprovados. 0012 e P1_TOOLS_ENABLED false, sem consumo/despesa automáticos. Próximos: importação de clientes e exportação administrativa.
 
 - **2026-11-01 — R4:** API a1518cf e telas privadas com GPS/câmera/perfis/transporte/deslocamento. Integração R4, R2/P1, API/listagens/financeiro/operação/migrações/marca aprovadas; 48 unitários. Rodada completa teve 35 E2E aprovados e três asserções antigas de zero inicial corrigidas para o contrato R3; repetição dos três passou, total 38 aprovados e um offline WebKit ignorado. CI anterior falhou primeiro por formatação e depois pela asserção antiga; ambas corrigidas, nova CI acompanhada. Guia FASE_R4.md, preflight estendido, flags MOBILE/FIELD false. Nenhum serviço pago ou banco remoto alterado.
 

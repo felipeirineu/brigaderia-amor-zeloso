@@ -195,6 +195,32 @@ export async function recipes(
     if (resource === 'supplies') {
       const d = supplySchema.parse(raw);
       if (id && !d.version) throw new HttpError(400, 'Informe versão.');
+      const stockSchema =
+        id &&
+        (await db
+          .prepare(
+            "SELECT 1 FROM sqlite_schema WHERE name='inventory_balances'",
+          )
+          .first());
+      if (id && stockSchema) {
+        const old = await db
+          .prepare('SELECT unit FROM supplies WHERE organization_id=? AND id=?')
+          .bind(org, id)
+          .first<{ unit: string }>();
+        if (
+          old?.unit !== d.unit &&
+          (await db
+            .prepare(
+              'SELECT 1 FROM inventory_balances WHERE organization_id=? AND id=?',
+            )
+            .bind(org, id)
+            .first())
+        )
+          throw new HttpError(
+            409,
+            'Unidade em uso por estoque: crie outro insumo.',
+          );
+      }
       if (id) {
         const old = await db
           .prepare('SELECT unit FROM supplies WHERE organization_id=? AND id=?')
@@ -223,7 +249,10 @@ export async function recipes(
         first: id
           ? db
               .prepare(
-                'UPDATE supplies SET name=?,unit=?,pack_quantity_milli=?,pack_cost_cents=?,active=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?',
+                'UPDATE supplies SET name=?,unit=?,pack_quantity_milli=?,pack_cost_cents=?,active=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?' +
+                  (stockSchema
+                    ? ' AND (unit=? OR NOT EXISTS(SELECT 1 FROM inventory_balances WHERE organization_id=? AND id=?))'
+                    : ''),
               )
               .bind(
                 d.name,
@@ -235,6 +264,7 @@ export async function recipes(
                 org,
                 entity,
                 d.version,
+                ...(stockSchema ? [d.unit, org, id] : []),
               )
           : db
               .prepare(

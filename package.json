@@ -33,7 +33,8 @@
     "test:r2": "node tests/integration/migration-r2.mjs && node tests/integration/review-r2.mjs",
     "test:p1": "node tests/integration/planning.mjs && node tests/integration/reports.mjs && node tests/integration/expenses.mjs && node tests/integration/recipes.mjs",
     "test:mobile": "node tests/integration/mobile.mjs",
-    "test:field": "node tests/integration/field.mjs"
+    "test:field": "node tests/integration/field.mjs",
+    "test:inventory": "node tests/integration/inventory.mjs"
   },
   "dependencies": {
     "jose": "^6.2.14",
@@ -41,6 +42,7 @@
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.5",
+    "read-excel-file": "^9.3.14",
     "zod": "^4.6.7"
   },
   "devDependencies": {

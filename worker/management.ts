@@ -1,3 +1,4 @@
+import { toolsReady } from './tools-ready';
 import { snapshotPlaces } from './order-places';
 import { fieldReady } from './field-ready';
 import { mobileReady } from './mobile-ready';
@@ -44,6 +45,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       operations: await operationalReady(env),
       finance: await financeReady(env),
       p1: await p1Ready(env),
+      tools: await toolsReady(env),
       mobile: await mobileReady(env),
       field: await fieldReady(env),
       user_id: a.user_id,
