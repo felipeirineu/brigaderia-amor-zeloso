@@ -114,9 +114,11 @@ export function Tour({ role }: { role: string }) {
 export function HelpCenter({
   financial = false,
   p1 = false,
+  tools = false,
 }: {
   financial?: boolean;
   p1?: boolean;
+  tools?: boolean;
 }) {
   const [example, setExample] = useState(false);
   const field = useField();
@@ -210,6 +212,41 @@ export function HelpCenter({
         </section>
       )}
       {financial && <FinancialTutorial />}
+      {tools && (
+        <section className="panel">
+          <h2>Estoque, importação e backup</h2>
+          <details>
+            <summary>Conferir e movimentar estoque</summary>
+            <p>
+              Em Mais → Estoque, escolha o insumo, tipo de movimento, quantidade
+              e motivo. Confira a unidade. Previsão não baixa estoque; consumo
+              só ocorre após sua confirmação. Lote e validade são anotações. O
+              administrador define o mínimo. Para corrigir use estorno com
+              motivo; operador só estorna os próprios registros de hoje.
+            </p>
+          </details>
+          <details>
+            <summary>Importar clientes (administrador)</summary>
+            <p>
+              Prepare CSV UTF-8 ou XLSX com nome e telefone, até 50 clientes.
+              Não use fórmulas nem macros. Em Mais → Importar clientes, escolha
+              o arquivo, Veja prévia e confira os telefones normalizados.
+              Selecione as linhas e confirme. Telefones existentes não são
+              sobrescritos; nenhuma mensagem é enviada.
+            </p>
+          </details>
+          <details>
+            <summary>Guardar e testar backup (administrador)</summary>
+            <p>
+              Em Mais → Backup privado, baixe o arquivo e guarde fora do
+              Git/chat. Ele contém dados pessoais, fotos, chave Pix cadastrada e
+              autorizações; não compartilhe. Use o guia de restauração em uma
+              base local separada e compare contagens antes de confiar no
+              backup. Não há restauração sobre o banco em uso pelo app.
+            </p>
+          </details>
+        </section>
+      )}
       {p1 && (
         <section className="panel">
           <h2>Rotinas P1</h2>

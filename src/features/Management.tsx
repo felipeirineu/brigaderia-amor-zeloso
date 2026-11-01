@@ -1,3 +1,5 @@
+import { Backup } from './p1/Backup';
+import { ImportCustomers } from './p1/ImportCustomers';
 import { Stock } from './p1/Stock';
 import { FieldProvider, useField } from './field/FieldContext';
 import { SiteEditor, CompanyEditor, SiteInfo } from './field/SiteEditor';
@@ -1427,6 +1429,12 @@ export function Management() {
                 element={<Totem financial={session.finance} />}
               />
             )}
+            {session.tools && session.role === 'owner' && (
+              <Route path="backup" element={<Backup />} />
+            )}
+            {session.tools && session.role === 'owner' && (
+              <Route path="importar-clientes" element={<ImportCustomers />} />
+            )}
             {session.tools && (
               <Route path="estoque" element={<Stock role={session.role} />} />
             )}
@@ -1477,7 +1485,11 @@ export function Management() {
                 <Route
                   path="ajuda"
                   element={
-                    <HelpCenter financial={session.finance} p1={session.p1} />
+                    <HelpCenter
+                      financial={session.finance}
+                      p1={session.p1}
+                      tools={session.tools}
+                    />
                   }
                 />
                 <Route
@@ -1599,7 +1611,17 @@ function More({
       <h1>Mais</h1>
       <div className="more-grid">
         {[
-          ...(tools ? [['estoque', 'Estoque', 'produtos']] : []),
+          ...(tools
+            ? [
+                ['estoque', 'Estoque', 'produtos'],
+                ...(role === 'owner'
+                  ? [
+                      ['importar-clientes', 'Importar clientes', 'clientes'],
+                      ['backup', 'Backup privado', 'configuracoes'],
+                    ]
+                  : []),
+              ]
+            : []),
           ...(field ? [['deslocamentos', 'Deslocamentos', 'entregas']] : []),
           ...(p1
             ? [
