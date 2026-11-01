@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-01** — R3-4 atualizado: Felipe confirmou provisoriamente a correspondência das fotos (arquivos renomeados por sabor).
 - **2026-11-01** — R3: modo totem para pedidos no celular + fotos dos sabores (`docs/marca/sabores/`). Ver seção **R3** abaixo.
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
@@ -33,9 +34,10 @@
   - Sem histórico, começa vazio. **Nunca pré-preencher 1 em todos os sabores.**
 - **R3-4 — Fotos.**
   - Usar as imagens de [`docs/marca/sabores/`](../marca/sabores/README.md), autorizadas pelo Felipe.
-  - **A ligação imagem ↔ variante deve ser escolhida no cadastro de produto (PC)** por um humano. Não associar por aparência: a tabela do README está "A confirmar".
+  - **Correspondência foto ↔ sabor informada pelo Felipe** (provisória, reconfirmar na entrega): Tradicional, Côco, Casadinho e Cajuzinho têm foto; Limão tem foto, mas **não é sabor cadastrado nem tem preço**. Ver a tabela do README.
+  - A ligação imagem ↔ variante fica no cadastro de produto (PC). Sugerir automaticamente quando o nome do produto coincidir com o sabor da tabela, mas sempre editável. Nada de seed ou migração com produtos ou preços.
   - Campo opcional de imagem no produto/variante, com só as imagens do repositório nesta etapa. Upload próprio (R2/limites/custos) fica para avaliação posterior.
-  - **Ícone de reserva:** círculo na cor do sabor, com a inicial e o nome, para quem não tem foto (ex.: Casadinho e Cajuzinho).
+  - **Ícone de reserva:** círculo na cor do sabor, com a inicial e o nome, para quem não tem foto (ex.: sabores novos cadastrados no futuro).
   - Imagens privadas da gestão: não colocar no service worker público nem no catálogo, que continua OFF.
 - **R3-5 — Campos numéricos (componente único, reutilizado em todo o app).**
   - **Preço (`MoneyInput`):**
