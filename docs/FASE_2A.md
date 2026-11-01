@@ -17,35 +17,103 @@ O arquivo raiz mantém **`OPERATIONS_ENABLED=false`**. A gestão da Fase 1 conti
 
 O código foi testado localmente. A migração remota **não foi executada**: não há credenciais administrativas Cloudflare disponíveis nesta máquina. O snapshot local de testes não autoriza apagar ou recriar o banco remoto.
 
-### Procedimento para o administrador antes de ativar
+### Ativação — passos curtos no Windows (PowerShell)
 
-1. Pausar brevemente alterações na gestão e conferir a conta/nome/ID do banco em `wrangler.jsonc`.
-2. Em uma máquina autenticada no Cloudflare, exportar backup para diretório privado **fora do Git**. Por exemplo, criar `.local` com acesso restrito e executar:
+Faça isto no seu computador. Não envie backup, chave Pix, senha ou token pelo chat. Os comandos com `--remote` abaixo usam o banco online; o agente **não os executou**. A pré-checagem só lê metadados/contagens. A restauração de ensaio só usa um banco local separado. Como a R1 acrescenta a migração 0004 e a 2B acrescenta 0005, use sempre o código atualizado.
 
-   ```bash
-   npx wrangler d1 export brigaderia-amor-zeloso-homologacao --config wrangler.jsonc --remote --output .local/backup-antes-fase2.sql
-   ```
+**1. Preparar o terminal.** Instale Git e Node.js 24 se ainda não tiver. Abra o PowerShell e execute, um comando de cada vez:
 
-   Não enviar o backup ao chat, colaboração, logs ou CI: pode conter dados pessoais. Arquivos `.local/` são ignorados pelo Git.
+```powershell
+git --version
+node --version
+npm --version
+```
 
-3. Conferir o backup e ensaiar a restauração em um banco separado/estado local vazio. Nunca importar sobre o banco usado diariamente. O teste automatizado de fixtures desta entrega não substitui esse ensaio com seu arquivo real.
-4. Conferir `d1_migrations`: as migrações 0001/0002 já foram registradas pelo responsável durante a configuração inicial. Aplicar apenas a migração pendente pelo runner:
+Esperado: três números de versão; Node deve começar por `v24` ou ser compatível (mínimo 22.12). Se aparecer “não reconhecido”, instale o programa correspondente, feche e reabra o terminal. Se o Windows bloquear `npm.ps1`, use `npm.cmd` e `npx.cmd` no lugar de `npm`/`npx`; não desative a política de segurança do computador.
 
-   ```bash
-   npx wrangler d1 migrations apply brigaderia-amor-zeloso-homologacao --config wrangler.jsonc --remote
-   ```
+**2. Baixar o projeto.** Em uma pasta pessoal, execute:
 
-   Não colar fragmentos da reconstrução manualmente e não reaplicar 0001/0002. Se ocorrer erro, manter a flag OFF e inspecionar o estado antes de repetir; não executar DROP/reset por tentativa.
+```powershell
+git clone https://github.com/felipeirineu/brigaderia-amor-zeloso.git
+cd brigaderia-amor-zeloso
+npm ci
+```
 
-5. Executar `PRAGMA foreign_key_check;` (deve retornar zero violações) e conferir contagens de pedidos/itens e amostras de totais/versões contra o backup. A tabela d1_migrations deve registrar 0003. Não publicar essas amostras na colaboração.
-6. Só então mudar `OPERATIONS_ENABLED` para a string `true` no `wrangler.jsonc`, salvar no Git e aguardar deploy Pages bem-sucedido. Fazer novo login/recarregar e conferir Hoje/Pedidos padrão nos dois papéis.
-7. Testar um fluxo de homologação identificado como teste: gerar semana duas vezes, revisar/confirmar, produzir, entregar e desfazer. Conferir WhatsApp sem enviar mensagem real. Validar Android e iPhone físicos e a atualização/instalação do PWA.
+Esperado: download concluído e dependências instaladas. Se já tiver essa pasta, entre nela e use `git switch main` e `git pull --ff-only origin main`; não clone por cima. Se houver arquivos modificados ou erro de atualização, pare e preserve os arquivos, sem `reset --hard`. Se `npm ci` falhar, confira Node/rede e copie somente a mensagem de erro sem dados pessoais.
 
-Nenhum comando remoto acima foi executado pelo agente. Não há nova compra, gasto, domínio ou integração paga provisionada.
+**3. Entrar no Cloudflare.**
+
+```powershell
+npx wrangler login
+npx wrangler whoami
+```
+
+Esperado: o navegador pede autorização para Wrangler; depois o terminal mostra a conta correta. Confira a conta usada no projeto. Se falhar, conclua o login no navegador e tente `whoami` novamente. Não copie tokens nem a saída com e-mail para a colaboração.
+
+**4. Parar os cadastros por alguns minutos e conferir o banco.** Avise quem usa a gestão para não alterar registros até o passo 9. Abra `wrangler.jsonc` no GitHub e confira o banco `brigaderia-amor-zeloso-homologacao`, ID terminado em `b20f`. Então:
+
+```powershell
+npm run ops:preflight -- --remote brigaderia-amor-zeloso-homologacao
+```
+
+Esperado: JSON com `mode: "remoto"`, nomes das migrações, contagens e `foreign_key_violations: 0`. Guarde o resultado em arquivo privado para comparar depois. Nesta etapa é normal `schema_operations_ready`/`schema_finance_ready` serem `false` e haver 0003/0004/0005 pendentes. Se 0003 já estiver aplicada, somente 0004/0005 devem estar pendentes. **Se 0001 ou 0002 aparecerem pendentes em um banco já cadastrado, pare**: o histórico precisa ser conciliado com o schema por quem configurou o banco. Não reaplique essas duas por tentativa. Se ocorrer erro ou violações de FK, pare e mantenha as flags desligadas; confira conta, nome e login, sem apagar tabelas.
+
+**5. Fazer backup.**
+
+```powershell
+New-Item -ItemType Directory -Force .local
+npx wrangler d1 export brigaderia-amor-zeloso-homologacao --config wrangler.jsonc --remote --output .local/backup-antes-fase2.sql
+Get-Item .local/backup-antes-fase2.sql
+```
+
+Esperado: exportação concluída e arquivo com tamanho maior que zero. A pasta `.local` é ignorada pelo Git, mas **contém dados privados**: mantenha no computador pessoal protegido e não envie ao GitHub/chat. Se o nome já existir, preserve-o e use outro nome/data nos comandos seguintes. Se der erro ou o arquivo estiver vazio, não avance. Backup incompleto não é backup válido.
+
+**6. Ensaiar a restauração fora do banco online.**
+
+```powershell
+npm run ops:restore-check -- .local/backup-antes-fase2.sql
+```
+
+Esperado: “Restauração LOCAL concluída”, zero violações e as mesmas contagens de clientes, produtos, variantes, pedidos e itens vistas no passo 4. O script cria um diretório novo `.local/restore-check-...`; não importa sobre o banco online nem sobre outro ensaio. Migrações pendentes devem corresponder ao estado do backup. Se falhar ou houver diferença, preserve o backup e pare antes da migração; nunca “teste restaurar” em cima do banco online.
+
+**7. Aplicar somente as migrações pendentes.**
+
+```powershell
+npx wrangler d1 migrations list brigaderia-amor-zeloso-homologacao --config wrangler.jsonc --remote
+```
+
+Esperado: apenas migrações novas ainda ausentes (0003, 0004 e/ou 0005). Se listar 0001/0002, pare conforme passo 4. Se a lista estiver correta e o backup foi restaurado com sucesso:
+
+```powershell
+npx wrangler d1 migrations apply brigaderia-amor-zeloso-homologacao --config wrangler.jsonc --remote
+```
+
+Confirme `y` quando perguntado. Esperado: cada migração com símbolo de sucesso. Se não houver migrações pendentes, não é preciso reaplicar. Se ocorrer erro, **não cole pedaços do SQL, não execute DROP e não tente reset**. Mantenha as flags OFF, execute a pré-checagem do próximo passo e peça análise do estado antes de repetir.
+
+**8. Conferir o resultado.**
+
+```powershell
+npm run ops:preflight -- --remote brigaderia-amor-zeloso-homologacao
+```
+
+Esperado: `pending: []`, `foreign_key_violations: 0`, `schema_operations_ready: true` e `schema_finance_ready: true`; as contagens de clientes/produtos/variantes/pedidos/itens devem ser iguais às do passo 4. As tabelas novas começam vazias, sem pagamentos inventados. Se algo diferir, mantenha OFF e investigue antes de retomar os cadastros. A pré-checagem não valida valores de vendas; confira amostras no painel privado contra o backup, sem publicar seus dados.
+
+**9. Ativar no GitHub e aguardar publicação.** No repositório, branch `main`, abra `wrangler.jsonc` e clique no lápis. Troque somente:
+
+```json
+"OPERATIONS_ENABLED": "true",
+"FINANCE_ENABLED": "true"
+```
+
+Mantenha `PUBLIC_CATALOG_ENABLED: "false"`, o banco e o Access como estão. Salve com mensagem “Ativar operação e financeiro após migrações”. Se quiser primeiro testar só a operação, deixe `FINANCE_ENABLED: "false"` e ative depois. Espere Cloudflare → Workers & Pages → brigaderia-amor-zeloso → Deployments mostrar o commit novo com sucesso. Não basta o site antigo continuar abrindo. Se a build falhar, deixe as flags OFF enquanto o erro é corrigido; não altere o banco para resolver erro de build.
+
+**10. Validar e liberar o uso.** Abra o site, aceite a atualização do PWA se oferecida, saia e entre novamente. Esperado: Hoje e Pedidos padrão; com financeiro ativo, Mais → Financeiro e links de conta no cliente. Use registros identificados como DEMONSTRAÇÃO para conferir geração repetida sem duplicar, revisão/confirmação, entrega/desfazer, recebimento parcial, estorno e cobrança sem envio real. Faça os ensaios em Android e iPhone físicos. Não cadastre uma chave Pix fictícia na empresa real: sem chave, a cobrança deve funcionar sem Pix. Confira os registros anteriores antes de liberar novos cadastros. Se surgir erro, preserve os registros, desative a função conforme rollback e anote a mensagem/etapa sem dados pessoais.
+
+Os scripts não ativam flags, não enviam mensagens, não registram pagamentos e não fazem migrações remotas. Nesta entrega o agente testou apenas bancos locais/efêmeros; login Cloudflare administrativo, exportação e migração remotos continuam pendentes.
 
 ### Rollback
 
-Desativar `OPERATIONS_ENABLED` mantendo o backend atual. Isso oculta as novas ações e preserva os registros; pedidos confirmados/encerrados não voltam a ser editáveis como rascunhos. Não voltar cegamente a um backend anterior que desconheça os novos estados e não remover tabelas/colunas com DROP para “desfazer”. Restauração de dados, se necessária, deve usar o backup/Time Travel com avaliação dos registros criados desde o ponto de retorno, em ambiente separado primeiro. Nenhum rollback remoto foi ensaiado nesta tarefa.
+Desativar `FINANCE_ENABLED` e/ou `OPERATIONS_ENABLED` mantendo o backend atual. Se já houver recebimentos, não operar pedidos pela versão antiga enquanto o financeiro estiver OFF: preserve os dados e resolva a falha antes de retomar alterações financeiras/status. Isso oculta as novas ações e preserva os registros; pedidos confirmados/encerrados não voltam a ser editáveis como rascunhos. Não voltar cegamente a um backend anterior que desconheça os novos estados e não remover tabelas/colunas com DROP para “desfazer”. Restauração de dados, se necessária, deve usar o backup/Time Travel com avaliação dos registros criados desde o ponto de retorno, em ambiente separado primeiro. Nenhum rollback remoto foi ensaiado nesta tarefa. Desligar flags não desfaz migrações nem estorna pagamentos.
 
 ## Testes executados
 
@@ -74,3 +142,7 @@ Todos os dados usados nesses testes são fixtures identificadas como DEMONSTRAÇ
 ## Pendências
 
 Backup/restauração reais e migração/ativação remota, homologação física iPhone/Android, CI GitHub acompanhada e revisão do Claude. Próxima fase: P0-4 financeiro/fechamentos e P0-5 cadastros B2B rápidos, completando Hoje e mensagens de cobrança. P1/P2 continuam conforme o plano, sem ativação automática.
+
+## Revisão R1
+
+R1-1 gera modelos válidos e lista ignorados com atalho; R1-2 copia entregador padrão do modelo; R1-3 reabre confirmed → awaiting_confirmation com motivo antes da produção, permitindo a edição normal e nova confirmação; R1-4 confirma seleção revisada com validação e resultado por pedido em grupos de três para D1 Free. R1-5 usa constante compartilhada de 30 s. R1-6 separa as telas operacionais. R1-7 mantém created_at epoch em order_status_events para comparação da janela no servidor, convertendo para exibição; tabelas novas financeiras usam ISO. Não há comparação lexical entre os dois formatos. Com pagamentos ativos, cancelar/arquivar pedido recebido exige estorno e reduzir total abaixo do recebido é bloqueado.
