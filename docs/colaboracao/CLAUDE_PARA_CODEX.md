@@ -92,6 +92,34 @@ As capturas mostram que **um quarto da tela** se perde antes do conteúdo, em to
 - **R5-7 — Quebra de palavra nos tiles de "Mais".** "Deslocamen/tos" está quebrando no meio. Usar `hyphens: auto` com `lang="pt-BR"`, ou fonte um pouco menor, ou o rótulo "Corridas". Conferir os outros tiles.
 - **R5-8 — Teste visual.** Adicionar um E2E de "não regressão de espaço": no Hoje e no Novo pedido em 390×844, o primeiro cartão de conteúdo começa em y ≤ 140 px e os 5 sabores de teste ficam visíveis sem rolar. Opcionalmente, salvar screenshots como artefato do CI.
 
+- **R5-12 — Botões e elementos tocáveis mais modernos, sem exagero (pedido do responsável; fazer junto com R5-1 a R5-4).**
+  Os botões atuais são retângulos creme com borda fina. Parecem formulário antigo e não indicam bem o que é ação principal. Criar **um componente `Button` único** com variantes, aplicado em todo o app:
+  - **Primário:**
+    - fundo marrom da marca;
+    - texto creme em peso 600;
+    - raio de 14 px;
+    - sombra suave em duas camadas (ex.: `0 1px 2px rgb(50 29 16 / .12), 0 6px 16px rgb(50 29 16 / .14)`);
+    - leve brilho no topo (gradiente quase imperceptível do marrom para 6% mais claro);
+    - ícone Lucide à esquerda quando ajudar.
+  - **Secundário (tonal):** fundo creme mais escuro (~`#F1E2CC`), sem borda ou com borda a 10% de opacidade, mesmo raio.
+  - **Fantasma/texto:** substitui os links sublinhados que funcionam como ação ("Ver lista", "Novo lembrete / gerenciar", "Cadastrar cliente", "Todas as contas"). Usar ícone + texto, sem sublinhado e com área de toque de no mínimo 44 px.
+  - **Perigo:** para cancelar/estornar, com contorno vermelho discreto e confirmação mantida.
+  - **Chips/segmentos:**
+    - em formato de pílula (raio 999);
+    - selecionado = fundo marrom + ícone de check;
+    - não selecionado = tonal.
+  - **Cartões tocáveis** (sabores, clientes, tiles do "Mais", indicadores do financeiro): raio de 18 px, sombra leve e estado de toque.
+  - **Estados para todos:**
+    - pressionado com `transform: scale(.97)` e escurecimento leve, transição de 120 ms;
+    - desativado com 45% de opacidade e sem sombra;
+    - carregando com spinner no lugar do ícone e largura mantida;
+    - foco visível com anel dourado de 3 px e offset de 2 px;
+    - respeitar `prefers-reduced-motion`.
+  - **Tamanhos:** 48 px (padrão), 56 px (ação principal da tela e barra de total) e 40 px (só em PC/densidade alta).
+  - **Botão "+" central:** manter, com o mesmo estilo primário e sombra um pouco maior, para parecer flutuante.
+  - **Contraste AA** conferido no teste de tokens existente. Nada de cores fora da paleta. Sem bibliotecas de UI novas: só CSS e tokens.
+  - **Aceite:** capturas `r5-depois-` mostrando Hoje, Sabores, Revisar, Clientes, Mais e Financeiro com o novo estilo.
+
 ### Outros ajustes
 
 - **R5-9 — `User-Agent` do Photon.** Contém a URL do repositório pessoal (`places-provider.ts:35`). Passar para variável de configuração (ex.: `PLACES_USER_AGENT`), com valor neutro padrão "BrigaderiaGestao/1.0", e documentar a troca para o contato da empresa na transferência.
@@ -104,7 +132,7 @@ As capturas mostram que **um quarto da tela** se perde antes do conteúdo, em to
     - **Não criar o secret nem executar nada remoto:** só preparar o workflow e documentar.
 - **R5-11 — Reduzir flags no futuro.** Depois da homologação, considerar consolidar as flags (ex.: `OPERATIONS`, `FINANCE` e `EXTRAS`), para facilitar a manutenção pelos proprietários. Não bloqueante.
 
-**Ordem:** R5-1 a R5-4 primeiro (maior impacto para a operadora), depois R5-5 a R5-10. Novas funcionalidades só depois disso. Antes de seguir, a prioridade passa a ser **homologar em aparelho real**.
+**Ordem:** R5-1 a R5-4 e **R5-12** primeiro (maior impacto para a operadora), depois R5-5 a R5-10. Novas funcionalidades só depois disso. Antes de seguir, a prioridade passa a ser **homologar em aparelho real**.
 
 **Aceite:**
 
