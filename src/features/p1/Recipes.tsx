@@ -1,3 +1,4 @@
+import { priceForMargin } from '../../../shared/costing';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Failure, useRemote } from '../operations/common';
@@ -183,6 +184,14 @@ export function Supplies() {
     </>
   );
 }
+function simulatedPrice(cost: number | null, margin: string) {
+  if (cost === null || !margin.trim()) return null;
+  try {
+    return priceForMargin(cost, parsePrice(margin));
+  } catch {
+    return null;
+  }
+}
 export function Recipes() {
   const view = useRemote<{ role: string; items: Recipe[] }>('p1/recipes'),
     supplies = useRemote<{ items: Supply[] }>('p1/supplies'),
@@ -196,6 +205,7 @@ export function Recipes() {
     save = useP1Save(view.refresh),
     [editing, setEditing] = useState<Recipe | null>(null),
     [form, setForm] = useState(empty),
+    [simulation, setSimulation] = useState(''),
     [components, setComponents] = useState([{ supply_id: '', quantity: '' }]);
   const options =
     products.data?.flatMap((p) =>
@@ -397,6 +407,21 @@ export function Recipes() {
           </button>
         </form>
       )}
+      <section className="panel">
+        <h2>Simulador de margem</h2>
+        <label>
+          Simular margem (%)
+          <input
+            inputMode="decimal"
+            value={simulation}
+            onChange={(e) => setSimulation(e.target.value)}
+          />
+        </label>
+        <p>
+          De 0 a 95%. Simulação local sobre o custo estimado da embalagem; não
+          salva ficha nem muda preço comercial.
+        </p>
+      </section>
       {view.data?.items.map((r) => (
         <article className="panel" key={r.id}>
           <h2>
@@ -463,6 +488,14 @@ export function Recipes() {
             >
               Editar ficha {r.name}
             </button>
+          )}
+          {simulation.trim() && (
+            <p>
+              Preço na margem simulada:{' '}
+              {simulatedPrice(r.estimate.box_cost_cents, simulation) === null
+                ? 'informe margem válida e custos completos'
+                : money(simulatedPrice(r.estimate.box_cost_cents, simulation)!)}
+            </p>
           )}
           <p>
             Estimativa com arredondamento para cima; não altera preços, pedidos

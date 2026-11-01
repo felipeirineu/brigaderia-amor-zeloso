@@ -1,3 +1,4 @@
+import { priceForMargin } from '../shared/costing';
 import { z } from 'zod';
 const cents = z.number().int().min(0).max(100000000),
   quantity = z.number().int().positive().max(1000000000000);
@@ -99,8 +100,6 @@ export function estimateRecipe(
     suggested_price_cents:
       box === null
         ? null
-        : safeQuantity(
-            ceilDivide(box * 10000n, BigInt(10000 - recipe.margin_bps)),
-          ),
+        : priceForMargin(safeQuantity(box), recipe.margin_bps),
   };
 }

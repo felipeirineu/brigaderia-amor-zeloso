@@ -83,6 +83,16 @@ test('relatórios CSV, despesa/estorno, ficha/preço e compras privadas', async 
     await expect(
       page.getByText('Custo por embalagem vendida:', { exact: false }),
     ).toContainText('6,68');
+    const simulationWrites = [];
+    page.on('request', (r) => {
+      if (['POST', 'PUT', 'DELETE'].includes(r.method()))
+        simulationWrites.push(r.url());
+    });
+    await page.getByLabel('Simular margem (%)').fill('30,00');
+    await expect(
+      page.getByText('Preço na margem simulada:', { exact: false }),
+    ).toContainText('4,78');
+    expect(simulationWrites).toHaveLength(0);
     await page.goto(t.url + '/gestao/compras');
     await page.getByLabel('Produção de', { exact: true }).fill('2030-01-07');
     await page.getByLabel('Produção até', { exact: true }).fill('2030-01-07');
