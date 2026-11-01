@@ -103,7 +103,7 @@ export async function operations(
       orders,
       production,
       totals,
-      received_available: false,
+      received_available: await financeReady(env),
       truncated,
     });
   }

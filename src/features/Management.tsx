@@ -655,6 +655,9 @@ function Orders({
     setDefaults(null);
     setTemplate('');
     if (!financial || !id || editing) return;
+    setItems([{ variant_id: '', quantity: 1 }]);
+    setDue('');
+    setNotes('');
     try {
       const d = await api<NonNullable<typeof defaults>>(
         `finance/customers/${id}/defaults`,
@@ -935,6 +938,9 @@ function Orders({
                 <>
                   <button
                     onClick={() => {
+                      choice.current++;
+                      setDefaults(null);
+                      setTemplate('');
                       setEditing(o);
                       setCustomer(o.customer_id);
                       setDue(

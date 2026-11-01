@@ -27,6 +27,10 @@ test('B2B, pedido preenchido, sinal, fechamento, Pix assistido e tutorial sem gr
       name: 'Cliente DEMONSTRAÇÃO E2E financeiro',
       phone: '+5511900000000',
     });
+    const noModel = await api('customers', {
+      name: 'Cliente DEMONSTRAÇÃO sem padrão',
+      phone: '+5511900000001',
+    });
     const p = await api('products', {
       name: 'Produto DEMONSTRAÇÃO',
       variants: [
@@ -73,6 +77,19 @@ test('B2B, pedido preenchido, sinal, fechamento, Pix assistido e tutorial sem gr
     await expect(
       page.getByLabel('Data e hora combinadas (João Pessoa)'),
     ).not.toHaveValue('');
+    await page
+      .getByRole('combobox', { name: 'Cliente', exact: true })
+      .selectOption(noModel.id);
+    await expect(
+      page.getByLabel('Data e hora combinadas (João Pessoa)'),
+    ).toHaveValue('');
+    await expect(
+      page.getByRole('combobox', { name: 'Variante', exact: true }),
+    ).toHaveValue('');
+    await page
+      .getByRole('combobox', { name: 'Cliente', exact: true })
+      .selectOption(c.id);
+    await expect(page.getByLabel('Quantidade de embalagens')).toHaveValue('2');
     await page
       .getByRole('button', { name: 'Salvar pedido', exact: true })
       .click();

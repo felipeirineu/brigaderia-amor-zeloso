@@ -18,6 +18,10 @@ try {
     if (!r.ok) throw Error(`${path}: ${r.status} ${await r.text()}`);
     return r.json();
   }
+  assert.equal(
+    (await call('today', undefined, 'GET')).received_available,
+    true,
+  );
   const c = await call('customers', {
     name: 'Cliente DEMONSTRAÇÃO financeiro',
     phone: '+5511900000000',
@@ -67,7 +71,7 @@ try {
   checks++;
   const draft = {
     customer_id: c.id,
-    due_at: '2025-01-07T13:00:00.000Z',
+    due_at: '2030-01-07T13:00:00.000Z',
     items: [{ variant_id: variant, quantity: 2 }],
   };
   const model = await call('recurring', {

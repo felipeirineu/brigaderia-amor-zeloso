@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { runtime } from '../helpers/runtime.mjs';
-const t = await runtime({ migrationLimit: 2 });
+const t = await runtime({ migrationLimit: 2, financeEnabled: true });
 try {
   const client = crypto.randomUUID(),
     product = crypto.randomUUID(),
@@ -76,6 +76,23 @@ try {
     (await readFile('database/migrations/0004_recurring_courier.sql', 'utf8'))
       .replace(/--[^\n]*/g, '')
       .replace(/\n/g, ' '),
+  );
+  assert.equal(
+    (await (await t.request('capabilities', { cookie })).json()).finance,
+    false,
+  );
+  await t.db.exec(
+    (await readFile('database/migrations/0005_finance.sql', 'utf8'))
+      .replace(/--[^\n]*/g, '')
+      .replace(/\n/g, ' '),
+  );
+  assert.equal(
+    (await (await t.request('capabilities', { cookie })).json()).finance,
+    true,
+  );
+  assert.equal(
+    (await t.db.prepare('SELECT COUNT(*) AS n FROM payment_events').first()).n,
+    0,
   );
   const after = await t.db
     .prepare('SELECT * FROM orders WHERE id=?')
