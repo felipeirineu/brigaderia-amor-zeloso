@@ -24,6 +24,8 @@ jobs:
       - run: npm test
       - run: npm run test:api
       - run: npm run test:listing
+      - run: npm run test:r2
+      - run: npm run test:p1
       - run: npm run test:finance
       - run: npm run test:operations
       - run: npm run test:brand

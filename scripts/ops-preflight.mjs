@@ -1,14 +1,13 @@
 // Somente SELECT; não lê dados pessoais nem executa migrations/seeds.
 import { execFileSync } from 'node:child_process';
+import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
-export const expectedMigrations = [
-  '0001_identity_foundation.sql',
-  '0002_management.sql',
-  '0003_operations.sql',
-  '0004_recurring_courier.sql',
-  '0005_finance.sql',
-];
+export const expectedMigrations = readdirSync(
+  new URL('../database/migrations/', import.meta.url),
+)
+  .filter((f) => f.endsWith('.sql'))
+  .sort();
 const tables = [
   'organizations',
   'customers',
@@ -30,6 +29,18 @@ const tables = [
   'closings',
   'closing_orders',
   'payment_settings',
+  'closing_order_history',
+  'closing_annulments',
+  'customer_credits',
+  'credit_refunds',
+  'credit_allocation_events',
+  'combined_receipts',
+  'p1_requests',
+  'reminders',
+  'expense_events',
+  'supplies',
+  'recipes',
+  'recipe_components',
 ];
 export function inspect(
   database,
@@ -101,7 +112,13 @@ export function inspect(
     ].every((x) => names.has(x)) &&
     orderColumns.includes('order_type') &&
     courier;
-  const finance = operations && tables.slice(11).every((x) => names.has(x));
+  const finance = operations && tables.slice(11, 26).every((x) => names.has(x));
+  const p1 = finance && tables.slice(26).every((x) => names.has(x));
+  const generated = names.has('order_terms')
+    ? query("SELECT name FROM pragma_table_xinfo('order_terms')").map(
+        (r) => r.name,
+      )
+    : [];
   return {
     database,
     mode: remote ? 'remoto' : 'local',
@@ -111,6 +128,9 @@ export function inspect(
     foreign_key_violations: violations,
     schema_operations_ready: operations,
     schema_finance_ready: finance,
+    schema_p1_ready: p1,
+    generated_condition_columns:
+      generated.includes('payment_mode') && generated.includes('closing_cycle'),
   };
 }
 if (resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
