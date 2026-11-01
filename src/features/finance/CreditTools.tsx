@@ -78,14 +78,12 @@ export function CreditTools({
             }
           }}
         >
-          <label>
-            Crédito recebido (R$)
-            <MoneyField
-              required
-              value={amount}
-              onValueChange={(value) => setAmount(value)}
-            />
-          </label>
+          <MoneyField
+            label="Crédito recebido (R$)"
+            required
+            value={amount}
+            onValueChange={(value) => setAmount(value)}
+          />
           <label>
             Forma do adiantamento
             <select
@@ -174,14 +172,12 @@ export function CreditTools({
                 ))}
             </select>
           </label>
-          <label>
-            Valor a alocar (R$)
-            <MoneyField
-              required
-              value={useAmount}
-              onValueChange={(value) => setUseAmount(value)}
-            />
-          </label>
+          <MoneyField
+            label="Valor a alocar (R$)"
+            required
+            value={useAmount}
+            onValueChange={(value) => setUseAmount(value)}
+          />
           <button disabled={busy}>Usar crédito selecionado</button>
         </form>
       )}

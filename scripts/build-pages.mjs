@@ -5,6 +5,7 @@ await build({
   entryPoints: ['worker/pages.ts'],
   outfile: 'dist/_worker.js',
   bundle: true,
+  loader: { '.webp': 'binary' },
   format: 'esm',
   platform: 'browser',
   target: 'es2022',

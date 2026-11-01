@@ -114,10 +114,12 @@ export function QuickReceipt({
               Saldo do pedido: {money(current.balance_cents)}. Confira o
               recebimento antes de registrar.
             </p>
-            <label>
-              Valor recebido (R$)
-              <MoneyField required value={value} onValueChange={setAmount} />
-            </label>
+            <MoneyField
+              label="Valor recebido (R$)"
+              required
+              value={value}
+              onValueChange={setAmount}
+            />
             <div className="chips" role="group" aria-label="Forma de pagamento">
               {Object.entries(paymentMethods).map(([v, label]) => (
                 <button

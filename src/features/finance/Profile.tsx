@@ -145,22 +145,18 @@ export function CustomerProfile() {
                 />
               </label>
             )}
-            <label>
-              Taxa padrão (R$)
-              <MoneyField
-                value={
-                  form
-                    ? fee
-                    : (value.courier_fee_cents / 100)
-                        .toFixed(2)
-                        .replace('.', ',')
-                }
-                onValueChange={(value) => {
-                  change({});
-                  setFee(value);
-                }}
-              />
-            </label>
+            <MoneyField
+              label="Taxa padrão (R$)"
+              value={
+                form
+                  ? fee
+                  : (value.courier_fee_cents / 100).toFixed(2).replace('.', ',')
+              }
+              onValueChange={(value) => {
+                change({});
+                setFee(value);
+              }}
+            />
             <TermsEditor
               value={value.terms}
               onChange={(terms) => change({ terms })}

@@ -3,9 +3,10 @@ import { centsFromDigits, displayCents, MAX_MONEY, readCents } from './numeric';
 type Base = Omit<
   InputHTMLAttributes<HTMLInputElement>,
   'value' | 'onChange' | 'type' | 'inputMode' | 'min' | 'max' | 'pattern'
->;
+> & { label?: string };
 export function MoneyInput({
   value,
+  label,
   onValueChange,
   maxCents = MAX_MONEY,
   ...props
@@ -43,68 +44,72 @@ export function MoneyInput({
     setEditing(false);
   }
   return (
-    <span className="numeric-control">
-      <input
-        {...props}
-        ref={input}
-        type="text"
-        inputMode="numeric"
-        required={!!props.required && value === null}
-        aria-invalid={!!error}
-        aria-describedby={error ? id : props['aria-describedby']}
-        value={
-          editing
-            ? digits
-              ? (() => {
-                  try {
-                    return displayCents(centsFromDigits(digits, maxCents)!);
-                  } catch {
-                    return digits;
-                  }
-                })()
-              : ''
-            : value !== null && (value !== 0 || explicit)
-              ? displayCents(value)
-              : ''
-        }
-        placeholder={
-          editing && before !== null && before !== 0
-            ? displayCents(before)
-            : props.placeholder || 'Informe valor'
-        }
-        onFocus={() => {
-          setBefore(value);
-          setDigits('');
-          setError('');
-          setEditing(true);
-        }}
-        onChange={(e) => change(e.target.value)}
-        onPaste={(e) => {
-          e.preventDefault();
-          change(e.clipboardData.getData('text'));
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            if (!error) input.current?.blur();
+    <span className="numeric-field">
+      {label && <label htmlFor={id + '-input'}>{label}</label>}
+      <span className="numeric-control">
+        <input
+          {...props}
+          id={props.id ?? id + '-input'}
+          ref={input}
+          type="text"
+          inputMode="numeric"
+          required={!!props.required && value === null}
+          aria-invalid={!!error}
+          aria-describedby={error ? id : props['aria-describedby']}
+          value={
+            editing
+              ? digits
+                ? (() => {
+                    try {
+                      return displayCents(centsFromDigits(digits, maxCents)!);
+                    } catch {
+                      return digits;
+                    }
+                  })()
+                : ''
+              : value !== null && (value !== 0 || explicit)
+                ? displayCents(value)
+                : ''
           }
-        }}
-        onBlur={finish}
-      />
-      {editing && (
-        <button
-          type="button"
-          disabled={!!error}
-          onClick={() => input.current?.blur()}
-        >
-          OK
-        </button>
-      )}
-      {error && (
-        <small id={id} role="alert">
-          {error}
-        </small>
-      )}
+          placeholder={
+            editing && before !== null && before !== 0
+              ? displayCents(before)
+              : props.placeholder || 'Informe valor'
+          }
+          onFocus={() => {
+            setBefore(value);
+            setDigits('');
+            setError('');
+            setEditing(true);
+          }}
+          onChange={(e) => change(e.target.value)}
+          onPaste={(e) => {
+            e.preventDefault();
+            change(e.clipboardData.getData('text'));
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (!error) input.current?.blur();
+            }
+          }}
+          onBlur={finish}
+        />
+        {editing && (
+          <button
+            type="button"
+            disabled={!!error}
+            onClick={() => input.current?.blur()}
+          >
+            OK
+          </button>
+        )}
+        {error && (
+          <small id={id} role="alert">
+            {error}
+          </small>
+        )}
+      </span>
     </span>
   );
 }
@@ -127,6 +132,7 @@ export function MoneyField({
 }
 export function QuantityInput({
   value,
+  label,
   onValueChange,
   min = 1,
   max = 10000,
@@ -143,7 +149,8 @@ export function QuantityInput({
     [digits, setDigits] = useState(''),
     [error, setError] = useState(''),
     [before, setBefore] = useState(value),
-    input = useRef<HTMLInputElement>(null);
+    input = useRef<HTMLInputElement>(null),
+    id = useId();
   function change(raw: string) {
     const text = raw.replace(/\D/g, '');
     setDigits(text);
@@ -168,70 +175,75 @@ export function QuantityInput({
   }
   const name = props['aria-label'] || 'quantidade';
   return (
-    <span className="numeric-control quantity-control">
-      {steppers && (
-        <button
-          type="button"
-          aria-label={`Diminuir ${name}`}
-          disabled={value === null || value <= min || props.disabled}
-          onClick={() => onValueChange(Math.max(min, (value ?? min) - 1))}
-        >
-          −
-        </button>
-      )}
-      <input
-        {...props}
-        ref={input}
-        type="text"
-        inputMode="numeric"
-        pattern="[0-9]*"
-        required={!!props.required && value === null}
-        value={editing ? digits : (value ?? '')}
-        placeholder={
-          editing && before !== null
-            ? String(before)
-            : props.placeholder || 'Quantidade'
-        }
-        aria-invalid={!!error}
-        onFocus={() => {
-          setBefore(value);
-          setEditing(true);
-          setDigits('');
-          setError('');
-        }}
-        onChange={(e) => change(e.target.value)}
-        onPaste={(e) => {
-          e.preventDefault();
-          change(e.clipboardData.getData('text'));
-        }}
-        onBlur={finish}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            if (!error) input.current?.blur();
+    <span className="numeric-field">
+      {label && <label htmlFor={id + '-input'}>{label}</label>}
+      <span className="numeric-control quantity-control">
+        <input
+          {...props}
+          id={props.id ?? id + '-input'}
+          ref={input}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          required={!!props.required && value === null}
+          value={editing ? digits : (value ?? '')}
+          placeholder={
+            editing && before !== null
+              ? String(before)
+              : props.placeholder || 'Quantidade'
           }
-        }}
-      />
-      {editing && (
-        <button
-          type="button"
-          disabled={!!error}
-          onClick={() => input.current?.blur()}
-        >
-          OK
-        </button>
-      )}
-      {steppers && (
-        <button
-          type="button"
-          aria-label={`Aumentar ${name}`}
-          disabled={(value !== null && value >= max) || props.disabled}
-          onClick={() => onValueChange(Math.min(max, (value ?? 0) + 1))}
-        >
-          +
-        </button>
-      )}
-      {error && <small role="alert">{error}</small>}
+          aria-invalid={!!error}
+          onFocus={() => {
+            setBefore(value);
+            setEditing(true);
+            setDigits('');
+            setError('');
+          }}
+          onChange={(e) => change(e.target.value)}
+          onPaste={(e) => {
+            e.preventDefault();
+            change(e.clipboardData.getData('text'));
+          }}
+          onBlur={finish}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              if (!error) input.current?.blur();
+            }
+          }}
+        />
+        {steppers && (
+          <button
+            className="quantity-minus"
+            type="button"
+            aria-label={`Diminuir ${name}`}
+            disabled={value === null || value <= min || props.disabled}
+            onClick={() => onValueChange(Math.max(min, (value ?? min) - 1))}
+          >
+            −
+          </button>
+        )}
+        {editing && (
+          <button
+            type="button"
+            disabled={!!error}
+            onClick={() => input.current?.blur()}
+          >
+            OK
+          </button>
+        )}
+        {steppers && (
+          <button
+            type="button"
+            aria-label={`Aumentar ${name}`}
+            disabled={(value !== null && value >= max) || props.disabled}
+            onClick={() => onValueChange(Math.min(max, (value ?? 0) + 1))}
+          >
+            +
+          </button>
+        )}
+        {error && <small role="alert">{error}</small>}
+      </span>
     </span>
   );
 }

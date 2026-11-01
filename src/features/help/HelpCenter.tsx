@@ -29,7 +29,7 @@ export function Tour({ role }: { role: string }) {
       {
         target: 'new',
         title: 'Cadastro rápido',
-        text: 'O botão + reúne novo pedido e novo cliente. Funções financeiras ainda não disponíveis são identificadas.',
+        text: 'O botão + reúne novo pedido e novo cliente. No modo simples, escolha o cliente, toque nas fotos e revise antes de confirmar.',
       },
       {
         target: 'customers',
@@ -121,6 +121,21 @@ export function HelpCenter({
   return (
     <>
       <h1>Ajuda</h1>
+      <section className="panel">
+        <h2>Pedido por fotos</h2>
+        <p>
+          Em Mais → Preferências escolha Modo simples. Escolha o cliente e toque
+          na foto para adicionar uma embalagem. Use + ou − para ajustar; Remover
+          retira o item. O pedido padrão válido preenche as quantidades. Sem
+          padrão, escolha Repetir último pedido ou comece vazio.
+        </p>
+        <p>
+          Revise itens, data, entrega e pagamento. Confirme uma vez e confira a
+          mensagem antes de abrir o WhatsApp. Para editar valores, digite os
+          centavos: 4200 vira 42,00. Ao tocar no campo ele limpa; sair vazio
+          restaura o valor anterior. O botão OK fecha a edição no celular.
+        </p>
+      </section>
       <p>
         Guias curtos para usar a gestão. O passeio pode ser refeito pelo botão
         “Conhecer o app” ou “Refazer passeio”.

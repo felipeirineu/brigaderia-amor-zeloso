@@ -7,6 +7,8 @@
     "PUBLIC_CATALOG_ENABLED": "false",
     "FINANCE_ENABLED": "false",
     "P1_ENABLED": "false",
+    "MOBILE_ENABLED": "false",
+    "FIELD_ENABLED": "false",
     "OPERATIONS_ENABLED": "false",
     "ACCESS_TEAM_DOMAIN": "mute-lab-760e.cloudflareaccess.com",
     "ACCESS_AUD": "beaea164c402ebf312671456795789479fd92b461a58d57497fee40eef17a5cc",

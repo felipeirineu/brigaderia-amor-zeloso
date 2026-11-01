@@ -12,6 +12,8 @@ export async function runtime({
   operationsEnabled = true,
   financeEnabled = false,
   p1Enabled = false,
+  mobileEnabled = false,
+  fieldEnabled = false,
 } = {}) {
   const issuer = 'https://demonstracao-teste.cloudflareaccess.com';
   const { privateKey, publicKey } = await generateKeyPair('RS256');
@@ -24,6 +26,7 @@ export async function runtime({
   const result = await build({
     entryPoints: ['worker/pages.ts'],
     bundle: true,
+    loader: { '.webp': 'binary' },
     format: 'esm',
     platform: 'browser',
     target: 'es2022',
@@ -43,6 +46,8 @@ export async function runtime({
         OPERATIONS_ENABLED: operationsEnabled ? 'true' : 'false',
         FINANCE_ENABLED: financeEnabled ? 'true' : 'false',
         P1_ENABLED: p1Enabled ? 'true' : 'false',
+        MOBILE_ENABLED: mobileEnabled ? 'true' : 'false',
+        FIELD_ENABLED: fieldEnabled ? 'true' : 'false',
       },
       outboundService: async (req) =>
         new URL(req.url).href === `${issuer}/cdn-cgi/access/certs`

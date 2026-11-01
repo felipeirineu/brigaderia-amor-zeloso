@@ -1231,3 +1231,7 @@ button,
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+.quantity-minus {
+  order: -1;
+}

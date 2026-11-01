@@ -129,13 +129,11 @@ export function Supplies() {
               onChange={(e) => setQuantity(e.target.value)}
             />
           </label>
-          <label>
-            Preço da embalagem (R$, vazio se desconhecido)
-            <MoneyField
-              value={price}
-              onValueChange={(value) => setPrice(value)}
-            />
-          </label>
+          <MoneyField
+            label="Preço da embalagem (R$, vazio se desconhecido)"
+            value={price}
+            onValueChange={(value) => setPrice(value)}
+          />
           <label>
             <input
               type="checkbox"
@@ -293,16 +291,14 @@ export function Recipes() {
               )}
             </select>
           </label>
-          <label>
-            Rendimento do lote (unidades produzidas)
-            <QuantityField
-              min={1}
-              max={1000000}
-              required
-              value={form.yield}
-              onValueChange={(value) => setForm({ ...form, yield: value })}
-            />
-          </label>
+          <QuantityField
+            label="Rendimento do lote (unidades produzidas)"
+            min={1}
+            max={1000000}
+            required
+            value={form.yield}
+            onValueChange={(value) => setForm({ ...form, yield: value })}
+          />
           {components.map((c, i) => (
             <fieldset key={i}>
               <legend>Componente {i + 1}</legend>
@@ -407,13 +403,11 @@ export function Recipes() {
       )}
       <section className="panel">
         <h2>Simulador de margem</h2>
-        <label>
-          Simular margem (%)
-          <MoneyField
-            value={simulation}
-            onValueChange={(value) => setSimulation(value)}
-          />
-        </label>
+        <MoneyField
+          label="Simular margem (%)"
+          value={simulation}
+          onValueChange={(value) => setSimulation(value)}
+        />
         <p>
           De 0 a 95%. Simulação local sobre o custo estimado da embalagem; não
           salva ficha nem muda preço comercial.

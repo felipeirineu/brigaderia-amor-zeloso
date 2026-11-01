@@ -9,6 +9,11 @@ interface PagesEnv extends Env {
 export default {
   async fetch(request: Request, env: PagesEnv): Promise<Response> {
     const path = new URL(request.url).pathname;
+    if (path.startsWith('/private-flavors/'))
+      return new Response('Not found', {
+        status: 404,
+        headers: { 'Cache-Control': 'no-store' },
+      });
     if (path === '/api' || path.startsWith('/api/')) {
       return api.fetch(request, env);
     }

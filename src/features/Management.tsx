@@ -1,3 +1,13 @@
+import { Preferences } from './mobile/Preferences';
+import { Totem } from './mobile/Totem';
+import { useOrderMode } from './mobile/useOrderMode';
+import {
+  flavorPhotos,
+  flavorNames,
+  suggestPhoto,
+  photoURL,
+} from '../../shared/flavors';
+import { QuantityField, MoneyField } from '../components/NumericInputs';
 import { Recipes, Supplies } from './p1/Recipes';
 import { Shopping } from './p1/Shopping';
 import { Expenses } from './p1/Expenses';
@@ -15,7 +25,14 @@ import {
   useState,
   type FormEvent,
 } from 'react';
-import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
+import {
+  Link,
+  NavLink,
+  Route,
+  Routes,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 import { HelpTip } from '../components/HelpTip';
 import { Icon, type IconName } from '../components/Icon';
 import { HelpCenter, Tour } from './help/HelpCenter';
@@ -30,6 +47,7 @@ interface Session {
   operations?: boolean;
   finance?: boolean;
   p1?: boolean;
+  mobile?: boolean;
 }
 interface Customer {
   id: string;
@@ -41,6 +59,7 @@ interface Customer {
   version: number;
 }
 interface Variant {
+  photo_key?: string | null;
   id?: string;
   label: string;
   weight_grams: number;
@@ -49,6 +68,7 @@ interface Variant {
   active: number | boolean;
 }
 interface Product {
+  photo_key?: string | null;
   id: string;
   name: string;
   description: string;
@@ -387,7 +407,8 @@ const emptyVariant = (): Variant => ({
   price_cents: 0,
   active: true,
 });
-function Products() {
+function Products({ mobile = false }: { mobile?: boolean }) {
+  const [photo, setPhoto] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const list = useList<Product>(
     `products?active=all&q=${encodeURIComponent(query)}`,
@@ -398,7 +419,7 @@ function Products() {
   const [description, setDescription] = useState('');
   const [active, setActive] = useState(true);
   const [variants, setVariants] = useState<Variant[]>([emptyVariant()]);
-  const [prices, setPrices] = useState(['0,00']);
+  const [prices, setPrices] = useState(['']);
   const key = useRef(crypto.randomUUID());
   function reset() {
     setEditing(null);
@@ -406,7 +427,8 @@ function Products() {
     setDescription('');
     setActive(true);
     setVariants([emptyVariant()]);
-    setPrices(['0,00']);
+    setPrices(['']);
+    setPhoto(null);
     key.current = crypto.randomUUID();
   }
   function variant(index: number, changes: Partial<Variant>) {
@@ -420,6 +442,7 @@ function Products() {
       const payload = {
         name,
         description,
+        ...(mobile ? { photo_key: photo } : {}),
         active,
         variants: variants.map((v, i) => ({
           ...v,
@@ -472,6 +495,35 @@ function Products() {
           />{' '}
           Produto ativo
         </label>
+        {mobile && (
+          <fieldset>
+            <legend>Foto do produto</legend>
+            <button type="button" onClick={() => setPhoto(suggestPhoto(name))}>
+              Sugerir foto pelo nome
+            </button>
+            <div className="photo-choices">
+              <button
+                type="button"
+                aria-pressed={photo === null}
+                onClick={() => setPhoto(null)}
+              >
+                Sem foto
+              </button>
+              {flavorPhotos.map((key) => (
+                <button
+                  type="button"
+                  key={key}
+                  aria-pressed={photo === key}
+                  onClick={() => setPhoto(key)}
+                >
+                  <img src={photoURL(key)} alt="" width={80} height={80} />
+                  {flavorNames[key]}
+                </button>
+              ))}
+            </div>
+            <p>Escolha editável; só é salva ao salvar o produto.</p>
+          </fieldset>
+        )}
         {variants.map((v, i) => (
           <fieldset key={i}>
             <legend>Variante {i + 1}</legend>
@@ -484,46 +536,52 @@ function Products() {
                 onChange={(e) => variant(i, { label: e.target.value })}
               />
             </label>
-            <label>
-              Peso por unidade (g)
-              <input
-                required
-                type="number"
-                min="1"
-                max="100000"
-                value={v.weight_grams}
-                onChange={(e) =>
-                  variant(i, { weight_grams: Number(e.target.value) })
-                }
-              />
-            </label>
-            <label>
-              Unidades por embalagem
-              <input
-                required
-                type="number"
-                min="1"
-                max="10000"
-                value={v.units_per_box}
-                onChange={(e) =>
-                  variant(i, { units_per_box: Number(e.target.value) })
-                }
-              />
-            </label>
-            <label>
-              Preço da embalagem (R$)
-              <input
-                required
-                inputMode="decimal"
-                pattern="[0-9]+(,[0-9]{1,2})?"
-                value={prices[i]}
-                onChange={(e) =>
-                  setPrices(
-                    prices.map((p, j) => (j === i ? e.target.value : p)),
-                  )
-                }
-              />
-            </label>
+            <QuantityField
+              label="Peso por unidade (g)"
+              required
+              min="1"
+              max="100000"
+              value={v.weight_grams}
+              onValueChange={(value) =>
+                variant(i, { weight_grams: Number(value) })
+              }
+            />
+            <QuantityField
+              label="Unidades por embalagem"
+              required
+              min="1"
+              max="10000"
+              value={v.units_per_box}
+              onValueChange={(value) =>
+                variant(i, { units_per_box: Number(value) })
+              }
+            />
+            {mobile && (
+              <label>
+                Foto da variante (herda a do produto se vazia)
+                <select
+                  value={v.photo_key ?? ''}
+                  onChange={(e) =>
+                    variant(i, { photo_key: e.target.value || null })
+                  }
+                >
+                  <option value="">Usar foto do produto</option>
+                  {flavorPhotos.map((k) => (
+                    <option key={k} value={k}>
+                      {flavorNames[k]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <MoneyField
+              label="Preço da embalagem (R$)"
+              required
+              value={prices[i]}
+              onValueChange={(value) =>
+                setPrices(prices.map((p, j) => (j === i ? value : p)))
+              }
+            />
             <label>
               <input
                 type="checkbox"
@@ -540,7 +598,7 @@ function Products() {
             disabled={variants.length >= 30}
             onClick={() => {
               setVariants([...variants, emptyVariant()]);
-              setPrices([...prices, '0,00']);
+              setPrices([...prices, '']);
             }}
           >
             Adicionar variante
@@ -580,12 +638,14 @@ function Products() {
               <button
                 onClick={() => {
                   setEditing(p);
+                  setPhoto(p.photo_key ?? null);
                   setName(p.name);
                   setDescription(p.description);
                   setActive(!!p.active);
                   setVariants(
                     p.variants.map((v) => ({
                       id: v.id,
+                      ...(mobile ? { photo_key: v.photo_key ?? null } : {}),
                       label: v.label,
                       weight_grams: v.weight_grams,
                       units_per_box: v.units_per_box,
@@ -629,12 +689,53 @@ function Products() {
   );
 }
 function Orders({
+  mobile = false,
+  role = 'owner',
+  ...props
+}: {
+  mobile?: boolean;
+  role?: string;
+  operational?: boolean;
+  financial?: boolean;
+}) {
+  const [search] = useSearchParams(),
+    mode = useOrderMode(role);
+  if (mobile && search.get('novo') && mode.simple)
+    return <Totem financial={props.financial} />;
+  return (
+    <>
+      <div className="chips">
+        {mobile && (
+          <>
+            <button
+              aria-pressed={mode.simple}
+              onClick={() => mode.setPreference('simple')}
+            >
+              Pedido por fotos
+            </button>
+            <button
+              aria-pressed={!mode.simple}
+              onClick={() => mode.setPreference('full')}
+            >
+              Lista completa
+            </button>
+          </>
+        )}
+      </div>
+      <FullOrders {...props} simple={mobile && mode.simple} />
+    </>
+  );
+}
+function FullOrders({
+  simple = false,
   operational = false,
   financial = false,
 }: {
   operational?: boolean;
   financial?: boolean;
+  simple?: boolean;
 }) {
+  const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const orders = useList<Order>(`orders?q=${encodeURIComponent(query)}`);
   const customers = useList<Customer>('customers');
@@ -758,154 +859,159 @@ function Orders({
         }
       />
       <p role="status">{save.notice}</p>
-      <form className="data-form panel" onSubmit={submit}>
-        <h2>{editing ? 'Editar rascunho' : 'Novo pedido'}</h2>
-        <label>
-          Cliente
-          <select
-            required
-            value={customer}
-            onChange={(e) => void chooseCustomer(e.target.value)}
-          >
-            <option value="">Selecione</option>
-            {customers.data.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        {defaults && !editing && (
-          <section>
-            <p>
-              Padrões do cliente:{' '}
-              {defaults.profile.address || 'Endereço a definir'} · janela{' '}
-              {defaults.profile.delivery_window || 'a definir'} · condição{' '}
-              {defaults.profile.terms.mode === 'unset'
-                ? 'a definir'
-                : defaults.profile.terms.mode === 'credit'
-                  ? 'a prazo'
-                  : defaults.profile.terms.mode === 'advance'
-                    ? 'adiantado'
-                    : 'na entrega'}
-              . Tudo pode ser revisado.
-            </p>
-            {defaults.plans.length > 0 && (
+      {simple ? (
+        <Link className="button primary-action" to="/gestao/pedidos?novo=1">
+          Novo pedido por fotos
+        </Link>
+      ) : (
+        <form className="data-form panel" onSubmit={submit}>
+          <h2>{editing ? 'Editar rascunho' : 'Novo pedido'}</h2>
+          <label>
+            Cliente
+            <select
+              required
+              value={customer}
+              onChange={(e) => void chooseCustomer(e.target.value)}
+            >
+              <option value="">Selecione</option>
+              {customers.data.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          {defaults && !editing && (
+            <section>
+              <p>
+                Padrões do cliente:{' '}
+                {defaults.profile.address || 'Endereço a definir'} · janela{' '}
+                {defaults.profile.delivery_window || 'a definir'} · condição{' '}
+                {defaults.profile.terms.mode === 'unset'
+                  ? 'a definir'
+                  : defaults.profile.terms.mode === 'credit'
+                    ? 'a prazo'
+                    : defaults.profile.terms.mode === 'advance'
+                      ? 'adiantado'
+                      : 'na entrega'}
+                . Tudo pode ser revisado.
+              </p>
+              {defaults.plans.length > 0 && (
+                <label>
+                  Pedido padrão para preencher
+                  <select
+                    value={template}
+                    onChange={(e) => {
+                      const p = defaults.plans.find(
+                        (p) => p.id === e.target.value,
+                      );
+                      if (p?.valid) applyTemplate(p);
+                    }}
+                  >
+                    <option value="">Escolha um modelo</option>
+                    {defaults.plans.map((p) => (
+                      <option key={p.id} value={p.id} disabled={!p.valid}>
+                        {p.name}
+                        {p.valid ? '' : ' — revisar itens inativos'}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </section>
+          )}
+          <label>
+            Data e hora combinadas (João Pessoa)
+            <input
+              required
+              type="datetime-local"
+              value={due}
+              onChange={(e) => setDue(e.target.value)}
+            />
+          </label>
+          {items.map((i, index) => (
+            <fieldset key={index}>
+              <legend>Item {index + 1}</legend>
               <label>
-                Pedido padrão para preencher
+                Variante
                 <select
-                  value={template}
-                  onChange={(e) => {
-                    const p = defaults.plans.find(
-                      (p) => p.id === e.target.value,
-                    );
-                    if (p?.valid) applyTemplate(p);
-                  }}
+                  required
+                  value={i.variant_id}
+                  onChange={(e) =>
+                    setItems(
+                      items.map((v, j) =>
+                        j === index ? { ...v, variant_id: e.target.value } : v,
+                      ),
+                    )
+                  }
                 >
-                  <option value="">Escolha um modelo</option>
-                  {defaults.plans.map((p) => (
-                    <option key={p.id} value={p.id} disabled={!p.valid}>
-                      {p.name}
-                      {p.valid ? '' : ' — revisar itens inativos'}
+                  <option value="">Selecione</option>
+                  {options.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.label}
                     </option>
                   ))}
+                  {editing?.items
+                    .filter((o) => !options.some((v) => v.id === o.variant_id))
+                    .map((o) => (
+                      <option key={o.variant_id} value={o.variant_id}>
+                        {o.product_name} — {o.variant_label} (histórico)
+                      </option>
+                    ))}
                 </select>
               </label>
-            )}
-          </section>
-        )}
-        <label>
-          Data e hora combinadas (João Pessoa)
-          <input
-            required
-            type="datetime-local"
-            value={due}
-            onChange={(e) => setDue(e.target.value)}
-          />
-        </label>
-        {items.map((i, index) => (
-          <fieldset key={index}>
-            <legend>Item {index + 1}</legend>
-            <label>
-              Variante
-              <select
+              <QuantityField
+                label="Quantidade de embalagens"
                 required
-                value={i.variant_id}
-                onChange={(e) =>
-                  setItems(
-                    items.map((v, j) =>
-                      j === index ? { ...v, variant_id: e.target.value } : v,
-                    ),
-                  )
-                }
-              >
-                <option value="">Selecione</option>
-                {options.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.label}
-                  </option>
-                ))}
-                {editing?.items
-                  .filter((o) => !options.some((v) => v.id === o.variant_id))
-                  .map((o) => (
-                    <option key={o.variant_id} value={o.variant_id}>
-                      {o.product_name} — {o.variant_label} (histórico)
-                    </option>
-                  ))}
-              </select>
-            </label>
-            <label>
-              Quantidade de embalagens
-              <input
-                required
-                type="number"
                 min="1"
                 max="10000"
                 value={i.quantity}
-                onChange={(e) =>
+                onValueChange={(value) =>
                   setItems(
                     items.map((v, j) =>
-                      j === index
-                        ? { ...v, quantity: Number(e.target.value) }
-                        : v,
+                      j === index ? { ...v, quantity: Number(value) } : v,
                     ),
                   )
                 }
               />
-            </label>
-            {items.length > 1 && (
-              <button
-                type="button"
-                onClick={() => setItems(items.filter((_, j) => j !== index))}
-              >
-                Remover item {index + 1}
-              </button>
-            )}
-          </fieldset>
-        ))}
-        <button
-          type="button"
-          disabled={items.length >= 50}
-          onClick={() => setItems([...items, { variant_id: '', quantity: 1 }])}
-        >
-          Adicionar item
-        </button>
-        <label>
-          Observações
-          <textarea
-            maxLength={2000}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </label>
-        <p>Prévia: {money(estimate)}. O servidor confere o total ao salvar.</p>
-        <div className="actions">
-          <button disabled={save.busy}>Salvar pedido</button>
-          <button type="button" onClick={reset}>
-            Limpar edição
+              {items.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => setItems(items.filter((_, j) => j !== index))}
+                >
+                  Remover item {index + 1}
+                </button>
+              )}
+            </fieldset>
+          ))}
+          <button
+            type="button"
+            disabled={items.length >= 50}
+            onClick={() =>
+              setItems([...items, { variant_id: '', quantity: 1 }])
+            }
+          >
+            Adicionar item
           </button>
-        </div>
-      </form>
+          <label>
+            Observações
+            <textarea
+              maxLength={2000}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </label>
+          <p>
+            Prévia: {money(estimate)}. O servidor confere o total ao salvar.
+          </p>
+          <div className="actions">
+            <button disabled={save.busy}>Salvar pedido</button>
+            <button type="button" onClick={reset}>
+              Limpar edição
+            </button>
+          </div>
+        </form>
+      )}
       <label>
         Buscar pedidos por cliente
         <input
@@ -945,6 +1051,10 @@ function Orders({
                 <>
                   <button
                     onClick={() => {
+                      if (simple) {
+                        navigate(`/gestao/pedidos/${o.id}/editar-simples`);
+                        return;
+                      }
                       choice.current++;
                       setDefaults(null);
                       setTemplate('');
@@ -1243,16 +1353,33 @@ export function Management() {
             path="clientes"
             element={<Customers financial={session.finance} />}
           />
-          <Route path="produtos" element={<Products />} />
+          <Route
+            path="produtos"
+            element={<Products mobile={session.mobile} />}
+          />
           <Route
             path="pedidos"
             element={
               <Orders
                 operational={session.operations}
                 financial={session.finance}
+                mobile={session.mobile}
+                role={session.role}
               />
             }
           />
+          {session.mobile && (
+            <Route
+              path="preferencias"
+              element={<Preferences role={session.role} />}
+            />
+          )}
+          {session.mobile && (
+            <Route
+              path="pedidos/:id/editar-simples"
+              element={<Totem financial={session.finance} />}
+            />
+          )}
           {session.p1 && (
             <>
               <Route path="agenda" element={<Agenda />} />
@@ -1281,7 +1408,12 @@ export function Management() {
             <>
               <Route
                 path="pedidos/:id"
-                element={<OrderDetail financial={session.finance} />}
+                element={
+                  <OrderDetail
+                    financial={session.finance}
+                    mobile={session.mobile}
+                  />
+                }
               />
               <Route path="recorrentes" element={<Recurring />} />
               <Route path="mensagens" element={<MessageTemplates />} />
@@ -1342,7 +1474,11 @@ export function Management() {
               <div className="quick-links">
                 <Link
                   className="button"
-                  to="/gestao/pedidos"
+                  to={
+                    session.mobile
+                      ? '/gestao/pedidos?novo=1'
+                      : '/gestao/pedidos'
+                  }
                   onClick={() => quick.current?.close()}
                 >
                   Novo pedido
@@ -1408,6 +1544,7 @@ function More({
           ['produtos', 'Produtos', 'produtos'],
           ['mensagens', 'Modelos de WhatsApp', 'pedidos'],
           ['ajuda', 'Ajuda e tutorial', 'ajuda'],
+          ['preferencias', 'Preferências', 'configuracoes'],
           ...(role === 'owner'
             ? [['acessos', 'Acessos', 'configuracoes']]
             : []),

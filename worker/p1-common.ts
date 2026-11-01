@@ -33,7 +33,16 @@ export async function p1Mutation(
     first: D1PreparedStatement;
     rest: (guard: string, args: string[]) => D1PreparedStatement[];
     response: object;
-    table: 'reminders' | 'supplies' | 'recipes' | 'expense_events';
+    table:
+      | 'reminders'
+      | 'supplies'
+      | 'recipes'
+      | 'expense_events'
+      | 'orders'
+      | 'customer_sites'
+      | 'company_places'
+      | 'display_profiles'
+      | 'displacements';
     id: string;
     action: string;
   }>,

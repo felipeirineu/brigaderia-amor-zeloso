@@ -1,3 +1,4 @@
+import { mobileReady } from './mobile-ready';
 import { p1Ready } from './p1-ready';
 import { financeReady } from './finance-ready';
 import { orderDefaults } from './finance';
@@ -40,6 +41,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       operations: await operationalReady(env),
       finance: await financeReady(env),
       p1: await p1Ready(env),
+      mobile: await mobileReady(env),
       user_id: a.user_id,
       organization_id: a.organization_id,
     });
@@ -311,7 +313,23 @@ export async function management(req: Request, env: Env, a: Actor) {
         )
         .bind(org, entityId, ...guardArgs),
     );
+    const photos = await mobileReady(env);
+    if (
+      (d.photo_key !== undefined ||
+        d.variants.some((v) => v.photo_key !== undefined)) &&
+      !photos
+    )
+      throw new HttpError(503, 'Fotos do pedido aguardam ativação.');
+    if (photos && d.photo_key !== undefined)
+      statements.push(
+        db
+          .prepare(
+            `UPDATE products SET photo_key=? WHERE organization_id=? AND id=? AND ${guard}`,
+          )
+          .bind(d.photo_key, org, entityId, ...guardArgs),
+      );
     for (const v of d.variants) {
+      const variantId = v.id || crypto.randomUUID();
       if (v.id)
         statements.push(
           db
@@ -337,7 +355,7 @@ export async function management(req: Request, env: Env, a: Actor) {
               `INSERT INTO product_variants(id,organization_id,product_id,label,weight_grams,units_per_box,price_cents,active) SELECT ?,?,?,?,?,?,?,? WHERE ${guard}`,
             )
             .bind(
-              crypto.randomUUID(),
+              variantId,
               org,
               entityId,
               v.label,
@@ -347,6 +365,14 @@ export async function management(req: Request, env: Env, a: Actor) {
               +v.active,
               ...guardArgs,
             ),
+        );
+      if (photos && v.photo_key !== undefined)
+        statements.push(
+          db
+            .prepare(
+              `UPDATE product_variants SET photo_key=? WHERE organization_id=? AND product_id=? AND id=? AND ${guard}`,
+            )
+            .bind(v.photo_key, org, entityId, variantId, ...guardArgs),
         );
     }
   } else {

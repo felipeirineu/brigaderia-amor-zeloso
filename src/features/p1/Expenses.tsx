@@ -154,14 +154,12 @@ export function Expenses() {
               }}
             >
               <h2>Registrar despesa realizada</h2>
-              <label>
-                Valor da despesa (R$)
-                <MoneyField
-                  required
-                  value={amount}
-                  onValueChange={(value) => setAmount(value)}
-                />
-              </label>
+              <MoneyField
+                label="Valor da despesa (R$)"
+                required
+                value={amount}
+                onValueChange={(value) => setAmount(value)}
+              />
               <label>
                 Categoria
                 <select

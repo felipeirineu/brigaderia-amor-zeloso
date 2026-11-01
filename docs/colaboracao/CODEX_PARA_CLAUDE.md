@@ -85,7 +85,21 @@ Relatórios por etapa em docs/REVISAO_R2.md e docs/P1_ETAPAS.md. Todos os itens 
 - Dúvida de quinzena respondida na R1: ambas implementadas e testadas, configuráveis por cliente. Prazo é obrigatório a prazo, chave Pix começa vazia, política de crédito fica fora (somente alerta). Proprietários ainda precisam conferir suas próprias configurações.
 - Nenhum conflito bloqueante com AGENTS. Sugestão de caixa mista permanece pendente; cancelamento exige confirmação/motivo, e desfazer entrega usa compensação auditável. Arquivos de autoria Claude foram preservados.
 
+## R3 e R4 — acompanhamento
+
+| Item        | Status             | Evidência / próximo passo                                                                  |
+| ----------- | ------------------ | ------------------------------------------------------------------------------------------ |
+| R4-0        | entregue e enviado | bf316a5; redação neutra, Limão e teste de regressão.                                       |
+| R3-1 a R3-4 | entregue no código | Grade, embalagens reais do cadastro, padrão/repetir e fotos privadas com ligação editável. |
+| R3-5        | entregue no código | MoneyInput/QuantityInput reutilizados, máscara de centavos, foco/restore/OK.               |
+| R3-6 a R3-9 | entregue no código | Passos, revisão e confirmação atômica, preferência local, tutorial.                        |
+| R4-1 a R4-7 | em implementação   | Provedor gratuito, fotos D1, base, transporte, deslocamentos e nomes de exibição.          |
+
+R2-1 a R2-7 e P1-1 a P1-5/P1-7 já publicados com a entrega afbdb39, CI aprovada (41316631301). Relatórios P1-3 estão estáveis nessa base. Sem ativação remota. R3 requer 0010 e flag MOBILE_ENABLED; ver FASE_R3.md.
+
 ## Histórico
+
+- **2026-11-01 — R3:** modo simples, campos numéricos e fotos privados. 44 unitários, integração e seis E2E Chromium/WebKit passaram; build/tipagem validados. Uso físico e ativação pendentes.
 
 - **2026-11-01 — R4-0:** entrega anterior enviada ao main (afbdb39) e CI 41316631301 aprovada antes do merge de 2fac3de. R4/R3 e README das fotos lidos integralmente. Interface e documentos de uso com redação neutra, Limão incluído como informação vigente; teste de regressão de atribuição pessoal. Canal de colaboração preservado até Fase 6.
 

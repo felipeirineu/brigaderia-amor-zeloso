@@ -6,6 +6,9 @@ export interface Env {
   OPERATIONS_ENABLED?: string;
   FINANCE_ENABLED?: string;
   P1_ENABLED?: string;
+  MOBILE_ENABLED?: string;
+  FIELD_ENABLED?: string;
+  ASSETS?: { fetch: (r: Request) => Promise<Response> };
   ACCESS_TEAM_DOMAIN?: string;
   ACCESS_AUD?: string;
   PUBLIC_CATALOG_ENABLED?: string;
@@ -63,6 +66,7 @@ export function writeGuard(req: Request) {
 export async function body<T>(
   req: Pick<Request, 'body'>,
   schema: z.ZodType<T>,
+  limit = 32768,
 ): Promise<T> {
   const reader = req.body?.getReader();
   let size = 0;
@@ -72,7 +76,7 @@ export async function body<T>(
       const { done, value } = await reader.read();
       if (done) break;
       size += value.length;
-      if (size > 32768) {
+      if (size > limit) {
         await reader.cancel();
         throw new HttpError(413, 'Requisição muito grande.');
       }

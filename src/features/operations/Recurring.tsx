@@ -371,13 +371,11 @@ export function Recurring() {
             />
           </label>
         )}
-        <label>
-          Taxa padrão do entregador (R$)
-          <MoneyField
-            value={courierFee}
-            onValueChange={(value) => setCourierFee(value)}
-          />
-        </label>
+        <MoneyField
+          label="Taxa padrão do entregador (R$)"
+          value={courierFee}
+          onValueChange={(value) => setCourierFee(value)}
+        />
         <p>Copiado aos novos pedidos e sempre revisável; não cria despesa.</p>
         {items.map((item, i) => (
           <fieldset key={i}>
@@ -418,23 +416,21 @@ export function Recurring() {
               >
                 <Minus size={20} />
               </button>
-              <label>
-                Embalagens
-                <QuantityField
-                  min="1"
-                  max="10000"
-                  required
-                  value={item.quantity}
-                  onValueChange={(value) =>
-                    setItems(
-                      items.map((v, j) =>
-                        j === i ? { ...v, quantity: Number(value) } : v,
-                      ),
-                    )
-                  }
-                  steppers={false}
-                />
-              </label>
+              <QuantityField
+                label="Embalagens"
+                min="1"
+                max="10000"
+                required
+                value={item.quantity}
+                onValueChange={(value) =>
+                  setItems(
+                    items.map((v, j) =>
+                      j === i ? { ...v, quantity: Number(value) } : v,
+                    ),
+                  )
+                }
+                steppers={false}
+              />
               <button
                 type="button"
                 aria-label={`Aumentar quantidade do item ${i + 1}`}

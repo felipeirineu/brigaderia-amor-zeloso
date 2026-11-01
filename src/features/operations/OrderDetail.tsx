@@ -1,3 +1,4 @@
+import { MoneyField } from '../../components/NumericInputs';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, ChevronRight, Undo2 } from 'lucide-react';
@@ -17,7 +18,13 @@ import {
   nextLabel,
   type OperationalOrder,
 } from './common';
-export function OrderDetail({ financial = false }: { financial?: boolean }) {
+export function OrderDetail({
+  financial = false,
+  mobile = false,
+}: {
+  financial?: boolean;
+  mobile?: boolean;
+}) {
   const { id } = useParams();
   const view = useRemote<OperationalOrder>(`orders/${id}`);
   const history = useRemote<
@@ -101,6 +108,15 @@ export function OrderDetail({ financial = false }: { financial?: boolean }) {
       {order ? (
         <>
           <h1>{order.customer_name}</h1>
+          {mobile &&
+            ['draft', 'awaiting_confirmation'].includes(view.data!.status) && (
+              <Link
+                className="button"
+                to={`/gestao/pedidos/${id}/editar-simples`}
+              >
+                Ajustar por fotos
+              </Link>
+            )}
           <p>
             {dateTime(order.due_at)} · {money(order.total_cents)}
           </p>
@@ -245,17 +261,12 @@ export function OrderDetail({ financial = false }: { financial?: boolean }) {
                         }
                       />
                     </label>
-                    <label>
-                      Taxa do motoboy (R$)
-                      <input
-                        inputMode="decimal"
+                    <MoneyField label="Taxa do motoboy (R$)" 
                         required
                         value={delivery.price}
-                        onChange={(e) =>
-                          setDelivery({ ...delivery, price: e.target.value })
-                        }
-                      />
-                    </label>
+                        onValueChange={(value) =>
+                          setDelivery({ ...delivery, price: value })
+                        } />
                     <p>
                       Registrar taxa não cria gasto nem muda o total do pedido.
                     </p>

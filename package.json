@@ -31,7 +31,8 @@
     "ops:preflight": "node scripts/ops-preflight.mjs",
     "ops:restore-check": "node scripts/restore-check.mjs",
     "test:r2": "node tests/integration/migration-r2.mjs && node tests/integration/review-r2.mjs",
-    "test:p1": "node tests/integration/planning.mjs && node tests/integration/reports.mjs && node tests/integration/expenses.mjs && node tests/integration/recipes.mjs"
+    "test:p1": "node tests/integration/planning.mjs && node tests/integration/reports.mjs && node tests/integration/expenses.mjs && node tests/integration/recipes.mjs",
+    "test:mobile": "node tests/integration/mobile.mjs"
   },
   "dependencies": {
     "jose": "^6.2.14",

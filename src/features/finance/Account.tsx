@@ -234,17 +234,15 @@ export function Account() {
                   ))}
               </select>
             </label>
-            <label>
-              Valor recebido (R$)
-              <MoneyField
-                required
-                value={amount}
-                onValueChange={(value) => {
-                  setAmount(value);
-                  key.current = crypto.randomUUID();
-                }}
-              />
-            </label>
+            <MoneyField
+              label="Valor recebido (R$)"
+              required
+              value={amount}
+              onValueChange={(value) => {
+                setAmount(value);
+                key.current = crypto.randomUUID();
+              }}
+            />
             <label>
               Tipo
               <select

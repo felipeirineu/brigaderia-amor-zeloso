@@ -32,6 +32,7 @@ jobs:
       - run: npm run test:migrations
       - run: npm run db:migrate:local
       - run: npm run build:pages
+      - run: npm run test:mobile
       - run: npx playwright install --with-deps chromium webkit
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4

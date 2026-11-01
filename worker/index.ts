@@ -1,3 +1,7 @@
+import { flavorImages } from './flavor-images';
+import { mobile } from './mobile';
+import { mobileReady } from './mobile-ready';
+import { flavorPhotos } from '../shared/flavors';
 import { p1 } from './p1';
 import { finance } from './finance';
 import { financeReady } from './finance-ready';
@@ -63,6 +67,21 @@ export default {
       if (!pathname.startsWith('/api/'))
         return json({ error: 'NOT_FOUND' }, 404);
       const user = await actor(req, env);
+      if (pathname.startsWith('/api/brand/flavors/') && req.method === 'GET') {
+        const key = pathname.split('/')[4];
+        if (
+          !flavorPhotos.includes(key as (typeof flavorPhotos)[number]) ||
+          !(await mobileReady(env))
+        )
+          return json({ error: 'Imagem indisponível.' }, 404);
+        return new Response(flavorImages[key] as unknown as BodyInit, {
+          headers: {
+            'Content-Type': 'image/webp',
+            'Cache-Control': 'no-store',
+            'X-Content-Type-Options': 'nosniff',
+          },
+        });
+      }
       if (pathname === '/api/capabilities' && req.method === 'GET')
         return json({
           operations: await operationalReady(env),
@@ -76,6 +95,8 @@ export default {
           .run();
         return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie('', 0) });
       }
+      if (pathname.startsWith('/api/mobile/'))
+        return await mobile(req, env, user);
       if (pathname.startsWith('/api/p1/')) return await p1(req, env, user);
       if (pathname.startsWith('/api/finance/'))
         return await finance(req, env, user);

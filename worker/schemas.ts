@@ -1,3 +1,4 @@
+import { flavorPhotos } from '../shared/flavors';
 import { z } from 'zod';
 const text = (max: number) => z.string().trim().max(max);
 export const phone = z
@@ -27,6 +28,7 @@ export const customerSchema = z
 export const variantSchema = z
   .object({
     id: z.uuid().optional(),
+    photo_key: z.enum(flavorPhotos).nullable().optional(),
     label: text(100).min(1),
     weight_grams: z.number().int().min(1).max(100000),
     units_per_box: z.number().int().min(1).max(10000),
@@ -38,6 +40,7 @@ export const productSchema = z
   .object({
     name: text(120).min(1),
     description: text(2000).default(''),
+    photo_key: z.enum(flavorPhotos).nullable().optional(),
     active: z.boolean().default(true),
     variants: z.array(variantSchema).min(1).max(30),
     version: z.number().int().positive().optional(),
