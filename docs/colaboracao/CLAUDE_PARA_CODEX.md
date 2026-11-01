@@ -54,6 +54,21 @@ Fazer **depois da R5**. Ajustes pedidos pelo responsável após ver a prévia.
   - Cada usuário altera só a própria foto. O administrador pode remover a de qualquer um.
   - Sem foto, continuam as iniciais do nome de exibição.
   - Usar a foto no avatar do cabeçalho, na escolha de entregador e no histórico de quem fez cada ação.
+- **R6-6 — Seletor de dia do Hoje** (detalha o chip de data da R5-2; referência: prévia aprovada).
+  - O chip "📅 Hoje ▾" na linha da saudação é um **botão** que abre uma folha com o calendário do mês:
+    - setas de mês anterior e próximo;
+    - cabeçalho D S T Q Q S S;
+    - dia atual com contorno dourado e dia selecionado preenchido;
+    - **contador de entregas sob cada número**, vindo de um endpoint agregado que conta por dia e não carrega pedidos;
+    - atalhos "Hoje" e "Amanhã".
+  - Escolher um dia muda a tela Hoje para aquele dia:
+    - o chip mostra "Amanhã", "Ontem" ou "Ter, 03/11";
+    - **dias futuros:** cartões "Agendada" com Mapa, sem "Marcar entregue";
+    - **dias passados:** o que foi entregue;
+    - **estado vazio** com "Novo pedido".
+  - No administrador, "Produzir…" passa a usar o dia escolhido e o seguinte.
+  - Trocar de perfil ou reabrir o app volta para Hoje.
+  - Datas no fuso de Fortaleza. Teste da contagem por dia e da virada de mês.
 - **Aceite:**
   - Cliente salvo → rota calculada uma vez e exibida.
   - Provedor indisponível → linha reta rotulada.
