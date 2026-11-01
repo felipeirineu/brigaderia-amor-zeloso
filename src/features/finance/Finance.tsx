@@ -1,27 +1,48 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { api, money, civilDate } from '../api';
 import { useRemote, Failure } from '../operations/common';
 export interface Summary {
   day: string;
   received_cents: number;
   receivable_cents: number;
+  overdue_cents: number;
+  week_cents: number;
   customers: {
     id: string;
     name: string;
     balance_cents: number;
     overdue_days: number;
     unconfigured: number;
+    received_cents: number;
+    overdue_cents: number;
+    week_cents: number;
   }[];
 }
 export function FinanceSummary({ compact = false }: { compact?: boolean }) {
-  const view = useRemote<Summary>('finance/summary');
+  const [search] = useSearchParams(),
+    filter = compact ? '' : search.get('filter') || '';
+  const view = useRemote<Summary>(
+    'finance/summary' + (filter ? '?filter=' + encodeURIComponent(filter) : ''),
+  );
   return (
     <section className="panel">
       <h2>{compact ? 'Recebimentos e a receber' : 'Resumo financeiro'}</h2>
       <Failure message={view.error} />
       {view.data && (
         <>
+          <div className="summary-grid">
+            <Link className="panel" to="/gestao/financeiro?filter=received">
+              Recebido hoje: {money(view.data.received_cents)}
+            </Link>
+            <Link className="panel" to="/gestao/financeiro?filter=overdue">
+              A receber vencido: {money(view.data.overdue_cents)}
+            </Link>
+            <Link className="panel" to="/gestao/financeiro?filter=week">
+              Vence esta semana: {money(view.data.week_cents)}
+              <small> Hoje a domingo</small>
+            </Link>
+          </div>
           <p>
             Recebido líquido em {civilDate(view.data.day)}:{' '}
             <strong>{money(view.data.received_cents)}</strong>
@@ -33,7 +54,16 @@ export function FinanceSummary({ compact = false }: { compact?: boolean }) {
           {view.data.customers.map((c) => (
             <article key={c.id}>
               <Link to={`/gestao/financeiro/${c.id}`}>
-                {c.name}: {money(c.balance_cents)}
+                {c.name}:{' '}
+                {money(
+                  filter === 'received'
+                    ? c.received_cents
+                    : filter === 'overdue'
+                      ? c.overdue_cents
+                      : filter === 'week'
+                        ? c.week_cents
+                        : c.balance_cents,
+                )}
               </Link>
               {c.overdue_days > 0 && (
                 <p role="alert">
@@ -62,6 +92,7 @@ export function Finance({ role }: { role: string }) {
   return (
     <>
       <h1>Financeiro</h1>
+      <Link to="/gestao/financeiro">Todas as contas</Link>
       <FinanceSummary />
       {role === 'owner' && (
         <Link className="button" to="/gestao/financeiro/pix">

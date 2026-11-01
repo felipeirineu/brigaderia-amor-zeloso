@@ -1,3 +1,4 @@
+import { QuickReceipt, type ReceiptResult } from '../finance/QuickReceipt';
 import { FinanceSummary } from '../finance/Finance';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -63,6 +64,16 @@ export function Today({
   role: string;
   financial?: boolean;
 }) {
+  const [receipt, setReceipt] = useState<OperationalOrder | null>(null),
+    [combinedUndo, setCombinedUndo] = useState<
+      (ReceiptResult & { customer_id: string }) | null
+    >(null),
+    [notice, setNotice] = useState('');
+  useEffect(() => {
+    if (!combinedUndo) return;
+    const timer = setTimeout(() => setCombinedUndo(null), UNDO_SECONDS * 1000);
+    return () => clearTimeout(timer);
+  }, [combinedUndo]);
   const [day, setDay] = useState(localDay);
   const view = useRemote<{
     day: string;
@@ -145,6 +156,57 @@ export function Today({
         />
       </label>
       <Failure message={view.error || actionError} />
+      <p role="status">{notice}</p>
+      {receipt && (
+        <QuickReceipt
+          order={receipt}
+          onClose={() => setReceipt(null)}
+          onSaved={(result) => {
+            if (result.undo_id)
+              setCombinedUndo({ ...result, customer_id: receipt.customer_id });
+            setReceipt(null);
+            setNotice(
+              result.undo_id
+                ? 'Entrega e recebimento registrados.'
+                : 'Recebimento registrado.',
+            );
+            void view.refresh();
+          }}
+        />
+      )}
+      {combinedUndo && (
+        <button
+          disabled={busy}
+          onClick={() => {
+            if (pending.current) return;
+            pending.current = true;
+            setBusy(true);
+            void api(
+              `finance/customers/${combinedUndo.customer_id}/undo-today`,
+              'POST',
+              {
+                version: combinedUndo.account_version,
+                order_version: combinedUndo.order_version,
+                undo_id: combinedUndo.undo_id,
+              },
+              crypto.randomUUID(),
+            )
+              .then(() => {
+                setCombinedUndo(null);
+                setNotice('Entrega e recebimento desfeitos com histórico.');
+                return view.refresh();
+              })
+              .catch((e) => setActionError(e.message))
+              .finally(() => {
+                pending.current = false;
+                setBusy(false);
+              });
+          }}
+        >
+          Desfazer entrega e recebimento
+        </button>
+      )}
+
       {undo && (
         <button
           disabled={busy}
@@ -290,12 +352,12 @@ export function Today({
                       !['draft', 'awaiting_confirmation', 'cancelled'].includes(
                         order.status,
                       ) && (
-                        <Link
-                          className="button"
-                          to={`/gestao/financeiro/${order.customer_id}?order=${order.id}`}
+                        <button
+                          disabled={busy}
+                          onClick={() => setReceipt(order)}
                         >
                           Recebi R$
-                        </Link>
+                        </button>
                       )}
                     <Link className="button" to={`/gestao/pedidos/${order.id}`}>
                       Abrir pedido <ChevronRight size={20} aria-hidden="true" />

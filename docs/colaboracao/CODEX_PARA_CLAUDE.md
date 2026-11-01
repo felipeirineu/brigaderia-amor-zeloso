@@ -51,6 +51,23 @@
 
 Relatórios: `docs/FASE_2A.md` (R1 + ativação) e `docs/FASE_2B.md` (Produzido, Testes executados, Limitações, Pendências). “Entregue” não significa migração/publicação ativa. Sem integração bancária, estorno parcial, imagem QR, despesas, crédito automático, catálogo, push ou gravação offline.
 
+## R2 — acompanhamento
+
+| Item      | Status                     | Decisão                                                                                                                                                                                                                           |
+| --------- | -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R2-1      | implementado/testado local | Bottom sheet Hoje, saldo/versões atuais, chips e data. Entrega+recebimento atômicos com undo conjunto de 30 s e compensações de ambos. Undo operacional isolado é bloqueado nesse caso.                                           |
+| R2-2      | implementado/testado local | Crédito sem pedido; uso sempre humano. Alocação não conta como novo dinheiro. Estorno apenas disponível; liberação de alocação pelo administrador, com motivo/histórico.                                                          |
+| R2-3      | implementado/testado local | Administrador anula com motivo, mantém membros históricos e libera vínculo ativo para novo fechamento. Conservador: bloquear enquanto qualquer membro tiver saldo recebido líquido, não apenas pagamento originado no fechamento. |
+| R2-4      | implementado/testado local | Autor + mesmo dia civil do registro em Fortaleza; administrador corrige os demais. Também no crédito/undo combinado.                                                                                                              |
+| R2-5      | implementado               | Resumo Hoje recebido/vencido/hoje→domingo com links filtrados.                                                                                                                                                                    |
+| R2-6      | implementado/testado local | Colunas virtuais de condição/periodicidade e índices na 0006; JSON preservado.                                                                                                                                                    |
+| R2-7      | em andamento               | Índice ATIVACAO.md e guia com migrações/flags em ordem; sem execução remota.                                                                                                                                                      |
+| P1-1      | próximo                    | Agenda/ICS privados.                                                                                                                                                                                                              |
+| P1-2      | planejado                  | Lembretes manuais.                                                                                                                                                                                                                |
+| P1-3      | planejado                  | Relatórios/CSV seguro.                                                                                                                                                                                                            |
+| P1-7      | planejado                  | Despesas manuais/fluxo registrado.                                                                                                                                                                                                |
+| P1-4/P1-5 | planejado                  | Fichas, preço estimado e compras sem movimentação automática.                                                                                                                                                                     |
+
 ## Dúvidas e decisões
 
 - Caixa mista é sugestão, não decisão comercial: manter produtos/variantes atuais, sem remodelar dados cadastrados. Confirmar mistura/avulso/revenda na entrega.
@@ -65,6 +82,8 @@ Relatórios: `docs/FASE_2A.md` (R1 + ativação) e `docs/FASE_2B.md` (Produzido,
 - Nenhum conflito bloqueante com AGENTS. Sugestão de caixa mista permanece pendente; cancelamento exige confirmação/motivo, e desfazer entrega usa compensação auditável. Arquivos de autoria Claude foram preservados.
 
 ## Histórico
+
+- **2026-11-01 — R2 técnica:** 132ba36 integrada ff-only. Migração 0006 preserva extratos e acrescenta crédito/anulação/recebimento combinado/índices virtuais. R2-1…6 implementados localmente; APIs base/financeira e R2 aprovadas. E2E Hoje em Chromium mobile/desktop e WebKit aprovado. Sem mutação remota, inclusive push, conforme “nada remoto”. Continuação local P1-1→P1-2→P1-3→P1-7→P1-4/5. Relatório em docs/REVISAO_R2.md.
 
 - **2026-11-01 — Regressões finais de formulário:** troca de cliente limpa itens/data do modelo anterior e descarta resposta antiga de defaults; edição de taxa do pedido padrão mantém vírgula antes de validar preço. Três E2E financeiros e três operacionais repetidos em Chromium/WebKit passaram. Código, guia e resposta já enviados ao main; resultado final da nova CI deve ser conferido na aba Actions.
 

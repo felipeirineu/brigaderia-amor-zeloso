@@ -1,3 +1,4 @@
+import { CreditTools } from './CreditTools';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { api, money, parsePrice, dateTime, civilDate } from '../api';
@@ -18,7 +19,23 @@ interface LedgerOrder {
   terms: Terms;
   closing_id: string | null;
 }
-interface View {
+export interface View {
+  actor: { user_id: string; role: string };
+  available_credit_cents: number;
+  credits: {
+    event_id: string;
+    amount_cents: number;
+    allocated_cents: number;
+    refunded_cents: number;
+    available_cents: number;
+    can_refund: boolean;
+  }[];
+  credit_allocations: {
+    event_id: string;
+    order_id: string;
+    amount_cents: number;
+  }[];
+  annulments: { closing_id: string; reason: string }[];
   customer: { id: string; name: string };
   version: number;
   received_cents: number;
@@ -36,9 +53,11 @@ interface View {
     reversal_of: string | null;
     user_id: string;
     created_at: string;
+    can_reverse: boolean;
   }[];
   closings: {
     id: string;
+    status: string;
     period_start: string;
     period_end: string;
     due_on: string;
@@ -309,6 +328,7 @@ export function Account() {
               </p>
             </section>
           )}
+          <CreditTools data={data} root={root} onSaved={view.refresh} />
           <section className="panel">
             <h2>Extrato de pedidos</h2>
             {data.orders.map((o) => (
@@ -405,6 +425,7 @@ export function Account() {
             {data.closings.map((c) => (
               <article key={c.id}>
                 <h3>
+                  {c.status === 'annulled' && 'Anulado · '}
                   {civilDate(c.period_start)} a {civilDate(c.period_end)}
                 </h3>
                 <p>
@@ -418,6 +439,39 @@ export function Account() {
                 >
                   Cobrar fechamento no WhatsApp
                 </button>
+                {c.status === 'annulled' && (
+                  <p>
+                    Motivo:{' '}
+                    {data.annulments.find((x) => x.closing_id === c.id)?.reason}
+                  </p>
+                )}
+                {data.actor.role === 'owner' && c.status === 'active' && (
+                  <button
+                    disabled={busy}
+                    onClick={() => {
+                      const reason = prompt(
+                        'Motivo para anular este fechamento:',
+                      );
+                      if (
+                        reason?.trim() &&
+                        confirm(
+                          'Anular e liberar os pedidos para novo fechamento? O extrato será preservado.',
+                        )
+                      )
+                        void run(async () => {
+                          await api(
+                            root + '/annul-closing',
+                            'POST',
+                            { version: data.version, closing_id: c.id, reason },
+                            key.current,
+                          );
+                          setNotice('Fechamento anulado com histórico.');
+                        });
+                    }}
+                  >
+                    Anular fechamento
+                  </button>
+                )}
               </article>
             ))}
           </section>
@@ -439,7 +493,8 @@ export function Account() {
                   {dateTime(e.created_at)} · usuário {e.user_id.slice(0, 8)}
                 </p>
                 {e.reason && <p>{e.reason}</p>}
-                {e.kind !== 'reversal' &&
+                {e.can_reverse &&
+                  e.kind !== 'reversal' &&
                   !data.events.some((x) => x.reversal_of === e.id) && (
                     <button
                       disabled={busy}
