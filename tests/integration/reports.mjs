@@ -25,13 +25,54 @@ try {
     method: 'cash',
     paid_on: '2025-01-07',
   });
+  const historical = (
+    await call('customers', {
+      name: 'Cliente DEMONSTRAÇÃO histórico',
+      phone: '+5511900000001',
+    })
+  ).id;
+  const priorOrder = (
+    await call('orders', {
+      customer_id: historical,
+      due_at: '2024-12-20T13:00:00Z',
+      items: [
+        {
+          variant_id: (await call('orders/' + ids[0], undefined, 'GET'))
+            .items[0].variant_id,
+          quantity: 2,
+        },
+      ],
+    })
+  ).id;
+  await call(
+    `orders/${priorOrder}/delivery`,
+    { version: 1, delivery_type: 'pickup', courier: 'unassigned' },
+    'PUT',
+  );
+  for (const [i, to] of [
+    'confirmed',
+    'in_production',
+    'ready',
+    'picked_up',
+  ].entries())
+    await call(`orders/${priorOrder}/status`, { version: 2 + i, to });
+  await t.db
+    .prepare(
+      "UPDATE order_status_events SET created_at=unixepoch('2024-12-20T13:00:00Z') WHERE organization_id=? AND order_id=?",
+    )
+    .bind(t.org, priorOrder)
+    .run();
   const query = '?from=2025-01-01&to=2025-01-31',
     report = await call('p1/reports' + query, undefined, 'GET');
   assert.equal(report.sales_cents, 4000);
   assert.equal(report.received_cents, 500);
-  assert.equal(report.receivable_cents, 3500);
+  assert.equal(report.receivable_cents, 5500);
   assert.equal(report.products[0].units, 8);
   assert.equal(report.customers[0].orders, 2);
+  assert.equal(report.weekly[0].total_cents, 4000);
+  assert.equal(report.comparison.sales_cents, 2000);
+  assert.equal(report.comparison.change_percent, 100);
+  assert.equal(report.without_deliveries[0].id, historical);
   assert(
     report.aging.every((a) => a.overdue_days === 0 || a.bucket === '61+ dias'),
   );

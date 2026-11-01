@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { receivables } from './receivables';
-import { businessDay } from './operations-domain';
+import { businessDay, addDays } from './operations-domain';
 import { HttpError, json, type Actor } from './security';
 import { requestRange, fileResponse } from './p1-common';
 /** Campos textuais não podem virar fórmulas ao importar no Excel/Sheets. Números são dados numéricos. */
@@ -153,9 +153,63 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     condition: o.terms.mode,
     cycle: o.terms.cycle,
   }));
+  const days =
+      Math.round(
+        (Date.parse(to + 'T12:00:00Z') - Date.parse(from + 'T12:00:00Z')) /
+          86400000,
+      ) + 1,
+    previousFrom = addDays(from, -days),
+    previousTo = addDays(from, -1),
+    previous = all.filter(
+      (o) => o.business_date >= previousFrom && o.business_date <= previousTo,
+    ),
+    previousCents = previous.reduce((n, o) => n + o.total_cents, 0),
+    currentCents = sold.reduce((n, o) => n + o.total_cents, 0);
+  const weeklyMap = new Map<
+    string,
+    { week: string; orders: number; total_cents: number }
+  >();
+  for (const o of sold) {
+    const d = new Date(o.business_date + 'T12:00:00Z'),
+      week = addDays(o.business_date, -((d.getUTCDay() + 6) % 7)),
+      entry = weeklyMap.get(week) || { week, orders: 0, total_cents: 0 };
+    entry.orders++;
+    entry.total_cents += o.total_cents;
+    weeklyMap.set(week, entry);
+  }
+  const currentClients = new Set(sold.map((o) => o.customer_id)),
+    last = new Map<
+      string,
+      { id: string; name: string; last_delivery: string }
+    >();
+  for (const o of all) {
+    if (o.business_date < from && !currentClients.has(o.customer_id)) {
+      const old = last.get(o.customer_id);
+      if (!old || old.last_delivery < o.business_date)
+        last.set(o.customer_id, {
+          id: o.customer_id,
+          name: o.customer_name,
+          last_delivery: o.business_date,
+        });
+    }
+  }
   const result = {
     from,
     to,
+    comparison: {
+      from: previousFrom,
+      to: previousTo,
+      sales_cents: previousCents,
+      change_cents: currentCents - previousCents,
+      change_percent: previousCents
+        ? Math.round(((currentCents - previousCents) / previousCents) * 10000) /
+          100
+        : null,
+    },
+    weekly: [...weeklyMap.values()].sort((a, b) =>
+      a.week.localeCompare(b.week),
+    ),
+    without_deliveries: [...last.values()],
     position_day: businessDay(),
     sales_cents: sold.reduce((n, o) => n + o.total_cents, 0),
     orders_count: sold.length,
@@ -180,7 +234,14 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
   };
   if (!url.pathname.endsWith('.csv')) return json(result);
   const kind = z
-    .enum(['orders', 'customers', 'products', 'aging'])
+    .enum([
+      'orders',
+      'customers',
+      'products',
+      'aging',
+      'weeks',
+      'without_deliveries',
+    ])
     .parse(url.searchParams.get('kind') || 'orders');
   const datasets = {
     orders: {
@@ -228,6 +289,14 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         p.units,
         p.total_cents,
       ]),
+    },
+    weeks: {
+      headers: ['Segunda-feira da semana', 'Pedidos', 'Vendas (centavos)'],
+      rows: result.weekly.map((w) => [w.week, w.orders, w.total_cents]),
+    },
+    without_deliveries: {
+      headers: ['Cliente', 'Última entrega antes do período'],
+      rows: result.without_deliveries.map((c) => [c.name, c.last_delivery]),
     },
     aging: {
       headers: [

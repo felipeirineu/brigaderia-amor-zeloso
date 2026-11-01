@@ -3,6 +3,15 @@ import { useRemote, Failure, localDay } from '../operations/common';
 import { money, civilDate } from '../api';
 import { privateDownload } from '../PrivateDownload';
 interface Report {
+  comparison: {
+    from: string;
+    to: string;
+    sales_cents: number;
+    change_cents: number;
+    change_percent: number | null;
+  };
+  weekly: { week: string; orders: number; total_cents: number }[];
+  without_deliveries: { id: string; name: string; last_delivery: string }[];
   sales_cents: number;
   orders_count: number;
   received_cents: number;
@@ -104,6 +113,10 @@ export function Reports() {
             <option value="customers">Vendas por cliente</option>
             <option value="products">Vendas por produto/sabor</option>
             <option value="aging">Contas a receber atual</option>
+            <option value="weeks">Semana a semana</option>
+            <option value="without_deliveries">
+              Clientes sem entregas no período
+            </option>
           </select>
         </label>
         <button
@@ -134,6 +147,38 @@ export function Reports() {
               A receber atual: {money(view.data.receivable_cents)} · posição{' '}
               {civilDate(view.data.position_day)}. O filtro de datas limita
               vendas e recebimentos, não reconstrói saldos históricos.
+            </p>
+          </section>
+          <section className="panel">
+            <h2>Comparação com período anterior</h2>
+            <p>
+              {civilDate(view.data.comparison.from)} a{' '}
+              {civilDate(view.data.comparison.to)}:{' '}
+              {money(view.data.comparison.sales_cents)} · diferença{' '}
+              {money(view.data.comparison.change_cents)}
+              {view.data.comparison.change_percent === null
+                ? ' · sem base anterior para percentual'
+                : ` · ${view.data.comparison.change_percent.toLocaleString('pt-BR')}%`}
+            </p>
+            <h3>Semana a semana</h3>
+            {view.data.weekly.map((w) => (
+              <p key={w.week}>
+                Semana de {civilDate(w.week)}: {w.orders} pedidos ·{' '}
+                {money(w.total_cents)}
+              </p>
+            ))}
+          </section>
+          <section className="panel">
+            <h2>Clientes sem novas entregas no período</h2>
+            {view.data.without_deliveries.map((c) => (
+              <p key={c.id}>
+                {c.name} · última entrega anterior em{' '}
+                {civilDate(c.last_delivery)}
+              </p>
+            ))}
+            <p>
+              Indicador baseado em entregas registradas; não afirma abandono nem
+              ausência de pedidos futuros.
             </p>
           </section>
           <section className="panel">
