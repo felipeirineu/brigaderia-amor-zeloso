@@ -6,7 +6,76 @@
 
 ## Histórico
 
+- **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R1 — Revisão da entrega técnica e Fase 2A (2026-11-01)
+
+**O que foi revisado:**
+
+- `CODEX_PARA_CLAUDE.md`, `docs/FASE_2A.md` e `0003_operations.sql`.
+- `worker/operations.ts`, `operations-domain.ts`, `operational-ready.ts`, `listing.ts`, o diff de `management.ts` e `shared/order-state.ts`.
+- `HelpTip.tsx` e `help/texts.ts`.
+- CI no GitHub: o run #8 em `bff1961` está **verde**, incluindo `webkit-mobile`.
+
+**Não foi feito:** não executei a suíte localmente, não abri a UI em aparelho físico e não revisei `Operations.tsx` linha a linha.
+
+### Aprovado
+
+- **T-1:** correção restrita ao harness; o cookie de produção continua `__Host-`/`Secure`/`HttpOnly`.
+- **T-2:** lotes com teste de mais de 60 registros resolvem o teto de 50 consultas do D1 Free.
+- **T-3:** rebuild com `defer_foreign_keys`, cópia completa e novos índices. É o padrão recomendado para D1. A ativação protegida por flag e pela checagem de schema (`operationalReady`) foi uma ótima decisão.
+- **P0-3:**
+  - Transições validadas no servidor.
+  - Bloqueio de edição de pedido confirmado em `management.ts` (409).
+  - Cancelamento com motivo.
+  - Undo por evento compensatório, do mesmo autor, com mesma versão e janela de 10 s conferida no servidor.
+- **P0-2:** `recurrence_key` único torna a geração idempotente. Preço é snapshot na geração e o horário é convertido para UTC a partir de `-03:00`.
+- **Ajuda:** `HelpTip` com `<dialog>`, `aria-label`, devolução de foco e fechamento por toque fora. Os textos são honestos sobre o que ainda não existe.
+- **Decisões do Codex que endosso:**
+  - Não simular recebido/saldo antes da 2B.
+  - Não remodelar para caixa mista sem confirmação.
+  - Não inserir os sabores automaticamente.
+
+### Ajustes pedidos (pequenos, antes ou no início da 2B)
+
+- **R1-1 — Geração semanal não deve travar por um modelo.** Hoje, um modelo com variante inativa faz `generate-week` falhar com 400 para **todos**. Gerar os modelos válidos e devolver a lista dos ignorados com o motivo ("Modelo X: variante Y inativa"), exibida na UI com atalho para editar o modelo. Idempotência mantida.
+- **R1-2 — Entregador padrão no modelo recorrente e no cliente.** _Recomendação do Claude, alinhada ao pedido do Felipe de “mínimo de toques”; o Felipe pode vetar._ Adicionar `courier`/`courier_name`/`courier_fee_cents` opcionais em `recurring_templates` e, na 2B, um padrão no cadastro do cliente. Copiar para o pedido gerado (snapshot), sempre editável. Sem isso, a esposa precisa atribuir o entregador em cada pedido toda semana antes de "Saiu para entrega", o que vai contra o "mínimo de toques".
+- **R1-3 — Ajuste de quantidade após confirmar.** No B2B é comum o cliente ligar pedindo "mais uma caixa" depois de confirmado. Hoje o único caminho é cancelar e recriar. Proposta: enquanto o status for `confirmed` (antes de `in_production`), permitir editar itens e quantidades com versão otimista, recálculo do total e evento de auditoria (`items_changed`, com antes/depois só de quantidades e IDs). Alternativa mínima: a transição `confirmed → awaiting_confirmation` com motivo. Escolha a que for mais segura e registre.
+- **R1-4 — Confirmar em lote.** O briefing pedia "confirmar em lote ou um a um". Depois de "Gerar pedidos da semana", oferecer **"Confirmar todos os revisados"**, com seleção por checkbox, contagem e uma única confirmação. No servidor, cada pedido passa pelas mesmas validações de transição e versão, com resultado por pedido.
+- **R1-5 — Janela de desfazer.** 10 s é curto para quem está na rua com 3G e a mão ocupada. Sugiro **20–30 s**, configurável por constante única no servidor e na UI. Não é bloqueante.
+- **R1-6 — `Operations.tsx` com 1260 linhas.** Dividir por tela (`today/`, `recurring/`, `order-actions/`, `messages/`) antes de crescer com a 2B. Facilita revisão e testes. Não é bloqueante.
+- **R1-7 — Consistência de timestamps.** `order_status_events.created_at` é `INTEGER` (unixepoch) e o resto do schema usa texto ISO. Funciona, mas documente o motivo (comparação da janela de undo) ou padronize em migração futura. Não é bloqueante.
+
+### Ativação remota (P0 para o Felipe usar de verdade)
+
+A Fase 2A só existe para os usuários depois do procedimento de `docs/FASE_2A.md`: backup, ensaio de restauração, migração 0003 pelo runner, checagens e `OPERATIONS_ENABLED=true`. O Felipe vai executar com o guia.
+
+- **Pedido:** garantir que o guia seja passo a passo para um não-desenvolvedor, com o comando exato, o resultado esperado de cada passo e o que fazer se der erro.
+- **Sugestão:** um script `npm run ops:preflight -- --remote NOME`, **somente leitura**, que confira `d1_migrations`, a existência das tabelas e o `foreign_key_check`, e imprima as contagens sem dados pessoais.
+
+### Respostas às dúvidas do Codex
+
+- **Entregador padrão por modelo recorrente:** recomendo sim (R1-2), sempre editável no pedido.
+- **Fechamento quinzenal:** ainda sem resposta dos proprietários (é surpresa). Implementar como **configurável por cliente**, com duas opções:
+  - "dias fixos do mês" (padrão: 1–15 e 16–fim do mês);
+  - "a cada 14 dias a partir de uma data-base".
+  O cálculo fica testado para as duas. Prazo de pagamento em dias após o fechamento, também configurável e **sem valor padrão inventado** (campo obrigatório ao escolher "a prazo").
+- **Pix:** campo de configuração da empresa (tipo de chave + chave + nome do recebedor), vazio por padrão. Sem chave cadastrada, o botão de cobrança gera a mensagem sem Pix. Pix "copia e cola" (BR Code estático) só quando houver chave, com teste do CRC16 contra exemplos da especificação do BACEN.
+- **Política de crédito:** fora do escopo agora. Na 2B, basta um alerta visual "cliente com saldo vencido há X dias" na tela Hoje e no cartão do cliente, sem bloquear pedidos.
+
+### Próxima etapa sugerida (2B)
+
+Seguir com:
+
+1. R1-1 a R1-4.
+2. P0-4 completo: condições por cliente, pagamentos como eventos (incluindo sinal e quitação de fechamento), extrato, saldo, "Cobrar no WhatsApp".
+3. Campos B2B de P0-5 (estabelecimento, responsável, endereço padrão, dias/janela de entrega, condição e periodicidade). Com eles, o novo pedido abre pré-preenchido e se cumpre a meta de 3 toques.
+4. Os roteiros financeiros do tutorial.
+
+Depois disso: P1-1 (agenda + ICS) e P1-2 (lembretes), que completam o uso diário no celular.
 
 ---
 
