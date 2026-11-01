@@ -1,10 +1,10 @@
-# Plano de execução — prioridades aprovadas pelo Felipe
+# Plano de execução — prioridades vigentes
 
 Referência de contexto: `docs/colaboracao/CLAUDE_PARA_CODEX.md`. AGENTS.md e regras de segurança continuam obrigatórios. Fazer commits pequenos e relatórios por etapa; preservar registros e preços históricos já existentes. Interface pt-BR mobile-first, papéis owner/operator, dados financeiros em centavos, organização validada no servidor. Catálogo público, eventos e gravação offline continuam desligados. Não criar gastos nem enviar mensagens automaticamente.
 
 ## Base entregue — Fases 0 e 1
 
-PWA, demonstração pública, gestão privada Access/D1, clientes/produtos/rascunhos, snapshots, auditoria e isolamento. Login real validado pelo Felipe; dados de teste já existem no D1 remoto. Não apagar ou substituir o banco. Testes de dispositivos reais e backup/restauração seguem necessários.
+PWA, demonstração pública, gestão privada Access/D1, clientes/produtos/rascunhos, snapshots, auditoria e isolamento. Login real validado em homologação; dados de teste já existem no D1 remoto. Não apagar ou substituir o banco. Testes de dispositivos reais e backup/restauração seguem necessários.
 
 ## Primeira entrega técnica — antes da Fase 2
 
@@ -56,7 +56,7 @@ Cada grupo exige relatório com Produzido, Testes executados, Limitações e Pen
 
 ## Homologação e entrega
 
-Testar Android Chrome/iPhone Safari físicos, instalação, navegação com dois usuários, backup/restauração, custos/limites atuais, transferência de contas, LGPD, retenção e rollback. Reconfirmar marca e informações comerciais com os proprietários, preservando a surpresa. Não ativar recursos pagos, domínio, catálogo ou marketing sem autorização.
+Testar Android Chrome/iPhone Safari físicos, instalação, navegação com dois usuários, backup/restauração, custos/limites atuais, transferência de contas, LGPD, retenção e rollback. Atualizar marca e informações comerciais pelo cadastro, mantendo as informações vigentes. Não ativar recursos pagos, domínio, catálogo ou marketing sem autorização.
 
 ## Revisão R1 e Fase 2B — execução autorizada em 2026-11-01
 
@@ -79,7 +79,7 @@ R1-1…R1-7 implementados/documentados. A Fase 2B entregou o núcleo P0-4, campo
 
 ## R2 e módulos P1 — plano de 2026-11-01 (somente local)
 
-Revisão 132ba36 integrada com ff-only. Não aplicar migrações, alterar flags ou dados no Cloudflare; preparar código, testes locais e guia para Felipe. Sem seeds reais, mensagens automáticas, catálogo ou gastos provisionados.
+Revisão 132ba36 integrada com ff-only. Não aplicar migrações, alterar flags ou dados no Cloudflare; preparar código, testes locais e guia para administrador. Sem seeds reais, mensagens automáticas, catálogo ou gastos provisionados.
 
 1. R2-4: permissão de estorno por autor/dia civil America/Fortaleza; administrador pode corrigir outros registros. Aceite: operador próprio hoje permitido, outro autor/outro dia negado, CSRF/isolamento preservados.
 2. R2-1: bottom sheet acessível no Hoje, saldo/versões lidos do servidor, chips e valor/data pré-preenchidos; ação combinada entrega+recebimento em uma transação, undo conjunto até 30 s. Mesmas regras de transição e CAS conta/pedido. Arquivos: worker/finance*, operations/Today, finance/QuickReceipt e migração 0006. Aceite: repetição/concorrência, transição inválida, desfazer conjunto e contexto da rota preservado.
@@ -92,9 +92,16 @@ Revisão 132ba36 integrada com ff-only. Não aplicar migrações, alterar flags 
 9. P1-7: despesas registradas somente por ação humana, eventos de estorno e fluxo de caixa de recebimentos/despesas por período. Sem pagar, criar conta paga, débito automático ou inferir taxa como despesa. Migração 0008.
 10. P1-4/P1-5: insumos/preços por unidade de referência, fichas e rendimento, custo e sugestão com margem explícita; lista de compras a partir dos confirmados e receitas vinculadas, sem estoque/compra automática. Migração 0009. Falta de ficha/custo é avisada, não vira custo zero/lucro inventado.
 
-P1 usa flag independente P1_ENABLED=false e verificação das tabelas. Cada etapa terá commit, testes de regras/integração/E2E adequados e relatório com Produzido, Testes executados, Limitações e Pendências. Histórico/status no arquivo Codex, preservando os arquivos de autoria Claude. Homologação física e ativação permanecem com Felipe.
+P1 usa flag independente P1_ENABLED=false e verificação das tabelas. Cada etapa terá commit, testes de regras/integração/E2E adequados e relatório com Produzido, Testes executados, Limitações e Pendências. Histórico/status no arquivo Codex, preservando os arquivos de autoria Claude. Homologação física e ativação permanecem com administrador.
 
 
 ## Fechamento local da R2/P1
 
-Todos os ajustes R2-1…7 e módulos P1-1, P1-2, P1-3, P1-7, P1-4/P1-5 solicitados foram implementados nesta ordem de etapas. Relatórios e limitações por módulo em docs/REVISAO_R2.md e docs/P1_ETAPAS.md; status/histórico na resposta ao Claude. Guia único ATIVACAO.md. Operação/financeiro/P1 e catálogo permanecem OFF no arquivo raiz. Nada remoto, inclusive push/CI remota, executado. Revisão, homologação física, backup/migrações/ativação reais com Felipe; P1-6/8/9 e P2 não foram iniciados automaticamente.
+Todos os ajustes R2-1…7 e módulos P1-1, P1-2, P1-3, P1-7, P1-4/P1-5 solicitados foram implementados nesta ordem de etapas. Relatórios e limitações por módulo em docs/REVISAO_R2.md e docs/P1_ETAPAS.md; status/histórico na resposta ao Claude. Guia único ATIVACAO.md. Operação/financeiro/P1 e catálogo permanecem OFF no arquivo raiz. Nada remoto, inclusive push/CI remota, executado. Revisão, homologação física, backup/migrações/ativação reais com administrador; P1-6/8/9 e P2 não foram iniciados automaticamente.
+
+
+## R4-0, R3 e R4 — próxima execução
+
+CI afbdb39 aprovada antes de integrar 2fac3de. R4-0 primeiro: texto neutro em UI/documentos de uso, sabores vigentes com Limão; teste de regressão de nome na UI. Depois R3: ativos privados com foto editável, campos numéricos em centavos/inteiros, fluxo simples por passos e preferência local; testes WebKit/Chromium. R4: localização por gesto/provedor gratuito com rate limit/cache/atribuição, foto privada comprimida, Instagram, base privada/distância honesta, links de transporte, deslocamento e despesa como eventos e perfis com nome de exibição. Sem migrações/flags Cloudflare pelo agente. Commits/push por etapa e CI acompanhada. Arquivos: componentes, Management/Today/Totem, worker de campo/transporte/perfil, migração aditiva 0010 e testes/guia.
+
+Fase 6: antes da transferência, arquivar/remover docs/colaboracao e auditar referências pessoais remanescentes. Não remover o canal durante o desenvolvimento.

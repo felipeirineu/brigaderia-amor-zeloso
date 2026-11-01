@@ -1,4 +1,4 @@
-# Ativação — índice único para o Felipe
+# Ativação — índice único para o administrador
 
 **O agente não ativa nada remoto nesta rodada.** Código e commits locais precisam ser disponibilizados antes de usar o painel. Nunca enviar backups, dados de clientes, chave Pix ou tokens ao chat/GitHub.
 

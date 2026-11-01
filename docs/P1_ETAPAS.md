@@ -7,7 +7,7 @@ Todos os dados de testes são DEMONSTRAÇÃO. Nenhuma migração/flag/pagamento/
 - **Produzido:** semana/mês com prazos de pedidos, produção planejada para o prazo, calendário configurado de fechamentos, fechamentos registrados, vencimentos e lembretes; filtro por tipo e ICS privado. UID estável, UTC nos horários, dias civis em Fortaleza, escaping e folding por bytes UTF-8.
 - **Testes executados:** integração de datas, eventos, isolamento e limite; unitários de CRLF/escaping/folding; E2E de agenda/exportação nos três projetos (Chromium mobile/desktop e WebKit mobile).
 - **Limitações:** janela máxima de 45 dias, até 1000 pedidos/fechamentos, 200 calendários de clientes e 500 lembretes; erro explícito ao exceder. Não cria horário de produção independente nem notificação automática. ICS contém dados privados e só é exportado por ação humana.
-- **Pendências:** teste físico de importação ICS no calendário escolhido por cada proprietário; ativação pelo Felipe.
+- **Pendências:** teste físico de importação ICS no calendário escolhido por cada proprietário; ativação pelo administrador.
 
 ## P1-2 — Lembretes manuais
 
@@ -28,7 +28,7 @@ Todos os dados de testes são DEMONSTRAÇÃO. Nenhuma migração/flag/pagamento/
 - **Produzido:** registro manual pelo administrador, categoria/forma/data e vínculo opcional com pedido; evento original preservado e estorno integral com motivo. Fluxo por dia/período com entradas, saídas, acumulado anterior e líquido registrado; CSV privado. Uso de crédito não duplica entrada de caixa.
 - **Testes executados:** integração de recebimento/saída/estorno, idempotência, data futura, isolamento e operador sem permissão de despesa. E2E de registro/estorno aprovado em Chromium mobile/desktop e WebKit mobile.
 - **Limitações:** não movimenta dinheiro, não importa extratos, não é saldo bancário ou lucro e não gera despesa a partir de taxa de motoboy. Administrador registra/estorna; operador consulta. Sem despesas futuras/contas a pagar ou estorno parcial nesta entrega. Limite de 1000 eventos na listagem; fluxo agregado não é calculado sobre amostra truncada.
-- **Pendências:** conferência de categorias e saldos históricos reais com os proprietários; homologação física e ativação pelo Felipe.
+- **Pendências:** conferência de categorias e saldos históricos reais com os proprietários; homologação física e ativação pelo administrador.
 
 ## P1-4 — Insumos, ficha técnica e sugestão de preço
 
@@ -48,4 +48,4 @@ Todos os dados de testes são DEMONSTRAÇÃO. Nenhuma migração/flag/pagamento/
 
 Todas as etapas usam API privada, validação backend, CSRF/organização, no-store, limites explícitos e histórico. O serviço worker não armazena dados privados. Push, catálogo, festas, importação e movimentação de estoque permanecem fora desta rodada.
 
-Execução consolidada: 42 unitários, 28 verificações API base, 14 operacionais, oito grupos financeiros, integrações R2/P1, seis SQLite e volume de 65 produtos/65 pedidos aprovados. E2E completo: 32 aprovados e um offline WebKit já ignorado. Os fluxos novos passaram em Chromium mobile/desktop e WebKit mobile. Build/tipos/lint/formato e marca/AA aprovados. Runner local aplicou 0006–0009; preflight e exportação/restauração de fixture em estado novo preservaram nove migrações, contagens e zero violações de FK. Não equivalem a homologação física ou backup real. Migrações/backup/ativação reais, CI remota e aparelhos físicos ficam com Felipe, conforme [índice único de ativação](ATIVACAO.md). Nada remoto foi executado nesta rodada, inclusive envio de commits; os commits são locais e revisáveis.
+Execução consolidada: 42 unitários, 28 verificações API base, 14 operacionais, oito grupos financeiros, integrações R2/P1, seis SQLite e volume de 65 produtos/65 pedidos aprovados. E2E completo: 32 aprovados e um offline WebKit já ignorado. Os fluxos novos passaram em Chromium mobile/desktop e WebKit mobile. Build/tipos/lint/formato e marca/AA aprovados. Runner local aplicou 0006–0009; preflight e exportação/restauração de fixture em estado novo preservaram nove migrações, contagens e zero violações de FK. Não equivalem a homologação física ou backup real. Migrações/backup/ativação reais, CI remota e aparelhos físicos ficam com administrador, conforme [índice único de ativação](ATIVACAO.md). Nada remoto foi executado nesta rodada, inclusive envio de commits; os commits são locais e revisáveis.

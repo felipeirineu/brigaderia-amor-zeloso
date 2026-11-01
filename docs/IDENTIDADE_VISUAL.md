@@ -1,6 +1,6 @@
-# Identidade visual autorizada pelo Felipe
+# Identidade visual — marca oficial
 
-Fonte: `docs/marca/logo-brigaderia-amor-zeloso.png`, preservado sem alterações. Os derivados técnicos (redução, padding e formatos) são gerados por `npm run brand:build` com Sharp, sem recriar lettering ou inventar elementos. Reexecutar o comando após uma troca autorizada da fonte.
+Fonte: `docs/marca/logo-brigaderia-amor-zeloso.png`, preservado sem alterações. Os derivados técnicos (redução, padding e formatos) são gerados por `npm run brand:build` com Sharp, sem recriar lettering ou inventar elementos. Reexecutar o comando após uma troca da marca oficial.
 
 - PWA 192/512, maskable 512 com logo a 70% (margem segura), apple-touch-icon 180, favicon ICO/PNG32 e WebP de interface em `public/`.
 - Marrom #321D10, creme #F9ECD7, dourado #B8915B; rosé #AD776B como apoio. Dourado é decoração, não texto pequeno sobre creme. Texto dourado escuro alternativo #76532F passa AA sobre creme.

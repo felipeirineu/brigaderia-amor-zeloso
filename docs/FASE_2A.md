@@ -100,7 +100,7 @@ npm run ops:preflight -- --remote brigaderia-amor-zeloso-homologacao
 
 Esperado: `pending: []`, `foreign_key_violations: 0`, `schema_operations_ready: true`, `schema_finance_ready: true` e `schema_p1_ready: true`; as contagens de clientes/produtos/variantes/pedidos/itens devem ser iguais às do passo 4. As tabelas novas começam vazias, sem pagamentos inventados. Se algo diferir, mantenha OFF e investigue antes de retomar os cadastros. A pré-checagem não valida valores de vendas; confira amostras no painel privado contra o backup, sem publicar seus dados.
 
-**9. Ativar uma flag de cada vez e aguardar publicação.** Estes passos são do Felipe, depois que o código local desta rodada estiver disponível no repositório. No GitHub, branch main, abra `wrangler.jsonc` e use o lápis:
+**9. Ativar uma flag de cada vez e aguardar publicação.** Estes passos são do administrador, depois que o código local desta rodada estiver disponível no repositório. No GitHub, branch main, abra `wrangler.jsonc` e use o lápis:
 
 1. Troque somente `"OPERATIONS_ENABLED": "false"` por `"OPERATIONS_ENABLED": "true"`; deixe FINANCE/P1 false. Salve, aguarde o deploy correto no Pages e teste login, Hoje e status.
 2. Com operações aprovadas e migrações 0005 **e 0006** conferidas, troque `"FINANCE_ENABLED": "false"` por `"FINANCE_ENABLED": "true"`. Aguarde outro deploy e teste conta, sinal, crédito, recebimento/desfazer e estorno com DEMONSTRAÇÃO.

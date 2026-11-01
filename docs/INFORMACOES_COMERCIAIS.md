@@ -1,36 +1,22 @@
-# Informações comerciais fornecidas pelo responsável
+# Informações comerciais vigentes
 
-Este documento reúne informações reais comunicadas pelo responsável no chat. Não é uma fixture de demonstração, um seed de banco ou autorização para publicar o catálogo. Nenhum produto foi cadastrado no banco por este registro.
+## Sabores e embalagens
 
-## Produto Tradicional
+| Sabor                     | Peso por unidade | Unidades por caixa | Preço da caixa |
+| ------------------------- | ---------------- | ------------------ | -------------- |
+| Tradicional (carro-chefe) | 30 g             | 12                 | R$ 42,00       |
+| Casadinho                 | 30 g             | 12                 | R$ 42,00       |
+| Cajuzinho                 | 30 g             | 12                 | R$ 42,00       |
+| Côco                      | 30 g             | 12                 | R$ 42,00       |
+| Limão                     | 30 g             | 12                 | R$ 42,00       |
 
-| Campo                          | Informação fornecida                                    |
-| ------------------------------ | ------------------------------------------------------- |
-| Produto                        | Brigadeiro Tradicional                                  |
-| Destaque                       | Carro-chefe da brigaderia                               |
-| Peso por brigadeiro            | 30 g                                                    |
-| Unidade de venda informada     | Caixa com 12 unidades                                   |
-| Preço da caixa                 | R$ 42,00                                                |
-| Representação monetária futura | 4200 centavos por caixa                                 |
-| Origem                         | informado pelo Felipe, reconfirmar com os proprietários |
+O preço corresponde a uma caixa (4200 centavos), não a cada brigadeiro. Alterações futuras são feitas no cadastro privado, preservando snapshots dos pedidos. A correspondência das fotos está em marca/sabores/README.md; o vínculo no produto/variante é editável.
 
-O preço se refere à caixa com 12 unidades. Não estabelece oferta de venda avulsa, desconto ou preço de outros produtos. No cadastro futuro, distinguir quantidade de caixas e quantidade de brigadeiros por caixa; não multiplicar o preço da caixa por 12 para calcular uma única caixa.
-
-Receita, ingredientes, alérgenos, validade, conservação, embalagem, foto autorizada, disponibilidade, custos e regras de entrega continuam a confirmar. Não inferir essas informações do nome do produto ou de fotografias.
+Perfil B2B com pedidos recorrentes, entrega pela equipe ou motoboy e condições configuráveis por cliente. Caixa mista, venda avulsa, preços de revenda, receitas, ingredientes, alérgenos, validade, conservação, custos, rotas e chave Pix dependem de cadastro quando não definidos. Não deduzir dados novos de fotografias.
 
 ## Uso na implementação
 
-- Usar os dados acima no cadastro interno somente quando houver autenticação e persistência adequadas.
-- Manter fixtures fictícias de testes separadas dos dados comerciais reais.
-- Não incluir esses dados no frontend público de demonstração, no service worker ou em seeds automáticos.
-- O catálogo público permanece desativado até autorização explícita.
-
-## Sabores adicionais — informado pelo Felipe, reconfirmar com os proprietários
-
-| Sabor     | Peso por unidade | Unidades por caixa | Preço por caixa          | Origem / validação                                      |
-| --------- | ---------------- | ------------------ | ------------------------ | ------------------------------------------------------- |
-| Casadinho | 30 g             | 12                 | R$ 42,00 (4200 centavos) | informado pelo Felipe, reconfirmar com os proprietários |
-| Cajuzinho | 30 g             | 12                 | R$ 42,00 (4200 centavos) | informado pelo Felipe, reconfirmar com os proprietários |
-| Côco      | 30 g             | 12                 | R$ 42,00 (4200 centavos) | informado pelo Felipe, reconfirmar com os proprietários |
-
-O projeto é uma surpresa. O perfil B2B, a estimativa de 5–10 clientes fixos, condições de pagamento e a entrega pelo casal/motoboy são contexto informado pelo Felipe, a reconfirmar na entrega. Caixa mista, unidade avulsa, preço de revenda, roteiros, chave Pix, custos, validade, ingredientes e alérgenos permanecem a confirmar. Não remodelar os pedidos existentes com base na sugestão de caixa mista. Não inserir esses produtos no bundle público, SW ou banco automaticamente.
+- Cadastro privado autenticado; não inserir produtos/preços por seed ou migração.
+- Fixtures fictícias e identificadas como demonstração, separadas dos dados reais.
+- Não publicar dados comerciais no shell de demonstração ou no service worker.
+- Catálogo público permanece desligado até ativação expressa.

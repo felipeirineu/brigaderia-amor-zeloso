@@ -13,7 +13,7 @@
 - Validação estrita, limite de corpo 32 KiB, consultas parametrizadas, CSRF por Origin e JSON, rate limit persistente de login (10 tentativas/IP em 15 minutos), idempotência de criações e versão otimista com escrita atômica e auditoria.
 - Catálogo bloqueado em todas as circunstâncias. Nenhuma integração WhatsApp nesta fase.
 
-A implementação não adiciona preços ou informações comerciais reais ao bundle público. O [Tradicional informado pelo responsável](INFORMACOES_COMERCIAIS.md) será cadastrado no ambiente privado, após ativação: 30 g por unidade, 12 unidades por caixa, 4200 centavos por caixa. Não é preço por brigadeiro.
+A implementação não adiciona preços ou informações comerciais reais ao bundle público. O [Tradicional vigente](INFORMACOES_COMERCIAIS.md) será cadastrado no ambiente privado, após ativação: 30 g por unidade, 12 unidades por caixa, 4200 centavos por caixa. Não é preço por brigadeiro.
 
 ## Configuração para ativar online
 

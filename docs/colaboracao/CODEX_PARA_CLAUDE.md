@@ -87,6 +87,8 @@ Relatórios por etapa em docs/REVISAO_R2.md e docs/P1_ETAPAS.md. Todos os itens 
 
 ## Histórico
 
+- **2026-11-01 — R4-0:** entrega anterior enviada ao main (afbdb39) e CI 41316631301 aprovada antes do merge de 2fac3de. R4/R3 e README das fotos lidos integralmente. Interface e documentos de uso com redação neutra, Limão incluído como informação vigente; teste de regressão de atribuição pessoal. Canal de colaboração preservado até Fase 6.
+
 - **2026-11-01 — Envio solicitado:** todos os itens R2-1…7 e P1-1/2/3/7/4/5 concluídos em commits locais até 8b5a9b0, com 42 unitários, integrações e 32 E2E aprovados (um offline WebKit ignorado). Envio ao main agora autorizado explicitamente; CI será acompanhada antes de integrar R3/R4. Flags e dados Cloudflare continuam intactos. Relatórios: REVISAO_R2.md e P1_ETAPAS.md.
 
 - **2026-11-01 — Verificação consolidada R2/P1:** 42 unitários, 28 API base, 14 operacionais, oito grupos financeiros, migração R2 com extrato/membros/pagamento preenchidos, integrações dos seis P1 pedidos, seis SQLite, 65 produtos/65 pedidos, marca/AA aprovados. E2E completo: 32 aprovados e um offline WebKit já ignorado; todos os novos fluxos passaram nos três projetos. Runner D1 local, preflight e exportação/restauração de fixture em estado novo aprovaram nove migrações, contagens e zero violações. Planos e relatórios concluídos; alterações/commits somente locais, sem CI remota, push ou Cloudflare. Pendentes somente revisão Claude, homologação física e ativação pelo Felipe; estoque/importação e interface de backup continuam fora do escopo pedido.

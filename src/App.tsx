@@ -95,8 +95,8 @@ function ModulePage({ slug }: { slug: string }) {
         <section className="panel">
           <h2>Informações a confirmar</h2>
           <p>
-            Logo autorizado pelo Felipe. Informações comerciais e operacionais
-            aguardam reconfirmação dos proprietários.
+            Informações comerciais vigentes. Produtos, atendimento e entrega
+            podem ser atualizados na gestão.
           </p>
           <ul className="confirmation-list">
             {[
@@ -238,7 +238,7 @@ export function App() {
             <br />
             <strong>boas lembranças.</strong>
           </p>
-          <small>Marca autorizada pelo Felipe</small>
+          <small>O sabor das boas lembranças</small>
         </div>
       </aside>
       <div className="workspace">

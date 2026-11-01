@@ -2,7 +2,7 @@
 
 PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com preparação para catálogo público e atendimento assistido pelo WhatsApp.
 
-> **Estado:** gestão da Fase 1 validada pelo Felipe. Revisão R1 e Fase 2B financeira implementadas/testadas; operação e financeiro permanecem OFF até backup, migrações e ativação do banco remoto.
+> **Estado:** gestão da Fase 1 validada em homologação. Revisão R1 e Fase 2B financeira implementadas/testadas; operação e financeiro permanecem OFF até backup, migrações e ativação do banco remoto.
 
 ## Objetivos
 
@@ -135,7 +135,7 @@ A pré-checagem é somente leitura. O guia também explica como exportar um back
 
 A [revisão R2](docs/REVISAO_R2.md) inclui recebimento rápido no Hoje, entrega/recebimento atômicos com desfazer, saldo a favor, uso de crédito, anulação de fechamento e estorno por autor/dia. As [etapas P1](docs/P1_ETAPAS.md) acrescentam agenda/ICS, lembretes, relatórios/CSV, despesas/fluxo registrado e ficha/custo/preço estimado/lista de compras.
 
-O [índice único de ativação](docs/ATIVACAO.md) orienta Felipe: backup/restauração, migrações pendentes, flags OPERATIONS → FINANCE → P1 em etapas. `P1_ENABLED=false` permanece no repositório. A rodada R2/P1 foi solicitada somente local, sem push, deploy ou alterações remotas. Dados reais, receitas e custos não são semeados.
+O [índice único de ativação](docs/ATIVACAO.md) orienta administrador: backup/restauração, migrações pendentes, flags OPERATIONS → FINANCE → P1 em etapas. `P1_ENABLED=false` permanece no repositório. A rodada R2/P1 foi solicitada somente local, sem push, deploy ou alterações remotas. Dados reais, receitas e custos não são semeados.
 
 ```bash
 npm run test:r2

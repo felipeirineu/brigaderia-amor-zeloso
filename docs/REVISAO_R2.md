@@ -18,4 +18,4 @@ WebKit Linux não é iPhone físico. Crédito não é alocado automaticamente. L
 
 ## Pendências
 
-Homologação física, revisão Claude e ativação pelo Felipe após backup/ensaio/migrações. Nada remoto nesta tarefa, inclusive push; commits e testes no checkout local. Agenda e demais P1 foram concluídos em etapas separadas, relatadas em P1_ETAPAS.md. A suíte consolidada terminou com 32 E2E aprovados e um offline WebKit já ignorado.
+Homologação física, revisão Claude e ativação pelo administrador após backup/ensaio/migrações. Nada remoto nesta tarefa, inclusive push; commits e testes no checkout local. Agenda e demais P1 foram concluídos em etapas separadas, relatadas em P1_ETAPAS.md. A suíte consolidada terminou com 32 E2E aprovados e um offline WebKit já ignorado.
