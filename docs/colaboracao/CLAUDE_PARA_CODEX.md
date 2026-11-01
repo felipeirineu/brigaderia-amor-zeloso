@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-01** — R6: distância por rota de carro, tela do botão Mapa e saudação pelo horário. Ver seção **R6**. Referência visual: prévia interativa aprovada pelo responsável (cartões de entrega com km/min, folha "Rota até…").
 - **2026-11-01** — R5: revisão da entrega R2/R3/R4/P1 (até `796342b`), com capturas de tela. Foco: espaço útil no celular e simplificação da ativação. Ver seção **R5**.
 - **2026-11-01** — R4: remover marcações de origem das informações (urgente), localização de clientes, distância, Uber/99 e custo de deslocamento. Ver seção **R4** abaixo.
 - **2026-11-01** — Sabor **Limão** incluído: 30 g, caixa com 12, R$ 42,00 (igual aos demais). Atualizar `docs/INFORMACOES_COMERCIAIS.md`.
@@ -14,6 +15,41 @@
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R6 — Distância de carro, botão Mapa e saudação (2026-11-01)
+
+Fazer **depois da R5**. Ajustes pedidos pelo responsável após ver a prévia.
+
+- **R6-1 — Distância e tempo por rota de carro** (substitui a linha reta da R4-4 como informação principal).
+  - **Calcular uma vez**, quando o endereço do cliente ou da empresa é salvo ou alterado. Guardar `route_km`, `route_minutes`, `route_provider` e `route_computed_at` no cadastro do cliente. **Não consultar a cada abertura de tela.**
+  - Exibir no cartão do cliente e da entrega: "7,9 km · 19 min de carro". O tempo é estimado, **sem trânsito em tempo real**; deixar isso claro no `HelpTip`. Botão "Recalcular rota" para o administrador.
+  - **Provedor gratuito primeiro:** OpenRouteService (perfil `driving-car`, chave gratuita com cota diária) ou equivalente com termos que permitam o uso. Chamado só pelo Worker, com a chave como **secret** (nunca no bundle), cache e atribuição exigida.
+  - **Google Routes/Distance Matrix:** só com aprovação dos proprietários, porque exige conta Google Cloud com faturamento.
+    - Com 5 a 10 clientes e cálculo único, o volume deve ficar dentro da faixa gratuita do Google. Confirmar na documentação vigente antes de propor. Documentar custos, limites e como configurar alerta de orçamento.
+    - Manter o provedor abstraído para trocar sem migração.
+  - **Se o provedor falhar ou não estiver configurado**, mostrar a linha reta com rótulo explícito ("≈ 4,2 km em linha reta") e um botão "Calcular rota".
+  - "Ordenar por proximidade" passa a usar o tempo de rota quando existir.
+- **R6-2 — Botão Mapa** (folha inferior, como na prévia).
+  - Folha "Rota até {cliente}" com endereço, km, minutos e três botões:
+    - **Google Maps:** `https://www.google.com/maps/dir/?api=1&destination=…&travelmode=driving`, com coordenadas quando houver, senão o endereço codificado;
+    - **Waze:** `https://waze.com/ul?ll=lat,lng&navigate=yes` ou `?q=`;
+    - **Mapas do iPhone:** `https://maps.apple.com/?daddr=…&dirflg=d`.
+  - Lembrar o último app escolhido por usuário (preferência local, não sensível). Depois da primeira escolha, o botão Mapa pode abrir direto, com a opção "trocar app" na folha.
+  - A rota sai da **localização atual do aparelho**, pelo próprio app de mapas. O nosso app não rastreia.
+  - Uma ilustração simples da rota ou um mapa estático é opcional. Não carregar SDK de mapa nem tiles de terceiros sem avaliar termos e custos.
+- **R6-3 — Saudação e data pelo horário.**
+  - "Bom dia" das 5h às 11h59, "Boa tarde" das 12h às 17h59 e "Boa noite" das 18h às 4h59, com data por extenso ("Domingo, 1 de novembro").
+  - Tudo calculado no **fuso America/Fortaleza** com `Intl`, e não no fuso do aparelho.
+  - Usar o **nome de exibição** do perfil (R4-7).
+  - Atualizar ao voltar ao app (`visibilitychange`), sem recarregar dados.
+- **Aceite:**
+  - Cliente salvo → rota calculada uma vez e exibida.
+  - Provedor indisponível → linha reta rotulada.
+  - Nenhuma chave no bundle.
+  - Folha do Mapa testada em `webkit-mobile` e `chromium-mobile`, com URLs codificadas.
+  - Teste unitário da saudação nas fronteiras 4:59, 5:00, 11:59, 12:00, 17:59 e 18:00 no fuso de Fortaleza.
 
 ---
 
