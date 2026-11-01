@@ -1,7 +1,8 @@
+import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
 import { CreditTools } from './CreditTools';
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { api, money, parsePrice, dateTime, civilDate } from '../api';
 import { useRemote, Failure, localDay } from '../operations/common';
 import { paymentMethods, type Terms } from '../../../shared/finance';
@@ -135,14 +136,18 @@ export function Account() {
   }
   return (
     <>
-      <Link to="/gestao/financeiro">Financeiro</Link>
+      <Button to="/gestao/financeiro" variant="ghost">
+        Financeiro
+      </Button>
       <h1>Conta do cliente</h1>
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
       {data && (
         <>
           <h2>{data.customer.name}</h2>
-          <Link to={`/gestao/clientes/${id}/b2b`}>Editar condições B2B</Link>
+          <Button to={`/gestao/clientes/${id}/b2b`} variant="ghost">
+            Editar condições B2B
+          </Button>
           <section className="panel">
             <h2>A receber: {money(data.receivable_cents)}</h2>
             <p>
@@ -159,12 +164,13 @@ export function Account() {
                 Crédito a conciliar/estornar: {money(data.credit_cents)}.
               </p>
             )}
-            <button
+            <Button
               disabled={busy || data.receivable_cents <= 0}
               onClick={() => void charge()}
+              loading={busy}
             >
               Cobrar no WhatsApp
-            </button>
+            </Button>
           </section>
           <form
             id="receive-payment"
@@ -285,7 +291,9 @@ export function Account() {
                 }}
               />
             </label>
-            <button disabled={busy || !target}>Registrar recebimento</button>
+            <Button disabled={busy || !target} variant="primary" loading={busy}>
+              Registrar recebimento
+            </Button>
             <p>
               Pagamento pode ser parcial. Sinal é um recebimento antecipado
               vinculado ao pedido. Não registra despesa ou transferência
@@ -305,14 +313,14 @@ export function Account() {
                 />
               </label>
               {preview.message.trim() && !/[{}]/.test(preview.message) && (
-                <a
+                <Button
                   className="button"
                   target="_blank"
                   rel="noreferrer"
                   href={`https://wa.me/${preview.phone.replace(/^\+/, '')}?text=${encodeURIComponent(preview.message)}`}
                 >
                   Abrir WhatsApp para conferir e enviar
-                </a>
+                </Button>
               )}
               {preview.pix_code && (
                 <label>
@@ -332,9 +340,9 @@ export function Account() {
             {data.orders.map((o) => (
               <article key={o.id}>
                 <h3>
-                  <Link to={`/gestao/pedidos/${o.id}`}>
+                  <Button to={`/gestao/pedidos/${o.id}`} variant="ghost">
                     Pedido {o.id.slice(0, 8)}
-                  </Link>{' '}
+                  </Button>{' '}
                   · {civilDate(o.business_date)}
                 </h3>
                 <p>
@@ -350,7 +358,7 @@ export function Account() {
                     : ''}
                 </p>
                 {['draft', 'awaiting_confirmation'].includes(o.status) && (
-                  <button
+                  <Button
                     onClick={() =>
                       setTermsEdit({
                         id: o.id,
@@ -360,12 +368,12 @@ export function Account() {
                     }
                   >
                     Condição deste pedido {o.id.slice(0, 8)}
-                  </button>
+                  </Button>
                 )}
                 {['delivered', 'picked_up'].includes(o.status) &&
                   o.terms.mode === 'credit' &&
                   !o.closing_id && (
-                    <button
+                    <Button
                       disabled={busy}
                       onClick={() => {
                         if (
@@ -385,9 +393,10 @@ export function Account() {
                             );
                           });
                       }}
+                      loading={busy}
                     >
                       Fechar período desta entrega
-                    </button>
+                    </Button>
                   )}
               </article>
             ))}
@@ -411,10 +420,12 @@ export function Account() {
                 value={termsEdit.terms}
                 onChange={(terms) => setTermsEdit({ ...termsEdit, terms })}
               />
-              <button disabled={busy}>Salvar condição do pedido</button>
-              <button type="button" onClick={() => setTermsEdit(null)}>
+              <Button disabled={busy} variant="primary" loading={busy}>
+                Salvar condição do pedido
+              </Button>
+              <Button type="button" onClick={() => setTermsEdit(null)}>
                 Cancelar edição
-              </button>
+              </Button>
             </form>
           )}
           <section className="panel">
@@ -431,12 +442,13 @@ export function Account() {
                   {money(c.total_cents - c.balance_cents)} · saldo{' '}
                   {money(c.balance_cents)} · vence {civilDate(c.due_on)}
                 </p>
-                <button
+                <Button
                   disabled={busy || c.balance_cents <= 0}
                   onClick={() => void charge(c.id)}
+                  loading={busy}
                 >
                   Cobrar fechamento no WhatsApp
-                </button>
+                </Button>
                 {c.status === 'annulled' && (
                   <p>
                     Motivo:{' '}
@@ -444,7 +456,7 @@ export function Account() {
                   </p>
                 )}
                 {data.actor.role === 'owner' && c.status === 'active' && (
-                  <button
+                  <Button
                     disabled={busy}
                     onClick={() => {
                       const reason = prompt(
@@ -466,9 +478,11 @@ export function Account() {
                           setNotice('Fechamento anulado com histórico.');
                         });
                     }}
+                    variant="danger"
+                    loading={busy}
                   >
                     Anular fechamento
-                  </button>
+                  </Button>
                 )}
               </article>
             ))}
@@ -494,7 +508,7 @@ export function Account() {
                 {e.can_reverse &&
                   e.kind !== 'reversal' &&
                   !data.events.some((x) => x.reversal_of === e.id) && (
-                    <button
+                    <Button
                       disabled={busy}
                       onClick={() => {
                         const reason = prompt(
@@ -516,9 +530,11 @@ export function Account() {
                             setNotice('Estorno registrado; saldo recalculado.');
                           });
                       }}
+                      variant="danger"
+                      loading={busy}
                     >
                       Estornar recebimento {e.id.slice(0, 8)}
-                    </button>
+                    </Button>
                   )}
               </article>
             ))}

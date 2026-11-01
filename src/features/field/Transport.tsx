@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
 import { useField } from './FieldContext';
 import {
@@ -12,12 +13,17 @@ function Buttons({ place, base = false }: { place: Place; base?: boolean }) {
     links = transportLinks(place);
   return (
     <div className="actions">
-      <a className="button" href={links.uber} target="_blank" rel="noreferrer">
+      <Button
+        className="button"
+        href={links.uber}
+        target="_blank"
+        rel="noreferrer"
+      >
         {base ? 'Voltar para a base' : 'Abrir Uber'}
-      </a>
+      </Button>
       {!base && (
         <>
-          <button
+          <Button
             type="button"
             onClick={() => {
               void navigator.clipboard
@@ -31,31 +37,31 @@ function Buttons({ place, base = false }: { place: Place; base?: boolean }) {
             }}
           >
             Copiar destino para 99
-          </button>
-          <a
+          </Button>
+          <Button
             className="button"
             href="https://99app.com/"
             target="_blank"
             rel="noreferrer"
           >
             Abrir 99
-          </a>
-          <a
+          </Button>
+          <Button
             className="button"
             href={links.maps}
             target="_blank"
             rel="noreferrer"
           >
             Maps
-          </a>
-          <a
+          </Button>
+          <Button
             className="button"
             href={links.waze}
             target="_blank"
             rel="noreferrer"
           >
             Waze
-          </a>
+          </Button>
         </>
       )}
       <p role="status">{message}</p>

@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { api, money, dateTime } from '../api';
 import {
   useRemote,
@@ -71,9 +72,13 @@ export function Travel() {
         <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
       </label>
       <Failure message={error || view.error || orders.error} />
-      <button disabled={!orders.data?.length} onClick={() => setShow(true)}>
+      <Button
+        disabled={!orders.data?.length}
+        onClick={() => setShow(true)}
+        variant="primary"
+      >
         Registrar deslocamento
-      </button>
+      </Button>
       {show && (
         <TravelSheet
           orders={orders.data!.filter((o) => o.status !== 'cancelled')}
@@ -97,12 +102,16 @@ export function Travel() {
           <p>{t.notes}</p>
           {t.orders.map((o) => (
             <p key={o.order_id}>
-              <Link to={'/gestao/pedidos/' + o.order_id}>Ver pedido</Link> ·
-              Rateio estimado {money(o.allocated_cents)}
+              <Button to={'/gestao/pedidos/' + o.order_id} variant="ghost">
+                Ver pedido
+              </Button>{' '}
+              · Rateio estimado {money(o.allocated_cents)}
             </p>
           ))}
           {t.can_reverse && (
-            <button onClick={() => setUndo(t.id)}>Estornar deslocamento</button>
+            <Button onClick={() => setUndo(t.id)} variant="danger">
+              Estornar deslocamento
+            </Button>
           )}
         </article>
       ))}
@@ -116,13 +125,15 @@ export function Travel() {
               onChange={(e) => setReason(e.target.value)}
             />
           </label>
-          <button
+          <Button
             disabled={busy || reason.trim().length < 3}
             onClick={() => void reverse()}
+            variant="primary"
+            loading={busy}
           >
             Confirmar estorno
-          </button>
-          <button onClick={() => setUndo('')}>Cancelar</button>
+          </Button>
+          <Button onClick={() => setUndo('')}>Cancelar</Button>
         </section>
       )}
       <TravelReport from={from} to={to} />
@@ -152,7 +163,7 @@ export function TravelReport({ from, to }: { from: string; to: string }) {
         distorcer o percentual. Não representa lucro líquido.
       </p>
       <p>Total de deslocamentos ativos: {money(view.data?.total_cents ?? 0)}</p>
-      <button
+      <Button
         onClick={() =>
           void privateDownload(
             `field/travel-report?from=${from}&to=${to}&format=csv`,
@@ -161,7 +172,7 @@ export function TravelReport({ from, to }: { from: string; to: string }) {
         }
       >
         Exportar custo de entrega CSV
-      </button>
+      </Button>
       {view.data?.customers.map((c) => (
         <p key={c.id}>
           {c.name}: {money(c.cost_cents)} de corrida / {money(c.revenue_cents)}{' '}

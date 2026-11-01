@@ -1,7 +1,8 @@
+import { Button } from '../../components/Button';
 import { useCourierLabels } from '../field/FieldContext';
 import { MoneyField } from '../../components/NumericInputs';
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { api, parsePrice } from '../api';
 import { useRemote, Failure } from '../operations/common';
 import { emptyProfile, type B2BProfile } from '../../../shared/finance';
@@ -25,13 +26,15 @@ export function CustomerProfile() {
   };
   return (
     <>
-      <Link to="/gestao/clientes">Clientes</Link>
+      <Button to="/gestao/clientes" variant="ghost">
+        Clientes
+      </Button>
       <h1>Cadastro B2B e condições</h1>
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
       {view.data && (
         <>
-          <button
+          <Button
             onClick={() => {
               setForm(view.data!.data);
               setFee(
@@ -42,7 +45,7 @@ export function CustomerProfile() {
             }}
           >
             Editar dados B2B
-          </button>
+          </Button>
           <form
             className="panel data-form"
             onSubmit={(e) => {
@@ -163,11 +166,17 @@ export function CustomerProfile() {
               value={value.terms}
               onChange={(terms) => change({ terms })}
             />
-            <button disabled={busy}>Salvar padrões B2B</button>
+            <Button disabled={busy} variant="primary" loading={busy}>
+              Salvar padrões B2B
+            </Button>
           </form>
-          <Link className="button" to={`/gestao/financeiro/${id}`}>
+          <Button
+            className="button"
+            to={`/gestao/financeiro/${id}`}
+            variant="ghost"
+          >
             Ver conta do cliente
-          </Link>
+          </Button>
         </>
       )}
     </>

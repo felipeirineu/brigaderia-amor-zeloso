@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
 import { useRef, useState } from 'react';
 import { useRemote, Failure, localDay } from '../operations/common';
@@ -99,7 +100,7 @@ export function Expenses() {
             }}
           />
         </label>
-        <button
+        <Button
           onClick={() =>
             void privateDownload(
               'p1/cashflow.csv?' + query,
@@ -108,7 +109,7 @@ export function Expenses() {
           }
         >
           Exportar fluxo CSV
-        </button>
+        </Button>
       </div>
       {view.data && (
         <>
@@ -218,7 +219,9 @@ export function Expenses() {
                   ))}
                 </select>
               </label>
-              <button disabled={busy}>Registrar despesa</button>
+              <Button disabled={busy} variant="primary" loading={busy}>
+                Registrar despesa
+              </Button>
               <p>
                 Taxa de motoboy não vira despesa automaticamente: confirme
                 valor, data e vínculo antes de registrar.
@@ -252,7 +255,7 @@ export function Expenses() {
               {view.data!.role === 'owner' &&
                 e.kind === 'expense' &&
                 !e.reversed && (
-                  <button
+                  <Button
                     disabled={busy}
                     onClick={() => {
                       const reason = prompt('Motivo do estorno da despesa:');
@@ -264,9 +267,11 @@ export function Expenses() {
                       )
                         void run('p1/expenses/' + e.id, { reason });
                     }}
+                    variant="danger"
+                    loading={busy}
                   >
                     Estornar despesa {e.id.slice(0, 8)}
-                  </button>
+                  </Button>
                 )}
             </article>
           ))}

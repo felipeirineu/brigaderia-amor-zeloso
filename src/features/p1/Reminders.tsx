@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { api, dateTime } from '../api';
 import { Failure, useRemote } from '../operations/common';
 interface Reminder {
@@ -29,14 +30,16 @@ export function TodayReminders({ day }: { day: string }) {
     <section className="panel">
       <h2>Lembretes até este dia</h2>
       <Failure message={view.error || error} />
-      <Link to="/gestao/lembretes">Novo lembrete / gerenciar</Link>
+      <Button to="/gestao/lembretes" variant="ghost">
+        Novo lembrete / gerenciar
+      </Button>
       {view.data?.length === 0 && <p>Nenhum lembrete pendente.</p>}
       {view.data?.map((r) => (
         <article key={r.id}>
           <h3>{r.title}</h3>
           <p>{dateTime(r.due_at)}</p>
           {r.notes && <p>{r.notes}</p>}
-          <button
+          <Button
             disabled={busy}
             onClick={() => {
               setBusy(true);
@@ -51,9 +54,10 @@ export function TodayReminders({ day }: { day: string }) {
                 .catch((e) => setError(e.message))
                 .finally(() => setBusy(false));
             }}
+            loading={busy}
           >
             Concluir lembrete {r.title}
-          </button>
+          </Button>
         </article>
       ))}
     </section>
@@ -170,10 +174,12 @@ export function Reminders() {
             onChange={(e) => setNotes(e.target.value)}
           />
         </label>
-        <button disabled={busy}>Salvar lembrete</button>
-        <button type="button" onClick={reset}>
+        <Button disabled={busy} variant="primary" loading={busy}>
+          Salvar lembrete
+        </Button>
+        <Button type="button" onClick={reset}>
           Limpar edição
-        </button>
+        </Button>
       </form>
       <p>
         São lembretes da gestão e da agenda. Nenhum push ou mensagem é enviado
@@ -188,7 +194,7 @@ export function Reminders() {
             {dateTime(r.due_at)} · {r.notes}
           </p>
           <div className="actions">
-            <button
+            <Button
               onClick={() => {
                 setEditing(r);
                 setTitle(r.title);
@@ -202,16 +208,17 @@ export function Reminders() {
               }}
             >
               Editar lembrete {r.title}
-            </button>
-            <button
+            </Button>
+            <Button
               disabled={busy}
               onClick={() =>
                 void save('p1/reminders/' + r.id, payload(r, !r.done), 'PUT')
               }
+              loading={busy}
             >
               {r.done ? 'Reabrir' : 'Concluir'} lembrete {r.title}
-            </button>
-            <button
+            </Button>
+            <Button
               disabled={busy}
               onClick={() => {
                 if (confirm('Arquivar este lembrete?'))
@@ -221,9 +228,11 @@ export function Reminders() {
                     'PUT',
                   );
               }}
+              variant="danger"
+              loading={busy}
             >
               Arquivar lembrete {r.title}
-            </button>
+            </Button>
           </div>
         </article>
       ))}

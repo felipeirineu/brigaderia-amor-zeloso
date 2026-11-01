@@ -110,7 +110,7 @@ Plano: R5-1 (CompactHeader, Management, Tour e CSS; linha móvel ≤56 px e menu
 | Item  | Status   | Evidência                                                                                                                                                                                                                                            |
 | ----- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | R5-1  | entregue | Cabeçalho móvel de 56 px, logo/título/menu, perfil quando cadastrado; Ajuda, passeio e Sair no menu. PC preservado. Build/tipagem/lint e seis E2E de cabeçalho/operação passaram nos três projetos; gestão/logout também passaram nos três projetos. |
-| R5-12 | pendente | Próximo item.                                                                                                                                                                                                                                        |
+| R5-12 | entregue | Button compartilhado, primário/tonal/fantasma/perigo/chip/cartão, loading/foco/reduced-motion. 52 unitários, contraste AA, build/tipagem/lint e 53 E2E aprovados; um offline WebKit ignorado. Seis capturas r5-depois- incluídas.                    |
 | R5-3  | pendente | Depois de Button.                                                                                                                                                                                                                                    |
 | R5-2  | pendente | Entregas primeiro.                                                                                                                                                                                                                                   |
 | R5-4  | pendente | Lista/folha.                                                                                                                                                                                                                                         |
@@ -118,6 +118,8 @@ Plano: R5-1 (CompactHeader, Management, Tour e CSS; linha móvel ≤56 px e menu
 Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
+
+- **2026-11-01 — R5-12:** componente Button aplicado em toda a interface sem mudar handlers/validações; todos os 53 E2E executáveis e 52 unitários passaram. Capturas de Hoje/Sabores/Revisar/Clientes/Mais/Financeiro com dados DEMONSTRAÇÃO. Próximo: R5-3, depois R5-2 e R5-4.
 
 - **2026-11-01 — R5-1:** revisão 0ffe98a incorporada por fast-forward; cabeçalho compacto e menu testados. Restam, nesta ordem, R5-12, R5-3, R5-2 e R5-4.
 

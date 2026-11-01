@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { ProfileSettings } from '../field/ProfileSettings';
 import { useOrderMode } from './useOrderMode';
 export function Preferences({ role }: { role: string }) {
@@ -13,13 +14,13 @@ export function Preferences({ role }: { role: string }) {
           ['simple', 'Modo simples'],
           ['full', 'Modo completo'],
         ].map(([v, label]) => (
-          <button
+          <Button
             key={v}
             aria-pressed={mode.preference === v}
             onClick={() => mode.setPreference(v)}
           >
             {label}
-          </button>
+          </Button>
         ))}
       </div>
       <p>

@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { api, money, civilDate } from '../api';
 import { useRemote, Failure } from '../operations/common';
 export interface Summary {
@@ -32,16 +33,28 @@ export function FinanceSummary({ compact = false }: { compact?: boolean }) {
       {view.data && (
         <>
           <div className="summary-grid">
-            <Link className="panel" to="/gestao/financeiro?filter=received">
+            <Button
+              className="panel"
+              to="/gestao/financeiro?filter=received"
+              variant="ghost"
+            >
               Recebido hoje: {money(view.data.received_cents)}
-            </Link>
-            <Link className="panel" to="/gestao/financeiro?filter=overdue">
+            </Button>
+            <Button
+              className="panel"
+              to="/gestao/financeiro?filter=overdue"
+              variant="ghost"
+            >
               A receber vencido: {money(view.data.overdue_cents)}
-            </Link>
-            <Link className="panel" to="/gestao/financeiro?filter=week">
+            </Button>
+            <Button
+              className="panel"
+              to="/gestao/financeiro?filter=week"
+              variant="ghost"
+            >
               Vence esta semana: {money(view.data.week_cents)}
               <small> Hoje a domingo</small>
-            </Link>
+            </Button>
           </div>
           <p>
             Recebido líquido em {civilDate(view.data.day)}:{' '}
@@ -53,7 +66,7 @@ export function FinanceSummary({ compact = false }: { compact?: boolean }) {
           </p>
           {view.data.customers.map((c) => (
             <article key={c.id}>
-              <Link to={`/gestao/financeiro/${c.id}`}>
+              <Button to={`/gestao/financeiro/${c.id}`} variant="ghost">
                 {c.name}:{' '}
                 {money(
                   filter === 'received'
@@ -64,7 +77,7 @@ export function FinanceSummary({ compact = false }: { compact?: boolean }) {
                         ? c.week_cents
                         : c.balance_cents,
                 )}
-              </Link>
+              </Button>
               {c.overdue_days > 0 && (
                 <p role="alert">
                   Saldo vencido há {c.overdue_days} dias. Sem bloqueio de
@@ -92,18 +105,22 @@ export function Finance({ role }: { role: string }) {
   return (
     <>
       <h1>Financeiro</h1>
-      <Link to="/gestao/financeiro">Todas as contas</Link>
+      <Button to="/gestao/financeiro" variant="ghost">
+        Todas as contas
+      </Button>
       <FinanceSummary />
       {role === 'owner' && (
-        <Link className="button" to="/gestao/financeiro/pix">
+        <Button className="button" to="/gestao/financeiro/pix" variant="ghost">
           Configurar Pix
-        </Link>
+        </Button>
       )}
       <Failure message={customers.error} />
       <h2>Contas dos clientes</h2>
       {customers.data?.map((c) => (
         <p key={c.id}>
-          <Link to={`/gestao/financeiro/${c.id}`}>{c.name}</Link>
+          <Button to={`/gestao/financeiro/${c.id}`} variant="ghost">
+            {c.name}
+          </Button>
         </p>
       ))}
     </>
@@ -200,7 +217,9 @@ export function PixSettings() {
               ))}
             </>
           )}
-          <button disabled={busy}>Salvar configuração Pix</button>
+          <Button disabled={busy} variant="primary" loading={busy}>
+            Salvar configuração Pix
+          </Button>
           <p>
             Dados privados, nunca publicados no catálogo. A cobrança não contém
             Pix enquanto a chave não for cadastrada. Confira o recebedor no

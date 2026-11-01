@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { Failure, useRemote, localDay } from '../operations/common';
 import { useP1Save } from './useP1Save';
 import { parseMilli, quantityInput, unitName } from './quantity';
@@ -37,7 +38,9 @@ export function Stock({ role }: { role: string }) {
   return (
     <>
       <h1>Estoque</h1>
-      <Link to="/gestao/insumos">Cadastrar insumos e embalagens</Link>
+      <Button to="/gestao/insumos" variant="ghost">
+        Cadastrar insumos e embalagens
+      </Button>
       <p>
         Movimentos manuais na unidade do insumo. A previsão de produção não
         baixa estoque nem cria despesas.
@@ -58,10 +61,10 @@ export function Stock({ role }: { role: string }) {
           {s.minimum_milli !== null && s.balance_milli < s.minimum_milli && (
             <p role="alert">Abaixo do mínimo</p>
           )}
-          <button onClick={() => setId(s.id)}>
+          <Button onClick={() => setId(s.id)}>
             {s.active ? 'Movimentar e ver histórico' : 'Ver histórico'} de{' '}
             {s.name}
-          </button>
+          </Button>
           {id === s.id && (
             <StockEditor key={id} item={s} role={role} refresh={view.refresh} />
           )}
@@ -131,13 +134,13 @@ function StockEditor({
         <>
           <div className="chips" aria-label="Tipo de movimento">
             {['entry', 'consumption', 'loss', 'adjustment'].map((k) => (
-              <button
+              <Button
                 key={k}
                 aria-pressed={kind === k}
                 onClick={() => setKind(k)}
               >
                 {labels[k]}
-              </button>
+              </Button>
             ))}
           </div>
           {s.unit === 'unit' ? (
@@ -159,18 +162,18 @@ function StockEditor({
           )}
           {kind === 'adjustment' && (
             <div className="chips">
-              <button
+              <Button
                 aria-pressed={direction === 'in'}
                 onClick={() => setDirection('in')}
               >
                 Adicionar ao saldo
-              </button>
-              <button
+              </Button>
+              <Button
                 aria-pressed={direction === 'out'}
                 onClick={() => setDirection('out')}
               >
                 Retirar do saldo
-              </button>
+              </Button>
             </div>
           )}
           <label>
@@ -197,12 +200,14 @@ function StockEditor({
               onChange={(e) => setExpires(e.target.value)}
             />
           </label>
-          <button
+          <Button
             disabled={save.busy || reason.trim().length < 3 || !quantity}
             onClick={move}
+            variant="primary"
+            loading={save.busy}
           >
             Salvar movimento
-          </button>
+          </Button>
           {role === 'owner' && (
             <>
               <label>
@@ -214,7 +219,7 @@ function StockEditor({
                   placeholder="Sem mínimo cadastrado"
                 />
               </label>
-              <button
+              <Button
                 disabled={save.busy}
                 onClick={() => {
                   try {
@@ -232,9 +237,11 @@ function StockEditor({
                     save.setError((e as Error).message);
                   }
                 }}
+                variant="primary"
+                loading={save.busy}
               >
                 Salvar mínimo
-              </button>
+              </Button>
             </>
           )}
         </>
@@ -264,7 +271,7 @@ function StockEditor({
             </p>
           )}
           {e.can_reverse && (
-            <button
+            <Button
               disabled={save.busy || reason.trim().length < 3}
               onClick={() =>
                 void save.save(
@@ -279,9 +286,11 @@ function StockEditor({
                   () => setReason(''),
                 )
               }
+              variant="danger"
+              loading={save.busy}
             >
               Estornar este movimento
-            </button>
+            </Button>
           )}
         </div>
       ))}

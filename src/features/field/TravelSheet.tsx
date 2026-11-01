@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { useEffect, useRef, useState } from 'react';
 import { MoneyInput } from '../../components/NumericInputs';
 import { api, money } from '../api';
@@ -94,24 +95,24 @@ export function TravelSheet({
         <Failure message={error} />
         <div className="chips" aria-label="Meio de transporte">
           {Object.entries(travelModes).map(([v, label]) => (
-            <button
+            <Button
               key={v}
               aria-pressed={mode === v}
               onClick={() => setMode(v as typeof mode)}
             >
               {label}
-            </button>
+            </Button>
           ))}
         </div>
         <div className="chips" aria-label="Trecho">
           {Object.entries(travelLegs).map(([v, label]) => (
-            <button
+            <Button
               key={v}
               aria-pressed={leg === v}
               onClick={() => setLeg(v as typeof leg)}
             >
               {label}
-            </button>
+            </Button>
           ))}
         </div>
         <MoneyInput
@@ -120,14 +121,15 @@ export function TravelSheet({
           onValueChange={setAmount}
         />
         {mode === 'courier' && fee > 0 && (
-          <button
+          <Button
             onClick={() => {
               setAmount(fee);
               setCourier(orders[0].courier_name);
             }}
+            variant="primary"
           >
             Confirmar pagamento da taxa combinada · {money(fee)}
-          </button>
+          </Button>
         )}
         <label>
           Data e hora do deslocamento
@@ -200,16 +202,18 @@ export function TravelSheet({
           Observação
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
         </label>
-        <button
+        <Button
           className="primary-action"
           disabled={busy || !selected.length || amount === null}
           onClick={() => void save()}
+          variant="primary"
+          loading={busy}
         >
           Registrar despesa paga
-        </button>
-        <button disabled={busy} onClick={onClose}>
+        </Button>
+        <Button disabled={busy} onClick={onClose} loading={busy}>
           Pular
-        </button>
+        </Button>
       </div>
     </dialog>
   );

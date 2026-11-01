@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
 import { api } from '../api';
 import { HelpTip } from '../../components/HelpTip';
@@ -43,14 +44,14 @@ export function MessageTemplates() {
                     : 'Pós-venda'}
           </h2>
           <p>{t.content}</p>
-          <button
+          <Button
             onClick={() => {
               setSelected(t.kind);
               setContent(t.content);
             }}
           >
             Editar modelo {messageLabels[t.kind]}
-          </button>
+          </Button>
         </section>
       ))}
       {content && (
@@ -76,7 +77,7 @@ export function MessageTemplates() {
               onChange={(e) => setContent(e.target.value)}
             />
           </label>
-          <button>Salvar modelo</button>
+          <Button variant="primary">Salvar modelo</Button>
         </form>
       )}
     </>

@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { useField } from './FieldContext';
 import { api } from '../api';
 import { Failure } from '../operations/common';
@@ -25,7 +26,7 @@ export function ProfileSettings() {
           maxLength={80}
         />
       </label>
-      <button
+      <Button
         disabled={busy || !name?.trim()}
         onClick={() => {
           setBusy(true);
@@ -44,13 +45,15 @@ export function ProfileSettings() {
             .catch((e) => setError(e.message))
             .finally(() => setBusy(false));
         }}
+        variant="primary"
+        loading={busy}
       >
         Salvar nome de exibição
-      </button>
+      </Button>
       {ctx.data.role === 'owner' && (
-        <Link className="button" to="/gestao/empresa">
+        <Button className="button" to="/gestao/empresa" variant="ghost">
           Configurar endereço da empresa
-        </Link>
+        </Button>
       )}
     </section>
   );

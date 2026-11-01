@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
 import { useRemote, Failure, localDay } from '../operations/common';
 import { money, civilDate } from '../api';
@@ -119,7 +120,7 @@ export function Reports() {
             </option>
           </select>
         </label>
-        <button
+        <Button
           onClick={() =>
             void privateDownload(
               'p1/reports.csv?' + query + '&kind=' + kind,
@@ -128,7 +129,7 @@ export function Reports() {
           }
         >
           Exportar relatório CSV
-        </button>
+        </Button>
       </div>
       {view.data && (
         <>

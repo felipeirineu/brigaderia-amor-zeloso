@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { Failure, useRemote, localDay } from '../operations/common';
 import { money, civilDate } from '../api';
 import { quantityInput, unitName } from './quantity';
@@ -28,7 +29,9 @@ export function Shopping() {
   return (
     <>
       <h1>Lista de compras</h1>
-      <Link to="/gestao/fichas">Conferir fichas técnicas</Link>
+      <Button to="/gestao/fichas" variant="ghost">
+        Conferir fichas técnicas
+      </Button>
       <Failure message={view.error} />
       <div className="panel data-form">
         <label>

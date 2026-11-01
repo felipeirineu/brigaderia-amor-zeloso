@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { useRef, useState } from 'react';
 import { api } from '../api';
 import { Failure } from '../operations/common';
@@ -64,9 +65,9 @@ export function PlaceFields({
         A localização será do estabelecimento. Use o botão somente quando
         estiver nele; confira antes de salvar.
       </p>
-      <button type="button" disabled={busy} onClick={locate}>
+      <Button type="button" disabled={busy} onClick={locate} loading={busy}>
         Usar minha localização
-      </button>
+      </Button>
       <label>
         Buscar estabelecimento
         <input
@@ -77,13 +78,14 @@ export function PlaceFields({
           }}
         />
       </label>
-      <button
+      <Button
         type="button"
         disabled={busy || q.trim().length < 3}
         onClick={() => void search()}
+        loading={busy}
       >
         Buscar sugestões
-      </button>
+      </Button>
       <p>
         Busca gratuita · ©{' '}
         <a
@@ -96,7 +98,7 @@ export function PlaceFields({
         · Photon. Confira o resultado.
       </p>
       {suggestions.map((p, i) => (
-        <button
+        <Button
           type="button"
           key={i}
           onClick={() => {
@@ -106,7 +108,7 @@ export function PlaceFields({
           }}
         >
           {p.name} · {p.address}
-        </button>
+        </Button>
       ))}
       <Failure message={error} />
       <label>

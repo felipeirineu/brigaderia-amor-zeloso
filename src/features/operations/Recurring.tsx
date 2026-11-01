@@ -1,7 +1,8 @@
+import { Button } from '../../components/Button';
 import { useCourierLabels } from '../field/FieldContext';
 import { MoneyField, QuantityField } from '../../components/NumericInputs';
 import { useRef, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+
 import { Minus, Plus } from 'lucide-react';
 import { api, parsePrice, money, dateTime } from '../api';
 import { HelpTip } from '../../components/HelpTip';
@@ -153,7 +154,7 @@ export function Recurring() {
             onChange={(e) => setWeek(e.target.value)}
           />
         </label>
-        <button
+        <Button
           className="primary-action"
           disabled={busy || !plans.data?.some((p) => p.active)}
           onClick={() =>
@@ -174,14 +175,18 @@ export function Recurring() {
               );
             })
           }
+          variant="primary"
+          loading={busy}
         >
           Gerar pedidos da semana
-        </button>
+        </Button>
         <p>
           Gera rascunhos. Não duplica a mesma semana e não confirma
           automaticamente.
         </p>
-        <Link to="/gestao/pedidos">Revisar pedidos gerados</Link>
+        <Button to="/gestao/pedidos" variant="ghost">
+          Revisar pedidos gerados
+        </Button>
       </section>
       {generated.length > 0 && (
         <section className="panel">
@@ -208,7 +213,9 @@ export function Recurring() {
                   ? 'Retirada'
                   : o.delivery_address || 'Endereço pendente'}
               </p>
-              <Link to={`/gestao/pedidos/${o.id}`}>Revisar pedido</Link>
+              <Button to={`/gestao/pedidos/${o.id}`} variant="ghost">
+                Revisar pedido
+              </Button>
               {['draft', 'awaiting_confirmation'].includes(o.status) && (
                 <label>
                   <input
@@ -223,7 +230,7 @@ export function Recurring() {
               )}
             </article>
           ))}
-          <button
+          <Button
             disabled={busy || !Object.values(selected).some(Boolean)}
             onClick={() => {
               const chosen = generated.filter((o) => selected[o.id]);
@@ -259,10 +266,12 @@ export function Recurring() {
                 );
               });
             }}
+            variant="primary"
+            loading={busy}
           >
             Confirmar todos os revisados (
             {Object.values(selected).filter(Boolean).length})
-          </button>
+          </Button>
           {batchResults.map((r) => (
             <p key={r.id} role={r.ok ? 'status' : 'alert'}>
               Pedido {r.id.slice(0, 8)}: {r.ok ? 'confirmado' : r.error}
@@ -311,14 +320,14 @@ export function Recurring() {
         </label>
         <div className="chips" role="group" aria-label="Dia habitual">
           {weekDayNames.map((label, i) => (
-            <button
+            <Button
               type="button"
               key={label}
               aria-pressed={weekday === i + 1}
               onClick={() => setWeekday(i + 1)}
             >
               {label}
-            </button>
+            </Button>
           ))}
         </div>
         <label>
@@ -332,14 +341,14 @@ export function Recurring() {
         </label>
         <div className="chips" role="group" aria-label="Tipo de entrega">
           {(['delivery', 'pickup'] as const).map((v) => (
-            <button
+            <Button
               type="button"
               key={v}
               aria-pressed={type === v}
               onClick={() => setType(v)}
             >
               {v === 'delivery' ? 'Entrega' : 'Retirada'}
-            </button>
+            </Button>
           ))}
         </div>
         <label>
@@ -404,7 +413,7 @@ export function Recurring() {
               </select>
             </label>
             <div className="stepper">
-              <button
+              <Button
                 type="button"
                 aria-label={`Diminuir quantidade do item ${i + 1}`}
                 disabled={item.quantity <= 1}
@@ -417,7 +426,7 @@ export function Recurring() {
                 }
               >
                 <Minus size={20} />
-              </button>
+              </Button>
               <QuantityField
                 label="Embalagens"
                 min="1"
@@ -433,7 +442,7 @@ export function Recurring() {
                 }
                 steppers={false}
               />
-              <button
+              <Button
                 type="button"
                 aria-label={`Aumentar quantidade do item ${i + 1}`}
                 onClick={() =>
@@ -447,20 +456,20 @@ export function Recurring() {
                 }
               >
                 <Plus size={20} />
-              </button>
+              </Button>
             </div>
             {items.length > 1 && (
-              <button
+              <Button
                 type="button"
                 onClick={() => setItems(items.filter((_, j) => j !== i))}
               >
                 Remover item {i + 1}
-              </button>
+              </Button>
             )}
           </fieldset>
         ))}
         <div className="actions">
-          <button
+          <Button
             type="button"
             disabled={items.length >= 30}
             onClick={() =>
@@ -468,11 +477,13 @@ export function Recurring() {
             }
           >
             Adicionar item
-          </button>
-          <button disabled={busy}>Salvar pedido padrão</button>
-          <button type="button" onClick={reset}>
+          </Button>
+          <Button disabled={busy} variant="primary" loading={busy}>
+            Salvar pedido padrão
+          </Button>
+          <Button type="button" onClick={reset}>
             Limpar edição
-          </button>
+          </Button>
         </div>
       </form>
       {plans.data?.map((p) => (
@@ -483,7 +494,7 @@ export function Recurring() {
             {p.active ? 'Ativo' : 'Pausado'}
           </p>
           <div className="actions">
-            <button
+            <Button
               onClick={() => {
                 setEditing(p);
                 setName(p.name);
@@ -506,8 +517,8 @@ export function Recurring() {
               }}
             >
               Editar {p.name}
-            </button>
-            <button
+            </Button>
+            <Button
               disabled={busy}
               onClick={() =>
                 void run(async () => {
@@ -532,9 +543,10 @@ export function Recurring() {
                   setNotice(p.active ? 'Modelo pausado.' : 'Modelo reativado.');
                 })
               }
+              loading={busy}
             >
               {p.active ? 'Pausar' : 'Reativar'} {p.name}
-            </button>
+            </Button>
           </div>
         </article>
       ))}

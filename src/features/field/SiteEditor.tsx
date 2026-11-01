@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useField, SiteAvatar } from './FieldContext';
 import { PlaceFields } from './PlaceFields';
 import {
@@ -99,13 +100,15 @@ function Editor({
           )}
         </>
       )}
-      <button
+      <Button
         className="primary-action"
         disabled={busy || !ctx.data}
         onClick={() => void save()}
+        variant="primary"
+        loading={busy}
       >
         Salvar localização
-      </button>
+      </Button>
       {!company && (
         <>
           <h2>Foto do estabelecimento</h2>
@@ -134,7 +137,7 @@ function Editor({
             />
           </label>
           {!!site?.has_photo && (
-            <button
+            <Button
               disabled={busy}
               onClick={() => {
                 setBusy(true);
@@ -146,9 +149,10 @@ function Editor({
                   .catch((e) => setError(e.message))
                   .finally(() => setBusy(false));
               }}
+              loading={busy}
             >
               Remover foto
-            </button>
+            </Button>
           )}
         </>
       )}
@@ -194,9 +198,13 @@ export function SiteInfo({ id, name }: { id: string; name: string }) {
           Abrir Instagram
         </a>
       )}
-      <Link className="button" to={`/gestao/clientes/${id}/local`}>
+      <Button
+        className="button"
+        to={`/gestao/clientes/${id}/local`}
+        variant="ghost"
+      >
         Localização, foto e Instagram
-      </Link>
+      </Button>
     </>
   ) : null;
 }

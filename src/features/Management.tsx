@@ -1,3 +1,4 @@
+import { Button } from '../components/Button';
 import { CompactHeader } from './mobile/CompactHeader';
 import { Backup } from './p1/Backup';
 import { ImportCustomers } from './p1/ImportCustomers';
@@ -35,7 +36,6 @@ import {
   type FormEvent,
 } from 'react';
 import {
-  Link,
   NavLink,
   Route,
   Routes,
@@ -201,9 +201,9 @@ export function Login() {
       <ErrorMessage message={error} />
       {config?.configured ? (
         <>
-          <a className="button" href={config.login_url!}>
+          <Button className="button" href={config.login_url!}>
             Entrar com acesso seguro
-          </a>
+          </Button>
           <p>
             Após verificar sua identidade no Cloudflare Access, você entra
             diretamente na gestão. A sessão expira em até 8 horas.
@@ -216,7 +216,9 @@ export function Login() {
             : 'Verificando configuração…'}
         </p>
       )}
-      <Link to="/app">Voltar à demonstração</Link>
+      <Button to="/app" variant="ghost">
+        Voltar à demonstração
+      </Button>
     </section>
   );
 }
@@ -341,10 +343,12 @@ function Customers({ financial = false }: { financial?: boolean }) {
           />
         )}
         <div className="actions">
-          <button disabled={save.busy}>Salvar cliente</button>
-          <button type="button" onClick={reset}>
+          <Button disabled={save.busy} variant="primary" loading={save.busy}>
+            Salvar cliente
+          </Button>
+          <Button type="button" onClick={reset}>
             Limpar edição
-          </button>
+          </Button>
         </div>
       </form>
       <label>
@@ -363,7 +367,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
         />{' '}
         Incluir arquivados
       </label>
-      <button onClick={() => void list.reload()}>Atualizar lista</button>
+      <Button onClick={() => void list.reload()}>Atualizar lista</Button>
       {list.loading ? (
         <p role="status">Carregando…</p>
       ) : list.data.length === 0 ? (
@@ -376,12 +380,20 @@ function Customers({ financial = false }: { financial?: boolean }) {
               <SiteInfo id={c.id} name={c.name} />
               {financial && (
                 <>
-                  <Link className="button" to={`/gestao/clientes/${c.id}/b2b`}>
+                  <Button
+                    className="button"
+                    to={`/gestao/clientes/${c.id}/b2b`}
+                    variant="ghost"
+                  >
                     Dados B2B e padrões
-                  </Link>{' '}
-                  <Link className="button" to={`/gestao/financeiro/${c.id}`}>
+                  </Button>{' '}
+                  <Button
+                    className="button"
+                    to={`/gestao/financeiro/${c.id}`}
+                    variant="ghost"
+                  >
                     Conta e recebimentos
-                  </Link>
+                  </Button>
                   {(balances?.customers.find((b) => b.id === c.id)
                     ?.overdue_days ?? 0) > 0 && (
                     <p role="alert">
@@ -398,7 +410,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
               <p>
                 {c.phone} · {c.active ? 'Ativo' : 'Arquivado'}
               </p>
-              <button
+              <Button
                 onClick={() => {
                   setEditing(c);
                   const existing = field?.data?.sites.find(
@@ -416,9 +428,9 @@ function Customers({ financial = false }: { financial?: boolean }) {
                 }}
               >
                 Editar {c.name}
-              </button>
+              </Button>
               {!!c.active && (
-                <button
+                <Button
                   disabled={save.busy}
                   onClick={() => {
                     if (
@@ -432,9 +444,11 @@ function Customers({ financial = false }: { financial?: boolean }) {
                         }),
                       );
                   }}
+                  variant="danger"
+                  loading={save.busy}
                 >
                   Arquivar {c.name}
-                </button>
+                </Button>
               )}
             </article>
           ))}
@@ -541,19 +555,19 @@ function Products({ mobile = false }: { mobile?: boolean }) {
         {mobile && (
           <fieldset>
             <legend>Foto do produto</legend>
-            <button type="button" onClick={() => setPhoto(suggestPhoto(name))}>
+            <Button type="button" onClick={() => setPhoto(suggestPhoto(name))}>
               Sugerir foto pelo nome
-            </button>
+            </Button>
             <div className="photo-choices">
-              <button
+              <Button
                 type="button"
                 aria-pressed={photo === null}
                 onClick={() => setPhoto(null)}
               >
                 Sem foto
-              </button>
+              </Button>
               {flavorPhotos.map((key) => (
-                <button
+                <Button
                   type="button"
                   key={key}
                   aria-pressed={photo === key}
@@ -561,7 +575,7 @@ function Products({ mobile = false }: { mobile?: boolean }) {
                 >
                   <img src={photoURL(key)} alt="" width={80} height={80} />
                   {flavorNames[key]}
-                </button>
+                </Button>
               ))}
             </div>
             <p>Escolha editável; só é salva ao salvar o produto.</p>
@@ -636,7 +650,7 @@ function Products({ mobile = false }: { mobile?: boolean }) {
           </fieldset>
         ))}
         <div className="actions">
-          <button
+          <Button
             type="button"
             disabled={variants.length >= 30}
             onClick={() => {
@@ -645,11 +659,13 @@ function Products({ mobile = false }: { mobile?: boolean }) {
             }}
           >
             Adicionar variante
-          </button>
-          <button disabled={save.busy}>Salvar produto</button>
-          <button type="button" onClick={reset}>
+          </Button>
+          <Button disabled={save.busy} variant="primary" loading={save.busy}>
+            Salvar produto
+          </Button>
+          <Button type="button" onClick={reset}>
             Limpar edição
-          </button>
+          </Button>
         </div>
       </form>
       <label>
@@ -678,7 +694,7 @@ function Products({ mobile = false }: { mobile?: boolean }) {
                   </li>
                 ))}
               </ul>
-              <button
+              <Button
                 onClick={() => {
                   setEditing(p);
                   setPhoto(p.photo_key ?? null);
@@ -704,9 +720,9 @@ function Products({ mobile = false }: { mobile?: boolean }) {
                 }}
               >
                 Editar {p.name}
-              </button>
+              </Button>
               {!!p.active && (
-                <button
+                <Button
                   disabled={save.busy}
                   onClick={() => {
                     if (
@@ -720,9 +736,11 @@ function Products({ mobile = false }: { mobile?: boolean }) {
                         }),
                       );
                   }}
+                  variant="danger"
+                  loading={save.busy}
                 >
                   Arquivar {p.name}
-                </button>
+                </Button>
               )}
             </article>
           ))}
@@ -750,18 +768,18 @@ function Orders({
       <div className="chips">
         {mobile && (
           <>
-            <button
+            <Button
               aria-pressed={mode.simple}
               onClick={() => mode.setPreference('simple')}
             >
               Pedido por fotos
-            </button>
-            <button
+            </Button>
+            <Button
               aria-pressed={!mode.simple}
               onClick={() => mode.setPreference('full')}
             >
               Lista completa
-            </button>
+            </Button>
           </>
         )}
       </div>
@@ -903,9 +921,13 @@ function FullOrders({
       />
       <p role="status">{save.notice}</p>
       {simple ? (
-        <Link className="button primary-action" to="/gestao/pedidos?novo=1">
+        <Button
+          className="button primary-action"
+          to="/gestao/pedidos?novo=1"
+          variant="primary"
+        >
           Novo pedido por fotos
-        </Link>
+        </Button>
       ) : (
         <form className="data-form panel" onSubmit={submit}>
           <h2>{editing ? 'Editar rascunho' : 'Novo pedido'}</h2>
@@ -1018,16 +1040,16 @@ function FullOrders({
                 }
               />
               {items.length > 1 && (
-                <button
+                <Button
                   type="button"
                   onClick={() => setItems(items.filter((_, j) => j !== index))}
                 >
                   Remover item {index + 1}
-                </button>
+                </Button>
               )}
             </fieldset>
           ))}
-          <button
+          <Button
             type="button"
             disabled={items.length >= 50}
             onClick={() =>
@@ -1035,7 +1057,7 @@ function FullOrders({
             }
           >
             Adicionar item
-          </button>
+          </Button>
           <label>
             Observações
             <textarea
@@ -1048,10 +1070,12 @@ function FullOrders({
             Prévia: {money(estimate)}. O servidor confere o total ao salvar.
           </p>
           <div className="actions">
-            <button disabled={save.busy}>Salvar pedido</button>
-            <button type="button" onClick={reset}>
+            <Button disabled={save.busy} variant="primary" loading={save.busy}>
+              Salvar pedido
+            </Button>
+            <Button type="button" onClick={reset}>
               Limpar edição
-            </button>
+            </Button>
           </div>
         </form>
       )}
@@ -1063,7 +1087,7 @@ function FullOrders({
           onChange={(e) => setQuery(e.target.value)}
         />
       </label>
-      <button onClick={() => void orders.reload()}>Atualizar pedidos</button>
+      <Button onClick={() => void orders.reload()}>Atualizar pedidos</Button>
       {orders.loading ? (
         <p>Carregando…</p>
       ) : !orders.data.length ? (
@@ -1086,13 +1110,17 @@ function FullOrders({
                 ))}
               </ul>
               {operational && (
-                <Link className="button" to={`/gestao/pedidos/${o.id}`}>
+                <Button
+                  className="button"
+                  to={`/gestao/pedidos/${o.id}`}
+                  variant="ghost"
+                >
                   Abrir pedido
-                </Link>
+                </Button>
               )}
               {['draft', 'awaiting_confirmation'].includes(o.status) && (
                 <>
-                  <button
+                  <Button
                     onClick={() => {
                       if (simple) {
                         navigate(`/gestao/pedidos/${o.id}/editar-simples`);
@@ -1113,8 +1141,8 @@ function FullOrders({
                     }}
                   >
                     Editar pedido de {o.customer_name}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     disabled={save.busy}
                     onClick={() => {
                       if (
@@ -1128,9 +1156,11 @@ function FullOrders({
                           }),
                         );
                     }}
+                    variant="danger"
+                    loading={save.busy}
                   >
                     Arquivar pedido de {o.customer_name}
-                  </button>
+                  </Button>
                 </>
               )}
             </article>
@@ -1224,7 +1254,9 @@ function Accesses() {
             <option value="owner">Administrador</option>
           </select>
         </label>
-        <button disabled={save.busy}>Autorizar acesso</button>
+        <Button disabled={save.busy} loading={save.busy}>
+          Autorizar acesso
+        </Button>
       </form>
       <ul>
         {list.data.map((m) => (
@@ -1302,9 +1334,9 @@ export function Management() {
         <h1>Gestão restrita</h1>
         <ErrorMessage message={error} />
         {error ? (
-          <Link className="button" to="/login">
+          <Button className="button" to="/login" variant="ghost">
             Entrar na gestão
-          </Link>
+          </Button>
         ) : (
           <p role="status">Verificando sessão…</p>
         )}
@@ -1329,9 +1361,9 @@ export function Management() {
             Área privada ·{' '}
             {session.role === 'owner' ? 'Administrador' : 'Operador'}
           </p>
-          <button disabled={!online} onClick={() => void logout()}>
+          <Button disabled={!online} onClick={() => void logout()}>
             Sair
-          </button>
+          </Button>
         </header>
         <ErrorMessage message={error} />
         <nav
@@ -1370,12 +1402,12 @@ export function Management() {
         {session.operations && online && (
           <>
             <div className="private-tools">
-              <button
+              <Button
                 data-tour="new"
                 onClick={() => quick.current?.showModal()}
               >
                 <Icon name="novo" /> Novo
-              </button>
+              </Button>
               <HelpTip topic="roles" />
             </div>
             <Tour role={session.role} />
@@ -1531,13 +1563,13 @@ export function Management() {
                 <Icon name="pedidos" />
                 Pedidos
               </NavLink>
-              <button
+              <Button
                 aria-label="Novo cadastro"
                 data-tour="new"
                 onClick={() => quick.current?.showModal()}
               >
                 <Icon name="novo" />
-              </button>
+              </Button>
               <NavLink to="/gestao/clientes" data-tour="customers">
                 <Icon name="clientes" />
                 Clientes
@@ -1555,7 +1587,7 @@ export function Management() {
               <div className="sheet-body">
                 <h2>O que vamos preparar?</h2>
                 <div className="quick-links">
-                  <Link
+                  <Button
                     className="button"
                     to={
                       session.mobile
@@ -1563,32 +1595,35 @@ export function Management() {
                         : '/gestao/pedidos'
                     }
                     onClick={() => quick.current?.close()}
+                    variant="ghost"
                   >
                     Novo pedido
-                  </Link>
-                  <Link
+                  </Button>
+                  <Button
                     className="button"
                     to="/gestao/clientes"
                     onClick={() => quick.current?.close()}
+                    variant="ghost"
                   >
                     Novo cliente
-                  </Link>
+                  </Button>
                 </div>
                 {session.p1 && (
-                  <Link
+                  <Button
                     className="button"
                     to="/gestao/lembretes"
                     onClick={() => quick.current?.close()}
+                    variant="ghost"
                   >
                     Novo lembrete
-                  </Link>
+                  </Button>
                 )}
                 <p>
                   {session.finance
                     ? 'Recebimentos rápidos ficam no Hoje, no cartão do pedido.'
                     : 'Recebimentos dependem da ativação financeira.'}
                 </p>
-                <button onClick={() => quick.current?.close()}>Fechar</button>
+                <Button onClick={() => quick.current?.close()}>Fechar</Button>
               </div>
             </dialog>
           </>
@@ -1653,10 +1688,10 @@ function More({
             ? [['acessos', 'Acessos', 'configuracoes']]
             : []),
         ].map(([path, title, icon]) => (
-          <Link className="panel more-link" key={path} to={`/gestao/${path}`}>
+          <Button className="panel more-link" key={path} to={`/gestao/${path}`}>
             <Icon name={icon as IconName} />
             {title}
-          </Link>
+          </Button>
         ))}
       </div>
       <p>

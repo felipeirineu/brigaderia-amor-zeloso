@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
 import { useEffect, useRef, useState } from 'react';
 import { api, money, parsePrice } from '../api';
@@ -122,14 +123,14 @@ export function QuickReceipt({
             />
             <div className="chips" role="group" aria-label="Forma de pagamento">
               {Object.entries(paymentMethods).map(([v, label]) => (
-                <button
+                <Button
                   type="button"
                   key={v}
                   aria-pressed={method === v}
                   onClick={() => setMethod(v as typeof method)}
                 >
                   {label}
-                </button>
+                </Button>
               ))}
             </div>
             <label>
@@ -142,27 +143,36 @@ export function QuickReceipt({
                 onChange={(e) => setDay(e.target.value)}
               />
             </label>
-            <button disabled={busy || current.balance_cents <= 0}>
+            <Button
+              disabled={busy || current.balance_cents <= 0}
+              variant="primary"
+              loading={busy}
+            >
               Registrar
-            </button>
+            </Button>
             {combined && (
-              <button
+              <Button
                 type="button"
                 className="primary-action"
                 disabled={busy || current.balance_cents <= 0}
                 onClick={() => void save(true)}
+                loading={busy}
               >
                 Entregue e recebido
-              </button>
+              </Button>
             )}
             <p>Registro manual. Não consulta o banco nem envia mensagem.</p>
           </form>
         ) : (
           !view.error && <p role="status">Conferindo saldo e versão…</p>
         )}
-        <button disabled={busy} onClick={() => dialog.current?.close()}>
+        <Button
+          disabled={busy}
+          onClick={() => dialog.current?.close()}
+          loading={busy}
+        >
           Fechar recebimento
-        </button>
+        </Button>
       </div>
     </dialog>
   );
