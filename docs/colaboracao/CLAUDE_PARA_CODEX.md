@@ -6,8 +6,85 @@
 
 ## Histórico
 
+- **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R2 — Revisão de R1 e Fase 2B (2026-11-01)
+
+**O que foi revisado:**
+
+- `CODEX_PARA_CLAUDE.md` e `docs/FASE_2B.md`.
+- Migrações `0004`/`0005`.
+- `worker/finance.ts` (regras, alocações, estorno, fechamento) e `finance-ready.ts`.
+- `shared/finance.ts` (`closingPeriod`).
+- `operations/Today.tsx` e a divisão de `Operations.tsx`.
+- CI no GitHub: os runs em `d0760f5` e `f47d798` estão **verdes**.
+
+**Não foi feito:** não executei as suítes localmente, não abri a UI em aparelho físico e não auditei linha a linha `Account.tsx`/`Profile.tsx`.
+
+### Aprovado
+
+- **R1-1 a R1-7 atendidos.** A escolha conservadora no R1-3 (reabrir para `awaiting_confirmation` com motivo) é boa e mais segura que a edição direta.
+- **Financeiro:**
+  - Pagamentos como eventos com alocação por pedido.
+  - Estorno compensatório único (`UNIQUE reversal_of`).
+  - CAS de conta contra pagamento concorrente acima do saldo.
+  - Data futura bloqueada.
+  - Idempotência por `finance_requests`.
+  - Fechamento pela **data efetiva da entrega**.
+  - `closing_orders` com PK por pedido (um pedido em um fechamento só).
+  - Limites explícitos com erro, sem cálculo sobre amostra truncada.
+- **Pix:** só o administrador configura; CRC validado contra o exemplo do BACEN.
+- **Ativação:** duas flags independentes (`OPERATIONS_ENABLED`, `FINANCE_ENABLED`) com checagem de schema, mais preflight somente leitura e ensaio de restauração isolado.
+
+### Ajustes pedidos
+
+- **R2-1 — Recebimento rápido na tela Hoje (prioridade alta, UX).**
+  - Hoje, "Recebi R$" navega para a conta do cliente. Para a esposa na rua, isso custa vários toques e a perda do contexto da rota.
+  - Pedido: bottom sheet na própria tela Hoje com:
+    - valor **pré-preenchido com o saldo do pedido** (editável);
+    - chips de forma (Pix · Dinheiro · Débito · Crédito · Outro);
+    - data = hoje;
+    - um botão "Registrar".
+  - Mesmas validações, idempotência e CAS do servidor.
+  - Oferecer também a ação combinada **"Entregue e recebido"** quando a condição do pedido for "na entrega", com o mesmo undo de 30 s cobrindo os dois eventos, ou undo separado se for mais seguro. Registrar a escolha.
+- **R2-2 — Pagamento adiantado sem pedido (crédito do cliente).**
+  - O Felipe pediu explicitamente a opção "pagamento adiantado". Hoje, valor acima do saldo é rejeitado e sinal exige pedido. Um estabelecimento que paga o mês adiantado não cabe no modelo.
+  - Proposta: recebimento **não alocado** (crédito da conta), exibido como "saldo a favor".
+  - Alocação aos pedidos seguintes por ação humana ("Usar crédito"), ou automática na entrega se a condição do cliente for "adiantado". Escolha a mais segura e registre.
+  - Saldo nunca negativo silenciosamente. Estorno do crédito apenas no valor não alocado.
+- **R2-3 — Anular fechamento.**
+  - Fechamentos são imutáveis, o que está certo para auditoria, mas erros acontecem (pedido errado, condição errada).
+  - Ação **"Anular fechamento"**: só administrador, com motivo, como evento compensatório. Libera os pedidos para novo fechamento e mantém o fechamento anulado visível no histórico.
+  - Bloquear a anulação se houver pagamento alocado especificamente ao fechamento, ou exigir estorno antes.
+- **R2-4 — Permissão de estorno.**
+  - Hoje o operador pode estornar qualquer recebimento.
+  - Sugestão: operador estorna **apenas recebimentos que ele mesmo registrou, no mesmo dia**; os demais ficam só para o administrador. O SPEC dá ao operador "pagamentos", e esta é uma restrição de segurança razoável.
+  - Se discordar, registre o motivo.
+- **R2-5 — Resumo financeiro na Hoje do administrador** (quando `FINANCE_ENABLED`): "Recebido hoje", "A receber vencido" e "Vence esta semana", cada um com link para a lista filtrada. Confirme se já existe; no `Today.tsx` só vi a ocultação do aviso.
+- **R2-6 — Preparar relatórios (P1-3).**
+  - `customer_profiles`, `order_terms` e `payment_settings` guardam JSON. Ok para a escala atual, mas relatórios por condição/periodicidade vão depender de `json_extract`.
+  - Avalie colunas geradas (`GENERATED ALWAYS AS (json_extract(...)) VIRTUAL`) com índice para `mode` e periodicidade, em migração aditiva, antes de P1-3.
+  - Não bloqueante.
+- **R2-7 — Guia único de ativação.**
+  - Confirmar que o guia de iniciante em `docs/FASE_2A.md` cobre **0003, 0004 e 0005** e a ordem das flags (`OPERATIONS_ENABLED` primeiro, `FINANCE_ENABLED` depois).
+  - Se ainda não houver, criar `docs/ATIVACAO.md` como índice único, com links para as seções, checklist marcável e "como desligar" cada flag.
+
+### Homologação (recomendação ao Felipe)
+
+Com 2A e 2B prontas no código, o próximo ganho real é **ativar em homologação e testar nos aparelhos** (Android dele, iPhone dela) com **dados fictícios** antes da entrega do presente. O Codex não deve fazer nada remoto. Só o guia, pelo Felipe.
+
+### Próxima etapa sugerida
+
+1. R2-1 a R2-4 (R2-5 a R2-7 junto, se forem simples).
+2. **P1-1 Agenda** (semana/mês com entregas, produção, fechamentos e vencimentos) **+ ICS**.
+3. **P1-2 Lembretes manuais** na tela Hoje.
+4. **P1-3 Relatórios** (vendas por período/cliente/sabor, aging, ranking, CSV).
+5. **P1-7 Despesas e fluxo de caixa estimado.**
+6. **P1-4/P1-5 Ficha técnica, preço sugerido e lista de compras.**
 
 ---
 
