@@ -1,3 +1,5 @@
+import { snapshotPlaces } from './order-places';
+import { fieldReady } from './field-ready';
 import { mobileReady } from './mobile-ready';
 import { p1Ready } from './p1-ready';
 import { financeReady } from './finance-ready';
@@ -24,7 +26,8 @@ type Snapshot = {
   quantity: number;
 };
 export async function management(req: Request, env: Env, a: Actor) {
-  const original = req.clone();
+  const original = req.clone(),
+    fieldOriginal = req.clone();
   const db = env.DB!;
   const url = new URL(req.url);
   const [, , resource, id] = url.pathname.split('/');
@@ -42,6 +45,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       finance: await financeReady(env),
       p1: await p1Ready(env),
       mobile: await mobileReady(env),
+      field: await fieldReady(env),
       user_id: a.user_id,
       organization_id: a.organization_id,
     });
@@ -224,13 +228,20 @@ export async function management(req: Request, env: Env, a: Actor) {
     );
   } else if (resource === 'customers') {
     const d = await body(req, customerSchema);
+    if (d.site && !id && d.site.version !== 0)
+      throw new HttpError(400, 'Novo local começa com versão zero.');
+    if (d.site && !(await fieldReady(env)))
+      throw new HttpError(503, 'Localização ainda não ativada.');
     if (id && d.version !== previous!.version)
       throw new HttpError(409, 'Cliente alterado em outra sessão. Atualize.');
     statements.push(
       id
         ? db
             .prepare(
-              'UPDATE customers SET name=?,phone=?,email=?,notes=?,active=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?',
+              'UPDATE customers SET name=?,phone=?,email=?,notes=?,active=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?' +
+                (d.site
+                  ? ' AND COALESCE((SELECT version FROM customer_sites WHERE organization_id=? AND id=?),0)=?'
+                  : ''),
             )
             .bind(
               d.name,
@@ -242,6 +253,7 @@ export async function management(req: Request, env: Env, a: Actor) {
               org,
               entityId,
               d.version,
+              ...(d.site ? [org, entityId, d.site.version] : []),
             )
         : db
             .prepare(
@@ -260,6 +272,21 @@ export async function management(req: Request, env: Env, a: Actor) {
               createHash,
             ),
     );
+
+    if (d.site)
+      statements.push(
+        db
+          .prepare(
+            `INSERT INTO customer_sites(organization_id,id,data,version,mutation_id) SELECT ?,?,?,1,? WHERE ${guard} ON CONFLICT(organization_id,id) DO UPDATE SET data=excluded.data,version=customer_sites.version+1,mutation_id=excluded.mutation_id`,
+          )
+          .bind(
+            org,
+            entityId,
+            JSON.stringify(d.site.data),
+            mutation,
+            ...guardArgs,
+          ),
+      );
   } else if (resource === 'products') {
     const d = await body(req, productSchema);
     if (id && d.version !== previous!.version)
@@ -586,6 +613,24 @@ export async function management(req: Request, env: Env, a: Actor) {
           .bind(org, d.template_id, org, entityId, mutation),
       );
     }
+  }
+  if (
+    resource === 'orders' &&
+    req.method !== 'DELETE' &&
+    (await fieldReady(env))
+  ) {
+    if (!id) {
+      const d = await body(fieldOriginal, orderSchema);
+      if (!d.template_id)
+        statements.push(
+          db
+            .prepare(
+              `UPDATE orders SET delivery_address=COALESCE((SELECT json_extract(data,'$.address') FROM customer_sites WHERE organization_id=orders.organization_id AND id=orders.customer_id),delivery_address) WHERE organization_id=? AND id=? AND mutation_id=?`,
+            )
+            .bind(org, entityId, mutation),
+        );
+    }
+    statements.push(...snapshotPlaces(db, org, mutation));
   }
   statements.push(
     db

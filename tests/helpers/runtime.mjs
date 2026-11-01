@@ -14,6 +14,7 @@ export async function runtime({
   p1Enabled = false,
   mobileEnabled = false,
   fieldEnabled = false,
+  placesProvider = false,
 } = {}) {
   const issuer = 'https://demonstracao-teste.cloudflareaccess.com';
   const { privateKey, publicKey } = await generateKeyPair('RS256');
@@ -52,7 +53,20 @@ export async function runtime({
       outboundService: async (req) =>
         new URL(req.url).href === `${issuer}/cdn-cgi/access/certs`
           ? Response.json({ keys: [jwk] })
-          : new Response('Network forbidden in tests', { status: 403 }),
+          : placesProvider && new URL(req.url).hostname === 'photon.komoot.io'
+            ? Response.json({
+                features: [
+                  {
+                    geometry: { coordinates: [0, 0] },
+                    properties: {
+                      name: 'Local DEMONSTRAÇÃO',
+                      street: 'Endereço DEMONSTRAÇÃO',
+                      district: 'Bairro DEMONSTRAÇÃO',
+                    },
+                  },
+                ],
+              })
+            : new Response('Network forbidden in tests', { status: 403 }),
       serviceBindings: {
         ASSETS: async (req) => {
           const path = decodeURIComponent(new URL(req.url).pathname);

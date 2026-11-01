@@ -1,3 +1,4 @@
+import { field } from './field';
 import { flavorImages } from './flavor-images';
 import { mobile } from './mobile';
 import { mobileReady } from './mobile-ready';
@@ -95,6 +96,8 @@ export default {
           .run();
         return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie('', 0) });
       }
+      if (pathname.startsWith('/api/field/'))
+        return await field(req, env, user);
       if (pathname.startsWith('/api/mobile/'))
         return await mobile(req, env, user);
       if (pathname.startsWith('/api/p1/')) return await p1(req, env, user);

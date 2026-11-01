@@ -1,3 +1,4 @@
+import { placeSchema } from './field-domain';
 import { flavorPhotos } from '../shared/flavors';
 import { z } from 'zod';
 const text = (max: number) => z.string().trim().max(max);
@@ -17,6 +18,10 @@ export const phone = z
   );
 export const customerSchema = z
   .object({
+    site: z
+      .object({ data: placeSchema, version: z.number().int().min(0) })
+      .strict()
+      .optional(),
     name: text(120).min(1),
     phone,
     email: z.union([z.email().max(254), z.literal('')]).default(''),

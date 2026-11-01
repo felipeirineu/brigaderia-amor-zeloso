@@ -139,6 +139,22 @@ export async function expenses(
           .bind(org, id)
           .first<typeof values>();
       if (!original) throw new HttpError(404, 'Despesa não encontrada.');
+      const tripsSchema = await db
+        .prepare("SELECT 1 FROM sqlite_schema WHERE name='displacements'")
+        .first();
+      if (
+        tripsSchema &&
+        (await db
+          .prepare(
+            'SELECT 1 FROM displacements WHERE organization_id=? AND expense_id=?',
+          )
+          .bind(org, id)
+          .first())
+      )
+        throw new HttpError(
+          409,
+          'Estorne pelo deslocamento para manter o vínculo com os pedidos.',
+        );
       if (
         await db
           .prepare(

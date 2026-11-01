@@ -1,3 +1,5 @@
+import { fieldReady } from './field-ready';
+import { snapshotPlaces } from './order-places';
 import { financeReady } from './finance-ready';
 import { emptyTerms } from '../shared/finance';
 import { UNDO_SECONDS } from '../shared/order-state';
@@ -424,6 +426,7 @@ export async function operations(
           "INSERT INTO order_items(id,organization_id,order_id,variant_id,product_name,variant_label,weight_grams,units_per_box,unit_price_cents,quantity) SELECT json_extract(j.value,'$.id'),?,json_extract(j.value,'$.order_id'),json_extract(j.value,'$.variant_id'),json_extract(j.value,'$.product_name'),json_extract(j.value,'$.variant_label'),json_extract(j.value,'$.weight_grams'),json_extract(j.value,'$.units_per_box'),json_extract(j.value,'$.unit_price_cents'),json_extract(j.value,'$.quantity') FROM json_each(?) j JOIN orders o ON o.organization_id=? AND o.id=json_extract(j.value,'$.order_id') AND o.mutation_id=?",
         )
         .bind(org, itemsJSON, org, nonce),
+      ...((await fieldReady(env)) ? snapshotPlaces(db, org, nonce) : []),
       ...(financial
         ? [
             db
@@ -564,6 +567,7 @@ export async function operations(
           id,
           data.version,
         ),
+      ...((await fieldReady(env)) ? snapshotPlaces(db, org, nonce) : []),
       db
         .prepare(
           "INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT ?,?,?,'order.delivery',? WHERE EXISTS(SELECT 1 FROM orders WHERE organization_id=? AND id=? AND mutation_id=?)",

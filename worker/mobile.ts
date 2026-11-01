@@ -1,3 +1,5 @@
+import { fieldReady } from './field-ready';
+import { snapshotPlaces } from './order-places';
 import { z } from 'zod';
 import { mobileReady } from './mobile-ready';
 import { financeReady } from './finance-ready';
@@ -245,6 +247,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
           'Total abaixo dos recebimentos; estorne antes.',
         );
     }
+    const field = await fieldReady(env);
     const key = req.headers.get('Idempotency-Key')!,
       fingerprint = await hash(JSON.stringify(d)),
       version = Number(prior?.version ?? 0) + 1;
@@ -294,6 +297,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
               d.delivery.courier_fee_cents,
             ),
       rest: (g, args) => [
+        ...(field ? snapshotPlaces(db, org, nonce) : []),
         db
           .prepare(
             `DELETE FROM order_items WHERE organization_id=? AND order_id=? AND ${g}`,
