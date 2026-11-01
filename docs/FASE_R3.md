@@ -24,7 +24,7 @@ Não aplicar migrações remotas automaticamente. Faça o backup e as verificaç
 npx wrangler d1 migrations apply brigaderia-amor-zeloso-homologacao --remote --config wrangler.jsonc
 ```
 
-Resultado esperado: migrações pendentes aplicadas, incluindo `0010_mobile_orders.sql`. Confira o nome real do banco em `wrangler.jsonc` antes do comando. Se houver erro, pare e guarde a mensagem, sem apagar tabelas nem repetir SQL parcial. Ative operação, financeiro e P1 seguindo o guia, um deploy e teste por etapa; só então configure `MOBILE_ENABLED=true` em Variables and Secrets do projeto Pages e refaça o deploy. Resultado: Mais → Preferências e fotos no cadastro. Se falhar, volte MOBILE_ENABLED para false e refaça o deploy; não desfaça migrações apagando dados. Catálogo continua false.
+Resultado esperado: migrações pendentes aplicadas, incluindo `0010_mobile_orders.sql`. Confira o nome real do banco em `wrangler.jsonc` antes do comando. Se houver erro, pare e guarde a mensagem, sem apagar tabelas nem repetir SQL parcial. Ative operação, financeiro e P1 seguindo o guia, um deploy e teste por etapa; só então altere `MOBILE_ENABLED` para `"true"` em `wrangler.jsonc`, salve, faça commit/push e aguarde o deploy (as variáveis desse arquivo têm precedência sobre o painel). Resultado: Mais → Preferências e fotos no cadastro. Se falhar, volte MOBILE_ENABLED para false e refaça o deploy; não desfaça migrações apagando dados. Catálogo continua false.
 
 ## Pendências
 

@@ -87,17 +87,25 @@ Relatórios por etapa em docs/REVISAO_R2.md e docs/P1_ETAPAS.md. Todos os itens 
 
 ## R3 e R4 — acompanhamento
 
-| Item        | Status             | Evidência / próximo passo                                                                  |
-| ----------- | ------------------ | ------------------------------------------------------------------------------------------ |
-| R4-0        | entregue e enviado | bf316a5; redação neutra, Limão e teste de regressão.                                       |
-| R3-1 a R3-4 | entregue no código | Grade, embalagens reais do cadastro, padrão/repetir e fotos privadas com ligação editável. |
-| R3-5        | entregue no código | MoneyInput/QuantityInput reutilizados, máscara de centavos, foco/restore/OK.               |
-| R3-6 a R3-9 | entregue no código | Passos, revisão e confirmação atômica, preferência local, tutorial.                        |
-| R4-1 a R4-7 | em implementação   | Provedor gratuito, fotos D1, base, transporte, deslocamentos e nomes de exibição.          |
+| Item        | Status                                   | Evidência / próximo passo                                                                                                             |
+| ----------- | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| R4-0        | entregue e enviado                       | bf316a5; redação neutra, Limão e teste de regressão.                                                                                  |
+| R3-1 a R3-4 | entregue no código                       | Grade, embalagens reais do cadastro, padrão/repetir e fotos privadas com ligação editável.                                            |
+| R3-5        | entregue no código                       | MoneyInput/QuantityInput reutilizados, máscara de centavos, foco/restore/OK.                                                          |
+| R3-6 a R3-9 | entregue no código                       | Passos, revisão e confirmação atômica, preferência local, tutorial.                                                                   |
+| R4-1        | entregue no código                       | GPS por toque, busca Photon privada com cache/limite global, sugestão revisável e snapshot do destino.                                |
+| R4-2        | entregue no código                       | Câmera/galeria, WebP até 256 px/40 KB no D1 existente, privado e sem SW.                                                              |
+| R4-3        | entregue no código                       | Perfil Instagram normalizado e abertura humana.                                                                                       |
+| R4-4        | entregue no código                       | Base privada por administrador, distância em linha reta e ordenação opcional no Hoje.                                                 |
+| R4-5        | código testado; aparelho físico pendente | URLs Uber/Maps/Waze e volta à base, copiar destino + abrir 99. Sem contratação automática.                                            |
+| R4-6        | entregue no código                       | Corrida manual/sheet, vários pedidos, despesa única P1, CAS/idempotência, estorno autor/dia, rateio estimado e relatório/CSV.         |
+| R4-7        | entregue no código                       | Nome pelo perfil no D1; papéis legados mantidos, vários perfis no mesmo papel aparecem juntos. Deslocamento permite escolher usuário. |
 
 R2-1 a R2-7 e P1-1 a P1-5/P1-7 já publicados com a entrega afbdb39, CI aprovada (41316631301). Relatórios P1-3 estão estáveis nessa base. Sem ativação remota. R3 requer 0010 e flag MOBILE_ENABLED; ver FASE_R3.md.
 
 ## Histórico
+
+- **2026-11-01 — R4:** API a1518cf e telas privadas com GPS/câmera/perfis/transporte/deslocamento. Integração R4, R2/P1, API/listagens/financeiro/operação/migrações/marca aprovadas; 48 unitários. Rodada completa teve 35 E2E aprovados e três asserções antigas de zero inicial corrigidas para o contrato R3; repetição dos três passou, total 38 aprovados e um offline WebKit ignorado. CI anterior falhou primeiro por formatação e depois pela asserção antiga; ambas corrigidas, nova CI acompanhada. Guia FASE_R4.md, preflight estendido, flags MOBILE/FIELD false. Nenhum serviço pago ou banco remoto alterado.
 
 - **2026-11-01 — R3:** modo simples, campos numéricos e fotos privados. 44 unitários, integração e seis E2E Chromium/WebKit passaram; build/tipagem validados. Uso físico e ativação pendentes.
 

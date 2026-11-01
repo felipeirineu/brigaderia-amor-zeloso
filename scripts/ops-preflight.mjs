@@ -41,6 +41,14 @@ const tables = [
   'supplies',
   'recipes',
   'recipe_components',
+  'customer_sites',
+  'company_places',
+  'display_profiles',
+  'place_cache',
+  'provider_limits',
+  'displacements',
+  'displacement_orders',
+  'order_places',
 ];
 export function inspect(
   database,
@@ -113,7 +121,14 @@ export function inspect(
     orderColumns.includes('order_type') &&
     courier;
   const finance = operations && tables.slice(11, 26).every((x) => names.has(x));
-  const p1 = finance && tables.slice(26).every((x) => names.has(x));
+  const p1 = finance && tables.slice(26, 32).every((x) => names.has(x));
+  const mobile =
+    p1 &&
+    names.has('products') &&
+    query("SELECT name FROM pragma_table_info('products')").some(
+      (r) => r.name === 'photo_key',
+    );
+  const field = mobile && tables.slice(32).every((t) => names.has(t));
   const generated = names.has('order_terms')
     ? query("SELECT name FROM pragma_table_xinfo('order_terms')").map(
         (r) => r.name,
@@ -129,6 +144,8 @@ export function inspect(
     schema_operations_ready: operations,
     schema_finance_ready: finance,
     schema_p1_ready: p1,
+    schema_mobile_ready: mobile,
+    schema_field_ready: field,
     generated_condition_columns:
       generated.includes('payment_mode') && generated.includes('closing_cycle'),
   };
