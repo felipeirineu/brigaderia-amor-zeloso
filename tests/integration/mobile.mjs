@@ -88,6 +88,10 @@ try {
       .quantity,
     3,
   );
+  const ranked = await call('mobile/defaults/' + customer, undefined, 'GET');
+  assert.equal(Object.values(ranked.ranking)[0].customer, 3);
+  assert.equal(Object.values(ranked.ranking)[0].total, 3);
+  assert.equal(ranked.product_order.length, 1);
   console.log(
     'OK R3 confirmação atômica, idempotência, ajuste CAS, totais, defaults, isolamento e fotos privadas.',
   );

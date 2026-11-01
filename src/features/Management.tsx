@@ -1,3 +1,4 @@
+import { FlavorOrder } from './mobile/FlavorOrder';
 import { Button } from '../components/Button';
 import { CompactHeader } from './mobile/CompactHeader';
 import { Backup } from './p1/Backup';
@@ -519,6 +520,7 @@ function Products({ mobile = false }: { mobile?: boolean }) {
   return (
     <>
       <h1>Produtos</h1>
+      {mobile && <FlavorOrder products={list.data} />}
       <p>
         Preço por unidade de venda (por exemplo, uma caixa). Dados publicados
         somente após autorização; catálogo desligado.

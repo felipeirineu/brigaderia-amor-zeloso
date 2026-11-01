@@ -1446,3 +1446,119 @@ button,
   align-items: center;
   justify-content: flex-start;
 }
+
+/* R5-3: foco no pedido, uma única barra de ação. */
+.private-workspace:has(.order-focus) .private-bottom-nav {
+  display: none;
+}
+.order-focus .totem-bar {
+  bottom: 0;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+.order-focus .flavor-card {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.order-focus .flavor-add.az-button {
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  padding: 6px;
+  gap: 3px;
+  position: relative;
+}
+.order-focus .flavor-card img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+}
+.order-focus .flavor-add strong {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+.order-focus .flavor-add > span {
+  font-size: 0.75rem;
+}
+.order-focus .flavor-subtract {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 4px;
+  border-radius: 50%;
+}
+.order-focus .quantity-badge {
+  top: 4px;
+  right: 4px;
+}
+@media (max-width: 700px) {
+  .order-focus {
+    padding-bottom: 108px;
+  }
+  .order-focus .totem-heading {
+    display: none;
+  }
+  .order-focus .step-indicator {
+    margin: 0 0 8px;
+    font-size: 0.75rem;
+    gap: 6px;
+  }
+  .order-focus .totem-customer {
+    font-family: inherit;
+    font-size: 1rem;
+    margin: 0;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .order-focus .totem-hint {
+    font-size: 0.8rem;
+    margin: 2px 0 6px;
+  }
+  .order-focus .repeat-order {
+    min-height: 32px !important;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    margin-bottom: 4px;
+  }
+  .order-focus .flavor-grid {
+    gap: 8px;
+  }
+  .order-focus .totem-bar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    left: 0;
+    right: 0;
+    padding: 8px 16px;
+  }
+  .order-focus .totem-bar strong {
+    font-size: 0.8rem;
+    line-height: 1.3;
+  }
+  .order-focus .totem-bar .az-button {
+    width: 100%;
+  }
+  .compact-header:has(#order-focus-back:not(:empty)) .profile-menu-trigger {
+    max-width: 48px;
+  }
+  .compact-header:has(#order-focus-back:not(:empty))
+    .profile-menu-trigger
+    .az-button-label
+    > span {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .order-focus .totem-back {
+    display: none;
+  }
+}

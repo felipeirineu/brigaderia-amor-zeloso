@@ -38,6 +38,20 @@ test('R5 telas móveis com ações compartilhadas', async ({
       .getByRole('button', { name: 'Cliente DEMONSTRAÇÃO R5', exact: true })
       .click();
     await expect(p.locator('.flavor-card')).toHaveCount(5);
+    await expect(p.locator('.flavor-add').first()).toBeEnabled();
+    await expect(p.locator('.flavor-add').first()).toHaveAccessibleName(
+      /Tradicional/,
+    );
+    await expect(
+      p.getByRole('navigation', { name: 'Atalhos do celular' }),
+    ).toBeHidden();
+    await expect(p.locator('.totem-bar')).not.toContainText('0,00');
+    const footer = await p.locator('.totem-bar').boundingBox();
+    for (const card of await p.locator('.flavor-card').all()) {
+      const box = await card.boundingBox();
+      expect(box.y).toBeGreaterThanOrEqual(0);
+      expect(box.y + box.height).toBeLessThanOrEqual(footer.y);
+    }
     await capture('sabores');
     await p.locator('.flavor-add').first().click();
     await p.getByRole('button', { name: /Revisar pedido/ }).click();

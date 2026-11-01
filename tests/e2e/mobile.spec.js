@@ -32,26 +32,22 @@ test('R3 fotos, padrão, revisão e confirmação no celular', async ({
     await p
       .getByRole('button', { name: 'Cliente DEMONSTRAÇÃO P1', exact: true })
       .click();
-    const q = p.getByRole('textbox', {
-      name: 'Quantidade de Produto DEMONSTRAÇÃO P1',
-      exact: true,
-    });
-    await expect(q).toHaveValue('2');
-    await q.focus();
-    await expect(q).toHaveValue('');
-    await q.blur();
-    await expect(q).toHaveValue('2');
-    await p
-      .getByRole('button', {
-        name: 'Aumentar Quantidade de Produto DEMONSTRAÇÃO P1',
-        exact: true,
-      })
-      .click();
-    await expect(q).toHaveValue('3');
+    const tile = p.locator('.flavor-add');
+    await expect(tile).toHaveAccessibleName(/2 embalagens/);
+    await tile.click();
+    await expect(tile).toHaveAccessibleName(/3 embalagens/);
     await p.getByRole('button', { name: /Revisar pedido/ }).click();
     await expect(
       p.getByRole('heading', { name: 'Revise seu pedido' }),
     ).toBeVisible();
+    const q = p.getByRole('textbox', {
+      name: 'Revisar quantidade de Produto DEMONSTRAÇÃO P1',
+      exact: true,
+    });
+    await q.focus();
+    await expect(q).toHaveValue('');
+    await q.blur();
+    await expect(q).toHaveValue('3');
     const amount = p.getByLabel('Taxa combinada (R$)');
     await amount.focus();
     await amount.pressSequentially('4200');

@@ -1,3 +1,5 @@
+import { createPortal } from 'react-dom';
+import { sortFlavors, readFlavorOrder, type Popularity } from './flavorOrder';
 import { Button } from '../../components/Button';
 import { useField, useCourierLabels, SiteAvatar } from '../field/FieldContext';
 import { useEffect, useRef, useState } from 'react';
@@ -38,6 +40,8 @@ interface Plan {
   items: { variant_id: string; quantity: number }[];
 }
 interface Defaults {
+  ranking: Popularity;
+  product_order: string[];
   profile: B2BProfile;
   plans: Plan[];
   last: {
@@ -101,6 +105,10 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     [busy, setBusy] = useState(false),
     [success, setSuccess] = useState('');
   const root = useRef<HTMLElement>(null);
+  const focusBack =
+    typeof document !== 'undefined'
+      ? document.getElementById('order-focus-back')
+      : null;
   const choice = useRef(0),
     pending = useRef(false),
     request = useRef({ body: '', key: crypto.randomUUID() });
@@ -285,13 +293,29 @@ export function Totem({ financial = false }: { financial?: boolean }) {
       </section>
     );
   return (
-    <section className="totem" ref={root}>
-      <div className="section-heading">
+    <section className="totem order-focus" ref={root}>
+      <div className="section-heading totem-heading">
         <h1>{id ? 'Ajustar pedido' : 'Novo pedido'}</h1>
         <Button to="/gestao/pedidos" variant="ghost">
           Ver lista
         </Button>
       </div>
+      {focusBack &&
+        (!editing || step > 1) &&
+        createPortal(
+          <Button
+            variant="ghost"
+            type="button"
+            onClick={() =>
+              step === 0 ? navigate('/gestao/pedidos') : setStep(step - 1)
+            }
+            disabled={busy}
+            aria-label="Voltar uma etapa"
+          >
+            Voltar
+          </Button>,
+          focusBack,
+        )}
       <ol className="step-indicator" aria-label="Etapas do pedido">
         {['Cliente', 'Sabores', 'Revisar', 'Confirmar'].map((s, i) => (
           <li key={s} aria-current={step === i ? 'step' : undefined}>
@@ -300,8 +324,9 @@ export function Totem({ financial = false }: { financial?: boolean }) {
         ))}
       </ol>
       <Failure message={error || products.error || customers.error} />
-      {step > 0 && !editing && (
+      {step > 0 && (!editing || step > 1) && (
         <Button
+          className="totem-back"
           disabled={busy}
           onClick={() => setStep(step - 1)}
           loading={busy}
@@ -341,7 +366,8 @@ export function Totem({ financial = false }: { financial?: boolean }) {
       )}
       {step === 1 && (
         <>
-          <h2>{customer?.name} · escolha as embalagens</h2>
+          <h2 className="totem-customer">{customer?.name}</h2>
+          <p className="totem-hint">Toque para adicionar caixas</p>
           {busy && <p role="status">Preenchendo o pedido…</p>}
           {defaults && defaults.plans.filter((p) => p.valid).length > 1 && (
             <div className="chips" aria-label="Pedidos padrão">
@@ -356,6 +382,8 @@ export function Totem({ financial = false }: { financial?: boolean }) {
           )}
           {!defaults?.plans.some((p) => p.valid) && defaults?.last?.valid && (
             <Button
+              className="repeat-order"
+              variant="ghost"
               onClick={() => {
                 setCounts(
                   Object.fromEntries(
@@ -369,7 +397,12 @@ export function Totem({ financial = false }: { financial?: boolean }) {
             </Button>
           )}
           <div className="flavor-grid">
-            {products.data?.map((p) => {
+            {sortFlavors(
+              products.data ?? [],
+              defaults?.ranking,
+              readFlavorOrder(),
+              defaults?.product_order,
+            ).map((p) => {
               const active = p.variants.filter((v) => v.active);
               if (!active.length) return null;
               const v =
@@ -390,14 +423,13 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                         [v.id]: Math.min(10000, count + 1),
                       })
                     }
-                    loading={busy}
                   >
                     {key ? (
                       <img
                         src={photoURL(key)}
                         alt=""
-                        width={160}
-                        height={160}
+                        width={120}
+                        height={120}
                       />
                     ) : (
                       <span className="flavor-placeholder" aria-hidden="true">
@@ -408,49 +440,48 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                     <span>
                       {money(
                         price({ ...v, product_name: p.name, photo_key: key }),
-                      )}{' '}
-                      · {v.label}
+                      )}
                     </span>
                     {count > 0 && <b className="quantity-badge">{count}</b>}
                   </Button>
-                  <div className="chips" aria-label={`Embalagem de ${p.name}`}>
-                    {active.map((v) => (
-                      <Button
-                        key={v.id}
-                        aria-pressed={
-                          v.id ===
-                          (variants[p.id] ||
-                            active.find((v) => counts[v.id] > 0)?.id ||
-                            active[0].id)
-                        }
-                        onClick={() =>
-                          setVariants({ ...variants, [p.id]: v.id })
-                        }
-                      >
-                        {v.label}
-                        {counts[v.id] > 0 ? ` · ${counts[v.id]}` : ''}
-                      </Button>
-                    ))}
-                  </div>
+                  {active.length > 1 && (
+                    <div
+                      className="chips"
+                      aria-label={`Embalagem de ${p.name}`}
+                    >
+                      {active.map((v) => (
+                        <Button
+                          key={v.id}
+                          aria-pressed={
+                            v.id ===
+                            (variants[p.id] ||
+                              active.find((v) => counts[v.id] > 0)?.id ||
+                              active[0].id)
+                          }
+                          onClick={() =>
+                            setVariants({ ...variants, [p.id]: v.id })
+                          }
+                        >
+                          {v.label}
+                          {counts[v.id] > 0 ? ` · ${counts[v.id]}` : ''}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                   {count > 0 && (
-                    <>
-                      <QuantityInput
-                        aria-label={`Quantidade de ${p.name}`}
-                        value={count}
-                        onValueChange={(n) =>
-                          setCounts({ ...counts, [v.id]: n })
-                        }
-                      />
-                      <Button
-                        onClick={() => {
-                          const next = { ...counts };
-                          delete next[v.id];
-                          setCounts(next);
-                        }}
-                      >
-                        Remover {p.name}
-                      </Button>
-                    </>
+                    <Button
+                      className="flavor-subtract"
+                      type="button"
+                      aria-label={'Diminuir quantidade de ' + p.name}
+                      onClick={() => {
+                        const next = { ...counts };
+                        if (count === 1) delete next[v.id];
+                        else next[v.id] = count - 1;
+                        setCounts(next);
+                      }}
+                    >
+                      −
+                    </Button>
                   )}
                 </article>
               );
@@ -608,7 +639,11 @@ export function Totem({ financial = false }: { financial?: boolean }) {
       )}
       {step > 0 && (
         <div className="totem-bar">
-          <strong>Total {money(total)}</strong>
+          <strong>
+            {selected.length
+              ? `Total ${money(total)}`
+              : 'Toque nos sabores para montar o pedido'}
+          </strong>
           {step === 1 ? (
             <Button
               className="primary-action"
@@ -617,7 +652,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               variant="primary"
               loading={busy}
             >
-              Revisar pedido · {money(total)}
+              Revisar pedido{selected.length ? ' · ' + money(total) : ''}
             </Button>
           ) : (
             <Button
