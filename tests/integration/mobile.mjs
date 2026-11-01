@@ -39,12 +39,24 @@ try {
     to: 'awaiting_confirmation',
     reason: 'Ajuste DEMONSTRAÇÃO',
   });
+  await t.db
+    .prepare(
+      "UPDATE order_terms SET data=json_set(data,'$.mode','advance') WHERE organization_id=? AND order_id=?",
+    )
+    .bind(t.org, o.id)
+    .run();
   const adjusted = await call(
     'mobile/orders/' + o.id,
     { ...data, version: 2, items: [{ variant_id: variant, quantity: 3 }] },
     'PUT',
   );
   assert.equal(adjusted.version, 3);
+  assert.equal(
+    (await call('finance/customers/' + customer, undefined, 'GET')).orders.find(
+      (p) => p.id === o.id,
+    ).terms.mode,
+    'advance',
+  );
   assert.equal(
     (await call('orders/' + o.id, undefined, 'GET')).total_cents,
     3000,

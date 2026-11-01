@@ -312,7 +312,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
           ? [
               db
                 .prepare(
-                  `INSERT INTO order_terms(organization_id,order_id,data) SELECT ?,?,? WHERE ${g} ON CONFLICT(organization_id,order_id) DO UPDATE SET data=excluded.data,version=order_terms.version+1`,
+                  `INSERT INTO order_terms(organization_id,order_id,data) SELECT ?,?,? WHERE ${g} ON CONFLICT(organization_id,order_id) ${id && d.terms === null ? 'DO NOTHING' : 'DO UPDATE SET data=excluded.data,version=order_terms.version+1'}`,
                 )
                 .bind(
                   org,

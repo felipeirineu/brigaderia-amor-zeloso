@@ -60,6 +60,13 @@ test('R3 fotos, padrão, revisão e confirmação no celular', async ({
     await amount.focus();
     await amount.blur();
     await expect(amount).toHaveValue('42,00');
+    await amount.fill('999999999999999');
+    await expect(amount).toHaveAttribute('aria-invalid', 'true');
+    await amount.blur();
+    await amount.focus();
+    await amount.blur();
+    await expect(amount).toHaveValue('42,00');
+    expect(await amount.evaluate((e) => e.checkValidity())).toBe(true);
     await p
       .getByRole('button', { name: 'Confirmar pedido', exact: true })
       .click();

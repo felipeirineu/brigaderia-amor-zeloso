@@ -2,13 +2,12 @@ import { z } from 'zod';
 import { HttpError, json, type Actor } from './security';
 import { p1Mutation, ownerOnly, requestRange } from './p1-common';
 import { businessDay } from './operations-domain';
-const quantity = z.number().int().min(1).max(1000000000000);
 const schema = z.discriminatedUnion('action', [
   z
     .object({
       action: z.literal('minimum'),
       version: z.number().int().min(0),
-      minimum_milli: quantity.min(0).nullable(),
+      minimum_milli: z.number().int().min(0).max(1000000000000).nullable(),
     })
     .strict(),
   z

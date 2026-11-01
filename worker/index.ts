@@ -115,8 +115,7 @@ export default {
       if (e instanceof z.ZodError)
         return json(
           {
-            error:
-              'Dados financeiros inválidos. Confira os campos obrigatórios.',
+            error: 'Dados inválidos. Confira os campos obrigatórios.',
           },
           400,
         );

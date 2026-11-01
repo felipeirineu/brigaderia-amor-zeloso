@@ -100,6 +100,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     [fee, setFee] = useState<number | null>(null),
     [terms, setTerms] = useState<Terms>(emptyTerms),
     [editing, setEditing] = useState<EditOrder | null>(null),
+    [termsLoaded, setTermsLoaded] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [success, setSuccess] = useState('');
@@ -134,10 +135,12 @@ export function Totem({ financial = false }: { financial?: boolean }) {
           const account = await api<{ orders: { id: string; terms: Terms }[] }>(
             'finance/customers/' + o.customer_id,
           );
-          if (current)
+          if (current) {
             setTerms(
               account.orders.find((p) => p.id === o.id)?.terms ?? emptyTerms(),
             );
+            setTermsLoaded(o.id);
+          }
         }
       })
       .catch((e) => {
@@ -611,7 +614,13 @@ export function Totem({ financial = false }: { financial?: boolean }) {
           ) : (
             <button
               className="primary-action"
-              disabled={busy || !selected.length || !due}
+              disabled={
+                busy ||
+                (!!id &&
+                  (editing?.id !== id || (financial && termsLoaded !== id))) ||
+                !selected.length ||
+                !due
+              }
               onClick={() => void confirmOrder()}
             >
               Confirmar pedido

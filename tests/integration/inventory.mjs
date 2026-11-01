@@ -19,6 +19,17 @@ try {
     version: 0,
     minimum_milli: 10000,
   });
+  const zeroSupply = await call('p1/supplies', {
+    name: 'Embalagem DEMONSTRAÇÃO zero',
+    unit: 'unit',
+    pack_quantity_milli: 1000,
+    pack_cost_cents: null,
+  });
+  await call('p1/inventory/' + zeroSupply.id, {
+    action: 'minimum',
+    version: 0,
+    minimum_milli: 0,
+  });
   const entry = {
       action: 'move',
       version: 1,
@@ -49,7 +60,9 @@ try {
     ),
   );
   assert.equal(results.filter((r) => r.ok).length, 1);
-  const item = (await call('p1/inventory', undefined, 'GET'))[0];
+  const item = (await call('p1/inventory', undefined, 'GET')).find(
+    (i) => i.id === s.id,
+  );
   assert.equal(item.balance_milli, 5001);
   assert.equal(
     (
@@ -131,7 +144,8 @@ try {
     operator,
   );
   assert.equal(
-    (await call('p1/inventory', undefined, 'GET'))[0].balance_milli,
+    (await call('p1/inventory', undefined, 'GET')).find((i) => i.id === s.id)
+      .balance_milli,
     20001,
   );
   assert.equal(

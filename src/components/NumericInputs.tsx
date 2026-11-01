@@ -77,6 +77,7 @@ export function MoneyInput({
               : props.placeholder || 'Informe valor'
           }
           onFocus={() => {
+            input.current?.setCustomValidity('');
             setBefore(value);
             setDigits('');
             setError('');
@@ -194,6 +195,7 @@ export function QuantityInput({
           }
           aria-invalid={!!error}
           onFocus={() => {
+            input.current?.setCustomValidity('');
             setBefore(value);
             setEditing(true);
             setDigits('');
