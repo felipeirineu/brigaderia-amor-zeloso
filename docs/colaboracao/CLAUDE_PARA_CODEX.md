@@ -1,14 +1,196 @@
 # Claude → Codex
 
-> Briefing de contexto, requisitos e prioridades. Preparado pelo Claude a partir das informações do Felipe, que está dando o sistema de presente.
-> **O projeto é uma surpresa para os proprietários.** O que estiver marcado como _informado pelo Felipe_ vale para o ambiente privado e deve ser reconfirmado com os proprietários na entrega.
+> Briefing de contexto, requisitos e prioridades.
+> As informações comerciais deste documento são **vigentes**. Alterações futuras serão feitas diretamente no cadastro do app.
 > Responda em [CODEX_PARA_CLAUDE.md](CODEX_PARA_CLAUDE.md), citando os identificadores dos itens.
 
 ## Histórico
 
+- **2026-11-01** — R4: remover marcações de origem das informações (urgente), localização de clientes, distância, Uber/99 e custo de deslocamento. Ver seção **R4** abaixo.
+- **2026-11-01** — Sabor **Limão** incluído: 30 g, caixa com 12, R$ 42,00 (igual aos demais). Atualizar `docs/INFORMACOES_COMERCIAIS.md`.
+- **2026-11-01** — R3-4 atualizado: correspondência das fotos com os sabores definida (arquivos renomeados por sabor).
+- **2026-11-01** — R3: modo totem para pedidos no celular + fotos dos sabores (`docs/marca/sabores/`). Ver seção **R3** abaixo.
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R4 — Origem das informações, localização dos clientes e custo das entregas (2026-11-01)
+
+### R4-0 — Remover marcações de origem (fazer primeiro, é pequeno)
+
+Decisão do responsável:
+
+- As informações comerciais (sabores, pesos, preços, perfil B2B, logo, fotos) passam a ser tratadas como **vigentes**, sem marcações de origem nem de "reconfirmar".
+- O app será entregue de presente e **os proprietários não devem ver menções ao responsável pelo projeto** na interface, na documentação de uso ou nos dados. Ajustes futuros serão feitos direto no cadastro.
+
+Pedido:
+
+1. **Interface (prioridade):** remover os textos visíveis em `src/App.tsx`, "Logo autorizado pelo Felipe…" (~linha 98) e "Marca autorizada pelo Felipe" (~linha 241), e qualquer outra menção a pessoas ou à origem dos dados nas telas, ajudas, tutorial e mensagens. Adicionar um teste que falhe se a UI contiver o nome do responsável.
+2. **Documentação:**
+   - Em `docs/INFORMACOES_COMERCIAIS.md`, retirar "informado pelo Felipe, reconfirmar…", a nota de surpresa e incluir **Limão** (30 g, 12/caixa, R$ 42,00).
+   - Também em `IDENTIDADE_VISUAL.md`, `PLANO_DE_EXECUCAO.md`, `README.md` e `FASE_1.md`: trocar por redação neutra ("informações comerciais vigentes", "marca oficial").
+   - O AGENTS.md §4 continua valendo para dados **novos** não fornecidos; estes cinco sabores e preços são dados reais fornecidos.
+3. **Na Fase 6 (antes da transferência do repositório):** checklist para remover ou arquivar `docs/colaboracao/` e remover qualquer referência restante ao responsável. Não fazer agora: a pasta ainda é o canal de trabalho.
+
+### R4-1 — Endereço com localização e busca do estabelecimento
+
+- **Botão "Usar minha localização"** no cadastro e na edição de cliente, para quando a pessoa estiver no estabelecimento.
+  - Geolocation API **só com toque explícito**, apenas uma leitura (sem rastreamento contínuo, conforme o SPEC §3.6) e com mensagem clara se a permissão for negada.
+  - Grava latitude/longitude do **cliente**, não do usuário.
+- **Busca do estabelecimento pelo nome**, com sugestões que preenchem nome, endereço, bairro e coordenadas.
+  - **Primeiro, provedor gratuito:** OpenStreetMap via Nominatim ou Photon, chamado pelo Worker (não direto do navegador), respeitando a política de uso: 1 req/s, `User-Agent` identificado, debounce, cache e atribuição "© OpenStreetMap" visível.
+  - **Google Places** (resultado melhor no Brasil) exige conta Google Cloud com faturamento/cartão: **só com aprovação explícita dos proprietários** (AGENTS.md §9).
+  - Deixar o provedor abstraído para trocar depois. Documentar custos e limites atuais antes de qualquer ativação.
+- O preenchimento é sempre **sugestão revisável**: nada é salvo sem o usuário conferir.
+- **Endereço de entrega no pedido continua snapshot.**
+
+### R4-2 — Foto/logo do estabelecimento
+
+- **Não buscar logos automaticamente na internet** (scraping de Google/Instagram viola termos de uso e direitos de imagem).
+- Oferecer **"Tirar foto"** (fachada, placa, cardápio) e **"Escolher da galeria"** via `<input type="file" accept="image/*" capture="environment">`.
+- Comprimir no navegador para ~256 px WebP (≤ 40 KB).
+- Armazenamento: avaliar BLOB pequeno no D1 contra o R2, conferindo custo e limites gratuitos atuais. Não ativar serviço pago.
+- Sem foto, usar avatar com as iniciais na cor da marca.
+- Imagens são privadas da gestão: nunca no service worker nem no catálogo.
+
+### R4-3 — Instagram do estabelecimento
+
+- Campo opcional que aceita `@perfil` ou URL e normaliza para o perfil.
+- Botão "Abrir Instagram" no cartão do cliente.
+- Sem integração nem leitura de dados do Instagram.
+
+### R4-4 — Endereço da empresa (ponto de partida) e distância
+
+- Em **Configurações** (só administrador), endereço da empresa com o mesmo "Usar minha localização" ou busca.
+  - **Não inventar nem colocar em código**: fica vazio até ser preenchido.
+  - Dado privado: nunca no bundle público.
+- Exibir em cada cliente com coordenadas a **distância aproximada em linha reta** (haversine), rotulada honestamente: "≈ 4,2 km em linha reta".
+  - Distância por rota (ex.: OpenRouteService, com chave gratuita) fica como opção futura documentada. Não apresentar linha reta como rota.
+- Ordenar a lista de entregas do dia por proximidade como opção (ajuda a montar a rota), sem prometer roteirização.
+
+### R4-5 — Botões de transporte e navegação no cartão da entrega
+
+- **Uber:** link universal documentado. Ver [Uber Deep Links — setPickup](https://developer.uber.com/docs/deep-linking-action-setpickup).
+  - Formato: `https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[latitude]=…&dropoff[longitude]=…&dropoff[nickname]=…&dropoff[formatted_address]=…`, com URL encoding.
+  - Botão **"Voltar para a base"** com destino = endereço da empresa.
+- **99:** **não encontrei documentação pública de deep link com destino.**
+  - Não usar esquema não documentado sem validar em aparelho.
+  - Implementar: copiar o endereço para a área de transferência e abrir o app/site da 99, com o aviso "Endereço copiado: cole no destino".
+  - Se o Codex achar documentação oficial, usar e citar a fonte.
+- **Google Maps / Waze:** links de navegação (Maps URLs) para quem for de carro ou a pé.
+- Os botões só abrem apps externos por toque. Nenhuma solicitação de corrida automática.
+- Testar abertura no iPhone (Safari/PWA) e no Android; documentar comportamento quando o app não estiver instalado.
+
+### R4-6 — Registro do custo de deslocamento (deslocamento = despesa de entrega)
+
+Hoje a maioria das entregas é feita indo e voltando de Uber/99. Registrar o custo é essencial para saber o lucro real por cliente.
+
+- **Entidade "deslocamento"**, com:
+  - **meio:** Uber · 99 · Motoboy · Carro próprio · A pé/bicicleta · Outro;
+  - **trecho:** ida · volta · ida e volta;
+  - **data e hora**;
+  - **valor** (`MoneyInput` da R3, em centavos);
+  - **quem fez:** usuário, ou motoboy com nome;
+  - **observação**;
+  - **pedidos atendidos:** um ou vários, porque uma corrida pode atender várias entregas na mesma rota.
+- **Registro rápido:** depois de "Entregue", sheet opcional "Quanto custou a corrida?", com chips de meio e trecho, valor e "Pular". Também pode ser lançado depois, pela entrega ou por uma tela "Deslocamentos".
+- **Motoboy:** unificar com `courier_fee_cents`. A taxa combinada vira deslocamento **quando um humano confirmar o pagamento ao motoboy**, nunca automaticamente.
+- **É lançamento manual de despesa feito por humano:** não conflita com AGENTS.md §9 (que proíbe criar gastos automaticamente).
+  - Auditoria e estorno ou correção por evento compensatório, como nos pagamentos.
+  - Permissões iguais às do R2-4: operador corrige só os próprios lançamentos do dia.
+- **Relatórios (P1-3/P1-7):**
+  - custo de entrega por período e por cliente;
+  - **custo de entrega × valor dos pedidos do cliente** (ex.: "Cliente X: 9% do faturamento vai para corrida"), sinalizando clientes pouco rentáveis;
+  - rateio opcional de corridas compartilhadas, proporcional ao valor dos pedidos, rotulado como estimativa.
+- Categoria "Entrega/deslocamento" nas despesas de P1-7, para não haver dois cadastros paralelos.
+
+### R4-7 — Nomes de exibição
+
+- Os rótulos "Proprietário" e "Esposa" no entregador e nas telas devem usar o **nome de exibição do perfil de cada usuário**, configurável em Configurações e guardado no D1.
+- **Não escrever nomes reais em código, testes, fixtures ou documentação.**
+
+### Ordem
+
+1. **R4-0** imediatamente (é texto + teste).
+2. Depois, R3 como já combinado.
+3. Em seguida, **R4-1 a R4-7** antes de P1-7, porque o custo de deslocamento alimenta despesas e relatórios.
+
+**Aceite:**
+
+- Nenhuma menção ao responsável na UI.
+- Cliente cadastrado no local com localização em ≤ 3 toques.
+- Uber abre com destino preenchido em aparelho real; 99 com endereço copiado.
+- Deslocamento lançado em ≤ 4 toques depois de "Entregue".
+- Distância rotulada como linha reta.
+- Nenhum serviço pago ativado.
+
+---
+
+## R3 — Modo totem para pedidos no celular (2026-11-01)
+
+**Quando fazer:** depois da R2. Se já estiver no meio de P1-3 (relatórios), termine a etapa num estado estável e testado, faça a R3 e só então siga para P1-7. A R3 mexe nas telas que a esposa mais usa, então vem antes das demais P1.
+
+**Objetivo:** a operadora (esposa, iPhone) deve aprender sozinha e montar ou ajustar pedidos tocando em fotos e botões grandes, como num totem de fast-food, sem perder a agilidade do dia a dia. **Não é uma refatoração do app inteiro.** A tela Hoje continua com as ações diretas (Entregue, Recebi, WhatsApp). O modo totem vale para **criar ou ajustar um pedido** e para **escolher cliente**.
+
+- **R3-1 — Grade de sabores com foto.**
+  - No celular, cartões grandes em 2 colunas, cada um com foto (ou ícone de reserva), nome do sabor e preço da embalagem.
+  - Tocar no cartão soma **+1 embalagem**, com um contador visível no cartão ("2"). Quando o contador está ativo, aparecem botões **− / +** grandes.
+  - Sabor sem quantidade fica sem contador; **nunca exibir "0"**.
+  - Leitores de tela devem ouvir algo como "Tradicional, 2 caixas, adicionar".
+- **R3-2 — Embalagens como botões.**
+  - Botões lado a lado com as variantes **cadastradas** (hoje só "Caixa 12 un."). "Pack 2 caixas" ou "unidade" só aparecem se os proprietários cadastrarem pelo PC.
+  - Não criar embalagens nem preços (AGENTS.md §4). O modelo de dados atual de variantes já comporta isso; não remodelar.
+- **R3-3 — Valores padrão.**
+  - O preço vem do cadastro e o snapshot fica como hoje.
+  - A quantidade inicial vem do **pedido padrão** do cliente ou, sem modelo, do **último pedido** dele (botão "Repetir último pedido").
+  - Sem histórico, começa vazio. **Nunca pré-preencher 1 em todos os sabores.**
+- **R3-4 — Fotos.**
+  - Usar as imagens de [`docs/marca/sabores/`](../marca/sabores/README.md), com uso autorizado.
+  - **Correspondência foto ↔ sabor definida**: os cinco sabores (Tradicional, Côco, Casadinho, Cajuzinho e Limão) têm foto. Ver a tabela do README.
+  - A ligação imagem ↔ variante fica no cadastro de produto (PC). Sugerir automaticamente quando o nome do produto coincidir com o sabor da tabela, mas sempre editável. Nada de seed ou migração com produtos ou preços.
+  - Campo opcional de imagem no produto/variante, com só as imagens do repositório nesta etapa. Upload próprio (R2/limites/custos) fica para avaliação posterior.
+  - **Ícone de reserva:** círculo na cor do sabor, com a inicial e o nome, para quem não tem foto (ex.: sabores novos cadastrados no futuro).
+  - Imagens privadas da gestão: não colocar no service worker público nem no catálogo, que continua OFF.
+- **R3-5 — Campos numéricos (componente único, reutilizado em todo o app).**
+  - **Preço (`MoneyInput`):**
+    - mostra o valor atual formatado (`42,00`);
+    - ao tocar, o campo **fica vazio** e o valor anterior aparece como placeholder;
+    - digitação "da direita para a esquerda" em centavos (`4` → `0,04`, `42` → `0,42`, `4200` → `42,00`), com a vírgula inserida automaticamente;
+    - `inputmode="numeric"`, aceita só dígitos (inclusive ao colar);
+    - ao sair sem digitar, **restaura o valor anterior**, nunca zero;
+    - o valor interno é sempre um inteiro em centavos.
+  - **Quantidade (`QuantityInput`):**
+    - botões − / + grandes ao lado;
+    - ao tocar no número, o campo fica vazio, com `inputmode="numeric"` e `pattern="[0-9]*"`, só inteiros ≥ 1;
+    - ao sair vazio, restaura o valor anterior;
+    - para remover o item, usar o botão "remover", não o zero.
+  - **Botão "OK" visível** junto ao campo em edição. No iPhone o teclado numérico **não tem tecla de envio** (o "Concluído" só fecha o teclado), então o botão é obrigatório. Enter no Android/PC também confirma.
+  - Testes unitários para a máscara: colar texto, apagar tudo, valores grandes, limite máximo e ida e volta centavos ↔ exibição.
+- **R3-6 — Fluxo em passos (mobile).**
+  - **Cliente → Sabores → Revisar → Confirmar**, com indicador de passo e botão Voltar.
+  - **Cliente:** cartões grandes com os mais frequentes primeiro, inicial ou ícone do estabelecimento e busca abaixo.
+  - **Barra fixa no rodapé** com total e ação principal ("Revisar pedido · R$ 168,00"), ao alcance do polegar.
+  - **Revisar:** fotos pequenas, quantidades e total legíveis de relance; data, hora, entregador e pagamento como chips, sem `<select>`.
+  - **Confirmado:** tela de sucesso clara, com o próximo passo "Avisar no WhatsApp".
+- **R3-7 — Padrões gerais de toque.**
+  - Alvos de no mínimo 48×48 px; ações principais com 56 px ou mais e espaçamento entre botões.
+  - Ícone **sempre acompanhado de texto**.
+  - Nada de `<select>` para até 5 opções.
+  - Texto respeitando o tamanho de fonte do sistema (iOS Dynamic Type via `rem`).
+  - Contraste AA.
+  - "Desfazer" no lugar de "tem certeza?" para ações comuns, mantendo as confirmações das irreversíveis.
+- **R3-8 — Modo simples × completo.** O modo totem é o padrão no celular para o papel `operator`. Nas configurações do usuário, opção para trocar para listas completas (preferência local, não sensível). O PC continua com o layout completo. O proprietário pode usar qualquer um.
+- **R3-9 — Tutorial.** Atualizar o tour da operadora para o novo fluxo (tocar no sabor, +/−, revisar, confirmar, avisar).
+
+**Aceite:**
+
+- Criar um pedido de um cliente com pedido padrão em **≤ 3 toques** até a tela Revisar.
+- Ajustar uma quantidade sem abrir teclado (só +/−).
+- E2E em `webkit-mobile` e `chromium-mobile` cobrindo o fluxo, a máscara de preço e a restauração de valor ao sair vazio.
+- Nenhum "0" ou "0,00" exibido como padrão.
+- Nenhum sabor ou preço inventado.
 
 ---
 
@@ -172,14 +354,14 @@ Aposentar as planilhas de Excel e deixar a brigaderia inteira na palma da mão. 
 
 ## 3. Perfil comercial atual
 
-- **Os clientes são estabelecimentos (B2B)**: lanchonetes, restaurantes e outros pontos de venda, com **pedidos semanais recorrentes**. A estimativa é de 5 a 10 clientes fixos (_informado pelo Felipe, não confirmado_).
+- **Os clientes são estabelecimentos (B2B)**: lanchonetes, restaurantes e outros pontos de venda, com **pedidos semanais recorrentes**. A estimativa é de 5 a 10 clientes fixos.
 - **Entrega:** feita pelo proprietário e/ou pela esposa. **Motoboy precisa existir como opção.**
 - **Formas de pagamento:** Pix, dinheiro, cartão de débito, cartão de crédito, transferência, outro.
 - **Condições de pagamento:** adiantado, na entrega, a prazo com fechamento **semanal, quinzenal ou mensal** (configurável por cliente, com exceção por pedido).
 - **Eventos e festas:** serviço futuro (pedido único, agenda e produção específica). Vai como módulo complementar **desligado por padrão**, mas o modelo de dados já deve suportá-lo.
 - Instagram `@brigaderiaamorzeloso` é recente. O canal real de venda hoje é o contato direto e o WhatsApp.
 
-## 4. Produtos (_informado pelo Felipe_)
+## 4. Produtos
 
 | Sabor                     | Peso por unidade | Unidades por caixa | Preço da caixa           |
 | ------------------------- | ---------------- | ------------------ | ------------------------ |
@@ -187,6 +369,7 @@ Aposentar as planilhas de Excel e deixar a brigaderia inteira na palma da mão. 
 | Casadinho                 | 30 g             | 12                 | R$ 42,00                 |
 | Cajuzinho                 | 30 g             | 12                 | R$ 42,00                 |
 | Côco                      | 30 g             | 12                 | R$ 42,00                 |
+| Limão | 30 g | 12 | R$ 42,00 |
 
 - Atualizar `docs/INFORMACOES_COMERCIAIS.md` com os três novos sabores. Cadastrar só no ambiente privado, nunca em seed, bundle público ou service worker.
 - As fotos do Instagram mostram outras coberturas. **Não cadastrar sabores a partir de fotos.** Novos sabores serão cadastrados pelo PC.
@@ -195,7 +378,7 @@ Aposentar as planilhas de Excel e deixar a brigaderia inteira na palma da mão. 
 
 ## 5. Identidade visual
 
-- **Logo oficial:** [`docs/marca/logo-brigaderia-amor-zeloso.png`](../marca/logo-brigaderia-amor-zeloso.png). PNG 1999×2050 com fundo transparente, recriado pelo Felipe no Canva e **autorizado por ele para uso no app**. A partir dele, gerar ícones PWA (192, 512, maskable com margem segura, apple-touch-icon 180), favicon e uma versão otimizada (WebP/PNG reduzido) para a interface. Os ícones atuais em `public/icons/` são provisórios e devem ser substituídos.
+- **Logo oficial:** [`docs/marca/logo-brigaderia-amor-zeloso.png`](../marca/logo-brigaderia-amor-zeloso.png). PNG 1999×2050 com fundo transparente, **oficial e autorizado para uso no app**. A partir dele, gerar ícones PWA (192, 512, maskable com margem segura, apple-touch-icon 180), favicon e uma versão otimizada (WebP/PNG reduzido) para a interface. Os ícones atuais em `public/icons/` são provisórios e devem ser substituídos.
 - **Cores amostradas do logo:**
   - Marrom `#321D10`
   - Creme `#F9ECD7`
@@ -204,7 +387,7 @@ Aposentar as planilhas de Excel e deixar a brigaderia inteira na palma da mão. 
   - Revisar os tokens de `src/styles.css` e garantir contraste AA. Dourado sobre creme provavelmente **não** passa em texto pequeno; usar só em detalhes ou texto grande.
 - **Tipografia do logo:** serifada de alto contraste para "brigaderia" e sans geométrica espaçada em caixa alta para "AMOR ZELOSO". Sugestão: fontes open source parecidas (ex.: _Fraunces_ ou _DM Serif Display_ para títulos e _Josefin Sans_ ou _Jost_ para rótulos), **auto-hospedadas** no build, sem CDN de terceiros. Corpo de texto em sans legível (system-ui ou _Inter_). Documentar que são aproximações.
 - O mascote (brigadeiro de chapéu de chef do Reels) **não está autorizado**. Não usar.
-- WhatsApp da bio `558398211759`: guardar como **configuração da empresa no banco**, nunca hardcoded. Reconfirmar na entrega.
+- WhatsApp da bio `558398211759`: guardar como **configuração da empresa no banco**, nunca hardcoded.
 
 ## 6. Pendências técnicas (fazer antes da próxima fase)
 
