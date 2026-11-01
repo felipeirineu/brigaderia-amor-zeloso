@@ -97,6 +97,14 @@ Fazer **depois da R5**. Ajustes pedidos pelo responsável após ver a prévia.
     - aviso de teste recebido em Android real e em iPhone com o app instalado;
     - cron idempotente testado;
     - assinatura revogada ao sair da conta.
+- **R6-8 — Rolagem e WhatsApp no cartão de entrega.**
+  - **Rolagem:** ao trocar de aba na barra inferior, ao trocar de passo no Novo pedido e ao mudar o dia na agenda, a tela volta ao **topo**. Ao abrir e fechar folhas, ou ao usar +/−, a posição atual se mantém.
+    - Com o tempo, considerar restaurar a posição de cada aba ao voltar a ela.
+    - Teste E2E: rolar o Hoje até o fim, tocar em Clientes e conferir `scrollY === 0`.
+  - **WhatsApp no cartão de entrega:** folha com chips de modelo (**A caminho · Chegando · Entregue · Cobrança**), mensagem preenchida com os dados reais do pedido e editável, e o botão "Abrir no WhatsApp" (`wa.me/<telefone>?text=`).
+    - Assinatura com o nome de exibição de quem envia.
+    - Mesma regra de sempre: só abre a conversa e o envio é humano.
+    - O registro "contato realizado" continua opcional.
 - **Aceite:**
   - Cliente salvo → rota calculada uma vez e exibida.
   - Provedor indisponível → linha reta rotulada.
