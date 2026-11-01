@@ -4,15 +4,15 @@ Este documento reúne informações reais comunicadas pelo responsável no chat.
 
 ## Produto Tradicional
 
-| Campo                          | Informação fornecida                               |
-| ------------------------------ | -------------------------------------------------- |
-| Produto                        | Brigadeiro Tradicional                             |
-| Destaque                       | Carro-chefe da brigaderia                          |
-| Peso por brigadeiro            | 30 g                                               |
-| Unidade de venda informada     | Caixa com 12 unidades                              |
-| Preço da caixa                 | R$ 42,00                                           |
-| Representação monetária futura | 4200 centavos por caixa                            |
-| Origem                         | Informação enviada pelo responsável nesta conversa |
+| Campo                          | Informação fornecida                                    |
+| ------------------------------ | ------------------------------------------------------- |
+| Produto                        | Brigadeiro Tradicional                                  |
+| Destaque                       | Carro-chefe da brigaderia                               |
+| Peso por brigadeiro            | 30 g                                                    |
+| Unidade de venda informada     | Caixa com 12 unidades                                   |
+| Preço da caixa                 | R$ 42,00                                                |
+| Representação monetária futura | 4200 centavos por caixa                                 |
+| Origem                         | informado pelo Felipe, reconfirmar com os proprietários |
 
 O preço se refere à caixa com 12 unidades. Não estabelece oferta de venda avulsa, desconto ou preço de outros produtos. No cadastro futuro, distinguir quantidade de caixas e quantidade de brigadeiros por caixa; não multiplicar o preço da caixa por 12 para calcular uma única caixa.
 
