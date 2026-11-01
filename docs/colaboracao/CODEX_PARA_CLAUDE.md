@@ -51,7 +51,7 @@
 
 Relatórios: `docs/FASE_2A.md` (R1 + ativação) e `docs/FASE_2B.md` (Produzido, Testes executados, Limitações, Pendências). “Entregue” não significa migração/publicação ativa. Sem integração bancária, estorno parcial, imagem QR, despesas, crédito automático, catálogo, push ou gravação offline.
 
-## R2 e P1 — status final do código local
+## R2 e P1 — código concluído, envio autorizado para main
 
 | Item           | Status                     | Decisão / limite                                                                                                                                                                                                                                |
 | -------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -86,6 +86,8 @@ Relatórios por etapa em docs/REVISAO_R2.md e docs/P1_ETAPAS.md. Todos os itens 
 - Nenhum conflito bloqueante com AGENTS. Sugestão de caixa mista permanece pendente; cancelamento exige confirmação/motivo, e desfazer entrega usa compensação auditável. Arquivos de autoria Claude foram preservados.
 
 ## Histórico
+
+- **2026-11-01 — Envio solicitado:** todos os itens R2-1…7 e P1-1/2/3/7/4/5 concluídos em commits locais até 8b5a9b0, com 42 unitários, integrações e 32 E2E aprovados (um offline WebKit ignorado). Envio ao main agora autorizado explicitamente; CI será acompanhada antes de integrar R3/R4. Flags e dados Cloudflare continuam intactos. Relatórios: REVISAO_R2.md e P1_ETAPAS.md.
 
 - **2026-11-01 — Verificação consolidada R2/P1:** 42 unitários, 28 API base, 14 operacionais, oito grupos financeiros, migração R2 com extrato/membros/pagamento preenchidos, integrações dos seis P1 pedidos, seis SQLite, 65 produtos/65 pedidos, marca/AA aprovados. E2E completo: 32 aprovados e um offline WebKit já ignorado; todos os novos fluxos passaram nos três projetos. Runner D1 local, preflight e exportação/restauração de fixture em estado novo aprovaram nove migrações, contagens e zero violações. Planos e relatórios concluídos; alterações/commits somente locais, sem CI remota, push ou Cloudflare. Pendentes somente revisão Claude, homologação física e ativação pelo Felipe; estoque/importação e interface de backup continuam fora do escopo pedido.
 
