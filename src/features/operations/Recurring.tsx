@@ -41,7 +41,10 @@ export function Recurring() {
   const plans = useRemote<Plan[]>('recurring'),
     customers = useRemote<{ id: string; name: string }[]>('customers'),
     products = useRemote<ProductOption[]>('products');
-  const [editing, setEditing] = useState<Plan | null>(null),
+  const [skipped, setSkipped] = useState<
+      { id: string; name: string; reason: string }[]
+    >([]),
+    [editing, setEditing] = useState<Plan | null>(null),
     [name, setName] = useState(''),
     [customer, setCustomer] = useState(''),
     [weekday, setWeekday] = useState(1),
@@ -135,9 +138,11 @@ export function Recurring() {
           onClick={() =>
             void run(async () => {
               const result = await api<{
+                skipped: { id: string; name: string; reason: string }[];
                 created: number;
                 already_present: number;
               }>('generate-week', 'POST', { week });
+              setSkipped(result.skipped);
               setNotice(
                 `${result.created} rascunho(s) criado(s); ${result.already_present} já existente(s). Revise e confirme em Pedidos.`,
               );
@@ -152,6 +157,19 @@ export function Recurring() {
         </p>
         <Link to="/gestao/pedidos">Revisar pedidos gerados</Link>
       </section>
+      {skipped.length > 0 && (
+        <section className="panel" role="alert">
+          <h2>Modelos ignorados</h2>
+          <ul>
+            {skipped.map((s) => (
+              <li key={s.id}>
+                {s.name}: {s.reason}{' '}
+                <a href={`#model-${s.id}`}>Revisar modelo</a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <form className="panel data-form" onSubmit={save}>
         <h2>{editing ? 'Editar modelo' : 'Novo pedido padrão'}</h2>
         <label>
@@ -321,7 +339,7 @@ export function Recurring() {
         </div>
       </form>
       {plans.data?.map((p) => (
-        <article className="panel" key={p.id}>
+        <article className="panel" key={p.id} id={`model-${p.id}`}>
           <h2>{p.name}</h2>
           <p>
             {p.customer_name} · {weekDayNames[p.weekday - 1]} · {p.time} ·{' '}

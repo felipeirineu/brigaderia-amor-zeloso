@@ -291,6 +291,41 @@ try {
     },
   );
   await check(
+    'R1-1 ignora modelo inválido sem bloquear válidos e preserva idempotência',
+    async () => {
+      const badProduct = await call('products', {
+        name: 'Produto DEMONSTRAÇÃO inativo',
+        variants: [
+          {
+            label: 'DEMONSTRAÇÃO',
+            weight_grams: 10,
+            units_per_box: 2,
+            price_cents: 100,
+          },
+        ],
+      });
+      const bad = await call('products/' + badProduct.id, undefined, 'GET');
+      const badPlan = await call('recurring', {
+        ...plan,
+        name: 'Modelo DEMONSTRAÇÃO inválido',
+        items: [{ variant_id: bad.variants[0].id, quantity: 1 }],
+      });
+      await t.db
+        .prepare(
+          'UPDATE products SET active=0 WHERE organization_id=? AND id=?',
+        )
+        .bind(t.org, badProduct.id)
+        .run();
+      const generated = await call('generate-week', { week: '2030-01-21' });
+      assert.equal(generated.created, 1);
+      assert.equal(generated.skipped[0].id, badPlan.id);
+      assert.match(generated.skipped[0].reason, /inativa/);
+      const repeated = await call('generate-week', { week: '2030-01-21' });
+      assert.equal(repeated.created, 0);
+      assert.equal(repeated.already_present, 1);
+    },
+  );
+  await check(
     'modelo de outra organização rejeitado e arquivamento interrompe geração',
     async () => {
       assert.equal(

@@ -256,7 +256,7 @@ export async function operations(
     const plans = (
       await db
         .prepare(
-          'SELECT t.*,c.name AS customer_name FROM recurring_templates t JOIN customers c ON c.organization_id=t.organization_id AND c.id=t.customer_id WHERE t.organization_id=? AND t.active=1 AND c.active=1 ORDER BY t.id LIMIT 101',
+          'SELECT t.*,c.name AS customer_name,c.active AS customer_active FROM recurring_templates t JOIN customers c ON c.organization_id=t.organization_id AND c.id=t.customer_id WHERE t.organization_id=? AND t.active=1 ORDER BY t.id LIMIT 101',
         )
         .bind(org)
         .all<Row>()
@@ -266,7 +266,7 @@ export async function operations(
     const rows = (
       await db
         .prepare(
-          'SELECT i.*,v.label,v.weight_grams,v.units_per_box,v.price_cents,p.name FROM recurring_items i JOIN recurring_templates t ON t.organization_id=i.organization_id AND t.id=i.template_id JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE i.organization_id=? AND t.active=1 AND v.active=1 AND p.active=1',
+          'SELECT i.*,v.label,v.weight_grams,v.units_per_box,v.price_cents,p.name,v.active AS variant_active,p.active AS product_active FROM recurring_items i JOIN recurring_templates t ON t.organization_id=i.organization_id AND t.id=i.template_id JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE i.organization_id=? AND t.active=1',
         )
         .bind(org)
         .all<Row>()
@@ -279,20 +279,28 @@ export async function operations(
         .bind(org)
         .all<{ template_id: string; count: number }>()
     ).results;
+    const skipped: { id: string; name: string; reason: string }[] = [];
     const nonce = crypto.randomUUID();
     const planned: Record<string, unknown>[] = [],
       items: Record<string, unknown>[] = [];
     for (const plan of plans) {
       const contents = rows.filter((i) => i.template_id === plan.id);
-      if (
-        !contents.length ||
-        contents.length !==
-          itemCounts.find((c) => c.template_id === plan.id)?.count
-      )
-        throw new HttpError(
-          400,
-          'Um modelo possui variantes inativas. Revise antes de gerar.',
-        );
+      const inactive = contents.find(
+        (i) => !i.variant_active || !i.product_active,
+      );
+      const reason = !plan.customer_active
+        ? 'Cliente inativo.'
+        : inactive
+          ? `Variante ${inactive.name} — ${inactive.label} inativa.`
+          : !contents.length ||
+              contents.length !==
+                itemCounts.find((c) => c.template_id === plan.id)?.count
+            ? 'Itens ausentes; revise o modelo.'
+            : '';
+      if (reason) {
+        skipped.push({ id: String(plan.id), name: String(plan.name), reason });
+        continue;
+      }
       const due = new Date(
         `${addDays(data.week, Number(plan.weekday) - 1)}T${plan.time}:00-03:00`,
       ).toISOString();
@@ -301,8 +309,14 @@ export async function operations(
         (n, i) => n + Number(i.quantity) * Number(i.price_cents),
         0,
       );
-      if (!Number.isSafeInteger(total) || total > 1000000000)
-        throw new HttpError(400, 'Total do modelo excede o limite.');
+      if (!Number.isSafeInteger(total) || total > 1000000000) {
+        skipped.push({
+          id: String(plan.id),
+          name: String(plan.name),
+          reason: 'Total excede o limite.',
+        });
+        continue;
+      }
       planned.push({
         id,
         customer_id: plan.customer_id,
@@ -353,6 +367,7 @@ export async function operations(
       created: result[0].meta.changes,
       already_present: planned.length - result[0].meta.changes,
       week: data.week,
+      skipped,
     });
   }
   if (resource === 'message-templates') {
