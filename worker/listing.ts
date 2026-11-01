@@ -2,11 +2,21 @@
 export async function childrenByParent(
   db: D1Database,
   organization: string,
-  kind: 'products' | 'orders',
+  kind: 'products' | 'orders' | 'recurring',
   ids: string[],
 ) {
-  const table = kind === 'products' ? 'product_variants' : 'order_items';
-  const foreignKey = kind === 'products' ? 'product_id' : 'order_id';
+  const table =
+    kind === 'products'
+      ? 'product_variants'
+      : kind === 'orders'
+        ? 'order_items'
+        : 'recurring_items';
+  const foreignKey =
+    kind === 'products'
+      ? 'product_id'
+      : kind === 'orders'
+        ? 'order_id'
+        : 'template_id';
   const grouped = new Map<string, Record<string, unknown>[]>();
   // 90 IDs + organização: até 3 consultas para uma página de 200 pais.
   for (let offset = 0; offset < ids.length; offset += 90) {

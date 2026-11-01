@@ -6,7 +6,11 @@ import { readFile, readdir } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { resolve, extname } from 'node:path';
 
-export async function runtime({ browserHTTP = false } = {}) {
+export async function runtime({
+  browserHTTP = false,
+  migrationLimit = Infinity,
+  operationsEnabled = true,
+} = {}) {
   const issuer = 'https://demonstracao-teste.cloudflareaccess.com';
   const { privateKey, publicKey } = await generateKeyPair('RS256');
   const jwk = {
@@ -34,6 +38,7 @@ export async function runtime({ browserHTTP = false } = {}) {
       bindings: {
         ACCESS_TEAM_DOMAIN: 'demonstracao-teste.cloudflareaccess.com',
         ACCESS_AUD: 'test-audience',
+        OPERATIONS_ENABLED: operationsEnabled ? 'true' : 'false',
       },
       outboundService: async (req) =>
         new URL(req.url).href === `${issuer}/cdn-cgi/access/certs`
@@ -73,7 +78,8 @@ export async function runtime({ browserHTTP = false } = {}) {
   const db = await mf.getD1Database('DB');
   for (const file of (await readdir('database/migrations'))
     .filter((f) => f.endsWith('.sql'))
-    .sort()) {
+    .sort()
+    .slice(0, migrationLimit)) {
     const sql = await readFile('database/migrations/' + file, 'utf8');
     await db.exec(sql.replace(/--[^\n]*/g, '').replace(/\n/g, ' '));
   }

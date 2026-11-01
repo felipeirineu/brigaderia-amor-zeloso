@@ -5,7 +5,7 @@ test('gestão privada: login, cadastros, duas sessões, snapshots e logout', asy
   browser,
 }) => {
   test.setTimeout(90000);
-  const t = await runtime({ browserHTTP: true });
+  const t = await runtime({ browserHTTP: true, operationsEnabled: false });
   const owner = await browser.newContext({
     extraHTTPHeaders: {
       'Cf-Access-Jwt-Assertion': await t.token('owner@example.test'),

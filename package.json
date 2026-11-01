@@ -25,7 +25,8 @@
     "admin:prepare": "node scripts/prepare-admin.mjs",
     "test:listing": "node tests/integration/listing.mjs",
     "brand:build": "node scripts/build-brand.mjs",
-    "test:brand": "node tests/integration/brand.mjs"
+    "test:brand": "node tests/integration/brand.mjs",
+    "test:operations": "node tests/integration/migration-operations.mjs && node tests/integration/operations.mjs"
   },
   "dependencies": {
     "jose": "^6.2.14",

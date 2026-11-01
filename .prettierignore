@@ -11,3 +11,7 @@ SPEC.md
 docs/ARQUITETURA.md
 docs/PLANO_DE_EXECUCAO.md
 docs/SEGURANCA_E_OPERACAO.md
+
+# Arquivos de autoria do Claude: importar sem reformatar
+docs/colaboracao/README.md
+docs/colaboracao/CLAUDE_PARA_CODEX.md

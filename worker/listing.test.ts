@@ -9,13 +9,11 @@ it('200 pais usam 3 consultas de filhos, no máximo 91 bindings e filtro da orga
         all: async () => {
           calls.push({ sql, args });
           return {
-            results: args
-              .slice(1)
-              .map((id) => ({
-                id: crypto.randomUUID(),
-                product_id: id,
-                organization_id: args[0],
-              })),
+            results: args.slice(1).map((id) => ({
+              id: crypto.randomUUID(),
+              product_id: id,
+              organization_id: args[0],
+            })),
           };
         },
       }),
