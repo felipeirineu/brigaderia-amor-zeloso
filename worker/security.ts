@@ -5,6 +5,7 @@ export interface Env {
   DB?: D1Database;
   OPERATIONS_ENABLED?: string;
   FINANCE_ENABLED?: string;
+  P1_ENABLED?: string;
   ACCESS_TEAM_DOMAIN?: string;
   ACCESS_AUD?: string;
   PUBLIC_CATALOG_ENABLED?: string;
