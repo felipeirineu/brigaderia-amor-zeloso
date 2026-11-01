@@ -1,3 +1,4 @@
+import { useField, useCourierLabels, SiteAvatar } from '../field/FieldContext';
 import { useEffect, useRef, useState } from 'react';
 import {
   Link,
@@ -71,6 +72,8 @@ interface EditOrder {
   }[];
 }
 export function Totem({ financial = false }: { financial?: boolean }) {
+  const field = useField(),
+    courierLabels = useCourierLabels();
   const { id } = useParams(),
     navigate = useNavigate(),
     [search] = useSearchParams(),
@@ -100,6 +103,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [success, setSuccess] = useState('');
+  const root = useRef<HTMLElement>(null);
   const choice = useRef(0),
     pending = useRef(false),
     request = useRef({ body: '', key: crypto.randomUUID() });
@@ -170,9 +174,10 @@ export function Totem({ financial = false }: { financial?: boolean }) {
       if (serial !== choice.current) return;
       setDefaults(d);
       setAddress(
-        [d.profile.address, d.profile.neighborhood, d.profile.reference]
-          .filter(Boolean)
-          .join(' '),
+        field?.data?.sites.find((s) => s.id === c.id)?.data.address ||
+          [d.profile.address, d.profile.neighborhood, d.profile.reference]
+            .filter(Boolean)
+            .join(' '),
       );
       setCourier(d.profile.courier);
       setCourierName(d.profile.courier_name);
@@ -219,6 +224,12 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     setBusy(true);
     setError('');
     try {
+      const invalid =
+        root.current?.querySelector<HTMLInputElement>('input:invalid');
+      if (invalid) {
+        invalid.reportValidity();
+        throw Error('Confira o campo indicado antes de confirmar.');
+      }
       if (!due) throw Error('Escolha data e hora para confirmar.');
       const data = {
           customer_id: customer.id,
@@ -274,7 +285,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
       </section>
     );
   return (
-    <section className="totem">
+    <section className="totem" ref={root}>
       <div className="section-heading">
         <h1>{id ? 'Ajustar pedido' : 'Novo pedido'}</h1>
         <Link to="/gestao/pedidos">Ver lista</Link>
@@ -303,7 +314,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                 onClick={() => void select(c)}
               >
                 <span className="initial-avatar" aria-hidden="true">
-                  {c.name.charAt(0)}
+                  <SiteAvatar id={c.id} name={c.name} />
                 </span>
                 {c.name}
               </button>
@@ -528,13 +539,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                   aria-pressed={courier === c}
                   onClick={() => setCourier(c)}
                 >
-                  {c === 'unassigned'
-                    ? 'A definir'
-                    : c === 'owner'
-                      ? 'Equipe administrativa'
-                      : c === 'partner'
-                        ? 'Equipe de entregas'
-                        : 'Motoboy'}
+                  {courierLabels[c]}
                 </button>
               ),
             )}

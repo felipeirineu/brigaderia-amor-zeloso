@@ -1,3 +1,4 @@
+import { useCourierLabels } from '../field/FieldContext';
 import { MoneyField, QuantityField } from '../../components/NumericInputs';
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
@@ -42,6 +43,7 @@ function monday() {
   return date.toISOString().slice(0, 10);
 }
 export function Recurring() {
+  const courierLabels = useCourierLabels();
   const plans = useRemote<Plan[]>('recurring'),
     customers = useRemote<{ id: string; name: string }[]>('customers'),
     products = useRemote<ProductOption[]>('products');
@@ -355,8 +357,8 @@ export function Recurring() {
             onChange={(e) => setCourier(e.target.value as Plan['courier'])}
           >
             <option value="unassigned">A definir</option>
-            <option value="owner">Proprietário</option>
-            <option value="partner">Esposa</option>
+            <option value="owner">{courierLabels.owner}</option>
+            <option value="partner">{courierLabels.partner}</option>
             <option value="courier">Motoboy</option>
           </select>
         </label>

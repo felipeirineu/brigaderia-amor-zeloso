@@ -1,3 +1,6 @@
+import { Transport } from '../field/Transport';
+import { TravelSheet } from '../field/TravelSheet';
+import { useCourierLabels, useField } from '../field/FieldContext';
 import { MoneyField } from '../../components/NumericInputs';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -25,6 +28,9 @@ export function OrderDetail({
   financial?: boolean;
   mobile?: boolean;
 }) {
+  const courierLabels = useCourierLabels(),
+    field = useField(),
+    [trip, setTrip] = useState(false);
   const { id } = useParams();
   const view = useRemote<OperationalOrder>(`orders/${id}`);
   const history = useRemote<
@@ -84,6 +90,7 @@ export function OrderDetail({
       );
       setNotice(`Status atualizado: ${statusLabels[to]}.`);
       if (result.undo_seconds) setUndo(result.event_id);
+      if (to === 'delivered' && field) setTrip(true);
     });
   }
   useEffect(() => {
@@ -108,6 +115,21 @@ export function OrderDetail({
       {order ? (
         <>
           <h1>{order.customer_name}</h1>
+          {field && (
+            <>
+              <button onClick={() => setTrip(true)}>
+                Registrar deslocamento pago
+              </button>
+              <Transport order={order} />
+              {trip && (
+                <TravelSheet
+                  orders={[order]}
+                  onClose={() => setTrip(false)}
+                  onSaved={() => setNotice('Despesa registrada.')}
+                />
+              )}
+            </>
+          )}
           {mobile &&
             ['draft', 'awaiting_confirmation'].includes(view.data!.status) && (
               <Link
@@ -238,9 +260,9 @@ export function OrderDetail({
                         {v === 'unassigned'
                           ? 'A definir'
                           : v === 'owner'
-                            ? 'Proprietário'
+                            ? courierLabels.owner
                             : v === 'partner'
-                              ? 'Esposa'
+                              ? courierLabels.partner
                               : 'Motoboy'}
                       </button>
                     ),
@@ -293,9 +315,9 @@ export function OrderDetail({
                   {order.courier === 'unassigned'
                     ? 'A definir'
                     : order.courier === 'owner'
-                      ? 'Proprietário'
+                      ? courierLabels.owner
                       : order.courier === 'partner'
-                        ? 'Esposa'
+                        ? courierLabels.partner
                         : order.courier_name || 'Motoboy'}{' '}
                   · taxa registrada {money(order.courier_fee_cents)}
                 </p>

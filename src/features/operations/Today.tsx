@@ -1,3 +1,7 @@
+import { Transport } from '../field/Transport';
+import { TravelSheet } from '../field/TravelSheet';
+import { distance } from '../../../shared/field';
+import { useCourierLabels, useField, SiteAvatar } from '../field/FieldContext';
 import { TodayReminders } from '../p1/Reminders';
 import { QuickReceipt, type ReceiptResult } from '../finance/QuickReceipt';
 import { FinanceSummary } from '../finance/Finance';
@@ -67,6 +71,10 @@ export function Today({
   financial?: boolean;
   p1?: boolean;
 }) {
+  const courierLabels = useCourierLabels(),
+    field = useField();
+  const [trip, setTrip] = useState<OperationalOrder | null>(null),
+    [near, setNear] = useState(false);
   const [receipt, setReceipt] = useState<OperationalOrder | null>(null),
     [combinedUndo, setCombinedUndo] = useState<
       (ReceiptResult & { customer_id: string }) | null
@@ -124,6 +132,7 @@ export function Today({
           eventId: result.event_id,
           version: order.version + 1,
         });
+      if (to === 'delivered' && field) setTrip(order);
       await view.refresh();
     } catch (e) {
       setActionError((e as Error).message);
@@ -134,6 +143,23 @@ export function Today({
   }
   return (
     <>
+      {trip && (
+        <TravelSheet
+          orders={[trip]}
+          onClose={() => setTrip(null)}
+          onSaved={() => setNotice('Despesa de deslocamento registrada.')}
+        />
+      )}
+      {field && (
+        <label>
+          <input
+            type="checkbox"
+            checked={near}
+            onChange={(e) => setNear(e.target.checked)}
+          />
+          Ordenar por proximidade da base (linha reta)
+        </label>
+      )}
       <div className="page-heading today-heading">
         <div>
           <p className="eyebrow">SUA ROTINA</p>
@@ -167,6 +193,8 @@ export function Today({
           onSaved={(result) => {
             if (result.undo_id)
               setCombinedUndo({ ...result, customer_id: receipt.customer_id });
+            if (result.undo_id && receipt.delivery_type === 'delivery' && field)
+              setTrip(receipt);
             setReceipt(null);
             setNotice(
               result.undo_id
@@ -288,10 +316,28 @@ export function Today({
                     .toISOString()
                     .slice(0, 10) === day,
               )
+              .sort((a, b) => {
+                if (!near || !field?.data) return 0;
+                const km = (o: OperationalOrder) => {
+                  const p = field.data!.order_places.find(
+                    (p) => p.order_id === o.id,
+                  )?.data;
+                  return p
+                    ? (distance(field.data!.company.data, p) ?? Infinity)
+                    : Infinity;
+                };
+                return km(a) - km(b);
+              })
               .map((order) => (
                 <article className="panel order-card" key={order.id}>
                   <div className="section-heading">
                     <h3>{order.customer_name}</h3>
+                    {field && (
+                      <SiteAvatar
+                        id={order.customer_id}
+                        name={order.customer_name}
+                      />
+                    )}
                     <span className={`status-tag status-${order.status}`}>
                       <Truck size={16} aria-hidden="true" />
                       {statusLabels[order.status]}
@@ -317,14 +363,17 @@ export function Today({
                     {order.courier === 'unassigned'
                       ? 'A definir'
                       : order.courier === 'owner'
-                        ? 'Proprietário'
+                        ? courierLabels.owner
                         : order.courier === 'partner'
-                          ? 'Esposa'
+                          ? courierLabels.partner
                           : order.courier_name || 'Motoboy'}
                   </p>
                   <div className="actions">
                     {order.delivery_type === 'delivery' && (
-                      <MapLink order={order} />
+                      <>
+                        <MapLink order={order} />
+                        <Transport order={order} />
+                      </>
                     )}
                     <Link
                       className="button secondary"

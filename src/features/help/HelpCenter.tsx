@@ -1,3 +1,4 @@
+import { useField } from '../field/FieldContext';
 import { FinancialTutorial } from '../finance/Tutorial';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -118,6 +119,7 @@ export function HelpCenter({
   p1?: boolean;
 }) {
   const [example, setExample] = useState(false);
+  const field = useField();
   return (
     <>
       <h1>Ajuda</h1>
@@ -175,6 +177,38 @@ export function HelpCenter({
         </p>
         <Link to="/gestao/recorrentes">Preparar pedido padrão</Link>
       </section>
+      {field && (
+        <section className="panel">
+          <h2>Localização e corrida</h2>
+          <ol>
+            <li>
+              No cliente, preencha contato e endereço. Estando no local, toque
+              em Usar minha localização e salve. A busca OpenStreetMap é uma
+              sugestão: confira antes de salvar.
+            </li>
+            <li>
+              Em Localização, foto e Instagram escolha Tirar foto ou galeria; a
+              imagem fica privada. O administrador cadastra a base em Mais →
+              Preferências.
+            </li>
+            <li>
+              No Hoje, use Uber, Maps ou Waze por toque. Para 99, copie o
+              destino e abra o site. Confira origem/destino no aplicativo;
+              distância exibida é em linha reta.
+            </li>
+            <li>
+              Depois de Entregue, informe o valor pago e Registre despesa paga,
+              ou Pular para lançar depois em Mais → Deslocamentos. A taxa do
+              motoboy só vira despesa quando confirmar o pagamento.
+            </li>
+            <li>
+              Corridas com vários pedidos têm rateio estimado. Corrija por
+              Estornar deslocamento com motivo; operador só estorna o próprio
+              registro do dia. Nome de exibição fica em Preferências.
+            </li>
+          </ol>
+        </section>
+      )}
       {financial && <FinancialTutorial />}
       {p1 && (
         <section className="panel">

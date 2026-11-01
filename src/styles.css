@@ -1235,3 +1235,29 @@ button,
 .quantity-minus {
   order: -1;
 }
+
+.site-avatar {
+  width: 4rem;
+  height: 4rem;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.numeric-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+.management button,
+.management .button,
+.management select,
+.management input:not([type='checkbox']),
+.management summary {
+  min-height: 3rem;
+}
+.management .primary-action {
+  min-height: 3.5rem;
+}
+.customer-tile .initial-avatar .initial-avatar {
+  background: transparent;
+}

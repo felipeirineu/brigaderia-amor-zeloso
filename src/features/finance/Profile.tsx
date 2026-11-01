@@ -1,3 +1,4 @@
+import { useCourierLabels } from '../field/FieldContext';
 import { MoneyField } from '../../components/NumericInputs';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
@@ -6,6 +7,7 @@ import { useRemote, Failure } from '../operations/common';
 import { emptyProfile, type B2BProfile } from '../../../shared/finance';
 import { TermsEditor } from './TermsEditor';
 export function CustomerProfile() {
+  const courierLabels = useCourierLabels();
   const { id } = useParams(),
     view = useRemote<{ data: B2BProfile; version: number }>(
       `finance/customers/${id}/profile`,
@@ -129,8 +131,8 @@ export function CustomerProfile() {
                 }
               >
                 <option value="unassigned">A definir</option>
-                <option value="owner">Proprietário</option>
-                <option value="partner">Esposa</option>
+                <option value="owner">{courierLabels.owner}</option>
+                <option value="partner">{courierLabels.partner}</option>
                 <option value="courier">Motoboy</option>
               </select>
             </label>

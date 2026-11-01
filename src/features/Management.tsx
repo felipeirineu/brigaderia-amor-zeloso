@@ -1,3 +1,8 @@
+import { FieldProvider, useField } from './field/FieldContext';
+import { SiteEditor, CompanyEditor, SiteInfo } from './field/SiteEditor';
+import { PlaceFields } from './field/PlaceFields';
+import { Travel } from './field/Travel';
+import { emptyPlace, type Place } from '../../shared/field';
 import { Preferences } from './mobile/Preferences';
 import { Totem } from './mobile/Totem';
 import { useOrderMode } from './mobile/useOrderMode';
@@ -48,6 +53,7 @@ interface Session {
   finance?: boolean;
   p1?: boolean;
   mobile?: boolean;
+  field?: boolean;
 }
 interface Customer {
   id: string;
@@ -210,6 +216,9 @@ export function Login() {
   );
 }
 function Customers({ financial = false }: { financial?: boolean }) {
+  const field = useField(),
+    [site, setSite] = useState<Place | null>(null),
+    [siteVersion, setSiteVersion] = useState(0);
   const [balances, setBalances] = useState<Summary | null>(null);
   useEffect(() => {
     if (financial)
@@ -235,6 +244,8 @@ function Customers({ financial = false }: { financial?: boolean }) {
   function reset() {
     setEditing(null);
     setForm({ name: '', phone: '', email: '', notes: '', active: true });
+    setSite(null);
+    setSiteVersion(0);
     key.current = crypto.randomUUID();
   }
   function submit(e: FormEvent) {
@@ -244,10 +255,24 @@ function Customers({ financial = false }: { financial?: boolean }) {
         api(
           `customers${editing ? `/${editing.id}` : ''}`,
           editing ? 'PUT' : 'POST',
-          { ...form, ...(editing ? { version: editing.version } : {}) },
+          {
+            ...form,
+            ...(editing ? { version: editing.version } : {}),
+            ...(field && site
+              ? {
+                  site: {
+                    data: { ...site, name: form.name },
+                    version: siteVersion,
+                  },
+                }
+              : {}),
+          },
           key.current,
         ),
-      reset,
+      () => {
+        reset();
+        void field?.refresh();
+      },
     );
   }
   return (
@@ -303,6 +328,13 @@ function Customers({ financial = false }: { financial?: boolean }) {
           />{' '}
           Ativo
         </label>
+        {field && (
+          <PlaceFields
+            value={site ?? emptyPlace()}
+            onChange={setSite}
+            onName={(name) => setForm({ ...form, name: name || form.name })}
+          />
+        )}
         <div className="actions">
           <button disabled={save.busy}>Salvar cliente</button>
           <button type="button" onClick={reset}>
@@ -336,6 +368,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
           {list.data.map((c) => (
             <article className="panel" key={c.id}>
               <h2>{c.name}</h2>
+              <SiteInfo id={c.id} name={c.name} />
               {financial && (
                 <>
                   <Link className="button" to={`/gestao/clientes/${c.id}/b2b`}>
@@ -363,6 +396,11 @@ function Customers({ financial = false }: { financial?: boolean }) {
               <button
                 onClick={() => {
                   setEditing(c);
+                  const existing = field?.data?.sites.find(
+                    (s) => s.id === c.id,
+                  );
+                  setSite(existing?.data ?? null);
+                  setSiteVersion(existing?.version ?? 0);
                   setForm({
                     name: c.name,
                     phone: c.phone,
@@ -1268,249 +1306,270 @@ export function Management() {
       </section>
     );
   return (
-    <section
-      className={`management ${session.operations ? 'operations-active' : ''}`}
+    <FieldProvider
+      enabled={!!session.field && online}
+      key={session.organization_id + session.user_id + online}
     >
-      <header className="management-header">
-        <p>
-          Área privada ·{' '}
-          {session.role === 'owner' ? 'Administrador' : 'Operador'}
-        </p>
-        <button disabled={!online} onClick={() => void logout()}>
-          Sair
-        </button>
-      </header>
-      <ErrorMessage message={error} />
-      <nav
-        className={`management-nav ${session.operations ? 'ops-nav' : ''}`}
-        aria-label="Gestão privada"
+      <section
+        className={`management ${session.operations ? 'operations-active' : ''}`}
       >
-        {(session.operations
-          ? [
-              ['', 'Hoje', 'inicio', 'today'],
-              ['pedidos', 'Pedidos', 'pedidos', 'orders'],
-              ['clientes', 'Clientes', 'clientes', 'customers'],
-              ['recorrentes', 'Pedidos padrão', 'recorrentes', 'recurring'],
-              ['produtos', 'Produtos', 'produtos', 'products'],
-              ['mais', 'Mais', 'mais', 'more'],
-              ['ajuda', 'Ajuda', 'ajuda', 'help'],
-              ...(session.role === 'owner'
-                ? [['acessos', 'Acessos', 'configuracoes', 'access']]
-                : []),
-            ]
-          : [
-              ['', 'Visão geral', 'inicio', 'today'],
-              ['clientes', 'Clientes', 'clientes', 'customers'],
-              ['produtos', 'Produtos', 'produtos', 'products'],
-              ['pedidos', 'Pedidos', 'pedidos', 'orders'],
-              ...(session.role === 'owner'
-                ? [['acessos', 'Acessos', 'configuracoes', 'access']]
-                : []),
-            ]
-        ).map(([path, title, icon, tour]) => (
-          <NavLink key={path} to={`/gestao/${path}`} end data-tour={tour}>
-            <Icon name={icon as IconName} />
-            {title}
-          </NavLink>
-        ))}
-      </nav>
-      {session.operations && online && (
-        <>
-          <div className="private-tools">
-            <button data-tour="new" onClick={() => quick.current?.showModal()}>
-              <Icon name="novo" /> Novo
-            </button>
-            <HelpTip topic="roles" />
-          </div>
-          <Tour role={session.role} />
-        </>
-      )}
-      {!online ? (
-        <section className="panel" role="status">
-          <h1>Sem conexão</h1>
+        <header className="management-header">
           <p>
-            Os dados privados foram ocultados. Nenhuma alteração offline é
-            aceita. Reconecte para continuar.
+            Área privada ·{' '}
+            {session.role === 'owner' ? 'Administrador' : 'Operador'}
           </p>
-        </section>
-      ) : (
-        <Routes key={`${session.user_id}:${session.organization_id}`}>
-          <Route
-            index
-            element={
-              session.operations ? (
-                <Today
-                  role={session.role}
-                  financial={session.finance}
-                  p1={session.p1}
-                />
-              ) : (
-                <Overview />
-              )
-            }
-          />
-          <Route
-            path="clientes"
-            element={<Customers financial={session.finance} />}
-          />
-          <Route
-            path="produtos"
-            element={<Products mobile={session.mobile} />}
-          />
-          <Route
-            path="pedidos"
-            element={
-              <Orders
-                operational={session.operations}
-                financial={session.finance}
-                mobile={session.mobile}
-                role={session.role}
-              />
-            }
-          />
-          {session.mobile && (
+          <button disabled={!online} onClick={() => void logout()}>
+            Sair
+          </button>
+        </header>
+        <ErrorMessage message={error} />
+        <nav
+          className={`management-nav ${session.operations ? 'ops-nav' : ''}`}
+          aria-label="Gestão privada"
+        >
+          {(session.operations
+            ? [
+                ['', 'Hoje', 'inicio', 'today'],
+                ['pedidos', 'Pedidos', 'pedidos', 'orders'],
+                ['clientes', 'Clientes', 'clientes', 'customers'],
+                ['recorrentes', 'Pedidos padrão', 'recorrentes', 'recurring'],
+                ['produtos', 'Produtos', 'produtos', 'products'],
+                ['mais', 'Mais', 'mais', 'more'],
+                ['ajuda', 'Ajuda', 'ajuda', 'help'],
+                ...(session.role === 'owner'
+                  ? [['acessos', 'Acessos', 'configuracoes', 'access']]
+                  : []),
+              ]
+            : [
+                ['', 'Visão geral', 'inicio', 'today'],
+                ['clientes', 'Clientes', 'clientes', 'customers'],
+                ['produtos', 'Produtos', 'produtos', 'products'],
+                ['pedidos', 'Pedidos', 'pedidos', 'orders'],
+                ...(session.role === 'owner'
+                  ? [['acessos', 'Acessos', 'configuracoes', 'access']]
+                  : []),
+              ]
+          ).map(([path, title, icon, tour]) => (
+            <NavLink key={path} to={`/gestao/${path}`} end data-tour={tour}>
+              <Icon name={icon as IconName} />
+              {title}
+            </NavLink>
+          ))}
+        </nav>
+        {session.operations && online && (
+          <>
+            <div className="private-tools">
+              <button
+                data-tour="new"
+                onClick={() => quick.current?.showModal()}
+              >
+                <Icon name="novo" /> Novo
+              </button>
+              <HelpTip topic="roles" />
+            </div>
+            <Tour role={session.role} />
+          </>
+        )}
+        {!online ? (
+          <section className="panel" role="status">
+            <h1>Sem conexão</h1>
+            <p>
+              Os dados privados foram ocultados. Nenhuma alteração offline é
+              aceita. Reconecte para continuar.
+            </p>
+          </section>
+        ) : (
+          <Routes key={`${session.user_id}:${session.organization_id}`}>
             <Route
-              path="preferencias"
-              element={<Preferences role={session.role} />}
-            />
-          )}
-          {session.mobile && (
-            <Route
-              path="pedidos/:id/editar-simples"
-              element={<Totem financial={session.finance} />}
-            />
-          )}
-          {session.p1 && (
-            <>
-              <Route path="agenda" element={<Agenda />} />
-              <Route path="relatorios" element={<Reports />} />
-              <Route path="despesas" element={<Expenses />} />
-              <Route path="fichas" element={<Recipes />} />
-              <Route path="insumos" element={<Supplies />} />
-              <Route path="compras" element={<Shopping />} />
-              <Route path="lembretes" element={<Reminders />} />
-            </>
-          )}
-          {session.finance && (
-            <>
-              <Route
-                path="financeiro"
-                element={<Finance role={session.role} />}
-              />
-              <Route path="financeiro/:id" element={<Account />} />
-              <Route path="clientes/:id/b2b" element={<CustomerProfile />} />
-              {session.role === 'owner' && (
-                <Route path="financeiro/pix" element={<PixSettings />} />
-              )}
-            </>
-          )}
-          {session.operations && (
-            <>
-              <Route
-                path="pedidos/:id"
-                element={
-                  <OrderDetail
-                    financial={session.finance}
-                    mobile={session.mobile}
-                  />
-                }
-              />
-              <Route path="recorrentes" element={<Recurring />} />
-              <Route path="mensagens" element={<MessageTemplates />} />
-              <Route
-                path="ajuda"
-                element={
-                  <HelpCenter financial={session.finance} p1={session.p1} />
-                }
-              />
-              <Route
-                path="mais"
-                element={
-                  <More
+              index
+              element={
+                session.operations ? (
+                  <Today
                     role={session.role}
                     financial={session.finance}
                     p1={session.p1}
                   />
-                }
+                ) : (
+                  <Overview />
+                )
+              }
+            />
+            <Route
+              path="clientes"
+              element={<Customers financial={session.finance} />}
+            />
+            <Route
+              path="produtos"
+              element={<Products mobile={session.mobile} />}
+            />
+            <Route
+              path="pedidos"
+              element={
+                <Orders
+                  operational={session.operations}
+                  financial={session.finance}
+                  mobile={session.mobile}
+                  role={session.role}
+                />
+              }
+            />
+            {session.mobile && (
+              <Route
+                path="preferencias"
+                element={<Preferences role={session.role} />}
               />
-            </>
-          )}
-          {session.role === 'owner' && (
-            <Route path="acessos" element={<Accesses />} />
-          )}
-          <Route path="*" element={<p>Área não encontrada.</p>} />
-        </Routes>
-      )}
-      {session.operations && (
-        <>
-          <nav className="private-bottom-nav" aria-label="Atalhos do celular">
-            <NavLink to="/gestao/" end data-tour="today">
-              <Icon name="inicio" />
-              Hoje
-            </NavLink>
-            <NavLink to="/gestao/pedidos" data-tour="orders">
-              <Icon name="pedidos" />
-              Pedidos
-            </NavLink>
-            <button
-              aria-label="Novo cadastro"
-              data-tour="new"
-              onClick={() => quick.current?.showModal()}
-            >
-              <Icon name="novo" />
-            </button>
-            <NavLink to="/gestao/clientes" data-tour="customers">
-              <Icon name="clientes" />
-              Clientes
-            </NavLink>
-            <NavLink to="/gestao/mais" data-tour="more">
-              <Icon name="mais" />
-              Mais
-            </NavLink>
-          </nav>
-          <dialog ref={quick} className="help-sheet" aria-label="Novo cadastro">
-            <div className="sheet-body">
-              <h2>O que vamos preparar?</h2>
-              <div className="quick-links">
-                <Link
-                  className="button"
-                  to={
-                    session.mobile
-                      ? '/gestao/pedidos?novo=1'
-                      : '/gestao/pedidos'
+            )}
+            {session.mobile && (
+              <Route
+                path="pedidos/:id/editar-simples"
+                element={<Totem financial={session.finance} />}
+              />
+            )}
+            {session.field && (
+              <>
+                <Route path="clientes/:id/local" element={<SiteEditor />} />
+                <Route path="empresa" element={<CompanyEditor />} />
+                <Route path="deslocamentos" element={<Travel />} />
+              </>
+            )}
+            {session.p1 && (
+              <>
+                <Route path="agenda" element={<Agenda />} />
+                <Route path="relatorios" element={<Reports />} />
+                <Route path="despesas" element={<Expenses />} />
+                <Route path="fichas" element={<Recipes />} />
+                <Route path="insumos" element={<Supplies />} />
+                <Route path="compras" element={<Shopping />} />
+                <Route path="lembretes" element={<Reminders />} />
+              </>
+            )}
+            {session.finance && (
+              <>
+                <Route
+                  path="financeiro"
+                  element={<Finance role={session.role} />}
+                />
+                <Route path="financeiro/:id" element={<Account />} />
+                <Route path="clientes/:id/b2b" element={<CustomerProfile />} />
+                {session.role === 'owner' && (
+                  <Route path="financeiro/pix" element={<PixSettings />} />
+                )}
+              </>
+            )}
+            {session.operations && (
+              <>
+                <Route
+                  path="pedidos/:id"
+                  element={
+                    <OrderDetail
+                      financial={session.finance}
+                      mobile={session.mobile}
+                    />
                   }
-                  onClick={() => quick.current?.close()}
-                >
-                  Novo pedido
-                </Link>
-                <Link
-                  className="button"
-                  to="/gestao/clientes"
-                  onClick={() => quick.current?.close()}
-                >
-                  Novo cliente
-                </Link>
+                />
+                <Route path="recorrentes" element={<Recurring />} />
+                <Route path="mensagens" element={<MessageTemplates />} />
+                <Route
+                  path="ajuda"
+                  element={
+                    <HelpCenter financial={session.finance} p1={session.p1} />
+                  }
+                />
+                <Route
+                  path="mais"
+                  element={
+                    <More
+                      role={session.role}
+                      financial={session.finance}
+                      p1={session.p1}
+                      field={session.field}
+                      mobile={session.mobile}
+                    />
+                  }
+                />
+              </>
+            )}
+            {session.role === 'owner' && (
+              <Route path="acessos" element={<Accesses />} />
+            )}
+            <Route path="*" element={<p>Área não encontrada.</p>} />
+          </Routes>
+        )}
+        {session.operations && (
+          <>
+            <nav className="private-bottom-nav" aria-label="Atalhos do celular">
+              <NavLink to="/gestao/" end data-tour="today">
+                <Icon name="inicio" />
+                Hoje
+              </NavLink>
+              <NavLink to="/gestao/pedidos" data-tour="orders">
+                <Icon name="pedidos" />
+                Pedidos
+              </NavLink>
+              <button
+                aria-label="Novo cadastro"
+                data-tour="new"
+                onClick={() => quick.current?.showModal()}
+              >
+                <Icon name="novo" />
+              </button>
+              <NavLink to="/gestao/clientes" data-tour="customers">
+                <Icon name="clientes" />
+                Clientes
+              </NavLink>
+              <NavLink to="/gestao/mais" data-tour="more">
+                <Icon name="mais" />
+                Mais
+              </NavLink>
+            </nav>
+            <dialog
+              ref={quick}
+              className="help-sheet"
+              aria-label="Novo cadastro"
+            >
+              <div className="sheet-body">
+                <h2>O que vamos preparar?</h2>
+                <div className="quick-links">
+                  <Link
+                    className="button"
+                    to={
+                      session.mobile
+                        ? '/gestao/pedidos?novo=1'
+                        : '/gestao/pedidos'
+                    }
+                    onClick={() => quick.current?.close()}
+                  >
+                    Novo pedido
+                  </Link>
+                  <Link
+                    className="button"
+                    to="/gestao/clientes"
+                    onClick={() => quick.current?.close()}
+                  >
+                    Novo cliente
+                  </Link>
+                </div>
+                {session.p1 && (
+                  <Link
+                    className="button"
+                    to="/gestao/lembretes"
+                    onClick={() => quick.current?.close()}
+                  >
+                    Novo lembrete
+                  </Link>
+                )}
+                <p>
+                  {session.finance
+                    ? 'Recebimentos rápidos ficam no Hoje, no cartão do pedido.'
+                    : 'Recebimentos dependem da ativação financeira.'}
+                </p>
+                <button onClick={() => quick.current?.close()}>Fechar</button>
               </div>
-              {session.p1 && (
-                <Link
-                  className="button"
-                  to="/gestao/lembretes"
-                  onClick={() => quick.current?.close()}
-                >
-                  Novo lembrete
-                </Link>
-              )}
-              <p>
-                {session.finance
-                  ? 'Recebimentos rápidos ficam no Hoje, no cartão do pedido.'
-                  : 'Recebimentos dependem da ativação financeira.'}
-              </p>
-              <button onClick={() => quick.current?.close()}>Fechar</button>
-            </div>
-          </dialog>
-        </>
-      )}
-    </section>
+            </dialog>
+          </>
+        )}
+      </section>
+    </FieldProvider>
   );
 }
 
@@ -1518,16 +1577,21 @@ function More({
   role,
   financial = false,
   p1 = false,
+  field = false,
+  mobile = false,
 }: {
   role: string;
   financial?: boolean;
   p1?: boolean;
+  field?: boolean;
+  mobile?: boolean;
 }) {
   return (
     <>
       <h1>Mais</h1>
       <div className="more-grid">
         {[
+          ...(field ? [['deslocamentos', 'Deslocamentos', 'entregas']] : []),
           ...(p1
             ? [
                 ['agenda', 'Agenda', 'agenda'],
@@ -1544,7 +1608,9 @@ function More({
           ['produtos', 'Produtos', 'produtos'],
           ['mensagens', 'Modelos de WhatsApp', 'pedidos'],
           ['ajuda', 'Ajuda e tutorial', 'ajuda'],
-          ['preferencias', 'Preferências', 'configuracoes'],
+          ...(mobile
+            ? [['preferencias', 'Preferências', 'configuracoes']]
+            : []),
           ...(role === 'owner'
             ? [['acessos', 'Acessos', 'configuracoes']]
             : []),
