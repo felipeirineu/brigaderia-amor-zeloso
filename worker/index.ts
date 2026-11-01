@@ -71,7 +71,7 @@ export default {
         return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie('', 0) });
       }
       if (
-        /^\/api\/(today|recurring|generate-week|message-templates)(?:\/|$)/.test(
+        /^\/api\/(today|recurring|generate-week|confirm-reviewed|message-templates)(?:\/|$)/.test(
           pathname,
         ) ||
         /^\/api\/orders\/[^/]+\/[^/]+/.test(pathname)

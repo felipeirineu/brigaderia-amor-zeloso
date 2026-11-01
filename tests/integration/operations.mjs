@@ -300,6 +300,43 @@ try {
       });
     },
   );
+  await check(
+    'R1-4 lote valida endereço, organização, versão e repetição por pedido',
+    async () => {
+      const a = await call('orders', draft),
+        b = await call('orders', draft);
+      await call(
+        `orders/${a.id}/delivery`,
+        { version: 1, delivery_type: 'pickup', courier: 'unassigned' },
+        'PUT',
+      );
+      const choices = [
+        { id: a.id, version: 2, key: crypto.randomUUID() },
+        { id: b.id, version: 1, key: crypto.randomUUID() },
+        { id: crypto.randomUUID(), version: 1, key: crypto.randomUUID() },
+      ];
+      const result = await call('confirm-reviewed', { orders: choices });
+      assert.deepEqual(
+        result.results.map((r) => r.ok),
+        [true, false, false],
+      );
+      assert.equal(
+        (await call('confirm-reviewed', { orders: [choices[0]] })).results[0]
+          .ok,
+        true,
+      );
+      await call(`orders/${a.id}/status`, {
+        version: 3,
+        to: 'cancelled',
+        reason: 'Fim DEMONSTRAÇÃO',
+      });
+      await call(`orders/${b.id}/status`, {
+        version: 1,
+        to: 'cancelled',
+        reason: 'Fim DEMONSTRAÇÃO',
+      });
+    },
+  );
   const plan = {
     name: 'Modelo DEMONSTRAÇÃO',
     courier: 'partner',

@@ -105,6 +105,60 @@ export async function operations(
       truncated,
     });
   }
+  // Três pedidos por invocação: mesmas validações individuais sem exceder D1 Free.
+  if (resource === 'confirm-reviewed' && req.method === 'POST') {
+    const data = await body(
+      req,
+      z
+        .object({
+          orders: z
+            .array(
+              z
+                .object({
+                  id: z.uuid(),
+                  version: z.number().int().positive(),
+                  key: z.uuid(),
+                })
+                .strict(),
+            )
+            .min(1)
+            .max(3),
+        })
+        .strict(),
+    );
+    if (new Set(data.orders.map((o) => o.id)).size !== data.orders.length)
+      throw new HttpError(400, 'Pedido repetido no lote.');
+    const results = [];
+    for (const item of data.orders) {
+      const headers = new Headers(req.headers);
+      headers.set('Idempotency-Key', item.key);
+      try {
+        const result = await operations(
+          new Request(new URL(`/api/orders/${item.id}/status`, req.url), {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ version: item.version, to: 'confirmed' }),
+          }),
+          env,
+          a,
+        );
+        results.push({
+          id: item.id,
+          ok: result.ok,
+          ...((await result.json()) as object),
+        });
+      } catch (e) {
+        if (!(e instanceof HttpError)) throw e;
+        results.push({
+          id: item.id,
+          ok: false,
+          status: e.status,
+          error: e.message,
+        });
+      }
+    }
+    return json({ results });
+  }
   if (resource === 'recurring') {
     if (id && !z.uuid().safeParse(id).success)
       throw new HttpError(404, 'Não encontrado.');
@@ -373,11 +427,29 @@ export async function operations(
         )
         .bind(a.user_id, org, nonce),
     ]);
+    const generated = (
+      await db
+        .prepare(
+          "SELECT id,customer_name,version,status,total_cents,due_at,delivery_type,delivery_address FROM orders WHERE organization_id=? AND recurrence_key IN (SELECT json_extract(value,'$.recurrence_key') FROM json_each(?)) ORDER BY due_at,id",
+        )
+        .bind(org, ordersJSON)
+        .all<Row>()
+    ).results;
+    const generatedItems = await childrenByParent(
+      db,
+      org,
+      'orders',
+      generated.map((o) => String(o.id)),
+    );
     return json({
       created: result[0].meta.changes,
       already_present: planned.length - result[0].meta.changes,
       week: data.week,
       skipped,
+      orders: generated.map((o) => ({
+        ...o,
+        items: generatedItems.get(String(o.id)) ?? [],
+      })),
     });
   }
   if (resource === 'message-templates') {

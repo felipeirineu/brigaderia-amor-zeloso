@@ -1,9 +1,9 @@
 import { useRef, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { Minus, Plus } from 'lucide-react';
-import { api, parsePrice } from '../api';
+import { api, parsePrice, money, dateTime } from '../api';
 import { HelpTip } from '../../components/HelpTip';
-import { useRemote, Failure, localDay } from './common';
+import { useRemote, Failure, localDay, type OperationalOrder } from './common';
 interface Plan {
   id: string;
   customer_id: string;
@@ -44,6 +44,12 @@ export function Recurring() {
   const plans = useRemote<Plan[]>('recurring'),
     customers = useRemote<{ id: string; name: string }[]>('customers'),
     products = useRemote<ProductOption[]>('products');
+  const [generated, setGenerated] = useState<OperationalOrder[]>([]);
+  const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const confirmKeys = useRef<Record<string, string>>({});
+  const [batchResults, setBatchResults] = useState<
+    { id: string; ok: boolean; error?: string }[]
+  >([]);
   const [skipped, setSkipped] = useState<
       { id: string; name: string; reason: string }[]
     >([]),
@@ -150,11 +156,16 @@ export function Recurring() {
           onClick={() =>
             void run(async () => {
               const result = await api<{
+                orders: OperationalOrder[];
                 skipped: { id: string; name: string; reason: string }[];
                 created: number;
                 already_present: number;
               }>('generate-week', 'POST', { week });
               setSkipped(result.skipped);
+              setGenerated(result.orders);
+              setSelected({});
+              setBatchResults([]);
+              confirmKeys.current = {};
               setNotice(
                 `${result.created} rascunho(s) criado(s); ${result.already_present} já existente(s). Revise e confirme em Pedidos.`,
               );
@@ -169,6 +180,95 @@ export function Recurring() {
         </p>
         <Link to="/gestao/pedidos">Revisar pedidos gerados</Link>
       </section>
+      {generated.length > 0 && (
+        <section className="panel">
+          <h2>Revise antes de confirmar</h2>
+          <p>
+            Marque somente os pedidos conferidos. Abra o pedido para ajustar
+            quantidades/endereço; depois gere novamente para atualizar a lista.
+          </p>
+          {generated.map((o) => (
+            <article key={o.id}>
+              <h3>
+                {o.customer_name} · {dateTime(o.due_at)}
+              </h3>
+              <ul>
+                {o.items.map((i) => (
+                  <li key={i.variant_id}>
+                    {i.quantity} × {i.product_name} — {i.variant_label}
+                  </li>
+                ))}
+              </ul>
+              <p>
+                {money(o.total_cents)} ·{' '}
+                {o.delivery_type === 'pickup'
+                  ? 'Retirada'
+                  : o.delivery_address || 'Endereço pendente'}
+              </p>
+              <Link to={`/gestao/pedidos/${o.id}`}>Revisar pedido</Link>
+              {['draft', 'awaiting_confirmation'].includes(o.status) && (
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={!!selected[o.id]}
+                    onChange={(e) =>
+                      setSelected({ ...selected, [o.id]: e.target.checked })
+                    }
+                  />
+                  Revisado: {o.customer_name}
+                </label>
+              )}
+            </article>
+          ))}
+          <button
+            disabled={busy || !Object.values(selected).some(Boolean)}
+            onClick={() => {
+              const chosen = generated.filter((o) => selected[o.id]);
+              if (!confirm(`Confirmar ${chosen.length} pedido(s) revisado(s)?`))
+                return;
+              void run(async () => {
+                const results: { id: string; ok: boolean; error?: string }[] =
+                  [];
+                for (let i = 0; i < chosen.length; i += 3) {
+                  const chunk = chosen
+                    .slice(i, i + 3)
+                    .map((o) => ({
+                      id: o.id,
+                      version: o.version,
+                      key:
+                        confirmKeys.current[o.id] ??
+                        (confirmKeys.current[o.id] = crypto.randomUUID()),
+                    }));
+                  const response = await api<{ results: typeof results }>(
+                    'confirm-reviewed',
+                    'POST',
+                    { orders: chunk },
+                  );
+                  results.push(...response.results);
+                  setBatchResults([...results]);
+                }
+                setSelected({});
+                setGenerated(
+                  generated.filter(
+                    (o) => !results.some((r) => r.ok && r.id === o.id),
+                  ),
+                );
+                setNotice(
+                  `${results.filter((r) => r.ok).length} pedido(s) confirmado(s). Revise os resultados individuais.`,
+                );
+              });
+            }}
+          >
+            Confirmar todos os revisados (
+            {Object.values(selected).filter(Boolean).length})
+          </button>
+          {batchResults.map((r) => (
+            <p key={r.id} role={r.ok ? 'status' : 'alert'}>
+              Pedido {r.id.slice(0, 8)}: {r.ok ? 'confirmado' : r.error}
+            </p>
+          ))}
+        </section>
+      )}
       {skipped.length > 0 && (
         <section className="panel" role="alert">
           <h2>Modelos ignorados</h2>
