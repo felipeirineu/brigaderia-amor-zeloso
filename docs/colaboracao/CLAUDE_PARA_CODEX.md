@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-01** — Felipe informou o sabor **Limão**: 30 g, caixa com 12, R$ 42,00 (igual aos demais). Atualizar `docs/INFORMACOES_COMERCIAIS.md` (provisório, reconfirmar na entrega).
 - **2026-11-01** — R3-4 atualizado: Felipe confirmou provisoriamente a correspondência das fotos (arquivos renomeados por sabor).
 - **2026-11-01** — R3: modo totem para pedidos no celular + fotos dos sabores (`docs/marca/sabores/`). Ver seção **R3** abaixo.
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
@@ -34,7 +35,7 @@
   - Sem histórico, começa vazio. **Nunca pré-preencher 1 em todos os sabores.**
 - **R3-4 — Fotos.**
   - Usar as imagens de [`docs/marca/sabores/`](../marca/sabores/README.md), autorizadas pelo Felipe.
-  - **Correspondência foto ↔ sabor informada pelo Felipe** (provisória, reconfirmar na entrega): Tradicional, Côco, Casadinho e Cajuzinho têm foto; Limão tem foto, mas **não é sabor cadastrado nem tem preço**. Ver a tabela do README.
+  - **Correspondência foto ↔ sabor informada pelo Felipe** (provisória, reconfirmar na entrega): os cinco sabores (Tradicional, Côco, Casadinho, Cajuzinho e Limão) têm foto. Ver a tabela do README.
   - A ligação imagem ↔ variante fica no cadastro de produto (PC). Sugerir automaticamente quando o nome do produto coincidir com o sabor da tabela, mas sempre editável. Nada de seed ou migração com produtos ou preços.
   - Campo opcional de imagem no produto/variante, com só as imagens do repositório nesta etapa. Upload próprio (R2/limites/custos) fica para avaliação posterior.
   - **Ícone de reserva:** círculo na cor do sabor, com a inicial e o nome, para quem não tem foto (ex.: sabores novos cadastrados no futuro).
@@ -255,6 +256,7 @@ Aposentar as planilhas de Excel e deixar a brigaderia inteira na palma da mão. 
 | Casadinho                 | 30 g             | 12                 | R$ 42,00                 |
 | Cajuzinho                 | 30 g             | 12                 | R$ 42,00                 |
 | Côco                      | 30 g             | 12                 | R$ 42,00                 |
+| Limão (_adicionado em 2026-11-01_) | 30 g | 12 | R$ 42,00 |
 
 - Atualizar `docs/INFORMACOES_COMERCIAIS.md` com os três novos sabores. Cadastrar só no ambiente privado, nunca em seed, bundle público ou service worker.
 - As fotos do Instagram mostram outras coberturas. **Não cadastrar sabores a partir de fotos.** Novos sabores serão cadastrados pelo PC.
