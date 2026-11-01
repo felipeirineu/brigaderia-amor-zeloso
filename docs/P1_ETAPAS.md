@@ -1,6 +1,6 @@
 # Entregas P1 — execução local
 
-Todos os dados de testes são DEMONSTRAÇÃO. Nenhuma migração/flag/pagamento/compra remota, push ou publicação nesta rodada. P1_ENABLED=false permanece no arquivo raiz, com dependência de operação/financeiro e schema completo.
+Todos os dados de testes são DEMONSTRAÇÃO. Código enviado ao main. Nenhuma migração, flag, pagamento ou compra real foi executada remotamente pelo agente. P1_ENABLED=false permanece no arquivo raiz, com dependência de operação/financeiro e schema completo.
 
 ## P1-1 — Agenda e ICS
 
@@ -41,7 +41,7 @@ Todos os dados de testes são DEMONSTRAÇÃO. Nenhuma migração/flag/pagamento/
 
 - **Produzido:** agrega unidades dos pedidos confirmados/em produção pelo prazo, usando unidades/embalagem do snapshot; calcula lotes inteiros por variante, insumos e embalagens de compra arredondados para cima. Avisa produto sem ficha, insumo inativo e preço pendente; total incompleto não vira zero. Mostra excesso produzido previsto pelo arredondamento.
 - **Testes executados:** integração de lotes/embalagens, ficha/custo ausentes e ausência de gasto/alteração de preço; E2E da lista calculada nos três projetos aprovado.
-- **Limitações:** lista bruta antes de conferir estoque; P1-6 não implementado. Não compra, gera gasto ou baixa insumo. Até 31 dias e 1000 vínculos produto/pedido; limite explícito. Fichas distintas por variante não compartilham um lote automaticamente.
+- **Limitações:** lista bruta para conferir contra o estoque manual de P1-6. Não compra, gera gasto ou baixa insumo. Até 31 dias e 1000 vínculos produto/pedido; limite explícito. Fichas distintas por variante não compartilham um lote automaticamente.
 - **Pendências:** conferir rendimento/estoque real antes de usar a lista e adaptar o planejamento de lotes se os proprietários fornecerem regras adicionais.
 
 ## Verificação consolidada e ativação
@@ -56,3 +56,17 @@ Execução consolidada: 42 unitários, 28 verificações API base, 14 operaciona
 - **Testes executados:** integração com duas baixas simultâneas (só uma vence), saldo exato, negativa recusada, estorno de entrada já consumida recusado, isolamento e FKs. Entrada/consumo/alerta em Chromium mobile/desktop e WebKit mobile.
 - **Limitações:** saldo agregado; lote/validade são anotações, não FEFO nem estoque por lote. A lista de compras permanece necessidade bruta para conferir contra estoque. Sem débito por previsão, compra ou gasto automático. Até 500 insumos, 1000 movimentos no período; reduzir o período se exceder.
 - **Pendências:** cadastrar quantidades/mínimos reais após conferência física; aplicar 0012 e ativar P1_TOOLS_ENABLED conforme guia, após backup. Migrações/ativação remotas não executadas.
+
+## P1-8 — Importação de clientes
+
+- **Produzido:** CSV UTF-8 e XLSX (primeira aba), cabeçalhos nome/telefone e opcionais email/notas. Até 50 linhas/1 MB, expansão XLSX limitada a 4 MB, 100 entradas e 2 MB por entrada; XML externo, macros e fórmulas recusados. Leitura local em memória; somente as linhas vão ao servidor quando pedir a prévia. Normalização/deduplicação de telefone no servidor (inclui arquivados e repetidos no arquivo), escolha de linhas e confirmação humana. Concorrência e repetição não duplicam nem sobrescrevem contatos.
+- **Testes executados:** CSV com aspas, delimitador brasileiro, BOM e quebras; integração com prévia sem escrita, seleção, telefone, papel, duplicidade concorrente, idempotência e organização. Três E2E com CSV, XLSX e fórmula recusada (Chromium mobile/desktop e WebKit mobile).
+- **Limitações:** somente clientes; histórico de pedidos não importado. XLS antigo, macros, fórmulas, abas adicionais e colunas não reconhecidas não são aceitos. Para arquivo grande, dividir. Sem planilha real disponível, somente fixtures DEMONSTRAÇÃO usadas.
+- **Pendências:** homologar planilha autorizada e manter telefone como texto; aplicar 0013 e flag P1_TOOLS_ENABLED após pré-checagem.
+
+## P1-9 — Backup administrativo
+
+- **Produzido:** SQL completo da organização, com schema, cadastros, pedidos, eventos, receitas, estoque, fotos e autorizações/Pix cadastrados. Dados de outras organizações, sessões, tentativas de login e caches excluídos; schema das tabelas técnicas é preservado vazio para a restauração funcionar. Registro de exportação em auditoria; captura de todas as linhas em uma consulta SQL, com árvore de CTEs respeitando o limite D1 de cinco termos por UNION. Textos UTF-8/NUL escapados como literal hexadecimal e BLOBs preservados. Apenas administrador, no-store, sem service worker. Schema inesperado/limites geram erro, nunca backup parcial silencioso.
+- **Testes executados:** exportação e restauração SQLite com dados financeiros/estornos, estoque, ficha, importação e foto, UTF-8/NUL, permissões/isolamento e FKs. Ensaio adicional com o script ops:restore-check e Wrangler D1 local: pending vazio, contagens preservadas e FKs zero. Três E2E de download privado sem cache em Chromium mobile/desktop e WebKit mobile.
+- **Limitações:** até 10 mil linhas e 4 MB de dados na exportação do app; limites de CPU/memória do plano continuam valendo. Bases maiores usam exportação administrativa Wrangler. É backup de uma organização, não da conta Cloudflare/variáveis/segredos. Não há restauração pelo navegador nem sobre banco em uso. Uso do arquivo exige cuidado com dados pessoais e chaves Pix cadastradas.
+- **Pendências:** manter rotina externa de cópias privadas e homologar dados reais em ambiente separado. Guia P1_COMPLEMENTO.md; nenhuma restauração remota feita.

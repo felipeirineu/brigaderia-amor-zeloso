@@ -49,6 +49,9 @@ const tables = [
   'displacements',
   'displacement_orders',
   'order_places',
+  'inventory_balances',
+  'inventory_events',
+  'customer_imports',
 ];
 export function inspect(
   database,
@@ -128,7 +131,7 @@ export function inspect(
     query("SELECT name FROM pragma_table_info('products')").some(
       (r) => r.name === 'photo_key',
     );
-  const field = mobile && tables.slice(32).every((t) => names.has(t));
+  const field = mobile && tables.slice(32, 40).every((t) => names.has(t));
   const generated = names.has('order_terms')
     ? query("SELECT name FROM pragma_table_xinfo('order_terms')").map(
         (r) => r.name,
@@ -146,6 +149,7 @@ export function inspect(
     schema_p1_ready: p1,
     schema_mobile_ready: mobile,
     schema_field_ready: field,
+    schema_tools_ready: p1 && tables.slice(40, 43).every((t) => names.has(t)),
     generated_condition_columns:
       generated.includes('payment_mode') && generated.includes('closing_cycle'),
   };

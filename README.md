@@ -143,3 +143,15 @@ npm run test:p1
 ```
 
 Todos os exports são privados, por ação humana, e devem ser guardados em destinos autorizados. Arquivos CSV protegem fórmulas e valores em centavos são identificados nos cabeçalhos. Não há estoque, push ou compra automática nesta entrega.
+
+## Entrega R3/R4 e complemento P1
+
+Código de pedidos por fotos, localização privada, deslocamentos, estoque manual, importação de clientes CSV/XLSX e backup administrativo disponível no main. Módulos exigem migrações e flags; não estão ativados automaticamente no ambiente remoto. Catálogo continua desligado.
+
+- [Índice de ativação](docs/ATIVACAO.md).
+- [Pedidos por fotos](docs/FASE_R3.md).
+- [Localização e deslocamentos](docs/FASE_R4.md).
+- [Estoque, importação e backup — passos curtos](docs/P1_COMPLEMENTO.md).
+- [Relatórios, testes e limitações por P1](docs/P1_ETAPAS.md).
+
+As validações usam dados fictícios DEMONSTRAÇÃO em bases locais separadas. Homologação em iPhone/Android físicos e ativação são feitas pelo administrador com o guia.
