@@ -3,9 +3,10 @@ import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 import { generateKeyPair, exportJWK, SignJWT } from 'jose';
 import { build } from 'esbuild';
 import { readFile, readdir } from 'node:fs/promises';
+import { createServer } from 'node:http';
 import { resolve, extname } from 'node:path';
 
-export async function runtime() {
+export async function runtime({ browserHTTP = false } = {}) {
   const issuer = 'https://demonstracao-teste.cloudflareaccess.com';
   const { privateKey, publicKey } = await generateKeyPair('RS256');
   const jwk = {
@@ -109,7 +110,72 @@ export async function runtime() {
       .setExpirationTime(options.expired ? 1 : '1h')
       .sign(privateKey);
   }
-  const url = (await mf.ready).origin;
+  let url = (await mf.ready).origin;
+  const serverCookies = [];
+  let proxy;
+  if (browserHTTP) {
+    // Apenas transporte HTTP do harness: o Worker original permanece inalterado.
+    // WebKit recusa __Host-/Secure em HTTP. A ponte mapeia um cookie de fixture
+    // para o cookie real e exige as flags de produção antes de adaptar a resposta.
+    proxy = createServer(async (incoming, outgoing) => {
+      try {
+        const chunks = [];
+        for await (const chunk of incoming) chunks.push(chunk);
+        const headers = new Headers();
+        for (const [name, value] of Object.entries(incoming.headers))
+          if (value)
+            headers.set(name, Array.isArray(value) ? value.join(',') : value);
+        const cookie = headers.get('cookie');
+        if (cookie)
+          headers.set(
+            'cookie',
+            cookie.replaceAll('fixture-session=', '__Host-session='),
+          );
+        const method = incoming.method || 'GET';
+        const result = await mf.dispatchFetch(url + incoming.url, {
+          method,
+          headers,
+          redirect: 'manual',
+          ...(!['GET', 'HEAD'].includes(method)
+            ? { body: Buffer.concat(chunks) }
+            : {}),
+        });
+        outgoing.statusCode = result.status;
+        result.headers.forEach((value, name) => {
+          if (
+            name.toLowerCase() === 'set-cookie' &&
+            value.startsWith('__Host-session=')
+          ) {
+            if (
+              !value.includes('; Secure;') ||
+              !value.includes('; HttpOnly;') ||
+              !value.includes('; Path=/;')
+            )
+              throw new Error('Flags de produção inválidas.');
+            serverCookies.push(value);
+            value = value
+              .replace('__Host-session=', 'fixture-session=')
+              .replace('; Secure;', ';');
+          }
+          outgoing.setHeader(name, value);
+        });
+        outgoing.end(Buffer.from(await result.arrayBuffer()));
+      } catch {
+        outgoing.statusCode = 500;
+        outgoing.end('Fixture transport error');
+      }
+    });
+    await new Promise((resolve) => proxy.listen(0, '127.0.0.1', resolve));
+    url = `http://127.0.0.1:${proxy.address().port}`;
+  }
+  async function dispose() {
+    if (proxy) {
+      proxy.closeAllConnections();
+      await new Promise((resolve) => proxy.close(resolve));
+    }
+    await mf.dispose();
+  }
+
   async function request(path, options = {}) {
     const {
       method = 'GET',
@@ -147,5 +213,16 @@ export async function runtime() {
       );
     return response.headers.get('Set-Cookie').split(';')[0];
   }
-  return { mf, db, org, otherOrg, url, request, token, login };
+  return {
+    mf,
+    db,
+    org,
+    otherOrg,
+    url,
+    request,
+    token,
+    login,
+    dispose,
+    serverCookies,
+  };
 }

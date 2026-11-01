@@ -5,7 +5,7 @@ test('gestão privada: login, cadastros, duas sessões, snapshots e logout', asy
   browser,
 }) => {
   test.setTimeout(90000);
-  const t = await runtime();
+  const t = await runtime({ browserHTTP: true });
   const owner = await browser.newContext({
     extraHTTPHeaders: {
       'Cf-Access-Jwt-Assertion': await t.token('owner@example.test'),
@@ -160,8 +160,16 @@ test('gestão privada: login, cadastros, duas sessões, snapshots e logout', asy
       session: sessionStorage.length,
     }));
     expect(storage).toEqual({ local: 0, session: 0 });
+    expect(t.serverCookies.length).toBeGreaterThan(1);
+    expect(
+      t.serverCookies.every(
+        (cookie) =>
+          cookie.startsWith('__Host-session=') &&
+          cookie.includes('HttpOnly; Secure; SameSite=Lax'),
+      ),
+    ).toBe(true);
     const cookie = await operator.cookies(t.url);
-    expect(cookie.find((c) => c.name === '__Host-session')?.httpOnly).toBe(
+    expect(cookie.find((c) => c.name === 'fixture-session')?.httpOnly).toBe(
       true,
     );
     const changed = await page.request.post(t.url + '/api/access/login', {
@@ -188,6 +196,6 @@ test('gestão privada: login, cadastros, duas sessões, snapshots e logout', asy
   } finally {
     await owner.close();
     await operator.close();
-    await t.mf.dispose();
+    await t.dispose();
   }
 });

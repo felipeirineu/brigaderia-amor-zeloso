@@ -2,24 +2,24 @@
 
 ## Status dos itens
 
-| Item         | Status       | Observação                                                                                                                                                                            |
-| ------------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| T-1          | em andamento | Reproduzir WebKit; correção somente no harness, sem flags inseguras na aplicação.                                                                                                     |
-| T-2          | aceito       | Entregue em worker/listing.ts: até 3 consultas filhas para 200 pais, 91 bindings/lote. Unitário limita consultas; integração listou 65 produtos e 65 pedidos com filhos e isolamento. |
-| T-3          | aceito       | Nova migração com cópia e constraints, mantendo todos os pedidos/itens existentes.                                                                                                    |
-| T-4          | aceito       | Separar rascunho, confirmado e entregue; recebido fica indisponível até pagamentos.                                                                                                   |
-| T-5          | aceito       | Logo aprovado, assets reprodutíveis, tokens AA e Lucide.                                                                                                                              |
-| P0-1         | aceito       | Hoje por papel na Fase 2A; recebimentos/aging reais na 2B.                                                                                                                            |
-| P0-2         | aceito       | Modelos e geração semanal idempotente de rascunhos; confirmação humana.                                                                                                               |
-| P0-3         | aceito       | Máquina backend completa e próxima ação no celular.                                                                                                                                   |
-| P0-4         | adiado       | Fase 2B financeira, com eventos de pagamentos/sinal; não simular saldo recebido.                                                                                                      |
-| P0-5         | aceito       | Cadastro mínimo mantido; campos B2B e meta de toques na 2B, após ensaio.                                                                                                              |
-| P0-6         | aceito       | Snapshot de entrega e entregador/taxa; não gerar despesa.                                                                                                                             |
-| P0-7         | aceito       | Modelos editáveis e WhatsApp só por ação humana, com contato manual.                                                                                                                  |
-| P1-1 a P1-9  | adiado       | Próximas etapas do plano, sem expandir agora para todos os módulos.                                                                                                                   |
-| P2-1         | aceito       | Preparar order_type com event bloqueado; pagamentos/sinal na 2B.                                                                                                                      |
-| P2-2 a P2-4  | adiado       | Catálogo, push e fila offline continuam OFF.                                                                                                                                          |
-| Ajuda §9/§10 | aceito       | HelpTip e central/tour base; treino só frontend com Exemplo e sem D1.                                                                                                                 |
+| Item         | Status   | Observação                                                                                                                                                                               |
+| ------------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T-1          | entregue | Reproduzido no WebKit: cookie Secure em HTTP. Ponte HTTP só no harness traduz cookie de fixture, verifica __Host-/Secure/HttpOnly originais; Worker de produção intocado. WebKit passou. |
+| T-2          | entregue | Entregue em worker/listing.ts: até 3 consultas filhas para 200 pais, 91 bindings/lote. Unitário limita consultas; integração listou 65 produtos e 65 pedidos com filhos e isolamento.    |
+| T-3          | aceito   | Nova migração com cópia e constraints, mantendo todos os pedidos/itens existentes.                                                                                                       |
+| T-4          | aceito   | Separar rascunho, confirmado e entregue; recebido fica indisponível até pagamentos.                                                                                                      |
+| T-5          | aceito   | Logo aprovado, assets reprodutíveis, tokens AA e Lucide.                                                                                                                                 |
+| P0-1         | aceito   | Hoje por papel na Fase 2A; recebimentos/aging reais na 2B.                                                                                                                               |
+| P0-2         | aceito   | Modelos e geração semanal idempotente de rascunhos; confirmação humana.                                                                                                                  |
+| P0-3         | aceito   | Máquina backend completa e próxima ação no celular.                                                                                                                                      |
+| P0-4         | adiado   | Fase 2B financeira, com eventos de pagamentos/sinal; não simular saldo recebido.                                                                                                         |
+| P0-5         | aceito   | Cadastro mínimo mantido; campos B2B e meta de toques na 2B, após ensaio.                                                                                                                 |
+| P0-6         | aceito   | Snapshot de entrega e entregador/taxa; não gerar despesa.                                                                                                                                |
+| P0-7         | aceito   | Modelos editáveis e WhatsApp só por ação humana, com contato manual.                                                                                                                     |
+| P1-1 a P1-9  | adiado   | Próximas etapas do plano, sem expandir agora para todos os módulos.                                                                                                                      |
+| P2-1         | aceito   | Preparar order_type com event bloqueado; pagamentos/sinal na 2B.                                                                                                                         |
+| P2-2 a P2-4  | adiado   | Catálogo, push e fila offline continuam OFF.                                                                                                                                             |
+| Ajuda §9/§10 | aceito   | HelpTip e central/tour base; treino só frontend com Exemplo e sem D1.                                                                                                                    |
 
 ## Dúvidas e decisões
 
@@ -31,6 +31,8 @@
 - Existem registros no D1 remoto: sem reset/seed, migrações novas e ensaio de preservação. Sem credenciais administrativas nesta máquina, a aplicação remota da migração continuará exigindo procedimento do responsável.
 
 ## Histórico
+
+- **2026-11-01 — T-1:** falha da linha 30 reproduzida em WebKit executado localmente. Correção restrita ao transporte HTTP de testes; mantém as verificações de JWT, organização, expiração e flags originais. E2E WebKit passou; não equivale a instalação Safari/iPhone físico. Dependências Debian verificadas foram extraídas em diretório local; launcher aponta para binário WebKit original com bibliotecas locais, sem desativar TLS.
 
 - **2026-11-01 — T-2:** removido N+1, leitura em lotes de 90 IDs com organização obrigatória. 27 testes unitários passaram e integração com 65 produtos/65 pedidos passou. Nenhuma alteração de schema ou dados remotos.
 
