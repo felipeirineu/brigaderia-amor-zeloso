@@ -2,7 +2,7 @@
 
 PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com preparação para catálogo público e atendimento assistido pelo WhatsApp.
 
-> **Estado:** gestão da Fase 1 validada pelo Felipe. Correções técnicas e Fase 2A implementadas/testadas; novas operações permanecem OFF até backup e migração do banco remoto.
+> **Estado:** gestão da Fase 1 validada pelo Felipe. Revisão R1 e Fase 2B financeira implementadas/testadas; operação e financeiro permanecem OFF até backup, migrações e ativação do banco remoto.
 
 ## Objetivos
 
@@ -119,3 +119,14 @@ npm run test:operations
 ```
 
 `npm run brand:build` regenera os assets a partir do logo aprovado. Para WebKit no ambiente de nuvem com bibliotecas locais, usar `PLAYWRIGHT_WEBKIT_EXECUTABLE_PATH=/workspace/.webkit-deps/run-webkit.sh`; em CI/máquina com dependências Playwright instaladas, deixar essa variável ausente. A adaptação de cookie HTTP existe somente em tests/helpers/runtime.mjs e não altera a segurança da aplicação de produção.
+
+## Revisão R1 e Fase 2B
+
+A revisão está integrada e a [Fase 2B](docs/FASE_2B.md) oferece conta B2B, condições, sinal/parciais, estorno auditável, extrato/fechamento configurável e cobrança/Pix assistidos, além de novos pedidos preenchidos pelo modelo e tutorial financeiro. Os dados online permanecem preservados; `OPERATIONS_ENABLED=false` e `FINANCE_ENABLED=false` até seguir o [guia de ativação para iniciante](docs/FASE_2A.md#ativação--passos-curtos-no-windows-powershell). São necessárias as migrações 0003/0004/0005 que ainda estiverem pendentes; não reaplicar migrações históricas manualmente.
+
+```bash
+npm run test:finance
+npm run ops:preflight -- --local brigaderia-local
+```
+
+A pré-checagem é somente leitura. O guia também explica como exportar um backup real e ensaiar restauração em estado local separado, sem enviar arquivos privados ao GitHub ou ao chat. Não há compra, envio automático de mensagem ou integração bancária nesta entrega.

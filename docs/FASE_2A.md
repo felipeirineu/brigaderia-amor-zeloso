@@ -3,9 +3,9 @@
 ## Produzido
 
 - P0-3/T-3: migração `0003_operations.sql` reconstrói orders com estados completos, preservando todas as colunas anteriores, IDs, itens, versões e snapshots. Novas tabelas de histórico, recorrência e contato. `order_type` regular/recurring/event preparado; criação de eventos continua rejeitada pela API. Não há pagamentos/sinal implementados nesta entrega.
-- Status: rascunho, aguardando confirmação, confirmado, produção, pronto, saída, entregue/retirado e cancelado. A UI destaca apenas a próxima ação. Histórico identifica usuário por ID e horário. Cancelamento exige motivo e confirmação; entrega/retirada oferece compensação auditável “Desfazer” por 10 segundos, somente ao autor e se o pedido não tiver mudado.
+- Status: rascunho, aguardando confirmação, confirmado, produção, pronto, saída, entregue/retirado e cancelado. A UI destaca apenas a próxima ação. Histórico identifica usuário por ID e horário. Cancelamento exige motivo e confirmação; entrega/retirada oferece compensação auditável “Desfazer” por 30 segundos (R1-5), somente ao autor e se o pedido não tiver mudado.
 - P0-1/T-4: Hoje por papel, com fuso America/Fortaleza. Administrador vê produção de hoje/amanhã e valores previstos/entregues; operador vê entregas antes do resumo e ação de entregar diretamente no cartão. Produção agrega todos os pedidos do período, mesmo quando a lista de cartões é limitada a 200. Caixas, unidades, peso e variante vêm do snapshot. Recebido/saldo financeiro não são simulados.
-- P0-2: modelos semanais por cliente/dia/hora, steppers de quantidade, pausa e geração idempotente de rascunhos, sem confirmação automática. Até 100 modelos ativos por geração; filhos e inserções processados em lote para respeitar o teto de consultas. Pedidos gerados preservam seu próprio preço mesmo quando o produto muda. Confirmação é individual e humana.
+- P0-2: modelos semanais por cliente/dia/hora, steppers de quantidade, pausa e geração idempotente de rascunhos, sem confirmação automática. Até 100 modelos ativos por geração; filhos e inserções processados em lote para respeitar o teto de consultas. Pedidos gerados preservam seu próprio preço mesmo quando o produto muda. Confirmação é humana, individual ou por seleção revisada na R1.
 - P0-6: entrega/retirada, endereço como snapshot, entregador proprietário/esposa/motoboy e taxa. Registros antigos e novos sem escolha explícita ficam “A definir”; não são atribuídos ao proprietário automaticamente. A saída exige escolher entregador; motoboy exige nome. Taxa não cria despesa nem muda o valor cobrado automaticamente.
 - P0-7 inicial: modelos editáveis de confirmação, a caminho, entregue, retirada e pós-venda; prévia editável, URL codificada e abertura explícita do WhatsApp. Registro de contato é manual, idempotente e não comprova envio. Cobrança/fechamento dependem da etapa financeira.
 - HelpTip centralizado com 14 temas, diálogo/sheet com toque, Esc, foco e link à ajuda. Tour base por papel com cinco passos sobre elementos reais e Pular/Já sei; treino Exemplo exclusivamente em memória, sem POST ao D1. Conclusão do passeio guarda somente um marcador por papel em localStorage. Roteiros financeiros completos ainda pendentes.
@@ -134,7 +134,7 @@ Todos os dados usados nesses testes são fixtures identificadas como DEMONSTRAÇ
 
 - Lista de cartões: 200 por janela de dois dias; aviso de limite é exibido. Produção e valores agregados não são truncados.
 - Modelos: até 100 ativos por geração, até 30 variantes por modelo e limite de payload. Variantes/clientes inativos não geram novos pedidos silenciosamente válidos; revisar o aviso de variante ou pausar o modelo.
-- Recorrência apenas semanal, sem confirmação em lote nesta etapa. Pode confirmar um a um.
+- Recorrência apenas semanal, com confirmação individual ou em lote dos pedidos revisados (R1).
 - Quantidades são embalagens completas das variantes existentes. Mistura por unidade/sabor permanece a confirmar, sem remodelar pedidos já cadastrados.
 - Recebimentos, pagamentos/sinal, saldo, condições/fechamentos, lembretes e campos B2B avançados ainda não estão entregues. Não há fila offline ou campanhas.
 - Tour é a base de navegação/treino; os roteiros completos que incluem pagamento/ficha técnica dependem das próximas fases. A meta de pedido manual em três toques não foi declarada atingida.
@@ -146,3 +146,10 @@ Backup/restauração reais e migração/ativação remota, homologação física
 ## Revisão R1
 
 R1-1 gera modelos válidos e lista ignorados com atalho; R1-2 copia entregador padrão do modelo; R1-3 reabre confirmed → awaiting_confirmation com motivo antes da produção, permitindo a edição normal e nova confirmação; R1-4 confirma seleção revisada com validação e resultado por pedido em grupos de três para D1 Free. R1-5 usa constante compartilhada de 30 s. R1-6 separa as telas operacionais. R1-7 mantém created_at epoch em order_status_events para comparação da janela no servidor, convertendo para exibição; tabelas novas financeiras usam ISO. Não há comparação lexical entre os dois formatos. Com pagamentos ativos, cancelar/arquivar pedido recebido exige estorno e reduzir total abaixo do recebido é bloqueado.
+
+### Relatório da revisão R1
+
+- **Produzido:** R1-1…R1-7 conforme seção acima, entregador padrão, seleção revisada em lote e guia/scripts de ativação.
+- **Testes executados:** 14 verificações operacionais, regressão de migração 0003–0005, E2E de recorrência/lote nos três projetos e suíte completa descrita em FASE_2B.md. Undo permitido aos 20 s e rejeitado aos 31 s.
+- **Limitações:** reabrir exige motivo e nova confirmação; não reabre produção/encerrados. Lotes em grupos de três; não confirma por geração automática. WebKit não equivale a iPhone físico.
+- **Pendências:** backup/restauração e migrações reais, ativação das flags, homologação em aparelhos e revisão do Claude. Nenhum cadastro remoto foi alterado nesta revisão.

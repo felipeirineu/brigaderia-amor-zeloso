@@ -41,3 +41,11 @@
 - Operação Hoje por papel, status auditados com desfazer, modelos semanais idempotentes, entregador e WhatsApp assistido.
 - Ajuda contextual, tour base e treino frontend sem gravação.
 - Migração preserva pedidos/itens; ativação operacional OFF até backup/migração remota. Recebimentos/fechamentos continuam pendentes.
+
+## 2026-11-01 — Revisão R1 e Fase 2B
+
+- Geração semanal parcial com motivos/atalhos, entregador padrão, reabertura com motivo, confirmação de seleção revisada e desfazer de 30 s.
+- Telas operacionais separadas; timestamps epoch da trilha documentados.
+- Conta B2B e condições copiadas por pedido, sinal/parciais/estorno por eventos, fechamentos configuráveis e cobrança/Pix assistidos.
+- Cadastro B2B e preenchimento por modelo, Hoje com recebimentos/saldo e tutorial financeiro sem gravação.
+- Pré-checagem somente leitura, ensaio de restauração local isolado e guia Windows com resultados/erros por passo. Flags operacionais/financeiras permanecem OFF até ativação remota.
