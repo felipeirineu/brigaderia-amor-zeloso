@@ -48,6 +48,12 @@ Fazer **depois da R5**. Ajustes pedidos pelo responsável após ver a prévia.
   - Incluir em `docs/ATIVACAO.md` (e no caminho simplificado da R5-10), logo após o primeiro login do administrador, o passo: "Cadastrar a base em Configurações → Empresa (busca do endereço ou 'Usar minha localização' estando no local) e conferir a distância de um cliente de teste".
   - O endereço **não** vai para o código, os docs, os seeds nem o chat: só pela interface, gravado no D1.
   - No primeiro acesso do administrador sem base cadastrada, mostrar um aviso na tela Hoje: "Cadastre o endereço da base para ver distâncias e rotas", com botão direto para a tela.
+- **R6-5 — Foto de perfil dos usuários.**
+  - No menu de perfil (cabeçalho compacto da R5-1), opção "Trocar foto": câmera ou galeria, recorte quadrado/circular, compressão no navegador para ~256 px WebP (≤ 40 KB) e mesma validação de assinatura usada nas fotos de estabelecimento (R4-2).
+  - Gravada no D1, privada, servida por rota autenticada com `no-store`. Nunca no bundle, no service worker, no Git ou em logs.
+  - Cada usuário altera só a própria foto. O administrador pode remover a de qualquer um.
+  - Sem foto, continuam as iniciais do nome de exibição.
+  - Usar a foto no avatar do cabeçalho, na escolha de entregador e no histórico de quem fez cada ação.
 - **Aceite:**
   - Cliente salvo → rota calculada uma vez e exibida.
   - Provedor indisponível → linha reta rotulada.
