@@ -120,4 +120,12 @@ test('shell offline somente leitura, sem cache de API ou catálogo', async ({
     .click();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Clientes');
   await context.setOffline(false);
+  // O handshake e o logout do Access precisam chegar à rede, sem fallback SPA.
+  for (const path of [
+    '/cdn-cgi/access/authorized?test=demonstracao',
+    '/cdn-cgi/access/logout',
+  ]) {
+    const response = await page.goto(path);
+    expect(response?.fromServiceWorker()).toBe(false);
+  }
 });

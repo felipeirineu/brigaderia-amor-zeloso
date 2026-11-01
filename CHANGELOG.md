@@ -27,3 +27,8 @@
 
 - Entrada por navegação completa, com sessão emitida no retorno validado e redirecionamento direto para a gestão.
 - Removida a segunda etapa por fetch, que podia falhar ao ser redirecionada para o domínio do Access.
+
+## Correção do callback no service worker
+
+- Excluídas rotas `/cdn-cgi/` do fallback offline para permitir callback e logout do Cloudflare Access.
+- Regressão reproduzida em Chromium antes da correção; teste passa a verificar que essas rotas chegam à rede.

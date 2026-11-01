@@ -46,7 +46,13 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,png,woff2}'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/api(?:\/|$)/, /^\/catalogo(?:\/|$)/],
+        // Rotas reservadas da Cloudflare, incluindo callback/logout do Access,
+        // devem sempre chegar à rede, mesmo quando o shell está em cache.
+        navigateFallbackDenylist: [
+          /^\/api(?:\/|$)/,
+          /^\/catalogo(?:\/|$)/,
+          /^\/cdn-cgi(?:\/|$)/,
+        ],
         runtimeCaching: [],
       },
     }),
