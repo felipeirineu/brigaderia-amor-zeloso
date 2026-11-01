@@ -17,7 +17,7 @@ import {
   nextLabel,
   type OperationalOrder,
 } from './common';
-export function OrderDetail() {
+export function OrderDetail({ financial = false }: { financial?: boolean }) {
   const { id } = useParams();
   const view = useRemote<OperationalOrder>(`orders/${id}`);
   const history = useRemote<
@@ -108,6 +108,14 @@ export function OrderDetail() {
             {statusLabels[order.status]} <HelpTip topic="status" />
           </p>
           <p role="status">{notice}</p>
+          {financial && (
+            <Link
+              className="button"
+              to={`/gestao/financeiro/${order.customer_id}?order=${order.id}`}
+            >
+              Conta, condição e recebimentos
+            </Link>
+          )}
           {undo && (
             <button
               disabled={busy}

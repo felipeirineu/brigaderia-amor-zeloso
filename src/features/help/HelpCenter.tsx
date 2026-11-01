@@ -1,3 +1,4 @@
+import { FinancialTutorial } from '../finance/Tutorial';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { helpTexts } from './texts';
@@ -109,7 +110,7 @@ export function Tour({ role }: { role: string }) {
     </>
   );
 }
-export function HelpCenter() {
+export function HelpCenter({ financial = false }: { financial?: boolean }) {
   const [example, setExample] = useState(false);
   return (
     <>
@@ -145,11 +146,13 @@ export function HelpCenter() {
           </li>
         </ol>
         <p>
-          Recebimentos, fechamentos e ficha técnica ainda não têm ações
-          operacionais nesta etapa.
+          {financial
+            ? 'Recebimentos e fechamentos têm roteiro abaixo. Ficha técnica segue em preparação.'
+            : 'Recebimentos e fechamentos dependem da ativação financeira; ficha técnica segue em preparação.'}
         </p>
         <Link to="/gestao/recorrentes">Preparar pedido padrão</Link>
       </section>
+      {financial && <FinancialTutorial />}
       {Object.entries(helpTexts).map(([key, text]) => (
         <details className="panel" key={key}>
           <summary>{text.title}</summary>

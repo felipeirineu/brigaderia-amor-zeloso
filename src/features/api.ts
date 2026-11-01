@@ -54,3 +54,22 @@ export function parsePrice(value: string): number {
   const [whole, fraction = ''] = value.split(',');
   return Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
 }
+
+export function nextWeeklyTime(weekday: number, time: string) {
+  const clock = Date.now(),
+    date = new Date(
+      new Date(clock - 10800000).toISOString().slice(0, 10) + 'T12:00:00Z',
+    );
+  date.setUTCDate(
+    date.getUTCDate() + ((weekday - (date.getUTCDay() || 7) + 7) % 7),
+  );
+  let due = date.toISOString().slice(0, 10) + 'T' + time;
+  if (Date.parse(due + ':00-03:00') < clock) {
+    date.setUTCDate(date.getUTCDate() + 7);
+    due = date.toISOString().slice(0, 10) + 'T' + time;
+  }
+  return due;
+}
+
+export const civilDate = (value: string) =>
+  value.split('-').reverse().join('/');

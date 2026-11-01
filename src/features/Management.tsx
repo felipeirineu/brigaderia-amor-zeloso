@@ -1,3 +1,7 @@
+import { Finance, PixSettings, type Summary } from './finance/Finance';
+import { Account } from './finance/Account';
+import { CustomerProfile } from './finance/Profile';
+import { type B2BProfile } from '../../shared/finance';
 import {
   useCallback,
   useEffect,
@@ -11,13 +15,14 @@ import { Icon, type IconName } from '../components/Icon';
 import { HelpCenter, Tour } from './help/HelpCenter';
 import { Today, OrderDetail, Recurring, MessageTemplates } from './Operations';
 import { statusLabels, type Status } from '../../shared/order-state';
-import { api, dateTime, money, parsePrice } from './api';
+import { api, dateTime, money, parsePrice, nextWeeklyTime } from './api';
 
 interface Session {
   user_id: string;
   organization_id: string;
   role: 'owner' | 'operator';
   operations?: boolean;
+  finance?: boolean;
 }
 interface Customer {
   id: string;
@@ -177,7 +182,14 @@ export function Login() {
     </section>
   );
 }
-function Customers() {
+function Customers({ financial = false }: { financial?: boolean }) {
+  const [balances, setBalances] = useState<Summary | null>(null);
+  useEffect(() => {
+    if (financial)
+      void api<Summary>('finance/summary')
+        .then(setBalances)
+        .catch(() => setBalances(null));
+  }, [financial]);
   const [query, setQuery] = useState('');
   const [all, setAll] = useState(false);
   const list = useList<Customer>(
@@ -297,6 +309,27 @@ function Customers() {
           {list.data.map((c) => (
             <article className="panel" key={c.id}>
               <h2>{c.name}</h2>
+              {financial && (
+                <>
+                  <Link className="button" to={`/gestao/clientes/${c.id}/b2b`}>
+                    Dados B2B e padrões
+                  </Link>{' '}
+                  <Link className="button" to={`/gestao/financeiro/${c.id}`}>
+                    Conta e recebimentos
+                  </Link>
+                  {(balances?.customers.find((b) => b.id === c.id)
+                    ?.overdue_days ?? 0) > 0 && (
+                    <p role="alert">
+                      Saldo vencido há{' '}
+                      {
+                        balances?.customers.find((b) => b.id === c.id)
+                          ?.overdue_days
+                      }{' '}
+                      dias. Novos pedidos continuam permitidos.
+                    </p>
+                  )}
+                </>
+              )}
               <p>
                 {c.phone} · {c.active ? 'Ativo' : 'Arquivado'}
               </p>
@@ -588,7 +621,13 @@ function Products() {
     </>
   );
 }
-function Orders({ operational = false }: { operational?: boolean }) {
+function Orders({
+  operational = false,
+  financial = false,
+}: {
+  operational?: boolean;
+  financial?: boolean;
+}) {
   const [query, setQuery] = useState('');
   const orders = useList<Order>(`orders?q=${encodeURIComponent(query)}`);
   const customers = useList<Customer>('customers');
@@ -596,6 +635,49 @@ function Orders({ operational = false }: { operational?: boolean }) {
   const save = useSave(orders.reload);
   const [editing, setEditing] = useState<Order | null>(null);
   const [customer, setCustomer] = useState('');
+  const [defaults, setDefaults] = useState<{
+    profile: B2BProfile;
+    plans: {
+      id: string;
+      name: string;
+      weekday: number;
+      time: string;
+      notes: string;
+      valid: boolean;
+      items: Item[];
+    }[];
+  } | null>(null);
+  const [template, setTemplate] = useState('');
+  const choice = useRef(0);
+  async function chooseCustomer(id: string) {
+    const serial = ++choice.current;
+    setCustomer(id);
+    setDefaults(null);
+    setTemplate('');
+    if (!financial || !id || editing) return;
+    try {
+      const d = await api<NonNullable<typeof defaults>>(
+        `finance/customers/${id}/defaults`,
+      );
+      if (serial !== choice.current) return;
+      setDefaults(d);
+      const valid = d.plans.filter((p) => p.valid);
+      if (valid.length === 1) applyTemplate(valid[0]);
+    } catch {
+      if (serial === choice.current) setDefaults(null);
+    }
+  }
+  function applyTemplate(plan: NonNullable<typeof defaults>['plans'][number]) {
+    setTemplate(plan.id);
+    setItems(
+      plan.items.map((i) => ({
+        variant_id: i.variant_id,
+        quantity: i.quantity,
+      })),
+    );
+    setNotes(plan.notes);
+    setDue(nextWeeklyTime(plan.weekday, plan.time));
+  }
   const [due, setDue] = useState('');
   const [notes, setNotes] = useState('');
   const [items, setItems] = useState<Item[]>([{ variant_id: '', quantity: 1 }]);
@@ -612,6 +694,9 @@ function Orders({ operational = false }: { operational?: boolean }) {
   function reset() {
     setEditing(null);
     setCustomer('');
+    setDefaults(null);
+    setTemplate('');
+    choice.current++;
     setDue('');
     setNotes('');
     setItems([{ variant_id: '', quantity: 1 }]);
@@ -626,6 +711,7 @@ function Orders({ operational = false }: { operational?: boolean }) {
           editing ? 'PUT' : 'POST',
           {
             customer_id: customer,
+            ...(!editing && template ? { template_id: template } : {}),
             due_at: new Date(`${due}:00-03:00`).toISOString(),
             notes,
             items: items.map((i) => ({
@@ -654,7 +740,7 @@ function Orders({ operational = false }: { operational?: boolean }) {
       <h1>Pedidos</h1>
       <p>
         Pedidos. Quantidade se refere à embalagem/caixa cadastrada. Status e
-        entrega ficam para a Fase 2.
+        entrega ficam no detalhe do pedido quando a operação está ativa.
       </p>
       <ErrorMessage
         message={
@@ -669,7 +755,7 @@ function Orders({ operational = false }: { operational?: boolean }) {
           <select
             required
             value={customer}
-            onChange={(e) => setCustomer(e.target.value)}
+            onChange={(e) => void chooseCustomer(e.target.value)}
           >
             <option value="">Selecione</option>
             {customers.data.map((c) => (
@@ -679,6 +765,45 @@ function Orders({ operational = false }: { operational?: boolean }) {
             ))}
           </select>
         </label>
+        {defaults && !editing && (
+          <section>
+            <p>
+              Padrões do cliente:{' '}
+              {defaults.profile.address || 'Endereço a definir'} · janela{' '}
+              {defaults.profile.delivery_window || 'a definir'} · condição{' '}
+              {defaults.profile.terms.mode === 'unset'
+                ? 'a definir'
+                : defaults.profile.terms.mode === 'credit'
+                  ? 'a prazo'
+                  : defaults.profile.terms.mode === 'advance'
+                    ? 'adiantado'
+                    : 'na entrega'}
+              . Tudo pode ser revisado.
+            </p>
+            {defaults.plans.length > 0 && (
+              <label>
+                Pedido padrão para preencher
+                <select
+                  value={template}
+                  onChange={(e) => {
+                    const p = defaults.plans.find(
+                      (p) => p.id === e.target.value,
+                    );
+                    if (p?.valid) applyTemplate(p);
+                  }}
+                >
+                  <option value="">Escolha um modelo</option>
+                  {defaults.plans.map((p) => (
+                    <option key={p.id} value={p.id} disabled={!p.valid}>
+                      {p.name}
+                      {p.valid ? '' : ' — revisar itens inativos'}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </section>
+        )}
         <label>
           Data e hora combinadas (João Pessoa)
           <input
@@ -1090,22 +1215,58 @@ export function Management() {
           <Route
             index
             element={
-              session.operations ? <Today role={session.role} /> : <Overview />
+              session.operations ? (
+                <Today role={session.role} financial={session.finance} />
+              ) : (
+                <Overview />
+              )
             }
           />
-          <Route path="clientes" element={<Customers />} />
+          <Route
+            path="clientes"
+            element={<Customers financial={session.finance} />}
+          />
           <Route path="produtos" element={<Products />} />
           <Route
             path="pedidos"
-            element={<Orders operational={session.operations} />}
+            element={
+              <Orders
+                operational={session.operations}
+                financial={session.finance}
+              />
+            }
           />
+          {session.finance && (
+            <>
+              <Route
+                path="financeiro"
+                element={<Finance role={session.role} />}
+              />
+              <Route path="financeiro/:id" element={<Account />} />
+              <Route path="clientes/:id/b2b" element={<CustomerProfile />} />
+              {session.role === 'owner' && (
+                <Route path="financeiro/pix" element={<PixSettings />} />
+              )}
+            </>
+          )}
           {session.operations && (
             <>
-              <Route path="pedidos/:id" element={<OrderDetail />} />
+              <Route
+                path="pedidos/:id"
+                element={<OrderDetail financial={session.finance} />}
+              />
               <Route path="recorrentes" element={<Recurring />} />
               <Route path="mensagens" element={<MessageTemplates />} />
-              <Route path="ajuda" element={<HelpCenter />} />
-              <Route path="mais" element={<More role={session.role} />} />
+              <Route
+                path="ajuda"
+                element={<HelpCenter financial={session.finance} />}
+              />
+              <Route
+                path="mais"
+                element={
+                  <More role={session.role} financial={session.finance} />
+                }
+              />
             </>
           )}
           {session.role === 'owner' && (
@@ -1173,12 +1334,19 @@ export function Management() {
   );
 }
 
-function More({ role }: { role: string }) {
+function More({
+  role,
+  financial = false,
+}: {
+  role: string;
+  financial?: boolean;
+}) {
   return (
     <>
       <h1>Mais</h1>
       <div className="more-grid">
         {[
+          ...(financial ? [['financeiro', 'Financeiro', 'financeiro']] : []),
           ['recorrentes', 'Pedidos padrão', 'recorrentes'],
           ['produtos', 'Produtos', 'produtos'],
           ['mensagens', 'Modelos de WhatsApp', 'pedidos'],
@@ -1194,8 +1362,9 @@ function More({ role }: { role: string }) {
         ))}
       </div>
       <p>
-        Financeiro, agenda, receitas e estoque serão entregues em etapas
-        próprias.
+        {financial
+          ? 'Agenda, receitas e estoque serão entregues em etapas próprias.'
+          : 'Financeiro, agenda, receitas e estoque serão entregues em etapas próprias.'}
       </p>
     </>
   );

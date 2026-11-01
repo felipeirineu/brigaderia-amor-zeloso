@@ -1,3 +1,4 @@
+import { FinanceSummary } from '../finance/Finance';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -24,8 +25,10 @@ import {
 } from './common';
 function DayTotals({
   totals,
+  financial = false,
 }: {
   totals: { expected_cents: number; delivered_cents: number };
+  financial?: boolean;
 }) {
   return (
     <>
@@ -44,14 +47,22 @@ function DayTotals({
           <p>Valor dos pedidos entregues/retirados, não recebido.</p>
         </section>
       </div>
-      <p>
-        A receber e recebimentos: disponíveis na próxima etapa financeira.{' '}
-        <HelpTip topic="balance" />
-      </p>
+      {!financial && (
+        <p>
+          A receber e recebimentos: disponíveis na próxima etapa financeira.{' '}
+          <HelpTip topic="balance" />
+        </p>
+      )}
     </>
   );
 }
-export function Today({ role }: { role: string }) {
+export function Today({
+  role,
+  financial = false,
+}: {
+  role: string;
+  financial?: boolean;
+}) {
   const [day, setDay] = useState(localDay);
   const view = useRemote<{
     day: string;
@@ -196,7 +207,10 @@ export function Today({ role }: { role: string }) {
               )}
             </section>
           )}
-          {role === 'owner' && <DayTotals totals={view.data.totals} />}
+          {financial && role === 'owner' && <FinanceSummary compact />}
+          {role === 'owner' && (
+            <DayTotals totals={view.data.totals} financial={financial} />
+          )}
           <h2>
             {role === 'owner' ? 'Pedidos e pendências' : 'Entregas do dia'}
           </h2>
@@ -272,6 +286,17 @@ export function Today({ role }: { role: string }) {
                           : 'Marcar entregue'}
                       </button>
                     )}
+                    {financial &&
+                      !['draft', 'awaiting_confirmation', 'cancelled'].includes(
+                        order.status,
+                      ) && (
+                        <Link
+                          className="button"
+                          to={`/gestao/financeiro/${order.customer_id}?order=${order.id}`}
+                        >
+                          Recebi R$
+                        </Link>
+                      )}
                     <Link className="button" to={`/gestao/pedidos/${order.id}`}>
                       Abrir pedido <ChevronRight size={20} aria-hidden="true" />
                     </Link>
@@ -286,7 +311,10 @@ export function Today({ role }: { role: string }) {
               <Link to="/gestao/recorrentes">Preparar pedidos da semana</Link>
             </section>
           )}
-          {role !== 'owner' && <DayTotals totals={view.data.totals} />}
+          {financial && role !== 'owner' && <FinanceSummary compact />}
+          {role !== 'owner' && (
+            <DayTotals totals={view.data.totals} financial={financial} />
+          )}
         </>
       ) : (
         !view.error && <p role="status">Carregando seu dia…</p>

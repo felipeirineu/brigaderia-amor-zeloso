@@ -5,7 +5,7 @@ export const helpTexts = {
   },
   generate: {
     title: 'Gerar pedidos da semana',
-    text: 'Escolha a segunda-feira. Serão criados rascunhos para os modelos ativos; gerar a mesma semana novamente não duplica. Revise e confirme cada pedido.',
+    text: 'Escolha a segunda-feira. Serão criados rascunhos para os modelos ativos; gerar a mesma semana novamente não duplica. Modelos inválidos são listados sem bloquear os válidos. Revise e selecione os pedidos para confirmar em lote ou um a um.',
   },
   status: {
     title: 'Status do pedido',
@@ -13,15 +13,15 @@ export const helpTexts = {
   },
   payment: {
     title: 'Condição de pagamento',
-    text: 'Adiantado, na entrega ou a prazo definem quando cobrar. Condições e recebimentos estarão disponíveis na próxima etapa financeira.',
+    text: 'Adiantado, na entrega ou a prazo definem quando cobrar. Quando o financeiro estiver ativado, a condição é copiada para o pedido; não equivale a recebimento. A prazo exige vencimento configurado.',
   },
   closing: {
     title: 'Fechamento',
-    text: 'Agrupa entregas e pagamentos do cliente em um período. Fechamentos semanais, quinzenais e mensais ainda estão em preparação.',
+    text: 'Agrupa entregas e pagamentos do cliente em um período. Quando o financeiro estiver ativado, escolha semanal, mensal, dias fixos ou 14 dias. Feche após terminar o período; o extrato preserva entregas, pagamentos e saldo.',
   },
   balance: {
     title: 'Saldo / a receber',
-    text: 'Saldo considera pagamentos válidos, não apenas pedidos cadastrados. Até os recebimentos serem implementados, os números mostrados são previstos ou entregues, nunca saldo recebido.',
+    text: 'Saldo considera pagamentos válidos, não apenas pedidos cadastrados. Com o financeiro ativado, recebimentos parciais e sinais reduzem o saldo; estornos o recompõem. Previsto, entregue e recebido são valores diferentes.',
   },
   composition: {
     title: 'Composição da caixa',

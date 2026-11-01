@@ -178,6 +178,21 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
     await expect(page.getByRole('status')).toContainText(
       '0 rascunho(s) criado(s); 1 já existente(s)',
     );
+    await page
+      .getByRole('checkbox', {
+        name: 'Revisado: Cliente DEMONSTRAÇÃO operacional',
+      })
+      .check();
+    page.once('dialog', (d) => d.accept());
+    await page
+      .getByRole('button', {
+        name: 'Confirmar todos os revisados (1)',
+        exact: true,
+      })
+      .click();
+    await expect(
+      page.getByRole('status').filter({ hasText: 'pedido(s) confirmado(s)' }),
+    ).toContainText('1 pedido(s) confirmado(s)');
     await page.goto(t.url + '/gestao/ajuda');
     const writes = [];
     page.on('request', (r) => {
