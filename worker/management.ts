@@ -1,4 +1,6 @@
+import { operationalReady } from './operational-ready';
 import { z } from 'zod';
+import { childrenByParent } from './listing';
 import { body, HttpError, json, hash, type Actor, type Env } from './security';
 import {
   customerSchema,
@@ -31,6 +33,7 @@ export async function management(req: Request, env: Env, a: Actor) {
   if (resource === 'session' && req.method === 'GET')
     return json({
       role: a.role,
+      operations: await operationalReady(env),
       user_id: a.user_id,
       organization_id: a.organization_id,
     });
@@ -69,14 +72,14 @@ export async function management(req: Request, env: Env, a: Actor) {
   if (resource === 'dashboard' && req.method === 'GET') {
     const summary = await db
       .prepare(
-        'SELECT COUNT(*) AS orders_count, COALESCE(SUM(total_cents),0) AS total_cents FROM orders WHERE organization_id=? AND active=1',
+        "SELECT COUNT(CASE WHEN status='draft' THEN 1 END) AS orders_count, COALESCE(SUM(CASE WHEN status='draft' THEN total_cents ELSE 0 END),0) AS total_cents, COALESCE(SUM(CASE WHEN status IN ('confirmed','in_production','ready','out_for_delivery') THEN total_cents ELSE 0 END),0) AS expected_cents,COALESCE(SUM(CASE WHEN status IN ('delivered','picked_up') THEN total_cents ELSE 0 END),0) AS delivered_cents FROM orders WHERE organization_id=? AND active=1",
       )
       .bind(org)
       .first();
     const upcoming = (
       await db
         .prepare(
-          'SELECT id,customer_name,due_at,total_cents FROM orders WHERE organization_id=? AND active=1 AND due_at>=? ORDER BY due_at LIMIT 10',
+          "SELECT id,customer_name,due_at,total_cents FROM orders WHERE organization_id=? AND active=1 AND status<>'cancelled' AND due_at>=? ORDER BY due_at LIMIT 10",
         )
         .bind(org, new Date().toISOString())
         .all()
@@ -113,35 +116,24 @@ export async function management(req: Request, env: Env, a: Actor) {
       delete row.create_key;
       delete row.create_hash;
     }
-    const extended = await Promise.all(
-      rows.map(async (row) => ({
-        ...row,
-        ...(resource === 'products'
-          ? {
-              variants: (
-                await db
-                  .prepare(
-                    'SELECT * FROM product_variants WHERE organization_id=? AND product_id=? ORDER BY label',
-                  )
-                  .bind(org, row.id)
-                  .all()
-              ).results,
-            }
-          : {}),
-        ...(resource === 'orders'
-          ? {
-              items: (
-                await db
-                  .prepare(
-                    'SELECT * FROM order_items WHERE organization_id=? AND order_id=?',
-                  )
-                  .bind(org, row.id)
-                  .all()
-              ).results,
-            }
-          : {}),
-      })),
-    );
+    const children =
+      resource === 'customers'
+        ? null
+        : await childrenByParent(
+            db,
+            org,
+            resource as 'products' | 'orders',
+            rows.map((row) => String(row.id)),
+          );
+    const extended = rows.map((row) => ({
+      ...row,
+      ...(children
+        ? {
+            [resource === 'products' ? 'variants' : 'items']:
+              children.get(String(row.id)) ?? [],
+          }
+        : {}),
+    }));
     if (id && !rows.length) throw new HttpError(404, 'Não encontrado.');
     return json(id ? extended[0] : extended);
   }
@@ -177,6 +169,15 @@ export async function management(req: Request, env: Env, a: Actor) {
         .first<Row>()
     : null;
   if (id && !previous) throw new HttpError(404, 'Não encontrado.');
+  if (
+    resource === 'orders' &&
+    previous &&
+    !['draft', 'awaiting_confirmation'].includes(String(previous.status))
+  )
+    throw new HttpError(
+      409,
+      'Pedido confirmado ou encerrado: use as ações de status.',
+    );
   const entityId = id || crypto.randomUUID();
   const mutation = crypto.randomUUID();
   const statements: D1PreparedStatement[] = [];

@@ -23,6 +23,9 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run test:api
+      - run: npm run test:listing
+      - run: npm run test:operations
+      - run: npm run test:brand
       - run: npm run test:migrations
       - run: npm run db:migrate:local
       - run: npm run build:pages

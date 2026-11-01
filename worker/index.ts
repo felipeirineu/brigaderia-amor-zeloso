@@ -1,3 +1,4 @@
+import { operationalReady } from './operational-ready';
 import {
   actor,
   body,
@@ -9,6 +10,7 @@ import {
   writeGuard,
   type Env,
 } from './security';
+import { operations } from './operations';
 import { management } from './management';
 import { z } from 'zod';
 export type { Env } from './security';
@@ -58,6 +60,8 @@ export default {
       if (!pathname.startsWith('/api/'))
         return json({ error: 'NOT_FOUND' }, 404);
       const user = await actor(req, env);
+      if (pathname === '/api/capabilities' && req.method === 'GET')
+        return json({ operations: await operationalReady(env) });
       if (req.method !== 'GET') writeGuard(req);
       if (pathname === '/api/auth/logout' && req.method === 'POST') {
         await env
@@ -66,6 +70,13 @@ export default {
           .run();
         return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie('', 0) });
       }
+      if (
+        /^\/api\/(today|recurring|generate-week|message-templates)(?:\/|$)/.test(
+          pathname,
+        ) ||
+        /^\/api\/orders\/[^/]+\/[^/]+/.test(pathname)
+      )
+        return await operations(req, env, user);
       return await management(req, env, user);
     } catch (e) {
       if (e instanceof HttpError) return json({ error: e.message }, e.status);

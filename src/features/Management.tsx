@@ -6,12 +6,18 @@ import {
   type FormEvent,
 } from 'react';
 import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom';
+import { HelpTip } from '../components/HelpTip';
+import { Icon, type IconName } from '../components/Icon';
+import { HelpCenter, Tour } from './help/HelpCenter';
+import { Today, OrderDetail, Recurring, MessageTemplates } from './Operations';
+import { statusLabels, type Status } from '../../shared/order-state';
 import { api, dateTime, money, parsePrice } from './api';
 
 interface Session {
   user_id: string;
   organization_id: string;
   role: 'owner' | 'operator';
+  operations?: boolean;
 }
 interface Customer {
   id: string;
@@ -46,6 +52,7 @@ interface Item {
   unit_price_cents?: number;
 }
 interface Order {
+  status: Status;
   id: string;
   customer_id: string;
   customer_name: string;
@@ -581,7 +588,7 @@ function Products() {
     </>
   );
 }
-function Orders() {
+function Orders({ operational = false }: { operational?: boolean }) {
   const [query, setQuery] = useState('');
   const orders = useList<Order>(`orders?q=${encodeURIComponent(query)}`);
   const customers = useList<Customer>('customers');
@@ -646,7 +653,7 @@ function Orders() {
     <>
       <h1>Pedidos</h1>
       <p>
-        Rascunhos. Quantidade se refere à embalagem/caixa cadastrada. Status e
+        Pedidos. Quantidade se refere à embalagem/caixa cadastrada. Status e
         entrega ficam para a Fase 2.
       </p>
       <ErrorMessage
@@ -783,7 +790,8 @@ function Orders() {
             <article className="panel" key={o.id}>
               <h2>{o.customer_name}</h2>
               <p>
-                Rascunho · {dateTime(o.due_at)} · {money(o.total_cents)}
+                {statusLabels[o.status] || 'Rascunho'} · {dateTime(o.due_at)} ·{' '}
+                {money(o.total_cents)}
               </p>
               <ul>
                 {o.items.map((i) => (
@@ -793,36 +801,47 @@ function Orders() {
                   </li>
                 ))}
               </ul>
-              <button
-                onClick={() => {
-                  setEditing(o);
-                  setCustomer(o.customer_id);
-                  setDue(
-                    new Date(new Date(o.due_at).getTime() - 3 * 3600000)
-                      .toISOString()
-                      .slice(0, 16),
-                  );
-                  setNotes(o.notes);
-                  setItems(o.items);
-                }}
-              >
-                Editar pedido de {o.customer_name}
-              </button>
-              <button
-                disabled={save.busy}
-                onClick={() => {
-                  if (
-                    confirm(
-                      'Arquivar rascunho? O registro e os itens serão preservados.',
-                    )
-                  )
-                    void save.save(() =>
-                      api(`orders/${o.id}`, 'DELETE', { version: o.version }),
-                    );
-                }}
-              >
-                Arquivar pedido de {o.customer_name}
-              </button>
+              {operational && (
+                <Link className="button" to={`/gestao/pedidos/${o.id}`}>
+                  Abrir pedido
+                </Link>
+              )}
+              {['draft', 'awaiting_confirmation'].includes(o.status) && (
+                <>
+                  <button
+                    onClick={() => {
+                      setEditing(o);
+                      setCustomer(o.customer_id);
+                      setDue(
+                        new Date(new Date(o.due_at).getTime() - 3 * 3600000)
+                          .toISOString()
+                          .slice(0, 16),
+                      );
+                      setNotes(o.notes);
+                      setItems(o.items);
+                    }}
+                  >
+                    Editar pedido de {o.customer_name}
+                  </button>
+                  <button
+                    disabled={save.busy}
+                    onClick={() => {
+                      if (
+                        confirm(
+                          'Arquivar rascunho? O registro e os itens serão preservados.',
+                        )
+                      )
+                        void save.save(() =>
+                          api(`orders/${o.id}`, 'DELETE', {
+                            version: o.version,
+                          }),
+                        );
+                    }}
+                  >
+                    Arquivar pedido de {o.customer_name}
+                  </button>
+                </>
+              )}
             </article>
           ))}
         </div>
@@ -935,6 +954,7 @@ export function Management() {
   const [error, setError] = useState('');
   const [online, setOnline] = useState(navigator.onLine);
   const navigate = useNavigate();
+  const quick = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     let active = true;
     const check = () => {
@@ -1000,7 +1020,9 @@ export function Management() {
       </section>
     );
   return (
-    <section className="management">
+    <section
+      className={`management ${session.operations ? 'operations-active' : ''}`}
+    >
       <header className="management-header">
         <p>
           Área privada ·{' '}
@@ -1011,19 +1033,50 @@ export function Management() {
         </button>
       </header>
       <ErrorMessage message={error} />
-      <nav className="management-nav" aria-label="Gestão privada">
-        {[
-          ['', 'Visão geral'],
-          ['clientes', 'Clientes'],
-          ['produtos', 'Produtos'],
-          ['pedidos', 'Pedidos'],
-          ...(session.role === 'owner' ? [['acessos', 'Acessos']] : []),
-        ].map(([path, title]) => (
-          <NavLink key={path} to={`/gestao/${path}`} end>
+      <nav
+        className={`management-nav ${session.operations ? 'ops-nav' : ''}`}
+        aria-label="Gestão privada"
+      >
+        {(session.operations
+          ? [
+              ['', 'Hoje', 'inicio', 'today'],
+              ['pedidos', 'Pedidos', 'pedidos', 'orders'],
+              ['clientes', 'Clientes', 'clientes', 'customers'],
+              ['recorrentes', 'Pedidos padrão', 'recorrentes', 'recurring'],
+              ['produtos', 'Produtos', 'produtos', 'products'],
+              ['mais', 'Mais', 'mais', 'more'],
+              ['ajuda', 'Ajuda', 'ajuda', 'help'],
+              ...(session.role === 'owner'
+                ? [['acessos', 'Acessos', 'configuracoes', 'access']]
+                : []),
+            ]
+          : [
+              ['', 'Visão geral', 'inicio', 'today'],
+              ['clientes', 'Clientes', 'clientes', 'customers'],
+              ['produtos', 'Produtos', 'produtos', 'products'],
+              ['pedidos', 'Pedidos', 'pedidos', 'orders'],
+              ...(session.role === 'owner'
+                ? [['acessos', 'Acessos', 'configuracoes', 'access']]
+                : []),
+            ]
+        ).map(([path, title, icon, tour]) => (
+          <NavLink key={path} to={`/gestao/${path}`} end data-tour={tour}>
+            <Icon name={icon as IconName} />
             {title}
           </NavLink>
         ))}
       </nav>
+      {session.operations && online && (
+        <>
+          <div className="private-tools">
+            <button data-tour="new" onClick={() => quick.current?.showModal()}>
+              <Icon name="novo" /> Novo
+            </button>
+            <HelpTip topic="roles" />
+          </div>
+          <Tour role={session.role} />
+        </>
+      )}
       {!online ? (
         <section className="panel" role="status">
           <h1>Sem conexão</h1>
@@ -1034,16 +1087,116 @@ export function Management() {
         </section>
       ) : (
         <Routes key={`${session.user_id}:${session.organization_id}`}>
-          <Route index element={<Overview />} />
+          <Route
+            index
+            element={
+              session.operations ? <Today role={session.role} /> : <Overview />
+            }
+          />
           <Route path="clientes" element={<Customers />} />
           <Route path="produtos" element={<Products />} />
-          <Route path="pedidos" element={<Orders />} />
+          <Route
+            path="pedidos"
+            element={<Orders operational={session.operations} />}
+          />
+          {session.operations && (
+            <>
+              <Route path="pedidos/:id" element={<OrderDetail />} />
+              <Route path="recorrentes" element={<Recurring />} />
+              <Route path="mensagens" element={<MessageTemplates />} />
+              <Route path="ajuda" element={<HelpCenter />} />
+              <Route path="mais" element={<More role={session.role} />} />
+            </>
+          )}
           {session.role === 'owner' && (
             <Route path="acessos" element={<Accesses />} />
           )}
           <Route path="*" element={<p>Área não encontrada.</p>} />
         </Routes>
       )}
+      {session.operations && (
+        <>
+          <nav className="private-bottom-nav" aria-label="Atalhos do celular">
+            <NavLink to="/gestao/" end data-tour="today">
+              <Icon name="inicio" />
+              Hoje
+            </NavLink>
+            <NavLink to="/gestao/pedidos" data-tour="orders">
+              <Icon name="pedidos" />
+              Pedidos
+            </NavLink>
+            <button
+              aria-label="Novo cadastro"
+              data-tour="new"
+              onClick={() => quick.current?.showModal()}
+            >
+              <Icon name="novo" />
+            </button>
+            <NavLink to="/gestao/clientes" data-tour="customers">
+              <Icon name="clientes" />
+              Clientes
+            </NavLink>
+            <NavLink to="/gestao/mais" data-tour="more">
+              <Icon name="mais" />
+              Mais
+            </NavLink>
+          </nav>
+          <dialog ref={quick} className="help-sheet" aria-label="Novo cadastro">
+            <div className="sheet-body">
+              <h2>O que vamos preparar?</h2>
+              <div className="quick-links">
+                <Link
+                  className="button"
+                  to="/gestao/pedidos"
+                  onClick={() => quick.current?.close()}
+                >
+                  Novo pedido
+                </Link>
+                <Link
+                  className="button"
+                  to="/gestao/clientes"
+                  onClick={() => quick.current?.close()}
+                >
+                  Novo cliente
+                </Link>
+              </div>
+              <p>
+                Recebimentos e lembretes estarão disponíveis nas próximas
+                etapas.
+              </p>
+              <button onClick={() => quick.current?.close()}>Fechar</button>
+            </div>
+          </dialog>
+        </>
+      )}
     </section>
+  );
+}
+
+function More({ role }: { role: string }) {
+  return (
+    <>
+      <h1>Mais</h1>
+      <div className="more-grid">
+        {[
+          ['recorrentes', 'Pedidos padrão', 'recorrentes'],
+          ['produtos', 'Produtos', 'produtos'],
+          ['mensagens', 'Modelos de WhatsApp', 'pedidos'],
+          ['ajuda', 'Ajuda e tutorial', 'ajuda'],
+          ...(role === 'owner'
+            ? [['acessos', 'Acessos', 'configuracoes']]
+            : []),
+        ].map(([path, title, icon]) => (
+          <Link className="panel more-link" key={path} to={`/gestao/${path}`}>
+            <Icon name={icon as IconName} />
+            {title}
+          </Link>
+        ))}
+      </div>
+      <p>
+        Financeiro, agenda, receitas e estoque serão entregues em etapas
+        próprias.
+      </p>
+    </>
   );
 }

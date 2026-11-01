@@ -1,63 +1,59 @@
-# Plano de execução para Codex
+# Plano de execução — prioridades aprovadas pelo Felipe
 
-Executar em fases e PRs pequenos; **não implementar todos os módulos em uma única solicitação**. Em cada fase: planejar, implementar, rodar testes, documentar e fazer checklist de entrega. Manter dados de demonstração isolados.
+Referência de contexto: `docs/colaboracao/CLAUDE_PARA_CODEX.md`. AGENTS.md e regras de segurança continuam obrigatórios. Fazer commits pequenos e relatórios por etapa; preservar registros e preços históricos já existentes. Interface pt-BR mobile-first, papéis owner/operator, dados financeiros em centavos, organização validada no servidor. Catálogo público, eventos e gravação offline continuam desligados. Não criar gastos nem enviar mensagens automaticamente.
 
-## Fase 0 — Bootstrap e validação
-- Confirmar com o responsável: acesso privado, conta GitHub, ambiente Cloudflare, identidade visual original, número WhatsApp, horários, regras de entrega; tudo que faltar fica `TODO-CONFIRMAR`.
-- Criar React+TypeScript+Vite, roteamento, PWA instalável, CI, lint, prettier, Vitest, Playwright, `.env.example`, README.
-- Tela inicial navegável com dados mockados, componentes acessíveis, design tokens de marca. Não conectar produção.
-- Definir esquema inicial e segurança: sessão, permissões, validação, migrações e migrations de teste.
-**Aceite:** build/lint/typecheck/tests passam; PWA prévia demonstrável; sem chaves em git.
+## Base entregue — Fases 0 e 1
 
-## Fase 1 — Autenticação, clientes, produtos e pedidos básicos (primeiro fluxo vertical)
-- Autenticação e papéis testados; sem registro público.
-- Banco D1 de desenvolvimento e migrações com clientes, produtos, variantes, pedidos e itens.
-- CRUD com filtros e validação; pedido com múltiplas variantes e valores em centavos.
-- Dashboard com próximos pedidos e totais; dados sincronizam em duas sessões.
-**Aceite:** pedido criado por operador A aparece para operador B; acesso anônimo bloqueado; preço histórico preservado.
+PWA, demonstração pública, gestão privada Access/D1, clientes/produtos/rascunhos, snapshots, auditoria e isolamento. Login real validado pelo Felipe; dados de teste já existem no D1 remoto. Não apagar ou substituir o banco. Testes de dispositivos reais e backup/restauração seguem necessários.
 
-## Fase 2 — Status, entrega e WhatsApp assistido
-- Máquina de estados testada; histórico de mudanças.
-- Entrega/retirada, agenda, taxa e endereço snapshot.
-- Modelos personalizáveis; links wa.me com URI encoding correto; registros manuais de contato.
-**Aceite:** todos os modelos sem placeholders faltantes; abertura da conversa exige ato do operador; não há mensagens disparadas automaticamente.
+## Primeira entrega técnica — antes da Fase 2
 
-## Fase 3 — Financeiro e relatórios essenciais
-- Pagamentos parciais e sinais, saldo, despesas básicas, filtros por período.
-- CSV com escaping adequado; PDF de orçamento/relatório se viável sem elevar custos.
-- Testes de rounding, cancelamentos e idempotência de pagamentos.
-**Aceite:** reconciliação de recebimentos e pedidos; nenhum valor negativo inesperado.
+- T-1: reproduzir/corrigir WebKit mobile no harness, mantendo JWT, HttpOnly, Secure e __Host- em produção. Testar o fluxo completo no motor WebKit; teste não substitui iPhone físico.
+- T-2: listagens sem consultas por registro. Buscar pais/filhos em lote respeitando o teto de consultas e sem misturar organizações; teste com mais de 60 pais e filhos.
+- T-5 + marca: usar logo aprovado; gerar PWA 192/512, maskable com margem segura, apple-touch-icon 180, favicon e imagem otimizada. Tokens #321D10/#F9ECD7/#B8915B, contraste AA, lucide-react. Fontes locais/system-ui, sem CDN; manter a legibilidade.
 
-## Fase 4 — Produção, receitas, estoque
-- Ingredientes, fichas técnicas, rendimento, custo estimado, lista de produção.
-- Movimentações e ajustes auditáveis; alertas de estoque baixo.
-- Registrar e documentar diferença entre previsão, separação e consumo real.
-**Aceite:** estimativas reproduzíveis e estoque sem desconto duplo.
+Aceite: lint, formato, tipos, build, integração D1 e E2E Chromium/WebKit; migrações históricas imutáveis; limitações reais explicitadas.
 
-## Fase 5 — Catálogo público em modo desativado
-- Área pública em feature flag OFF com listagem apenas de produtos aprovados para publicação.
-- Carrinho de orçamento e botão de WhatsApp só quando ativado explicitamente.
-- Testes de vazamento de dados e bloqueio do catálogo desligado.
-**Aceite:** flag OFF torna UI e endpoints públicos indisponíveis; não expõe dados administrativos.
+## Fase 2A — P0 operacional no celular (iniciar agora)
 
-## Fase 6 — Homologação e entrega
-- Testar Android Chrome e Safari iPhone, instalação na tela inicial, processos PWA, login e navegação.
-- Backup D1 e imagens, procedimento de restauração testado em ambiente separado.
-- Revisar LGPD, retenção e exclusão; logs sem informações pessoais desnecessárias.
-- Publicar apenas ambiente privado de homologação; ativação do domínio e catálogo após aprovação.
-- Manual de uso em pt-BR, guia de administração, custos, documentação de transferência de GitHub/Cloudflare.
-**Aceite:** checklist assinado pelos responsáveis; nenhuma credencial hardcoded; procedimento de rollback e recuperação conhecido.
+1. P0-3 / T-3: reconstrução versionada de orders para remover CHECK draft preservando cabeçalho, itens, IDs, versões e preços. Máquina de estados completa no servidor; próxima ação principal na UI, cancelamento com motivo, histórico por autor/hora. Tipo regular/recurring/event modelado, criação event bloqueada até fase própria.
+2. P0-1 / T-4: tela Hoje por papel e fuso America/Fortaleza. Proprietário: produção hoje/amanhã por variante (unidades/caixas), próximos pedidos e valores previstos/entregues; operador: entregas do dia, mapa, WhatsApp e próxima ação. Não chamar rascunhos de faturamento nem simular recebido antes de pagamentos.
+3. P0-2: modelos recorrentes por cliente, dias/itens configuráveis, geração semanal idempotente de rascunhos, quantidades ajustáveis; confirmação sempre humana, nunca automática.
+4. P0-6: entrega/retirada, endereço como snapshot e entregador proprietário/esposa/motoboy (nome/taxa). Taxa registrada não cria despesa; despesas dependem da fase financeira e de confirmação.
+5. P0-7: mensagem editável, modelos sem placeholders pendentes, abertura explícita wa.me e registro manual de contato. Sem envios ou confirmação de entrega da mensagem.
+6. Ajuda: HelpTip acessível com textos centralizados, diálogo/sheet no celular, Esc/toque fora, foco restaurado. Central Mais → Ajuda, guias e base de tour por papel; treino somente no frontend rotulado Exemplo, sem POST ao D1.
+7. Navegação móvel Hoje · Pedidos · + · Clientes · Mais; ações indisponíveis não aparecem como entregues. Alvos 44px, steppers, estados vazios úteis.
 
-## Definição de pronto por tarefa
-- Requisitos e casos de erro implementados.
-- TypeScript sem erros, build e lint aprovados.
-- Testes unitários/integrados relevantes e E2E do fluxo crítico aprovados.
-- Acessibilidade básica verificada em mobile.
-- Migrações reversíveis ou plano de rollback documentado.
-- Sem dados privados em commit, fixtures ou console.
-- README e changelog atualizados; pendências declaradas.
+Aceite: regressão de migração com pedidos existentes; estados e isolamento testados, recorrência repetida sem duplicar, WhatsApp só por clique, nenhum gasto automático ou gravação offline. Aplicação remota da migração exige backup e conferência do ambiente. Publicação do código deve ser compatível com banco ainda não migrado ou feita após ativação controlada; não interromper a gestão existente.
 
-## Backlog posterior (não entrar no MVP)
-- Automação oficial WhatsApp Business Platform com consentimento/template aprovado, custos e segurança analisados.
-- Pagamentos online, frete automático, notificações web push, integração com catálogo do WhatsApp Business.
-- Multi-unidade, emissão de nota fiscal, roteirização de entregas, marketplace, painel avançado BI.
+## Fase 2B / próxima entrega — completar P0
+
+- P0-4: conta por estabelecimento, condições adiantado/entrega/a prazo, fechamento semanal/quinzenal/mensal, extrato e cobrança assistida. Pagamentos como eventos, parciais e sinal, quitação de pedido/fechamento, idempotência, estorno/auditoria, saldo e vencimento reais. Pix só após chave configurada pelos proprietários.
+- P0-5: campos B2B opcionais e cadastro/pedido rápido com padrão (meta de até 3 toques após cliente). Fechar a meta de toques somente após ensaio real; não inventar endereço, consentimento ou regra de crédito.
+- P0-1 completo: Recebi R$, contas vencidas e a receber somente depois do modelo financeiro testado.
+- Desfazer ações frequentes: evento compensatório auditável/versão, com janela curta; nunca apagar histórico ou permitir regressão arbitrária. Se a implementação não oferecer desfazer, documentar confirmação provisória e rever antes de homologação.
+
+## P1 — etapas seguintes
+
+- P1-1: agenda semanal/mensal e exportação ICS.
+- P1-2: lembretes manuais no Hoje.
+- P1-3: relatórios desktop, vendas/aging/rankings e comparação, CSV seguro, PDF se viável sem custo.
+- P1-4: fichas técnicas, custo/rendimento e simulador de margem/preço estimado.
+- P1-5: lista de compras dos confirmados, sem movimentação implícita.
+- P1-6: estoque/embalagens auditáveis, mínimo, sem débito duplicado/negativo silencioso.
+- P1-7: despesas, caixa e lucro estimado, taxas de motoboy apenas com confirmação.
+- P1-8: importação CSV/Excel com preview/deduplicação e confirmação, apenas fixtures fictícias até receber planilhas autorizadas.
+- P1-9: backup/exportação do administrador e restauração ensaiada em ambiente separado.
+
+Cada grupo exige relatório com Produzido, Testes executados, Limitações e Pendências, além de resumo em CODEX_PARA_CLAUDE.md.
+
+## P2 — módulos desligados por padrão
+
+- P2-1: eventos/festas. Modelo order_type preparado na 2A, sinal em pagamentos na 2B; UI, agenda e estados específicos depois. Servidor bloqueia criação event enquanto flag OFF.
+- P2-2: catálogo público OFF na UI/API, somente dados explicitamente aprovados ao ativar.
+- P2-3: Web Push, iPhone apenas PWA instalado iOS 16.4+; sem prometer notificações antes de implementar.
+- P2-4: fila offline restrita só após sincronização robusta, idempotência e testes. Até lá, ocultar dados privados offline e bloquear escritas.
+
+## Homologação e entrega
+
+Testar Android Chrome/iPhone Safari físicos, instalação, navegação com dois usuários, backup/restauração, custos/limites atuais, transferência de contas, LGPD, retenção e rollback. Reconfirmar marca e informações comerciais com os proprietários, preservando a surpresa. Não ativar recursos pagos, domínio, catálogo ou marketing sem autorização.

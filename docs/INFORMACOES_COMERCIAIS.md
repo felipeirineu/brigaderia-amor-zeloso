@@ -4,15 +4,15 @@ Este documento reúne informações reais comunicadas pelo responsável no chat.
 
 ## Produto Tradicional
 
-| Campo                          | Informação fornecida                               |
-| ------------------------------ | -------------------------------------------------- |
-| Produto                        | Brigadeiro Tradicional                             |
-| Destaque                       | Carro-chefe da brigaderia                          |
-| Peso por brigadeiro            | 30 g                                               |
-| Unidade de venda informada     | Caixa com 12 unidades                              |
-| Preço da caixa                 | R$ 42,00                                           |
-| Representação monetária futura | 4200 centavos por caixa                            |
-| Origem                         | Informação enviada pelo responsável nesta conversa |
+| Campo                          | Informação fornecida                                    |
+| ------------------------------ | ------------------------------------------------------- |
+| Produto                        | Brigadeiro Tradicional                                  |
+| Destaque                       | Carro-chefe da brigaderia                               |
+| Peso por brigadeiro            | 30 g                                                    |
+| Unidade de venda informada     | Caixa com 12 unidades                                   |
+| Preço da caixa                 | R$ 42,00                                                |
+| Representação monetária futura | 4200 centavos por caixa                                 |
+| Origem                         | informado pelo Felipe, reconfirmar com os proprietários |
 
 O preço se refere à caixa com 12 unidades. Não estabelece oferta de venda avulsa, desconto ou preço de outros produtos. No cadastro futuro, distinguir quantidade de caixas e quantidade de brigadeiros por caixa; não multiplicar o preço da caixa por 12 para calcular uma única caixa.
 
@@ -24,3 +24,13 @@ Receita, ingredientes, alérgenos, validade, conservação, embalagem, foto auto
 - Manter fixtures fictícias de testes separadas dos dados comerciais reais.
 - Não incluir esses dados no frontend público de demonstração, no service worker ou em seeds automáticos.
 - O catálogo público permanece desativado até autorização explícita.
+
+## Sabores adicionais — informado pelo Felipe, reconfirmar com os proprietários
+
+| Sabor     | Peso por unidade | Unidades por caixa | Preço por caixa          | Origem / validação                                      |
+| --------- | ---------------- | ------------------ | ------------------------ | ------------------------------------------------------- |
+| Casadinho | 30 g             | 12                 | R$ 42,00 (4200 centavos) | informado pelo Felipe, reconfirmar com os proprietários |
+| Cajuzinho | 30 g             | 12                 | R$ 42,00 (4200 centavos) | informado pelo Felipe, reconfirmar com os proprietários |
+| Côco      | 30 g             | 12                 | R$ 42,00 (4200 centavos) | informado pelo Felipe, reconfirmar com os proprietários |
+
+O projeto é uma surpresa. O perfil B2B, a estimativa de 5–10 clientes fixos, condições de pagamento e a entrega pelo casal/motoboy são contexto informado pelo Felipe, a reconfirmar na entrega. Caixa mista, unidade avulsa, preço de revenda, roteiros, chave Pix, custos, validade, ingredientes e alérgenos permanecem a confirmar. Não remodelar os pedidos existentes com base na sugestão de caixa mista. Não inserir esses produtos no bundle público, SW ou banco automaticamente.

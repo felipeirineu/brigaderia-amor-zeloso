@@ -2,7 +2,7 @@
 
 PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com preparação para catálogo público e atendimento assistido pelo WhatsApp.
 
-> **Estado:** Fase 1 implementada para homologação local. A demonstração da Fase 0 está publicada no Pages; ativação de D1/Access e homologação online da gestão permanecem pendentes.
+> **Estado:** gestão da Fase 1 validada pelo Felipe. Correções técnicas e Fase 2A implementadas/testadas; novas operações permanecem OFF até backup e migração do banco remoto.
 
 ## Objetivos
 
@@ -103,3 +103,19 @@ O projeto está preparado para publicar **somente a demonstração** no Cloudfla
 A área `/gestao` implementa clientes, produtos/variantes e rascunhos de pedidos com sessões e permissões no servidor. O login `/login` depende de **Cloudflare Access e D1 configurados**; sem isso, a demonstração continua pública e os dados privados são negados. Não há senha de demonstração ou usuário padrão.
 
 Consulte [Fase 1: configuração e homologação](docs/FASE_1.md) para conectar o banco, configurar o Access, autorizar o primeiro administrador e testar dois usuários. `npm run test:api` executa integração real em workerd/D1 locais; a CI também executa os E2E da gestão. A publicação da Fase 0 foi validada por HTTP e pelo responsável, mas isso não valida a autenticação/banco da Fase 1.
+
+## Colaboração e Fase 2A
+
+Briefing aprovado em [Claude → Codex](docs/colaboracao/CLAUDE_PARA_CODEX.md), respostas/status em [Codex → Claude](docs/colaboracao/CODEX_PARA_CLAUDE.md). Os arquivos de autoria do Claude são preservados pelo formatter. O [plano](docs/PLANO_DE_EXECUCAO.md) segue P0/P1/P2.
+
+A [entrega técnica](docs/ENTREGA_TECNICA.md) corrige WebKit, elimina N+1 e aplica a marca autorizada. A [Fase 2A](docs/FASE_2A.md) inclui Hoje por papel, status/histórico, pedidos padrão semanais, entregador, WhatsApp assistido e base de ajuda/tutorial. `OPERATIONS_ENABLED=false` preserva o uso atual até backup e migração 0003; não ativar apenas a flag antes de conferir o banco. O catálogo continua bloqueado e nenhuma gravação offline é aceita.
+
+Verificações adicionais:
+
+```bash
+npm run test:listing
+npm run test:brand
+npm run test:operations
+```
+
+`npm run brand:build` regenera os assets a partir do logo aprovado. Para WebKit no ambiente de nuvem com bibliotecas locais, usar `PLAYWRIGHT_WEBKIT_EXECUTABLE_PATH=/workspace/.webkit-deps/run-webkit.sh`; em CI/máquina com dependências Playwright instaladas, deixar essa variável ausente. A adaptação de cookie HTTP existe somente em tests/helpers/runtime.mjs e não altera a segurança da aplicação de produção.

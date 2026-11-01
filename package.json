@@ -22,10 +22,15 @@
     "build:pages": "npm run build && node scripts/build-pages.mjs",
     "preview:pages": "wrangler pages dev dist --ip 127.0.0.1",
     "test:api": "node tests/integration/management.mjs",
-    "admin:prepare": "node scripts/prepare-admin.mjs"
+    "admin:prepare": "node scripts/prepare-admin.mjs",
+    "test:listing": "node tests/integration/listing.mjs",
+    "brand:build": "node scripts/build-brand.mjs",
+    "test:brand": "node tests/integration/brand.mjs",
+    "test:operations": "node tests/integration/migration-operations.mjs && node tests/integration/operations.mjs"
   },
   "dependencies": {
     "jose": "^6.2.14",
+    "lucide-react": "^1.66.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
     "react-router-dom": "^7.18.5",
@@ -46,6 +51,7 @@
     "globals": "^17.13.0",
     "miniflare": "^5.20261023.3-beta",
     "prettier": "^3.9.10",
+    "sharp": "^0.35.5",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.1",
     "vite": "^8.3.5",

@@ -20,7 +20,15 @@ export default defineConfig({
         },
       },
     },
-    { name: 'webkit-mobile', use: { ...devices['iPhone 13'] } },
+    {
+      name: 'webkit-mobile',
+      use: {
+        ...devices['iPhone 13'],
+        launchOptions: {
+          executablePath: process.env.PLAYWRIGHT_WEBKIT_EXECUTABLE_PATH,
+        },
+      },
+    },
     {
       name: 'chromium-desktop',
       use: {

@@ -1,0 +1,697 @@
+import { operationalReady } from './operational-ready';
+import { z } from 'zod';
+import { body, hash, HttpError, json, type Actor, type Env } from './security';
+import { childrenByParent } from './listing';
+import {
+  addDays,
+  businessDay,
+  daySchema,
+  deliverySchema,
+  interpolate,
+  nextStatuses,
+  recurringSchema,
+  templates,
+  transitionSchema,
+  utcStart,
+  type MessageKind,
+  type Status,
+} from './operations-domain';
+type Row = Record<string, string | number | null>;
+const keyFrom = (req: Request) => {
+  const key = req.headers.get('Idempotency-Key');
+  if (!z.uuid().safeParse(key).success)
+    throw new HttpError(400, 'Chave de repetição inválida.');
+  return key!;
+};
+export async function operations(
+  req: Request,
+  env: Env,
+  a: Actor,
+): Promise<Response> {
+  if (!(await operationalReady(env)))
+    throw new HttpError(
+      503,
+      'As novas funções ainda não estão disponíveis nesta conta.',
+    );
+  const db = env.DB!,
+    org = a.organization_id,
+    url = new URL(req.url);
+  const parts = url.pathname.split('/');
+  const resource = parts[2],
+    id = parts[3],
+    action = parts[4];
+  const audit = (name: string, entity: string) =>
+    db
+      .prepare(
+        'INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) VALUES(?,?,?,?,?)',
+      )
+      .bind(crypto.randomUUID(), org, a.user_id, name, entity);
+  if (resource === 'today' && req.method === 'GET') {
+    const parsedDay = daySchema.safeParse(
+      url.searchParams.get('date') || businessDay(),
+    );
+    if (!parsedDay.success) throw new HttpError(400, 'Data inválida.');
+    const day = parsedDay.data;
+    const rows = (
+      await db
+        .prepare(
+          "SELECT * FROM orders WHERE organization_id=? AND active=1 AND status<>'cancelled' AND due_at>=? AND due_at<? ORDER BY due_at,id LIMIT 201",
+        )
+        .bind(org, utcStart(day), utcStart(addDays(day, 2)))
+        .all<Row>()
+    ).results;
+    const truncated = rows.length > 200;
+    const selected = rows.slice(0, 200);
+    const children = await childrenByParent(
+      db,
+      org,
+      'orders',
+      selected.map((o) => String(o.id)),
+    );
+    const orders = selected.map((o) => ({
+      ...o,
+      status: String(o.status),
+      due_at: String(o.due_at),
+      request_key: undefined,
+      request_hash: undefined,
+      create_key: undefined,
+      create_hash: undefined,
+      mutation_id: undefined,
+      items: children.get(String(o.id)) ?? [],
+    }));
+    // A lista de cartões é limitada; a produção agrega TODOS os pedidos do período.
+    const production = (
+      await db
+        .prepare(
+          "SELECT date(o.due_at,'-3 hours') AS day,i.product_name AS name,i.variant_label AS label,i.weight_grams,i.units_per_box,SUM(i.quantity) AS boxes,SUM(i.quantity*i.units_per_box) AS units FROM order_items i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE o.organization_id=? AND o.active=1 AND o.status IN ('confirmed','in_production') AND o.due_at>=? AND o.due_at<? GROUP BY day,i.product_name,i.variant_label,i.weight_grams,i.units_per_box ORDER BY day,i.product_name,i.variant_label,i.weight_grams",
+        )
+        .bind(org, utcStart(day), utcStart(addDays(day, 2)))
+        .all()
+    ).results;
+    const totals = await db
+      .prepare(
+        "SELECT COALESCE(SUM(CASE WHEN status IN ('confirmed','in_production','ready','out_for_delivery') THEN total_cents ELSE 0 END),0) AS expected_cents, COALESCE(SUM(CASE WHEN status IN ('delivered','picked_up') THEN total_cents ELSE 0 END),0) AS delivered_cents FROM orders WHERE organization_id=? AND active=1 AND due_at>=? AND due_at<?",
+      )
+      .bind(org, utcStart(day), utcStart(addDays(day, 1)))
+      .first();
+    return json({
+      day,
+      role: a.role,
+      orders,
+      production,
+      totals,
+      received_available: false,
+      truncated,
+    });
+  }
+  if (resource === 'recurring') {
+    if (id && !z.uuid().safeParse(id).success)
+      throw new HttpError(404, 'Não encontrado.');
+    if (req.method === 'GET') {
+      const rows = (
+        await db
+          .prepare(
+            `SELECT t.*,c.name AS customer_name FROM recurring_templates t JOIN customers c ON c.organization_id=t.organization_id AND c.id=t.customer_id WHERE t.organization_id=?${id ? ' AND t.id=?' : ''} ORDER BY t.weekday,t.name LIMIT 100`,
+          )
+          .bind(org, ...(id ? [id] : []))
+          .all<Row>()
+      ).results;
+      const children = await childrenByParent(
+        db,
+        org,
+        'recurring',
+        rows.map((t) => String(t.id)),
+      );
+      const output = rows.map((t) => ({
+        ...t,
+        mutation_id: undefined,
+        items: children.get(String(t.id)) ?? [],
+      }));
+      if (id && !output.length)
+        throw new HttpError(404, 'Modelo não encontrado.');
+      return json(id ? output[0] : output);
+    }
+    if (req.method !== 'POST' && req.method !== 'PUT')
+      throw new HttpError(405, 'Método não permitido.');
+    if ((req.method === 'PUT') !== !!id)
+      throw new HttpError(405, 'Método não permitido.');
+    const data = await body(req, recurringSchema);
+    const mutation = crypto.randomUUID();
+    const customer = await db
+      .prepare(
+        'SELECT id FROM customers WHERE organization_id=? AND id=? AND active=1',
+      )
+      .bind(org, data.customer_id)
+      .first();
+    if (!customer) throw new HttpError(400, 'Cliente ativo não encontrado.');
+    const variants = (
+      await db
+        .prepare(
+          `SELECT v.id FROM product_variants v JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE v.organization_id=? AND v.id IN (${data.items.map(() => '?').join(',')}) ${data.active ? 'AND v.active=1 AND p.active=1' : ''}`,
+        )
+        .bind(org, ...data.items.map((i) => i.variant_id))
+        .all<{ id: string }>()
+    ).results;
+    if (variants.length !== data.items.length)
+      throw new HttpError(400, 'Variante ativa não encontrada.');
+    const previous = id
+      ? await db
+          .prepare(
+            'SELECT version FROM recurring_templates WHERE organization_id=? AND id=?',
+          )
+          .bind(org, id)
+          .first<{ version: number }>()
+      : null;
+    if (id && !previous) throw new HttpError(404, 'Modelo não encontrado.');
+    if (id && data.version !== previous?.version)
+      throw new HttpError(409, 'Modelo alterado. Atualize.');
+    // UUID enviado pelo cliente torna a criação de modelo repetível sem duplicar.
+    const createKey = id || keyFrom(req);
+    const templateId = id || createKey;
+    const first = id
+      ? db
+          .prepare(
+            'UPDATE recurring_templates SET name=?,customer_id=?,weekday=?,time=?,notes=?,delivery_type=?,delivery_address=?,active=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?',
+          )
+          .bind(
+            data.name,
+            data.customer_id,
+            data.weekday,
+            data.time,
+            data.notes,
+            data.delivery_type,
+            data.delivery_address,
+            +data.active,
+            mutation,
+            org,
+            templateId,
+            data.version,
+          )
+      : db
+          .prepare(
+            'INSERT OR IGNORE INTO recurring_templates(id,organization_id,name,customer_id,weekday,time,notes,delivery_type,delivery_address,active,mutation_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+          )
+          .bind(
+            templateId,
+            org,
+            data.name,
+            data.customer_id,
+            data.weekday,
+            data.time,
+            data.notes,
+            data.delivery_type,
+            data.delivery_address,
+            +data.active,
+            mutation,
+          );
+    const guard =
+      'EXISTS(SELECT 1 FROM recurring_templates WHERE organization_id=? AND id=? AND mutation_id=?)';
+    const results = await db.batch([
+      first,
+      db
+        .prepare(
+          `DELETE FROM recurring_items WHERE organization_id=? AND template_id=? AND ${guard}`,
+        )
+        .bind(org, templateId, org, templateId, mutation),
+      db
+        .prepare(
+          `INSERT INTO recurring_items(id,organization_id,template_id,variant_id,quantity) SELECT json_extract(value,'$.id'),?,?,json_extract(value,'$.variant_id'),json_extract(value,'$.quantity') FROM json_each(?) WHERE ${guard}`,
+        )
+        .bind(
+          org,
+          templateId,
+          JSON.stringify(
+            data.items.map((i) => ({ ...i, id: crypto.randomUUID() })),
+          ),
+          org,
+          templateId,
+          mutation,
+        ),
+      db
+        .prepare(
+          `INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT ?,?,?,?,? WHERE ${guard}`,
+        )
+        .bind(
+          crypto.randomUUID(),
+          org,
+          a.user_id,
+          'recurring.saved',
+          templateId,
+          org,
+          templateId,
+          mutation,
+        ),
+    ]);
+    if (!results[0].meta.changes)
+      throw new HttpError(
+        409,
+        'Modelo já existe ou foi alterado. Atualize a lista.',
+      );
+    return json({ id: templateId }, id ? 200 : 201);
+  }
+  if (resource === 'generate-week' && req.method === 'POST') {
+    const data = await body(req, z.object({ week: daySchema }).strict());
+    if (new Date(data.week + 'T12:00:00Z').getUTCDay() !== 1)
+      throw new HttpError(400, 'Escolha a segunda-feira da semana.');
+    const plans = (
+      await db
+        .prepare(
+          'SELECT t.*,c.name AS customer_name FROM recurring_templates t JOIN customers c ON c.organization_id=t.organization_id AND c.id=t.customer_id WHERE t.organization_id=? AND t.active=1 AND c.active=1 ORDER BY t.id LIMIT 101',
+        )
+        .bind(org)
+        .all<Row>()
+    ).results;
+    if (plans.length > 100)
+      throw new HttpError(400, 'Limite de 100 modelos por geração.');
+    const rows = (
+      await db
+        .prepare(
+          'SELECT i.*,v.label,v.weight_grams,v.units_per_box,v.price_cents,p.name FROM recurring_items i JOIN recurring_templates t ON t.organization_id=i.organization_id AND t.id=i.template_id JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE i.organization_id=? AND t.active=1 AND v.active=1 AND p.active=1',
+        )
+        .bind(org)
+        .all<Row>()
+    ).results;
+    const itemCounts = (
+      await db
+        .prepare(
+          'SELECT template_id,COUNT(*) AS count FROM recurring_items WHERE organization_id=? GROUP BY template_id',
+        )
+        .bind(org)
+        .all<{ template_id: string; count: number }>()
+    ).results;
+    const nonce = crypto.randomUUID();
+    const planned: Record<string, unknown>[] = [],
+      items: Record<string, unknown>[] = [];
+    for (const plan of plans) {
+      const contents = rows.filter((i) => i.template_id === plan.id);
+      if (
+        !contents.length ||
+        contents.length !==
+          itemCounts.find((c) => c.template_id === plan.id)?.count
+      )
+        throw new HttpError(
+          400,
+          'Um modelo possui variantes inativas. Revise antes de gerar.',
+        );
+      const due = new Date(
+        `${addDays(data.week, Number(plan.weekday) - 1)}T${plan.time}:00-03:00`,
+      ).toISOString();
+      const id = crypto.randomUUID();
+      const total = contents.reduce(
+        (n, i) => n + Number(i.quantity) * Number(i.price_cents),
+        0,
+      );
+      if (!Number.isSafeInteger(total) || total > 1000000000)
+        throw new HttpError(400, 'Total do modelo excede o limite.');
+      planned.push({
+        id,
+        customer_id: plan.customer_id,
+        customer_name: plan.customer_name,
+        due_at: due,
+        notes: plan.notes,
+        total_cents: total,
+        delivery_type: plan.delivery_type,
+        delivery_address: plan.delivery_address,
+        recurrence_key: `${plan.id}:${data.week}`,
+        request_key: crypto.randomUUID(),
+      });
+      for (const item of contents)
+        items.push({
+          id: crypto.randomUUID(),
+          order_id: id,
+          variant_id: item.variant_id,
+          product_name: item.name,
+          variant_label: item.label,
+          weight_grams: item.weight_grams,
+          units_per_box: item.units_per_box,
+          unit_price_cents: item.price_cents,
+          quantity: item.quantity,
+        });
+    }
+    const ordersJSON = JSON.stringify(planned),
+      itemsJSON = JSON.stringify(items);
+    if (ordersJSON.length + itemsJSON.length > 900000)
+      throw new HttpError(400, 'Reduza os modelos desta geração.');
+    const result = await db.batch([
+      db
+        .prepare(
+          "INSERT OR IGNORE INTO orders(id,organization_id,customer_id,customer_name,due_at,notes,total_cents,request_key,request_hash,mutation_id,order_type,delivery_type,delivery_address,recurrence_key) SELECT json_extract(value,'$.id'),?,json_extract(value,'$.customer_id'),json_extract(value,'$.customer_name'),json_extract(value,'$.due_at'),json_extract(value,'$.notes'),json_extract(value,'$.total_cents'),json_extract(value,'$.request_key'),'recurring',?,'recurring',json_extract(value,'$.delivery_type'),json_extract(value,'$.delivery_address'),json_extract(value,'$.recurrence_key') FROM json_each(?)",
+        )
+        .bind(org, nonce, ordersJSON),
+      db
+        .prepare(
+          "INSERT INTO order_items(id,organization_id,order_id,variant_id,product_name,variant_label,weight_grams,units_per_box,unit_price_cents,quantity) SELECT json_extract(j.value,'$.id'),?,json_extract(j.value,'$.order_id'),json_extract(j.value,'$.variant_id'),json_extract(j.value,'$.product_name'),json_extract(j.value,'$.variant_label'),json_extract(j.value,'$.weight_grams'),json_extract(j.value,'$.units_per_box'),json_extract(j.value,'$.unit_price_cents'),json_extract(j.value,'$.quantity') FROM json_each(?) j JOIN orders o ON o.organization_id=? AND o.id=json_extract(j.value,'$.order_id') AND o.mutation_id=?",
+        )
+        .bind(org, itemsJSON, org, nonce),
+      db
+        .prepare(
+          "INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT lower(hex(randomblob(16))),organization_id,?,'recurring.generated',id FROM orders WHERE organization_id=? AND mutation_id=?",
+        )
+        .bind(a.user_id, org, nonce),
+    ]);
+    return json({
+      created: result[0].meta.changes,
+      already_present: planned.length - result[0].meta.changes,
+      week: data.week,
+    });
+  }
+  if (resource === 'message-templates') {
+    if (req.method === 'GET') {
+      const overrides = (
+        await db
+          .prepare(
+            'SELECT kind,content FROM message_templates WHERE organization_id=?',
+          )
+          .bind(org)
+          .all<{ kind: MessageKind; content: string }>()
+      ).results;
+      return json(
+        Object.entries(templates).map(([kind, content]) => ({
+          kind,
+          content: overrides.find((v) => v.kind === kind)?.content ?? content,
+        })),
+      );
+    }
+    if (req.method === 'PUT') {
+      const data = await body(
+        req,
+        z
+          .object({
+            kind: z.enum(
+              Object.keys(templates) as [MessageKind, ...MessageKind[]],
+            ),
+            content: z.string().trim().min(1).max(2000),
+          })
+          .strict(),
+      );
+      const known = [
+        'cliente',
+        'numero_pedido',
+        'itens',
+        'total',
+        'data',
+        'hora',
+        'endereco',
+      ];
+      for (const match of data.content.matchAll(/\{([^{}]+)\}/g))
+        if (!known.includes(match[1]))
+          throw new HttpError(
+            400,
+            'Campo de modelo não disponível nesta etapa.',
+          );
+      if (/[{}]/.test(data.content.replace(/\{[^{}]+\}/g, '')))
+        throw new HttpError(400, 'Modelo inválido.');
+      await db.batch([
+        db
+          .prepare(
+            'INSERT INTO message_templates(organization_id,kind,content) VALUES(?,?,?) ON CONFLICT(organization_id,kind) DO UPDATE SET content=excluded.content',
+          )
+          .bind(org, data.kind, data.content),
+        audit('message_template.updated', data.kind),
+      ]);
+      return json({ ok: true });
+    }
+  }
+  if (resource !== 'orders' || !id || !z.uuid().safeParse(id).success)
+    throw new HttpError(404, 'Não encontrado.');
+  const order = await db
+    .prepare(
+      'SELECT * FROM orders WHERE organization_id=? AND id=? AND active=1',
+    )
+    .bind(org, id)
+    .first<Row>();
+  if (!order) throw new HttpError(404, 'Pedido não encontrado.');
+  if (action === 'history' && req.method === 'GET')
+    return json(
+      (
+        await db
+          .prepare(
+            'SELECT id,from_status,to_status,reason,user_id,created_at,undo_of FROM order_status_events WHERE organization_id=? AND order_id=? ORDER BY order_version',
+          )
+          .bind(org, id)
+          .all()
+      ).results,
+    );
+  if (action === 'delivery' && req.method === 'PUT') {
+    const data = await body(req, deliverySchema);
+    if (data.version !== order.version)
+      throw new HttpError(409, 'Pedido alterado. Atualize.');
+    if (['delivered', 'picked_up', 'cancelled'].includes(String(order.status)))
+      throw new HttpError(409, 'Pedido encerrado não pode ser editado.');
+    const nonce = crypto.randomUUID();
+    const result = await db.batch([
+      db
+        .prepare(
+          'UPDATE orders SET delivery_type=?,delivery_address=?,courier=?,courier_name=?,courier_fee_cents=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?',
+        )
+        .bind(
+          data.delivery_type,
+          data.delivery_address,
+          data.courier,
+          data.courier_name,
+          data.courier_fee_cents,
+          nonce,
+          org,
+          id,
+          data.version,
+        ),
+      db
+        .prepare(
+          "INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT ?,?,?,'order.delivery',? WHERE EXISTS(SELECT 1 FROM orders WHERE organization_id=? AND id=? AND mutation_id=?)",
+        )
+        .bind(crypto.randomUUID(), org, a.user_id, id, org, id, nonce),
+    ]);
+    if (!result[0].meta.changes)
+      throw new HttpError(409, 'Pedido alterado. Atualize.');
+    return json({ ok: true });
+  }
+  if ((action === 'status' || action === 'undo') && req.method === 'POST') {
+    const key = keyFrom(req);
+    const data =
+      action === 'status'
+        ? await body(req, transitionSchema)
+        : await body(
+            req,
+            z
+              .object({
+                version: z.number().int().positive(),
+                event_id: z.uuid(),
+              })
+              .strict(),
+          );
+    const fingerprint = await hash(JSON.stringify(data));
+    const repeated = await db
+      .prepare(
+        'SELECT id,request_hash FROM order_status_events WHERE organization_id=? AND request_key=?',
+      )
+      .bind(org, key)
+      .first<{ id: string; request_hash: string }>();
+    if (repeated) {
+      if (repeated.request_hash !== fingerprint)
+        throw new HttpError(409, 'Chave já utilizada.');
+      return json({ event_id: repeated.id });
+    }
+    let target: Status,
+      reason: string,
+      undoOf: string | null = null;
+    if (action === 'undo') {
+      const undo = data as { version: number; event_id: string };
+      const event = await db
+        .prepare(
+          'SELECT * FROM order_status_events WHERE organization_id=? AND order_id=? AND id=?',
+        )
+        .bind(org, id, undo.event_id)
+        .first<Row>();
+      if (
+        !event ||
+        event.user_id !== a.user_id ||
+        event.to_status !== order.status ||
+        event.order_version !== order.version ||
+        !['delivered', 'picked_up'].includes(String(event.to_status)) ||
+        Number(event.created_at) < Math.floor(Date.now() / 1000) - 10
+      )
+        throw new HttpError(
+          409,
+          'A janela para desfazer terminou ou o pedido foi alterado.',
+        );
+      target = event.from_status as Status;
+      reason = 'Entrega desfeita pelo operador dentro de 10 segundos.';
+      undoOf = String(event.id);
+    } else {
+      const change = data as z.infer<typeof transitionSchema>;
+      target = change.to;
+      reason = change.reason;
+    }
+    if (data.version !== order.version)
+      throw new HttpError(409, 'Pedido alterado em outra sessão. Atualize.');
+    if (
+      action === 'status' &&
+      !nextStatuses(
+        order.status as Status,
+        String(order.delivery_type),
+      ).includes(target)
+    )
+      throw new HttpError(409, 'Transição de status não permitida.');
+    if (target === 'out_for_delivery' && order.courier === 'unassigned')
+      throw new HttpError(400, 'Selecione quem fará a entrega antes da saída.');
+    if (target === 'cancelled' && !reason.trim())
+      throw new HttpError(400, 'Informe o motivo do cancelamento.');
+    if (
+      target === 'confirmed' &&
+      order.delivery_type === 'delivery' &&
+      !String(order.delivery_address).trim()
+    )
+      throw new HttpError(
+        400,
+        'Informe o endereço de entrega ou selecione retirada antes de confirmar.',
+      );
+    const eventId = crypto.randomUUID();
+    const result = await db.batch([
+      db
+        .prepare(
+          'UPDATE orders SET status=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?',
+        )
+        .bind(target, eventId, org, id, data.version),
+      db
+        .prepare(
+          'INSERT INTO order_status_events(id,organization_id,order_id,user_id,from_status,to_status,reason,order_version,request_key,request_hash,undo_of) SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM orders WHERE organization_id=? AND id=? AND mutation_id=?)',
+        )
+        .bind(
+          eventId,
+          org,
+          id,
+          a.user_id,
+          order.status,
+          target,
+          reason,
+          Number(data.version) + 1,
+          key,
+          fingerprint,
+          undoOf,
+          org,
+          id,
+          eventId,
+        ),
+      db
+        .prepare(
+          "INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT ?,?,?,'order.status',? WHERE EXISTS(SELECT 1 FROM orders WHERE organization_id=? AND id=? AND mutation_id=?)",
+        )
+        .bind(crypto.randomUUID(), org, a.user_id, id, org, id, eventId),
+    ]);
+    if (!result[0].meta.changes)
+      throw new HttpError(409, 'Pedido alterado. Atualize.');
+    return json({
+      event_id: eventId,
+      undo_seconds: ['delivered', 'picked_up'].includes(target) ? 10 : 0,
+    });
+  }
+  if (action === 'message' && req.method === 'POST') {
+    const data = await body(
+      req,
+      z
+        .object({
+          kind: z.enum(
+            Object.keys(templates) as [MessageKind, ...MessageKind[]],
+          ),
+        })
+        .strict(),
+    );
+    const customer = await db
+      .prepare('SELECT phone FROM customers WHERE organization_id=? AND id=?')
+      .bind(org, order.customer_id)
+      .first<{ phone: string }>();
+    if (!customer || !/^\+[1-9]\d{7,14}$/.test(customer.phone))
+      throw new HttpError(400, 'Telefone do cliente inválido.');
+    const items = (
+      await db
+        .prepare(
+          'SELECT * FROM order_items WHERE organization_id=? AND order_id=?',
+        )
+        .bind(org, id)
+        .all<Row>()
+    ).results;
+    const custom = await db
+      .prepare(
+        'SELECT content FROM message_templates WHERE organization_id=? AND kind=?',
+      )
+      .bind(org, data.kind)
+      .first<{ content: string }>();
+    const date = new Date(String(order.due_at));
+    const content = custom?.content ?? templates[data.kind];
+    let message: string;
+    try {
+      message = interpolate(content, {
+        cliente: String(order.customer_name),
+        numero_pedido: String(order.id).slice(0, 8),
+        itens: items
+          .map(
+            (i) =>
+              `${i.quantity} embalagem(ns) de ${i.product_name} — ${i.variant_label}`,
+          )
+          .join('; '),
+        total: new Intl.NumberFormat('pt-BR', {
+          style: 'currency',
+          currency: 'BRL',
+        }).format(Number(order.total_cents) / 100),
+        data: new Intl.DateTimeFormat('pt-BR', {
+          timeZone: 'America/Fortaleza',
+        }).format(date),
+        hora: new Intl.DateTimeFormat('pt-BR', {
+          timeZone: 'America/Fortaleza',
+          hour: '2-digit',
+          minute: '2-digit',
+        }).format(date),
+        endereco:
+          order.delivery_type === 'pickup'
+            ? 'retirada combinada'
+            : String(order.delivery_address),
+      });
+    } catch (e) {
+      throw new HttpError(400, (e as Error).message);
+    }
+    return json({ message, phone: customer.phone });
+  }
+  if (action === 'contact' && req.method === 'POST') {
+    const data = await body(
+      req,
+      z
+        .object({
+          kind: z.enum(
+            Object.keys(templates) as [MessageKind, ...MessageKind[]],
+          ),
+        })
+        .strict(),
+    );
+    const key = keyFrom(req);
+    const existing = await db
+      .prepare(
+        'SELECT order_id,template_kind FROM contact_events WHERE organization_id=? AND request_key=?',
+      )
+      .bind(org, key)
+      .first<{ order_id: string; template_kind: string }>();
+    if (
+      existing &&
+      (existing.order_id !== id || existing.template_kind !== data.kind)
+    )
+      throw new HttpError(409, 'Chave de contato já utilizada.');
+    if (!existing)
+      await db.batch([
+        db
+          .prepare(
+            'INSERT OR IGNORE INTO contact_events(id,organization_id,order_id,user_id,template_kind,request_key) VALUES(?,?,?,?,?,?)',
+          )
+          .bind(crypto.randomUUID(), org, id, a.user_id, data.kind, key),
+        db
+          .prepare(
+            "INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT ?,?,?,'order.contact_recorded',? WHERE changes()=1",
+          )
+          .bind(crypto.randomUUID(), org, a.user_id, id),
+      ]);
+    return json({
+      ok: true,
+      notice:
+        'Contato registrado manualmente. O aplicativo não comprova envio ou entrega de mensagem.',
+    });
+  }
+  throw new HttpError(405, 'Ação não disponível.');
+}

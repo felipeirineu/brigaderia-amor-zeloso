@@ -32,3 +32,12 @@
 
 - Excluídas rotas `/cdn-cgi/` do fallback offline para permitir callback e logout do Cloudflare Access.
 - Regressão reproduzida em Chromium antes da correção; teste passa a verificar que essas rotas chegam à rede.
+
+## Colaboração, correções técnicas e início da Fase 2A
+
+- Briefing Claude importado, prioridades P0/P1/P2 e informações comerciais documentadas com reconfirmação.
+- WebKit no harness sem modificar cookies de produção; N+1 removido, com lotes e testes de volume.
+- Logo oficial autorizado, assets PWA/touch/favicon, tokens AA e Lucide.
+- Operação Hoje por papel, status auditados com desfazer, modelos semanais idempotentes, entregador e WhatsApp assistido.
+- Ajuda contextual, tour base e treino frontend sem gravação.
+- Migração preserva pedidos/itens; ativação operacional OFF até backup/migração remota. Recebimentos/fechamentos continuam pendentes.
