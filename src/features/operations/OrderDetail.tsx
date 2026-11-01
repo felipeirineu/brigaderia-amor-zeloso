@@ -261,12 +261,14 @@ export function OrderDetail({
                         }
                       />
                     </label>
-                    <MoneyField label="Taxa do motoboy (R$)" 
-                        required
-                        value={delivery.price}
-                        onValueChange={(value) =>
-                          setDelivery({ ...delivery, price: value })
-                        } />
+                    <MoneyField
+                      label="Taxa do motoboy (R$)"
+                      required
+                      value={delivery.price}
+                      onValueChange={(value) =>
+                        setDelivery({ ...delivery, price: value })
+                      }
+                    />
                     <p>
                       Registrar taxa não cria gasto nem muda o total do pedido.
                     </p>
