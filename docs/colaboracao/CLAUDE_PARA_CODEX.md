@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-01** — R5: revisão da entrega R2/R3/R4/P1 (até `796342b`), com capturas de tela. Foco: espaço útil no celular e simplificação da ativação. Ver seção **R5**.
 - **2026-11-01** — R4: remover marcações de origem das informações (urgente), localização de clientes, distância, Uber/99 e custo de deslocamento. Ver seção **R4** abaixo.
 - **2026-11-01** — Sabor **Limão** incluído: 30 g, caixa com 12, R$ 42,00 (igual aos demais). Atualizar `docs/INFORMACOES_COMERCIAIS.md`.
 - **2026-11-01** — R3-4 atualizado: correspondência das fotos com os sabores definida (arquivos renomeados por sabor).
@@ -13,6 +14,102 @@
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R5 — Revisão da entrega R2 + R3 + R4 + P1 (até `796342b`, 2026-11-01)
+
+**O que foi revisado:**
+
+- Commits `19fc9c3`…`796342b` (148 arquivos, cerca de 14 mil linhas). CI do `796342b` **verde**.
+- Busca de menções pessoais (R4-0) e lista de migrações e flags.
+- `docs/ATIVACAO.md`.
+- Pontos de segurança de `backup.ts`, `places-provider.ts`, `field.ts` (foto), `travel.ts`, `customer-import.ts`, `calendar.ts` e `mobile.ts`.
+- `shared/flavors.ts`.
+- **Capturas reais** das telas: build do `main` + harness Miniflare com todas as flags ON, dados fictícios (5 sabores, 3 clientes "Exemplo", 3 pedidos), viewport 390×844. Arquivos em [`capturas/`](capturas/):
+  - `r5-operador.webp`: Hoje, Novo pedido/Cliente, Sabores e Mais.
+  - `r5-admin.webp`: Hoje, Financeiro, Relatórios e Agenda.
+  - `r5-sabores-clientes.webp`: grade completa de sabores e Clientes.
+- **Não foi feito:** revisão linha a linha de todos os módulos, execução da suíte completa por mim (o CI cobre) e aparelho físico.
+
+### Aprovado
+
+- **R4-0:** nenhuma menção pessoal na UI. Restam apenas a URL do repositório em docs e no `User-Agent` (ver R5-9).
+- **R2 completa:**
+  - recebimento rápido, crédito, anulação de fechamento;
+  - estorno restrito do operador (`reversal-policy.ts` com teste).
+- **R3:**
+  - fotos dos sabores servidas por API privada, `photo_key` validado por enum;
+  - MoneyInput/QuantityInput testados;
+  - fluxo Cliente → Sabores → Revisar → Confirmar;
+  - "Repetir último pedido".
+- **R4:**
+  - Photon/OSM com rate limit e cache no servidor;
+  - foto do estabelecimento validada (assinatura RIFF/WEBP, ≤ 40 KB);
+  - deslocamentos com estorno por motivo;
+  - link Uber documentado;
+  - 99 com cópia do endereço;
+  - endereço da empresa só para administrador;
+  - nomes de exibição pelo perfil.
+- **P1:**
+  - backup **só do administrador**, sem sessões nem caches;
+  - importação com prévia, limite de 50 linhas e só administrador;
+  - CSV com proteção contra fórmulas;
+  - limites explícitos nas consultas.
+- Visual: tipografia, cores, ícones e barra inferior com "+" estão bonitos e coerentes com a marca. As fotos funcionam muito bem.
+
+### Ajustes pedidos: espaço útil no celular (prioridade alta)
+
+As capturas mostram que **um quarto da tela** se perde antes do conteúdo, em todas as páginas.
+
+- **R5-1 — Cabeçalho compacto no celular.**
+  - Hoje há três faixas: logo + "Amor Zeloso Gestão", "Área privada · Operador" + Sair, "Conheça os atalhos" + Conhecer o app. Juntas somam ~200 px.
+  - No celular, deixar **uma linha só, de no máximo 56 px**: logo pequeno, título da página e um botão de avatar/menu com nome de exibição, "Conhecer o app", Ajuda e Sair.
+  - O PC pode manter o cabeçalho atual.
+- **R5-2 — Hoje da operadora: entregas primeiro.**
+  - Hoje a ordem é: checkbox "Ordenar por proximidade" (antes do título), seletor de data e Lembretes. O primeiro cartão de entrega mal aparece.
+  - Ordem pedida: **Entregas do dia** (cartões) → Lembretes → resto.
+  - Data como chip "Hoje, 01/11 ▾" na linha do título.
+  - "Ordenar por proximidade" vira um chip/toggle junto ao título de Entregas.
+- **R5-3 — Grade de sabores em "modo foco" (totem).**
+  - Durante Novo pedido, **ocultar a barra de navegação inferior**. Ficam só a barra de total e a ação; o Voltar sobe para o cabeçalho. Hoje as duas barras somam ~170 px.
+  - **O cartão inteiro é o botão** quando só existe uma embalagem.
+    - Remover o botão escuro "Caixa 12 un." e o texto duplicado "R$ 42,00 · Caixa 12 un.".
+    - Mostrar nome, preço e contador.
+    - Os chips de embalagem só aparecem quando houver 2 ou mais variantes.
+  - **Cartões mais baixos:** foto ~120 px e tipografia compacta, para que os **5 sabores caibam em uma tela** de 390×844 sem rolar (com R5-1 aplicado).
+  - **Ordem dos sabores:** mais pedidos pelo cliente → mais pedidos em geral → ordem manual definida no cadastro. Nunca alfabética. O Tradicional (carro-chefe) aparece hoje por último.
+  - **Total vazio:** sem itens, a barra mostra "Toque nos sabores para montar o pedido", com o botão desativado, em vez de "Total R$ 0,00 · Revisar pedido · R$ 0,00" (R3: não exibir 0,00 como padrão).
+  - Título "Lanchonete Exemplo · escolha as embalagens": trocar por "Lanchonete Exemplo" + subtítulo "Toque para adicionar caixas".
+- **R5-4 — Clientes: lista primeiro.**
+  - A tela abre num formulário "Novo cliente". Deve abrir na **lista/busca** de clientes em cartões, com a mesma aparência do passo Cliente do pedido, e um botão "+ Novo cliente" que abre o formulário em uma folha (bottom sheet).
+  - Remover o texto "Contatos privados da sua organização…" do topo.
+  - No formulário, "Usar minha localização" e "Tirar foto" logo no começo.
+- **R5-5 — Financeiro com cartões de valor.**
+  - Os valores aparecem como links sublinhados ("Recebido hoje: R$ 0,00").
+  - Usar cartões de indicador: rótulo pequeno, valor grande em negrito, toque no cartão inteiro, sem sublinhado e em grade 2×2 regular.
+- **R5-6 — Sem `<select>` para poucas opções.** Relatórios ("Condição das vendas") e Agenda ("Eventos") usam select nativo. Trocar por chips quando houver até 5 opções (R3-7). Manter o select ou a busca para lista de clientes.
+- **R5-7 — Quebra de palavra nos tiles de "Mais".** "Deslocamen/tos" está quebrando no meio. Usar `hyphens: auto` com `lang="pt-BR"`, ou fonte um pouco menor, ou o rótulo "Corridas". Conferir os outros tiles.
+- **R5-8 — Teste visual.** Adicionar um E2E de "não regressão de espaço": no Hoje e no Novo pedido em 390×844, o primeiro cartão de conteúdo começa em y ≤ 140 px e os 5 sabores de teste ficam visíveis sem rolar. Opcionalmente, salvar screenshots como artefato do CI.
+
+### Outros ajustes
+
+- **R5-9 — `User-Agent` do Photon.** Contém a URL do repositório pessoal (`places-provider.ts:35`). Passar para variável de configuração (ex.: `PLACES_USER_AGENT`), com valor neutro padrão "BrigaderiaGestao/1.0", e documentar a troca para o contato da empresa na transferência.
+- **R5-10 — Ativação simplificada para homologação.**
+  - Hoje são **11 migrações e 7 flags**, com deploys sequenciais e terminal PowerShell. É seguro, mas pesado para um não-desenvolvedor.
+  - Como o banco de homologação ainda não tem dados reais de clientes, oferecer um **caminho de homologação**: backup → aplicar todas as migrações pendentes pelo runner → uma única pré-checagem → **todas as flags ON em um único commit/deploy** → roteiro de teste.
+  - Manter o caminho gradual atual documentado para quando houver dados reais.
+  - **Avaliar também um workflow manual** (`workflow_dispatch`) no GitHub Actions que rode `ops:preflight` e `wrangler d1 migrations apply --remote` com um secret `CLOUDFLARE_API_TOKEN` de escopo mínimo (D1 Edit apenas nesta conta), criado pelo administrador. Assim ele não precisa configurar Node/Wrangler no Windows.
+    - O backup não deve virar artefato público. Se for gerado no Actions, documentar riscos e retenção mínima, ou manter o backup como passo local.
+    - **Não criar o secret nem executar nada remoto:** só preparar o workflow e documentar.
+- **R5-11 — Reduzir flags no futuro.** Depois da homologação, considerar consolidar as flags (ex.: `OPERATIONS`, `FINANCE` e `EXTRAS`), para facilitar a manutenção pelos proprietários. Não bloqueante.
+
+**Ordem:** R5-1 a R5-4 primeiro (maior impacto para a operadora), depois R5-5 a R5-10. Novas funcionalidades só depois disso. Antes de seguir, a prioridade passa a ser **homologar em aparelho real**.
+
+**Aceite:**
+
+- Capturas novas em 390×844 de Hoje (operador), Novo pedido/Sabores e Clientes, anexadas em `docs/colaboracao/capturas/` com o prefixo `r5-depois-`, para comparação.
+- E2E do R5-8 passando em `webkit-mobile` e `chromium-mobile`.
 
 ---
 
