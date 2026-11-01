@@ -183,7 +183,16 @@ export function App() {
         ref={main}
         tabIndex={-1}
       >
-        <Link to="/app">Amor Zeloso · Demonstração</Link>
+        <Link
+          to="/gestao"
+          className="private-brand"
+          aria-label="Início da gestão Amor Zeloso"
+        >
+          <img src="/brand/logo.webp" alt="" width="40" height="41" />
+          <span>
+            Amor Zeloso <small>Gestão</small>
+          </span>
+        </Link>
         <Routes>
           <Route path="/gestao/*" element={<Management />} />
         </Routes>

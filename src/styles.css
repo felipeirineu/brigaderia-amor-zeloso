@@ -988,3 +988,81 @@ button:disabled {
     flex: 1;
   }
 }
+
+.private-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  font-family: Georgia, serif;
+  font-size: 1.2rem;
+}
+.private-brand img {
+  object-fit: contain;
+}
+.private-brand small {
+  display: block;
+  font-family: system-ui;
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+}
+.management-header {
+  margin: 12px 0;
+}
+.management-header p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+.today-heading {
+  display: flex !important;
+  align-items: center;
+  gap: 12px;
+}
+.today-heading p {
+  margin-bottom: 0;
+}
+@media (max-width: 700px) {
+  .private-tools {
+    display: none;
+  }
+  .tour-invite {
+    padding: 8px 0;
+    margin-bottom: 12px;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.75rem;
+  }
+  .tour-invite button {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+  }
+  .tour-complete {
+    display: none;
+  }
+  .tour-sheet {
+    margin: auto 12px calc(90px + env(safe-area-inset-bottom));
+    width: calc(100% - 24px);
+    border-radius: 18px;
+  }
+  .order-card .actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
+  .order-card .actions a.button,
+  .order-card .actions button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    gap: 8px;
+    min-width: 0;
+    padding: 12px;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  .order-card .actions .primary-action,
+  .order-card .actions > a:last-child {
+    grid-column: 1/-1;
+  }
+}
