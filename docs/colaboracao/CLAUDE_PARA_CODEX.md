@@ -6,9 +6,75 @@
 
 ## Histórico
 
+- **2026-11-01** — R3: modo totem para pedidos no celular + fotos dos sabores (`docs/marca/sabores/`). Ver seção **R3** abaixo.
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R3 — Modo totem para pedidos no celular (pedido do Felipe, 2026-11-01)
+
+**Quando fazer:** depois da R2. Se já estiver no meio de P1-3 (relatórios), termine a etapa num estado estável e testado, faça a R3 e só então siga para P1-7. A R3 mexe nas telas que a esposa mais usa, então vem antes das demais P1.
+
+**Objetivo:** a operadora (esposa, iPhone) deve aprender sozinha e montar ou ajustar pedidos tocando em fotos e botões grandes, como num totem de fast-food, sem perder a agilidade do dia a dia. **Não é uma refatoração do app inteiro.** A tela Hoje continua com as ações diretas (Entregue, Recebi, WhatsApp). O modo totem vale para **criar ou ajustar um pedido** e para **escolher cliente**.
+
+- **R3-1 — Grade de sabores com foto.**
+  - No celular, cartões grandes em 2 colunas, cada um com foto (ou ícone de reserva), nome do sabor e preço da embalagem.
+  - Tocar no cartão soma **+1 embalagem**, com um contador visível no cartão ("2"). Quando o contador está ativo, aparecem botões **− / +** grandes.
+  - Sabor sem quantidade fica sem contador; **nunca exibir "0"**.
+  - Leitores de tela devem ouvir algo como "Tradicional, 2 caixas, adicionar".
+- **R3-2 — Embalagens como botões.**
+  - Botões lado a lado com as variantes **cadastradas** (hoje só "Caixa 12 un."). "Pack 2 caixas" ou "unidade" só aparecem se os proprietários cadastrarem pelo PC.
+  - Não criar embalagens nem preços (AGENTS.md §4). O modelo de dados atual de variantes já comporta isso; não remodelar.
+- **R3-3 — Valores padrão.**
+  - O preço vem do cadastro e o snapshot fica como hoje.
+  - A quantidade inicial vem do **pedido padrão** do cliente ou, sem modelo, do **último pedido** dele (botão "Repetir último pedido").
+  - Sem histórico, começa vazio. **Nunca pré-preencher 1 em todos os sabores.**
+- **R3-4 — Fotos.**
+  - Usar as imagens de [`docs/marca/sabores/`](../marca/sabores/README.md), autorizadas pelo Felipe.
+  - **A ligação imagem ↔ variante deve ser escolhida no cadastro de produto (PC)** por um humano. Não associar por aparência: a tabela do README está "A confirmar".
+  - Campo opcional de imagem no produto/variante, com só as imagens do repositório nesta etapa. Upload próprio (R2/limites/custos) fica para avaliação posterior.
+  - **Ícone de reserva:** círculo na cor do sabor, com a inicial e o nome, para quem não tem foto (ex.: Casadinho e Cajuzinho).
+  - Imagens privadas da gestão: não colocar no service worker público nem no catálogo, que continua OFF.
+- **R3-5 — Campos numéricos (componente único, reutilizado em todo o app).**
+  - **Preço (`MoneyInput`):**
+    - mostra o valor atual formatado (`42,00`);
+    - ao tocar, o campo **fica vazio** e o valor anterior aparece como placeholder;
+    - digitação "da direita para a esquerda" em centavos (`4` → `0,04`, `42` → `0,42`, `4200` → `42,00`), com a vírgula inserida automaticamente;
+    - `inputmode="numeric"`, aceita só dígitos (inclusive ao colar);
+    - ao sair sem digitar, **restaura o valor anterior**, nunca zero;
+    - o valor interno é sempre um inteiro em centavos.
+  - **Quantidade (`QuantityInput`):**
+    - botões − / + grandes ao lado;
+    - ao tocar no número, o campo fica vazio, com `inputmode="numeric"` e `pattern="[0-9]*"`, só inteiros ≥ 1;
+    - ao sair vazio, restaura o valor anterior;
+    - para remover o item, usar o botão "remover", não o zero.
+  - **Botão "OK" visível** junto ao campo em edição. No iPhone o teclado numérico **não tem tecla de envio** (o "Concluído" só fecha o teclado), então o botão é obrigatório. Enter no Android/PC também confirma.
+  - Testes unitários para a máscara: colar texto, apagar tudo, valores grandes, limite máximo e ida e volta centavos ↔ exibição.
+- **R3-6 — Fluxo em passos (mobile).**
+  - **Cliente → Sabores → Revisar → Confirmar**, com indicador de passo e botão Voltar.
+  - **Cliente:** cartões grandes com os mais frequentes primeiro, inicial ou ícone do estabelecimento e busca abaixo.
+  - **Barra fixa no rodapé** com total e ação principal ("Revisar pedido · R$ 168,00"), ao alcance do polegar.
+  - **Revisar:** fotos pequenas, quantidades e total legíveis de relance; data, hora, entregador e pagamento como chips, sem `<select>`.
+  - **Confirmado:** tela de sucesso clara, com o próximo passo "Avisar no WhatsApp".
+- **R3-7 — Padrões gerais de toque.**
+  - Alvos de no mínimo 48×48 px; ações principais com 56 px ou mais e espaçamento entre botões.
+  - Ícone **sempre acompanhado de texto**.
+  - Nada de `<select>` para até 5 opções.
+  - Texto respeitando o tamanho de fonte do sistema (iOS Dynamic Type via `rem`).
+  - Contraste AA.
+  - "Desfazer" no lugar de "tem certeza?" para ações comuns, mantendo as confirmações das irreversíveis.
+- **R3-8 — Modo simples × completo.** O modo totem é o padrão no celular para o papel `operator`. Nas configurações do usuário, opção para trocar para listas completas (preferência local, não sensível). O PC continua com o layout completo. O proprietário pode usar qualquer um.
+- **R3-9 — Tutorial.** Atualizar o tour da operadora para o novo fluxo (tocar no sabor, +/−, revisar, confirmar, avisar).
+
+**Aceite:**
+
+- Criar um pedido de um cliente com pedido padrão em **≤ 3 toques** até a tela Revisar.
+- Ajustar uma quantidade sem abrir teclado (só +/−).
+- E2E em `webkit-mobile` e `chromium-mobile` cobrindo o fluxo, a máscara de preço e a restauração de valor ao sair vazio.
+- Nenhum "0" ou "0,00" exibido como padrão.
+- Nenhum sabor ou preço inventado.
 
 ---
 
