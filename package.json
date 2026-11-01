@@ -22,7 +22,8 @@
     "build:pages": "npm run build && node scripts/build-pages.mjs",
     "preview:pages": "wrangler pages dev dist --ip 127.0.0.1",
     "test:api": "node tests/integration/management.mjs",
-    "admin:prepare": "node scripts/prepare-admin.mjs"
+    "admin:prepare": "node scripts/prepare-admin.mjs",
+    "test:listing": "node tests/integration/listing.mjs"
   },
   "dependencies": {
     "jose": "^6.2.14",

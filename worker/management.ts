@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { childrenByParent } from './listing';
 import { body, HttpError, json, hash, type Actor, type Env } from './security';
 import {
   customerSchema,
@@ -113,35 +114,24 @@ export async function management(req: Request, env: Env, a: Actor) {
       delete row.create_key;
       delete row.create_hash;
     }
-    const extended = await Promise.all(
-      rows.map(async (row) => ({
-        ...row,
-        ...(resource === 'products'
-          ? {
-              variants: (
-                await db
-                  .prepare(
-                    'SELECT * FROM product_variants WHERE organization_id=? AND product_id=? ORDER BY label',
-                  )
-                  .bind(org, row.id)
-                  .all()
-              ).results,
-            }
-          : {}),
-        ...(resource === 'orders'
-          ? {
-              items: (
-                await db
-                  .prepare(
-                    'SELECT * FROM order_items WHERE organization_id=? AND order_id=?',
-                  )
-                  .bind(org, row.id)
-                  .all()
-              ).results,
-            }
-          : {}),
-      })),
-    );
+    const children =
+      resource === 'customers'
+        ? null
+        : await childrenByParent(
+            db,
+            org,
+            resource as 'products' | 'orders',
+            rows.map((row) => String(row.id)),
+          );
+    const extended = rows.map((row) => ({
+      ...row,
+      ...(children
+        ? {
+            [resource === 'products' ? 'variants' : 'items']:
+              children.get(String(row.id)) ?? [],
+          }
+        : {}),
+    }));
     if (id && !rows.length) throw new HttpError(404, 'Não encontrado.');
     return json(id ? extended[0] : extended);
   }
