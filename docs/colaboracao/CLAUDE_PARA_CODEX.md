@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-01** — R7: visitas de apresentação com amostras grátis para clientes em potencial. Ver seção **R7**.
 - **2026-11-01** — R6: distância por rota de carro, tela do botão Mapa e saudação pelo horário. Ver seção **R6**. Referência visual: prévia interativa aprovada pelo responsável (cartões de entrega com km/min, folha "Rota até…").
 - **2026-11-01** — R5: revisão da entrega R2/R3/R4/P1 (até `796342b`), com capturas de tela. Foco: espaço útil no celular e simplificação da ativação. Ver seção **R5**.
 - **2026-11-01** — R4: remover marcações de origem das informações (urgente), localização de clientes, distância, Uber/99 e custo de deslocamento. Ver seção **R4** abaixo.
@@ -15,6 +16,52 @@
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R7 — Visitas de apresentação e amostras grátis (2026-11-01)
+
+**Contexto:** os proprietários visitam estabelecimentos que ainda não são clientes, apresentam a brigaderia e deixam **amostras sem custo** para degustação. Hoje isso não aparece em lugar nenhum: nem na produção, nem no custo, nem no acompanhamento.
+
+**Fazer depois da R5 e da R6.** É uma feature nova, pequena e isolada, atrás de flag própria (ex.: `PROSPECTS_ENABLED`) e com migração aditiva.
+
+- **R7-1 — Cliente em potencial ("Contato")**, no mesmo cadastro de clientes com `kind = prospect`. Assim, quando virar cliente, nada precisa ser recadastrado.
+  - Campos: estabelecimento, pessoa de contato, telefone, endereço com localização, foto da fachada e Instagram (reaproveitar R4), como conheceu e observações.
+  - Lista com filtro **Clientes / Contatos** e status visível.
+- **R7-2 — Funil simples** com chips:
+  - **A visitar → Amostra entregue → Retornar → Virou cliente**, ou **Não teve interesse** (com motivo opcional).
+  - Data do próximo passo sempre visível no cartão.
+- **R7-3 — Visita agendada.** Aparece na tela Hoje e na agenda como cartão próprio ("Visita de apresentação"), com Mapa, WhatsApp, Uber/99 e o botão **"Registrar visita"**.
+- **R7-4 — Registrar visita.** Folha rápida com:
+  - **amostras deixadas por sabor, em unidades** (não em caixas), com fotos e +/−;
+  - quem foi;
+  - observação ("gostou do Cajuzinho, pediu tabela de preço");
+  - próximo passo, com data sugerida (ex.: +3 dias, editável).
+  - Ao salvar:
+    - grava a visita como **evento de amostra sem cobrança**, separado de pedidos e vendas: não entra em faturamento, contas a receber ou fechamentos;
+    - **oferece** (sem criar sozinho) um lembrete "Retornar para {estabelecimento}" com aviso no celular (R6-7);
+    - oferece o registro da corrida da visita (R4-6), na categoria "Prospecção".
+- **R7-5 — Produção:** as amostras de visitas agendadas entram no "Produzir hoje / amanhã" como **unidades avulsas** separadas ("+ 6 un. para amostras"), sem misturar com caixas vendidas.
+- **R7-6 — Custo da prospecção:**
+  - custo estimado das amostras pela ficha técnica (P1-4), por unidade, rotulado como estimativa;
+  - somado às corridas das visitas;
+  - entra nas despesas (P1-7) como categoria **"Amostras e prospecção"**, só a partir do registro humano, como manda o AGENTS §9.
+- **R7-7 — Retorno pelo WhatsApp:** modelos "Obrigada pela visita", "O que achou das amostras?" e "Tabela de preços", com prévia editável e envio humano, como nos demais (sem automação).
+- **R7-8 — Virou cliente:**
+  - um toque converte o contato em cliente;
+  - abre o cadastro B2B (condição de pagamento, dia de entrega) e oferece criar o **pedido padrão** e o primeiro pedido;
+  - o histórico de visitas e amostras continua ligado ao cliente.
+- **R7-9 — Relatório de prospecção:**
+  - visitas por período, amostras por sabor, custo estimado e **conversão** (visitas → clientes);
+  - tempo médio até fechar e **sabor que mais converte**;
+  - **custo para conquistar cada cliente** (amostras + corridas ÷ clientes convertidos).
+- **Privacidade:** dados de contatos são pessoais/comerciais e ficam privados. Contatos "Não teve interesse" podem ser arquivados ou excluídos (LGPD), sem campanhas sem consentimento.
+- **Aceite:**
+  - visita registrada não altera faturamento nem saldo;
+  - as amostras aparecem na produção do dia em unidades;
+  - a conversão preserva o histórico;
+  - E2E mobile do fluxo agendar → registrar → retornar → virar cliente;
+  - nenhum lembrete ou despesa criados sem confirmação.
 
 ---
 
