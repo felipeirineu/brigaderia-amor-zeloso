@@ -1,6 +1,7 @@
+import { Button } from './Button';
 import { useId, useRef } from 'react';
 import { CircleHelp, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+
 import { helpTexts, type HelpTopic } from '../features/help/texts';
 export function HelpTip({ topic }: { topic: HelpTopic }) {
   const trigger = useRef<HTMLButtonElement>(null),
@@ -9,7 +10,7 @@ export function HelpTip({ topic }: { topic: HelpTopic }) {
   const text = helpTexts[topic];
   return (
     <>
-      <button
+      <Button
         type="button"
         className="help-trigger"
         ref={trigger}
@@ -17,7 +18,7 @@ export function HelpTip({ topic }: { topic: HelpTopic }) {
         onClick={() => dialog.current?.showModal()}
       >
         <CircleHelp size={20} aria-hidden="true" />
-      </button>
+      </Button>
       <dialog
         className="help-sheet"
         ref={dialog}
@@ -28,18 +29,22 @@ export function HelpTip({ topic }: { topic: HelpTopic }) {
         }}
       >
         <div className="sheet-body">
-          <button
+          <Button
             className="sheet-close"
             aria-label="Fechar ajuda"
             onClick={() => dialog.current?.close()}
           >
             <X size={20} aria-hidden="true" />
-          </button>
+          </Button>
           <h2 id={id}>{text.title}</h2>
           <p>{text.text}</p>
-          <Link to="/gestao/ajuda" onClick={() => dialog.current?.close()}>
+          <Button
+            to="/gestao/ajuda"
+            onClick={() => dialog.current?.close()}
+            variant="ghost"
+          >
             Ver no tutorial
-          </Link>
+          </Button>
         </div>
       </dialog>
     </>

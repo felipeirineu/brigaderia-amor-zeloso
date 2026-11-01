@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 /* eslint-disable react-refresh/only-export-components -- Utilitários internos compartilhados das telas operacionais. */
 import { useCallback, useEffect, useState } from 'react';
 import { MapPin } from 'lucide-react';
@@ -72,14 +73,14 @@ export const localDay = () =>
   }).format(new Date());
 export function MapLink({ order }: { order: OperationalOrder }) {
   return order.delivery_address ? (
-    <a
+    <Button
       className="button secondary"
       href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.delivery_address)}`}
       target="_blank"
       rel="noreferrer"
     >
       <MapPin size={20} aria-hidden="true" /> Mapa
-    </a>
+    </Button>
   ) : (
     <span>Endereço a preencher</span>
   );

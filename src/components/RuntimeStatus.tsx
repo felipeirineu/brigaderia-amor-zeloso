@@ -1,3 +1,4 @@
+import { Button } from './Button';
 import { useEffect, useState } from 'react';
 import { registerSW } from 'virtual:pwa-register';
 
@@ -32,7 +33,7 @@ export function RuntimeStatus() {
         : offlineReady
           ? 'Demonstração disponível offline · somente leitura'
           : 'Demonstração local · sem sincronização com banco'}
-      {update && <button onClick={update}>Atualizar aplicação</button>}
+      {update && <Button onClick={update}>Atualizar aplicação</Button>}
     </div>
   );
 }

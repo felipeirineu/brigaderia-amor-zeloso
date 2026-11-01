@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { CircleUserRound } from 'lucide-react';
 import { useField } from '../field/FieldContext';
 const titles: Record<string, string> = {
@@ -52,12 +53,16 @@ export function CompactHeader({
   return (
     <>
       <header className="compact-header" aria-label="Cabeçalho da gestão">
-        <Link to="/gestao" aria-label="Início da gestão Amor Zeloso">
+        <Button
+          to="/gestao"
+          aria-label="Início da gestão Amor Zeloso"
+          variant="ghost"
+        >
           <img src="/brand/logo.webp" alt="" width={32} height={32} />
-        </Link>
+        </Button>
         <strong className="compact-title">{title}</strong>
         <span id="order-focus-back" />
-        <button
+        <Button
           ref={trigger}
           className="profile-menu-trigger"
           aria-label={'Abrir menu de ' + name}
@@ -65,7 +70,7 @@ export function CompactHeader({
         >
           <CircleUserRound size={24} aria-hidden="true" />
           <span>{name}</span>
-        </button>
+        </Button>
       </header>
       <dialog
         ref={menu}
@@ -76,23 +81,24 @@ export function CompactHeader({
         <div className="sheet-body">
           <h2>{name}</h2>
           {operations && online && (
-            <button
+            <Button
               onClick={() => {
                 menu.current?.close();
                 window.dispatchEvent(new Event('start-tour'));
               }}
             >
               Conhecer o app
-            </button>
+            </Button>
           )}
-          <Link
+          <Button
             className="button secondary"
             to="/gestao/ajuda"
             onClick={() => menu.current?.close()}
+            variant="ghost"
           >
             Ajuda
-          </Link>
-          <button
+          </Button>
+          <Button
             disabled={!online}
             onClick={() => {
               menu.current?.close();
@@ -100,8 +106,8 @@ export function CompactHeader({
             }}
           >
             Sair
-          </button>
-          <button onClick={() => menu.current?.close()}>Fechar menu</button>
+          </Button>
+          <Button onClick={() => menu.current?.close()}>Fechar menu</Button>
         </div>
       </dialog>
     </>

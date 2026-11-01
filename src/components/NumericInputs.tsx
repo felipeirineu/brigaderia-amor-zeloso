@@ -1,3 +1,4 @@
+import { Button } from './Button';
 import { useId, useRef, useState, type InputHTMLAttributes } from 'react';
 import { centsFromDigits, displayCents, MAX_MONEY, readCents } from './numeric';
 type Base = Omit<
@@ -97,13 +98,13 @@ export function MoneyInput({
           onBlur={finish}
         />
         {editing && (
-          <button
+          <Button
             type="button"
             disabled={!!error}
             onClick={() => input.current?.blur()}
           >
             OK
-          </button>
+          </Button>
         )}
         {error && (
           <small id={id} role="alert">
@@ -215,7 +216,7 @@ export function QuantityInput({
           }}
         />
         {steppers && (
-          <button
+          <Button
             className="quantity-minus"
             type="button"
             aria-label={`Diminuir ${name}`}
@@ -223,26 +224,26 @@ export function QuantityInput({
             onClick={() => onValueChange(Math.max(min, (value ?? min) - 1))}
           >
             −
-          </button>
+          </Button>
         )}
         {editing && (
-          <button
+          <Button
             type="button"
             disabled={!!error}
             onClick={() => input.current?.blur()}
           >
             OK
-          </button>
+          </Button>
         )}
         {steppers && (
-          <button
+          <Button
             type="button"
             aria-label={`Aumentar ${name}`}
             disabled={(value !== null && value >= max) || props.disabled}
             onClick={() => onValueChange(Math.min(max, (value ?? 0) + 1))}
           >
             +
-          </button>
+          </Button>
         )}
         {error && <small role="alert">{error}</small>}
       </span>

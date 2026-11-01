@@ -1,7 +1,8 @@
+import { Button } from '../../components/Button';
 import { useField } from '../field/FieldContext';
 import { FinancialTutorial } from '../finance/Tutorial';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { helpTexts } from './texts';
 
 export function Tour({ role }: { role: string }) {
@@ -79,7 +80,7 @@ export function Tour({ role }: { role: string }) {
         className={`tour-invite ${done && !location.pathname.endsWith('/ajuda') ? 'tour-complete' : ''}`}
       >
         <span>{done ? 'Passeio do aplicativo' : 'Conheça os atalhos'}</span>
-        <button
+        <Button
           ref={trigger}
           onClick={() => {
             setStep(0);
@@ -87,7 +88,7 @@ export function Tour({ role }: { role: string }) {
           }}
         >
           {done ? 'Refazer passeio' : 'Conhecer o app'}
-        </button>
+        </Button>
       </div>
       <dialog
         ref={dialog}
@@ -107,15 +108,15 @@ export function Tour({ role }: { role: string }) {
             <h2>{steps[step].title}</h2>
             <p>{steps[step].text}</p>
             <div className="actions">
-              <button onClick={close}>Pular</button>
-              <button onClick={close}>Já sei</button>
-              <button
+              <Button onClick={close}>Pular</Button>
+              <Button onClick={close}>Já sei</Button>
+              <Button
                 onClick={() =>
                   step < steps.length - 1 ? setStep(step + 1) : close()
                 }
               >
                 {step < steps.length - 1 ? 'Próximo' : 'Concluir'}
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -167,9 +168,9 @@ export function HelpCenter({
             ? 'Exemplo marcado como entregue.'
             : 'Exemplo aguardando entrega.'}
         </p>
-        <button onClick={() => setExample(!example)}>
+        <Button onClick={() => setExample(!example)}>
           {example ? 'Reiniciar exemplo' : 'Marcar exemplo entregue'}
-        </button>
+        </Button>
       </section>
       <section className="panel">
         <h2>Seu primeiro fluxo</h2>
@@ -189,7 +190,9 @@ export function HelpCenter({
               ? 'Recebimentos e fechamentos têm roteiro abaixo. Ficha técnica depende da ativação P1.'
               : 'Recebimentos e fechamentos dependem da ativação financeira; ficha técnica segue em preparação.'}
         </p>
-        <Link to="/gestao/recorrentes">Preparar pedido padrão</Link>
+        <Button to="/gestao/recorrentes" variant="ghost">
+          Preparar pedido padrão
+        </Button>
       </section>
       {field && (
         <section className="panel">
@@ -279,7 +282,9 @@ export function HelpCenter({
                 realizado.
               </li>
             </ol>
-            <Link to="/gestao/agenda">Abrir agenda</Link>
+            <Button to="/gestao/agenda" variant="ghost">
+              Abrir agenda
+            </Button>
           </details>
           <details>
             <summary>Relatórios e fluxo</summary>
@@ -289,7 +294,9 @@ export function HelpCenter({
               O administrador registra/estorna despesas; a taxa de entrega não
               vira gasto sozinha.
             </p>
-            <Link to="/gestao/relatorios">Abrir relatórios</Link>
+            <Button to="/gestao/relatorios" variant="ghost">
+              Abrir relatórios
+            </Button>
           </details>
           <details>
             <summary>Ficha, preço estimado e compras</summary>
@@ -309,7 +316,9 @@ export function HelpCenter({
                 comprar. Não há compra nem baixa automática.
               </li>
             </ol>
-            <Link to="/gestao/fichas">Abrir fichas</Link>
+            <Button to="/gestao/fichas" variant="ghost">
+              Abrir fichas
+            </Button>
           </details>
         </section>
       )}

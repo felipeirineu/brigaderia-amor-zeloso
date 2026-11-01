@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { useRef, useState } from 'react';
 import { api } from '../api';
 import { Failure } from '../operations/common';
@@ -108,9 +109,9 @@ export function ImportCustomers() {
       <Failure message={error} />
       <p role="status">{notice}</p>
       {raw.length > 0 && (
-        <button disabled={busy} onClick={() => void show()}>
+        <Button disabled={busy} onClick={() => void show()} loading={busy}>
           Ver prévia de {raw.length} clientes
-        </button>
+        </Button>
       )}
       {preview.length > 0 && (
         <>
@@ -152,13 +153,15 @@ export function ImportCustomers() {
               </tbody>
             </table>
           </div>
-          <button
+          <Button
             className="primary-action"
             disabled={busy || !selected.length}
             onClick={() => void confirm()}
+            variant="primary"
+            loading={busy}
           >
             Confirmar importação de {selected.length} clientes
-          </button>
+          </Button>
         </>
       )}
     </section>

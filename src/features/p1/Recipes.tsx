@@ -1,7 +1,8 @@
+import { Button } from '../../components/Button';
 import { MoneyField, QuantityField } from '../../components/NumericInputs';
 import { priceForMargin } from '../../../shared/costing';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { Failure, useRemote } from '../operations/common';
 import { money, parsePrice } from '../api';
 import { useP1Save } from './useP1Save';
@@ -70,7 +71,9 @@ export function Supplies() {
   return (
     <>
       <h1>Insumos e embalagens</h1>
-      <Link to="/gestao/fichas">Fichas técnicas</Link>
+      <Button to="/gestao/fichas" variant="ghost">
+        Fichas técnicas
+      </Button>
       <Failure message={save.error || view.error} />
       <p role="status">{save.notice}</p>
       <p>
@@ -142,10 +145,12 @@ export function Supplies() {
             />
             Ativo
           </label>
-          <button disabled={save.busy}>Salvar insumo</button>
-          <button type="button" onClick={reset}>
+          <Button disabled={save.busy} variant="primary" loading={save.busy}>
+            Salvar insumo
+          </Button>
+          <Button type="button" onClick={reset}>
             Limpar insumo
-          </button>
+          </Button>
         </form>
       )}
       {view.data?.items.map((s) => (
@@ -160,7 +165,7 @@ export function Supplies() {
             · {s.active ? 'Ativo' : 'Inativo'}
           </p>
           {view.data!.role === 'owner' && (
-            <button
+            <Button
               onClick={() => {
                 setEditing(s);
                 setName(s.name);
@@ -175,7 +180,7 @@ export function Supplies() {
               }}
             >
               Editar insumo {s.name}
-            </button>
+            </Button>
           )}
         </article>
       ))}
@@ -220,12 +225,12 @@ export function Recipes() {
     <>
       <h1>Fichas técnicas e preço sugerido</h1>
       <div className="actions">
-        <Link className="button" to="/gestao/insumos">
+        <Button className="button" to="/gestao/insumos" variant="ghost">
           Insumos e embalagens
-        </Link>
-        <Link className="button" to="/gestao/compras">
+        </Button>
+        <Button className="button" to="/gestao/compras" variant="ghost">
           Lista de compras
-        </Link>
+        </Button>
       </div>
       <Failure
         message={save.error || view.error || supplies.error || products.error}
@@ -345,18 +350,18 @@ export function Recipes() {
                 />
               </label>
               {components.length > 1 && (
-                <button
+                <Button
                   type="button"
                   onClick={() =>
                     setComponents(components.filter((_, j) => j !== i))
                   }
                 >
                   Remover componente {i + 1}
-                </button>
+                </Button>
               )}
             </fieldset>
           ))}
-          <button
+          <Button
             type="button"
             disabled={components.length >= 50}
             onClick={() =>
@@ -364,7 +369,7 @@ export function Recipes() {
             }
           >
             Adicionar componente
-          </button>
+          </Button>
           {(
             [
               ['packaging', 'Embalagens por lote (R$)'],
@@ -395,10 +400,12 @@ export function Recipes() {
             zero. Evite contar a mesma embalagem no componente e no custo
             adicional. Margem de 0 a 95%, aplicada sobre o preço, não markup.
           </p>
-          <button disabled={save.busy}>Salvar ficha</button>
-          <button type="button" onClick={reset}>
+          <Button disabled={save.busy} variant="primary" loading={save.busy}>
+            Salvar ficha
+          </Button>
+          <Button type="button" onClick={reset}>
             Limpar ficha
-          </button>
+          </Button>
         </form>
       )}
       <section className="panel">
@@ -452,7 +459,7 @@ export function Recipes() {
             </>
           )}
           {view.data!.role === 'owner' && (
-            <button
+            <Button
               onClick={() => {
                 setEditing(r);
                 setForm({
@@ -478,7 +485,7 @@ export function Recipes() {
               }}
             >
               Editar ficha {r.name}
-            </button>
+            </Button>
           )}
           {simulation.trim() && (
             <p>

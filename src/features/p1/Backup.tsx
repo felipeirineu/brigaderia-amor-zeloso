@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
 import { privateDownload } from '../PrivateDownload';
 import { Failure } from '../operations/common';
@@ -21,7 +22,7 @@ export function Backup() {
       </p>
       <Failure message={error} />
       <p role="status">{notice}</p>
-      <button
+      <Button
         disabled={busy}
         onClick={() => {
           setBusy(true);
@@ -38,9 +39,10 @@ export function Backup() {
             .catch((e) => setError(e.message))
             .finally(() => setBusy(false));
         }}
+        loading={busy}
       >
         Baixar backup privado
-      </button>
+      </Button>
       <ol>
         <li>Confira se o arquivo foi salvo na pasta de downloads.</li>
         <li>

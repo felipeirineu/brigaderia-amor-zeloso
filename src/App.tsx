@@ -1,3 +1,4 @@
+import { Button } from './components/Button';
 import { useEffect, useRef } from 'react';
 import {
   Link,
@@ -35,9 +36,9 @@ function Dashboard() {
             Explore a demonstração do seu futuro espaço de gestão. Os módulos
             serão construídos em etapas, com segurança e atenção à sua rotina.
           </p>
-          <Link className="button" to="/app/configuracoes">
+          <Button className="button" to="/app/configuracoes" variant="ghost">
             Ver próximos passos <Icon name="seta" />
-          </Link>
+          </Button>
         </div>
         <div className="brand-art" aria-hidden="true">
           <img src="/brand/logo.webp" alt="" width="200" height="205" />
@@ -52,7 +53,11 @@ function Dashboard() {
           {modules
             .filter((m) => m.slug !== 'configuracoes')
             .map((m) => (
-              <Link className="module-card" key={m.slug} to={`/app/${m.slug}`}>
+              <Button
+                className="module-card"
+                key={m.slug}
+                to={`/app/${m.slug}`}
+              >
                 <span className="module-icon" aria-hidden="true">
                   <Icon name={m.slug} />
                 </span>
@@ -61,7 +66,7 @@ function Dashboard() {
                 <span className="card-footer">
                   Explorar estrutura <Icon name="seta" />
                 </span>
-              </Link>
+              </Button>
             ))}
         </div>
       </section>
@@ -132,9 +137,9 @@ function ModulePage({ slug }: { slug: string }) {
             implementado na Fase {module.phase}. Não há dados reais nem
             cadastros nesta demonstração.
           </p>
-          <Link className="button secondary" to="/app">
+          <Button className="button secondary" to="/app" variant="ghost">
             Voltar ao início
-          </Link>
+          </Button>
         </section>
       )}
     </>
@@ -154,9 +159,9 @@ function Unavailable({ catalog = false }: { catalog?: boolean }) {
           ? 'Nenhum produto está publicado. A ativação depende de autorização dos proprietários.'
           : 'Este ambiente contém apenas uma demonstração pública da interface, sem dados privados ou sessão autenticada.'}
       </p>
-      <Link className="button" to="/app">
+      <Button className="button" to="/app" variant="ghost">
         Explorar demonstração
-      </Link>
+      </Button>
     </section>
   );
 }
@@ -246,9 +251,9 @@ export function App() {
           <span>
             Brigaderia Amor Zeloso <span className="muted">/ Gestão</span>
           </span>
-          <Link className="demo-label" to="/login">
+          <Button className="demo-label" to="/login" variant="ghost">
             Entrar na gestão
-          </Link>
+          </Button>
         </header>
         <div className="demo-banner">
           <strong>Ambiente de demonstração.</strong> Conteúdo fictício, sem
@@ -273,7 +278,9 @@ export function App() {
               element={
                 <section className="empty-state">
                   <h1>Página não encontrada</h1>
-                  <Link to="/app">Voltar ao início</Link>
+                  <Button to="/app" variant="ghost">
+                    Voltar ao início
+                  </Button>
                 </section>
               }
             />

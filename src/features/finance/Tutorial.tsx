@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { money } from '../api';
 export function FinancialTutorial() {
   const [paid, setPaid] = useState(0);
@@ -14,13 +15,13 @@ export function FinancialTutorial() {
         Recebido no exemplo: {money(paid)} · saldo: {money(1000 - paid)}.
       </p>
       <div className="actions">
-        <button onClick={() => setPaid(300)}>
+        <Button onClick={() => setPaid(300)}>
           Exemplo: registrar sinal de R$ 3,00
-        </button>
-        <button onClick={() => setPaid(1000)}>Exemplo: quitar saldo</button>
-        <button onClick={() => setPaid(0)}>
+        </Button>
+        <Button onClick={() => setPaid(1000)}>Exemplo: quitar saldo</Button>
+        <Button onClick={() => setPaid(0)}>
           Exemplo: estornar recebimento
-        </button>
+        </Button>
       </div>
       <details>
         <summary>Administrador: preparar condições e fechar o período</summary>
@@ -71,7 +72,9 @@ export function FinancialTutorial() {
         Não é integração bancária: receber uma mensagem ou abrir um Pix não
         confirma pagamento. Cobrança é sempre assistida.
       </p>
-      <Link to="/gestao/financeiro">Abrir financeiro</Link>
+      <Button to="/gestao/financeiro" variant="ghost">
+        Abrir financeiro
+      </Button>
     </section>
   );
 }

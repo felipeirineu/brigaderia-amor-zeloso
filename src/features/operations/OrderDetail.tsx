@@ -1,9 +1,10 @@
+import { Button } from '../../components/Button';
 import { Transport } from '../field/Transport';
 import { TravelSheet } from '../field/TravelSheet';
 import { useCourierLabels, useField } from '../field/FieldContext';
 import { MoneyField } from '../../components/NumericInputs';
 import { useEffect, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { ArrowLeft, MessageCircle, ChevronRight, Undo2 } from 'lucide-react';
 import { api, dateTime, money, parsePrice } from '../api';
 import { HelpTip } from '../../components/HelpTip';
@@ -108,18 +109,18 @@ export function OrderDetail({
     order && ['delivered', 'picked_up', 'cancelled'].includes(order.status);
   return (
     <>
-      <Link to="/gestao/pedidos">
+      <Button to="/gestao/pedidos" variant="ghost">
         <ArrowLeft size={20} aria-hidden="true" /> Pedidos
-      </Link>
+      </Button>
       <Failure message={error || view.error || history.error} />
       {order ? (
         <>
           <h1>{order.customer_name}</h1>
           {field && (
             <>
-              <button onClick={() => setTrip(true)}>
+              <Button onClick={() => setTrip(true)} variant="primary">
                 Registrar deslocamento pago
-              </button>
+              </Button>
               <Transport order={order} />
               {trip && (
                 <TravelSheet
@@ -132,12 +133,13 @@ export function OrderDetail({
           )}
           {mobile &&
             ['draft', 'awaiting_confirmation'].includes(view.data!.status) && (
-              <Link
+              <Button
                 className="button"
                 to={`/gestao/pedidos/${id}/editar-simples`}
+                variant="ghost"
               >
                 Ajustar por fotos
-              </Link>
+              </Button>
             )}
           <p>
             {dateTime(order.due_at)} · {money(order.total_cents)}
@@ -147,15 +149,16 @@ export function OrderDetail({
           </p>
           <p role="status">{notice}</p>
           {financial && (
-            <Link
+            <Button
               className="button"
               to={`/gestao/financeiro/${order.customer_id}?order=${order.id}`}
+              variant="ghost"
             >
               Conta, condição e recebimentos
-            </Link>
+            </Button>
           )}
           {undo && (
-            <button
+            <Button
               disabled={busy}
               onClick={() =>
                 void act(async () => {
@@ -169,9 +172,10 @@ export function OrderDetail({
                   setNotice('Entrega desfeita; o histórico foi preservado.');
                 })
               }
+              loading={busy}
             >
               <Undo2 size={20} aria-hidden="true" /> Desfazer entrega
-            </button>
+            </Button>
           )}
           {order.notes && (
             <section className="panel">
@@ -224,7 +228,7 @@ export function OrderDetail({
                   aria-label="Entrega ou retirada"
                 >
                   {(['delivery', 'pickup'] as const).map((v) => (
-                    <button
+                    <Button
                       type="button"
                       key={v}
                       aria-pressed={delivery.delivery_type === v}
@@ -233,7 +237,7 @@ export function OrderDetail({
                       }
                     >
                       {v === 'delivery' ? 'Entrega' : 'Retirada'}
-                    </button>
+                    </Button>
                   ))}
                 </div>
                 <label>
@@ -251,7 +255,7 @@ export function OrderDetail({
                 <div className="chips" role="group" aria-label="Entregador">
                   {(['unassigned', 'owner', 'partner', 'courier'] as const).map(
                     (v) => (
-                      <button
+                      <Button
                         type="button"
                         key={v}
                         aria-pressed={delivery.courier === v}
@@ -264,7 +268,7 @@ export function OrderDetail({
                             : v === 'partner'
                               ? courierLabels.partner
                               : 'Motoboy'}
-                      </button>
+                      </Button>
                     ),
                   )}
                 </div>
@@ -297,10 +301,12 @@ export function OrderDetail({
                   </>
                 )}
                 <div className="actions">
-                  <button disabled={busy}>Salvar entrega</button>
-                  <button type="button" onClick={() => setDelivery(null)}>
+                  <Button disabled={busy} variant="primary" loading={busy}>
+                    Salvar entrega
+                  </Button>
+                  <Button type="button" onClick={() => setDelivery(null)}>
                     Voltar sem salvar
-                  </button>
+                  </Button>
                 </div>
               </form>
             ) : (
@@ -325,7 +331,7 @@ export function OrderDetail({
                   {order.delivery_type === 'delivery' && (
                     <MapLink order={order} />
                   )}
-                  <button
+                  <Button
                     disabled={!!final}
                     onClick={() =>
                       setDelivery({
@@ -340,7 +346,7 @@ export function OrderDetail({
                     }
                   >
                     Editar entrega
-                  </button>
+                  </Button>
                 </div>
               </>
             )}
@@ -366,7 +372,7 @@ export function OrderDetail({
                 <option value="after_sale">Pós-venda</option>
               </select>
             </label>
-            <button
+            <Button
               disabled={busy}
               onClick={() =>
                 void act(async () => {
@@ -379,9 +385,10 @@ export function OrderDetail({
                   setPhone(preview.phone);
                 })
               }
+              loading={busy}
             >
               Preparar mensagem
-            </button>
+            </Button>
             {message && (
               <>
                 <label>
@@ -392,7 +399,7 @@ export function OrderDetail({
                   />
                 </label>
                 {message.trim() && !/[{}]/.test(message) && (
-                  <a
+                  <Button
                     className="button"
                     href={`https://wa.me/${phone.replace(/^\+/, '')}?text=${encodeURIComponent(message)}`}
                     target="_blank"
@@ -400,10 +407,10 @@ export function OrderDetail({
                   >
                     <MessageCircle size={20} aria-hidden="true" /> Abrir
                     WhatsApp para conferir e enviar
-                  </a>
+                  </Button>
                 )}
                 <p>O aplicativo não envia mensagens sozinho.</p>
-                <button
+                <Button
                   disabled={busy}
                   onClick={() =>
                     void act(async () => {
@@ -418,9 +425,10 @@ export function OrderDetail({
                       );
                     })
                   }
+                  loading={busy}
                 >
                   Marcar contato realizado
-                </button>
+                </Button>
               </>
             )}
           </section>
@@ -445,17 +453,18 @@ export function OrderDetail({
           </details>
           <div className="sticky-actions">
             {next && (
-              <button
+              <Button
                 className="primary-action"
                 disabled={busy}
                 onClick={() => void advance(next)}
+                loading={busy}
               >
                 {nextLabel[next] || statusLabels[next]}{' '}
                 <ChevronRight size={20} aria-hidden="true" />
-              </button>
+              </Button>
             )}
             {order.status === 'confirmed' && (
-              <button
+              <Button
                 disabled={busy}
                 onClick={() => {
                   const reason = prompt(
@@ -469,12 +478,13 @@ export function OrderDetail({
                   )
                     void advance('awaiting_confirmation', reason.trim());
                 }}
+                loading={busy}
               >
                 Reabrir para ajustar quantidades
-              </button>
+              </Button>
             )}
             {!final && (
-              <button
+              <Button
                 disabled={busy}
                 onClick={() => {
                   const reason = prompt('Motivo do cancelamento:');
@@ -484,11 +494,13 @@ export function OrderDetail({
                   )
                     void advance('cancelled', reason.trim());
                 }}
+                variant="danger"
+                loading={busy}
               >
                 Cancelar pedido
-              </button>
+              </Button>
             )}
-            <button onClick={() => void view.refresh()}>Atualizar</button>
+            <Button onClick={() => void view.refresh()}>Atualizar</Button>
           </div>
         </>
       ) : (

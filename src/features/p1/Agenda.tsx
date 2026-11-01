@@ -1,5 +1,6 @@
+import { Button } from '../../components/Button';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import { useRemote, Failure, localDay } from '../operations/common';
 import { civilDate, dateTime } from '../api';
 import { privateDownload } from '../PrivateDownload';
@@ -52,9 +53,9 @@ export function Agenda() {
       </label>
       <div className="chips">
         {(['week', 'month'] as const).map((v) => (
-          <button key={v} aria-pressed={mode === v} onClick={() => setMode(v)}>
+          <Button key={v} aria-pressed={mode === v} onClick={() => setMode(v)}>
             {v === 'week' ? 'Semana' : 'Mês'}
-          </button>
+          </Button>
         ))}
       </div>
       <label>
@@ -71,7 +72,7 @@ export function Agenda() {
       <p>
         {civilDate(from)} a {civilDate(to)}
       </p>
-      <button
+      <Button
         onClick={() =>
           void privateDownload(
             'p1/calendar.ics?' + query,
@@ -80,7 +81,7 @@ export function Agenda() {
         }
       >
         Exportar agenda ICS
-      </button>
+      </Button>
       <p>
         O arquivo contém dados privados. Importe somente no calendário
         autorizado; o app não publica um calendário nem envia notificações.
@@ -90,7 +91,9 @@ export function Agenda() {
         <article className="panel" key={e.id}>
           <h2>{e.title}</h2>
           <p>{e.at ? dateTime(e.at) : civilDate(e.date)}</p>
-          <Link to={e.href}>Abrir registro</Link>
+          <Button to={e.href} variant="ghost">
+            Abrir registro
+          </Button>
         </article>
       ))}
     </>

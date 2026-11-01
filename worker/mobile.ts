@@ -113,7 +113,34 @@ export async function mobile(req: Request, env: Env, a: Actor) {
             .bind(org, id)
             .first<{ data: string }>()
         : null;
+    const popularity = (
+      await db
+        .prepare(
+          "SELECT v.product_id,SUM(CASE WHEN o.customer_id=? THEN i.quantity ELSE 0 END) customer_count,SUM(i.quantity) total_count FROM order_items i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id WHERE i.organization_id=? AND o.active=1 AND o.status NOT IN('draft','awaiting_confirmation','cancelled') GROUP BY v.product_id",
+        )
+        .bind(id, org)
+        .all<{
+          product_id: string;
+          customer_count: number;
+          total_count: number;
+        }>()
+    ).results;
+    const base = (
+      await db
+        .prepare(
+          "SELECT id FROM products WHERE organization_id=? AND active=1 ORDER BY CASE WHEN photo_key='tradicional' THEN 0 ELSE 1 END,rowid",
+        )
+        .bind(org)
+        .all<{ id: string }>()
+    ).results;
     return json({
+      ranking: Object.fromEntries(
+        popularity.map((p) => [
+          p.product_id,
+          { customer: p.customer_count, total: p.total_count },
+        ]),
+      ),
+      product_order: base.map((p) => p.id),
       plans: plans.map((p) => ({
         ...p,
         mutation_id: undefined,

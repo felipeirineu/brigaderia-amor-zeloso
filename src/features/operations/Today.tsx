@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { Transport } from '../field/Transport';
 import { TravelSheet } from '../field/TravelSheet';
 import { distance } from '../../../shared/field';
@@ -6,7 +7,7 @@ import { TodayReminders } from '../p1/Reminders';
 import { QuickReceipt, type ReceiptResult } from '../finance/QuickReceipt';
 import { FinanceSummary } from '../finance/Finance';
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+
 import {
   MessageCircle,
   Truck,
@@ -170,9 +171,9 @@ export function Today({
               : 'Entregas e contatos ao alcance da mão.'}
           </p>
         </div>
-        <button onClick={() => void view.refresh()} aria-label="Atualizar Hoje">
+        <Button onClick={() => void view.refresh()} aria-label="Atualizar Hoje">
           <RefreshCw size={20} aria-hidden="true" />
-        </button>
+        </Button>
       </div>
       <label>
         Dia de trabalho
@@ -206,7 +207,7 @@ export function Today({
         />
       )}
       {combinedUndo && (
-        <button
+        <Button
           disabled={busy}
           onClick={() => {
             if (pending.current) return;
@@ -233,14 +234,15 @@ export function Today({
                 setBusy(false);
               });
           }}
+          loading={busy}
         >
           Desfazer entrega e recebimento
-        </button>
+        </Button>
       )}
 
       {p1 && <TodayReminders day={day} />}
       {undo && (
-        <button
+        <Button
           disabled={busy}
           onClick={() => {
             if (pending.current) return;
@@ -262,9 +264,10 @@ export function Today({
                 setBusy(false);
               });
           }}
+          loading={busy}
         >
           <Undo2 size={20} aria-hidden="true" /> Desfazer entrega
-        </button>
+        </Button>
       )}
       {view.data && view.data.day === day ? (
         <>
@@ -296,7 +299,9 @@ export function Today({
               ) : (
                 <p>
                   Nada confirmado para produzir.{' '}
-                  <Link to="/gestao/recorrentes">Gerar pedidos da semana?</Link>
+                  <Button to="/gestao/recorrentes" variant="ghost">
+                    Gerar pedidos da semana?
+                  </Button>
                 </p>
               )}
             </section>
@@ -375,16 +380,17 @@ export function Today({
                         <Transport order={order} />
                       </>
                     )}
-                    <Link
+                    <Button
                       className="button secondary"
                       to={`/gestao/pedidos/${order.id}#whatsapp`}
+                      variant="ghost"
                     >
                       <MessageCircle size={20} aria-hidden="true" /> WhatsApp
-                    </Link>
+                    </Button>
                     {(order.status === 'out_for_delivery' ||
                       (order.status === 'ready' &&
                         order.delivery_type === 'pickup')) && (
-                      <button
+                      <Button
                         className="primary-action"
                         disabled={busy}
                         onClick={() =>
@@ -395,26 +401,32 @@ export function Today({
                               : 'delivered',
                           )
                         }
+                        loading={busy}
                       >
                         {order.delivery_type === 'pickup'
                           ? 'Marcar retirado'
                           : 'Marcar entregue'}
-                      </button>
+                      </Button>
                     )}
                     {financial &&
                       !['draft', 'awaiting_confirmation', 'cancelled'].includes(
                         order.status,
                       ) && (
-                        <button
+                        <Button
                           disabled={busy}
                           onClick={() => setReceipt(order)}
+                          loading={busy}
                         >
                           Recebi R$
-                        </button>
+                        </Button>
                       )}
-                    <Link className="button" to={`/gestao/pedidos/${order.id}`}>
+                    <Button
+                      className="button"
+                      to={`/gestao/pedidos/${order.id}`}
+                      variant="ghost"
+                    >
                       Abrir pedido <ChevronRight size={20} aria-hidden="true" />
-                    </Link>
+                    </Button>
                   </div>
                 </article>
               ))}
@@ -423,7 +435,9 @@ export function Today({
             <section className="empty-state">
               <CheckCircle2 size={36} aria-hidden="true" />
               <h2>Nenhuma entrega neste período.</h2>
-              <Link to="/gestao/recorrentes">Preparar pedidos da semana</Link>
+              <Button to="/gestao/recorrentes" variant="ghost">
+                Preparar pedidos da semana
+              </Button>
             </section>
           )}
           {financial && role !== 'owner' && <FinanceSummary compact />}

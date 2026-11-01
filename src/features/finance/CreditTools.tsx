@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
 import { useRef, useState } from 'react';
 import { api, money, parsePrice } from '../api';
@@ -107,7 +108,9 @@ export function CreditTools({
               onChange={(e) => setDay(e.target.value)}
             />
           </label>
-          <button disabled={busy}>Registrar crédito</button>
+          <Button disabled={busy} variant="primary" loading={busy}>
+            Registrar crédito
+          </Button>
         </form>
       </details>
       {data.available_credit_cents > 0 && (
@@ -178,7 +181,9 @@ export function CreditTools({
             value={useAmount}
             onValueChange={(value) => setUseAmount(value)}
           />
-          <button disabled={busy}>Usar crédito selecionado</button>
+          <Button disabled={busy} loading={busy}>
+            Usar crédito selecionado
+          </Button>
         </form>
       )}
       {data.credits.map((c) => (
@@ -190,7 +195,7 @@ export function CreditTools({
             disponível {money(c.available_cents)}
           </p>
           {c.available_cents > 0 && c.can_refund && (
-            <button
+            <Button
               disabled={busy}
               onClick={() => {
                 const value = prompt(
@@ -215,9 +220,11 @@ export function CreditTools({
                     setError((e as Error).message);
                   }
               }}
+              variant="danger"
+              loading={busy}
             >
               Estornar crédito {c.event_id.slice(0, 8)}
-            </button>
+            </Button>
           )}
         </article>
       ))}
@@ -226,7 +233,7 @@ export function CreditTools({
           <p key={p.event_id + ':' + p.order_id}>
             Crédito {p.event_id.slice(0, 8)} no pedido {p.order_id.slice(0, 8)}:{' '}
             {money(p.amount_cents)}{' '}
-            <button
+            <Button
               disabled={busy}
               onClick={() => {
                 const reason = prompt(
@@ -248,9 +255,10 @@ export function CreditTools({
                     reason,
                   });
               }}
+              loading={busy}
             >
               Liberar alocação
-            </button>
+            </Button>
           </p>
         ))}
     </section>
