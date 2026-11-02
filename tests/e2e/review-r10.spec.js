@@ -136,3 +136,54 @@ test('R10-3 lembrete tem data relativa, círculo e feedback temporário', async 
     await t.dispose();
   }
 });
+
+test('R10-4 atalhos de dia/hora do lembrete preservam o seletor nativo', async ({
+  browser,
+}, info) => {
+  const t = await runtime({
+    browserHTTP: true,
+    financeEnabled: true,
+    p1Enabled: true,
+  });
+  const c = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    extraHTTPHeaders: {
+      'Cf-Access-Jwt-Assertion': await t.token('operator@example.test'),
+    },
+  });
+  try {
+    const { call } = await demoProject(t);
+    const { fortalezaDay, shiftDay } = await import('../../shared/workday.ts');
+    const tomorrow = shiftDay(fortalezaDay(), 1);
+    const p = await c.newPage();
+    await p.goto(t.url + '/api/access/start');
+    await p.getByRole('button', { name: 'Novo lembrete', exact: true }).click();
+    const sheet = p.getByRole('dialog', { name: 'Novo lembrete', exact: true });
+    await sheet
+      .getByLabel('Título do lembrete', { exact: true })
+      .fill('Atalhos DEMONSTRAÇÃO R10');
+    await sheet.getByRole('button', { name: 'Amanhã', exact: true }).click();
+    await sheet.getByRole('button', { name: '14:00', exact: true }).click();
+    const native = sheet.getByLabel('Quando lembrar (João Pessoa)', {
+      exact: true,
+    });
+    await expect(native).toHaveValue(tomorrow + 'T14:00');
+    await native.fill(tomorrow + 'T18:00');
+    await expect(
+      sheet.getByRole('button', { name: '18:00', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await capture(p, 'lembrete-atalhos', info);
+    await sheet
+      .getByRole('button', { name: 'Salvar lembrete', exact: true })
+      .click();
+    await expect(sheet).toBeHidden();
+    await expect(p.locator('.feedback-toast')).toHaveText('Lembrete salvo.');
+    const saved = (await call('p1/reminders', undefined, 'GET')).find(
+      (r) => r.title === 'Atalhos DEMONSTRAÇÃO R10',
+    );
+    expect(saved.due_at).toBe(tomorrow + 'T21:00:00.000Z');
+  } finally {
+    await c.close();
+    await t.dispose();
+  }
+});

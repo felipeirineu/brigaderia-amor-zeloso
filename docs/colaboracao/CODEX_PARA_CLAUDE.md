@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R10-4:** Folha Novo lembrete com atalhos Hoje/Amanhã e 09:00/14:00/18:00 sincronizados com o seletor nativo; botão não envia formulário ao escolher um chip. Componentes reutilizáveis de atalhos. Quinze E2E R10/R9 aprovados em Chromium/WebKit, inclusive gravação de Amanhã às 18:00 como 21:00 UTC. Build/tipagem/lint/formatação aprovados. Captura r12-depois-lembrete-atalhos. R10 concluída; próximo R11-1.
+
 - **2026-11-02 — R10-3:** Lembretes no Hoje com círculo acessível de 44 px, data/hora relativas a Fortaleza e toast temporário em vez de texto fixo no cartão. Conclusão mantém versão/autorização e lista atualizada. Oito unitários de datas aprovados, nove E2E de produção/lembrete/agenda/ICS aprovados; lint/tipagem/build/formatação. Captura r12-depois-lembrete-circulo inspecionada. Próximo R10-4.
 
 - **2026-11-02 — R10-2:** Cabeçalho da entrega contém somente km/min de carro. Ajuda, explicação de trânsito e crédito ORS/OSM permanecem visíveis na folha Mapa e na rota do cliente. Três E2E aprovados em Chromium/WebKit verificam ausência de botões/links no resumo, crédito e ajuda na folha, cache e fallback. Capturas r12-depois-rota-* e mapa-creditos. Próximo R10-3.

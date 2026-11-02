@@ -1,3 +1,7 @@
+import {
+  DayShortcuts,
+  TimeShortcuts,
+} from '../../components/ScheduleShortcuts';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/Button';
 import { api } from '../api';
@@ -78,6 +82,20 @@ export function ReminderSheet({
                 onChange={(e) => setTitle(e.target.value)}
               />
             </label>
+            <fieldset className="schedule-shortcuts">
+              <legend>Quando</legend>
+              <DayShortcuts
+                day={due.slice(0, 10)}
+                onChange={(day) => setDue(day + due.slice(10))}
+              />
+            </fieldset>
+            <fieldset className="schedule-shortcuts">
+              <legend>Horário</legend>
+              <TimeShortcuts
+                time={due.slice(11, 16)}
+                onChange={(time) => setDue(due.slice(0, 11) + time)}
+              />
+            </fieldset>
             <label>
               Quando lembrar (João Pessoa)
               <input
