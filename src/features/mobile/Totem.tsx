@@ -1,3 +1,4 @@
+import { fortalezaDay, shiftDay } from '../../../shared/workday';
 import { createPortal } from 'react-dom';
 import { sortFlavors, readFlavorOrder, type Popularity } from './flavorOrder';
 import { Button } from '../../components/Button';
@@ -90,6 +91,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     [counts, setCounts] = useState<Record<string, number>>({}),
     [variants, setVariants] = useState<Record<string, string>>({}),
     [due, setDue] = useState(''),
+    [planDue, setPlanDue] = useState(''),
     [notes, setNotes] = useState(''),
     [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>(
       'delivery',
@@ -158,7 +160,9 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     setCounts(
       Object.fromEntries(p.items.map((i) => [i.variant_id, i.quantity])),
     );
-    setDue(nextWeeklyTime(p.weekday, p.time));
+    const planned = nextWeeklyTime(p.weekday, p.time);
+    setDue(planned);
+    setPlanDue(planned);
     setNotes(p.notes);
     setDeliveryType(p.delivery_type);
     setAddress(p.delivery_address);
@@ -172,6 +176,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     setCounts({});
     setDefaults(null);
     setDue('');
+    setPlanDue('');
     setNotes('');
     setStep(1);
     setBusy(true);
@@ -539,6 +544,40 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               </div>
             </article>
           ))}
+          <h3 className="order-section-label">Quando</h3>
+          <div
+            className="chips"
+            role="group"
+            aria-label="Atalhos de data do pedido"
+          >
+            {[
+              ['Hoje', fortalezaDay()],
+              ['Amanhã', shiftDay(fortalezaDay(), 1)],
+              ...(planDue
+                ? [['Dia do pedido padrão', planDue.slice(0, 10)]]
+                : []),
+            ].map(([label, day]) => (
+              <Button
+                key={label}
+                variant="chip"
+                aria-pressed={due.slice(0, 10) === day}
+                onClick={() =>
+                  setDue(
+                    day +
+                      'T' +
+                      (label === 'Dia do pedido padrão'
+                        ? planDue.slice(11, 16)
+                        : due.slice(11, 16) ||
+                          new Date(Date.now() - 10800000)
+                            .toISOString()
+                            .slice(11, 16)),
+                  )
+                }
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
           <label>
             Data e hora do pedido
             <input
@@ -548,6 +587,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               onChange={(e) => setDue(e.target.value)}
             />
           </label>
+          <h3 className="order-section-label">Como</h3>
           <div className="chips" aria-label="Entrega ou retirada">
             <Button
               aria-pressed={deliveryType === 'delivery'}
@@ -571,7 +611,12 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               />
             </label>
           )}
-          <div className="chips" aria-label="Quem entrega">
+          <h3 className="order-section-label">Quem leva</h3>
+          <div
+            className="chips courier-choices"
+            role="group"
+            aria-label="Quem leva"
+          >
             {(['unassigned', 'owner', 'partner', 'courier'] as const).map(
               (c) => (
                 <Button
@@ -579,6 +624,17 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                   aria-pressed={courier === c}
                   onClick={() => setCourier(c)}
                 >
+                  {c !== 'unassigned' && (
+                    <span className="courier-initials" aria-hidden="true">
+                      {courierLabels[c]
+                        .trim()
+                        .split(/\s+/)
+                        .slice(0, 2)
+                        .map((w) => w[0])
+                        .join('')
+                        .toLocaleUpperCase('pt-BR')}
+                    </span>
+                  )}
                   {courierLabels[c]}
                 </Button>
               ),
@@ -599,30 +655,33 @@ export function Totem({ financial = false }: { financial?: boolean }) {
             onValueChange={setFee}
           />
           {financial && (
-            <div className="chips" aria-label="Condição de pagamento">
-              {(['unset', 'advance', 'delivery', 'credit'] as const).map(
-                (mode) => (
-                  <Button
-                    key={mode}
-                    disabled={
-                      mode === 'credit' &&
-                      defaults?.profile.terms.mode !== 'credit' &&
-                      !editing
-                    }
-                    aria-pressed={terms.mode === mode}
-                    onClick={() => setTerms({ ...terms, mode })}
-                  >
-                    {mode === 'unset'
-                      ? 'A definir'
-                      : mode === 'advance'
-                        ? 'Adiantado'
-                        : mode === 'delivery'
-                          ? 'Na entrega'
-                          : 'A prazo'}
-                  </Button>
-                ),
-              )}
-            </div>
+            <>
+              <h3 className="order-section-label">Pagamento</h3>
+              <div className="chips" aria-label="Condição de pagamento">
+                {(['unset', 'advance', 'delivery', 'credit'] as const).map(
+                  (mode) => (
+                    <Button
+                      key={mode}
+                      disabled={
+                        mode === 'credit' &&
+                        defaults?.profile.terms.mode !== 'credit' &&
+                        !editing
+                      }
+                      aria-pressed={terms.mode === mode}
+                      onClick={() => setTerms({ ...terms, mode })}
+                    >
+                      {mode === 'unset'
+                        ? 'A definir'
+                        : mode === 'advance'
+                          ? 'Adiantado'
+                          : mode === 'delivery'
+                            ? 'Na entrega'
+                            : 'A prazo'}
+                    </Button>
+                  ),
+                )}
+              </div>
+            </>
           )}
           <label>
             Observações

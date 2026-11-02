@@ -1974,3 +1974,26 @@ details[open] > .disclosure-summary > .disclosure-chevron {
     min-height: 44px;
   }
 }
+.order-section-label {
+  margin: 18px 0 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #76532f;
+}
+.courier-choices .courier-initials {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #321d10;
+  color: #f9ecd7;
+  font-size: 11px;
+  margin-right: 6px;
+}
+.courier-choices [aria-pressed='true'] .courier-initials {
+  outline: 2px solid #b8915b;
+}

@@ -69,6 +69,20 @@ test('R5 telas móveis com ações compartilhadas', async ({
     await expect(
       p.getByRole('heading', { name: 'Revise seu pedido' }),
     ).toBeVisible();
+    for (const name of ['Quando', 'Como', 'Quem leva', 'Pagamento'])
+      await expect(p.getByRole('heading', { name, exact: true })).toBeVisible();
+    const due = p.getByLabel('Data e hora do pedido', { exact: true });
+    await p
+      .getByRole('group', { name: 'Atalhos de data do pedido', exact: true })
+      .getByRole('button', { name: 'Amanhã', exact: true })
+      .click();
+    const tomorrow = await due.inputValue();
+    expect(tomorrow).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+    await p
+      .getByRole('group', { name: 'Atalhos de data do pedido', exact: true })
+      .getByRole('button', { name: 'Hoje', exact: true })
+      .click();
+    expect((await due.inputValue()).slice(11)).toBe(tomorrow.slice(11));
     await capture('revisar');
     for (const [path, name] of [
       ['clientes', 'clientes'],
