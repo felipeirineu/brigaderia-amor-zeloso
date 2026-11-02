@@ -2150,3 +2150,23 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   border-bottom: 1px solid var(--border);
   padding: 10px 0;
 }
+.profile-menu-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.profile-menu-heading h2 {
+  margin: 0;
+}
+.profile-menu .profile-menu-item.az-button {
+  min-height: 52px;
+  justify-content: flex-start;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  margin: 0;
+}
+.profile-menu .profile-menu-item .az-button-label {
+  text-align: left;
+}

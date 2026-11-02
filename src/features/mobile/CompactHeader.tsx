@@ -1,7 +1,14 @@
 import { Button } from '../../components/Button';
 import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { CircleUserRound } from 'lucide-react';
+import {
+  CircleUserRound,
+  CircleHelp,
+  Compass,
+  LogOut,
+  X,
+  Settings,
+} from 'lucide-react';
 import { fortalezaDay } from '../../../shared/workday';
 import { useField } from '../field/FieldContext';
 const titles: Record<string, string> = {
@@ -108,10 +115,21 @@ export function CompactHeader({
         onClose={() => trigger.current?.focus()}
       >
         <div className="sheet-body">
-          <h2>{name}</h2>
+          <div className="profile-menu-heading">
+            <h2>{name}</h2>
+            <Button
+              aria-label="Fechar menu"
+              variant="ghost"
+              onClick={() => menu.current?.close()}
+            >
+              <X size={20} aria-hidden="true" />
+            </Button>
+          </div>
           <p>{role === 'owner' ? 'Administrador' : 'Operador'}</p>
           <Button
             to="/gestao/preferencias"
+            className="profile-menu-item"
+            icon={<Settings size={20} aria-hidden="true" />}
             variant="ghost"
             onClick={() => menu.current?.close()}
           >
@@ -119,6 +137,9 @@ export function CompactHeader({
           </Button>
           {operations && online && (
             <Button
+              className="profile-menu-item"
+              variant="ghost"
+              icon={<Compass size={20} aria-hidden="true" />}
               onClick={() => {
                 menu.current?.close();
                 window.dispatchEvent(new Event('start-tour'));
@@ -128,7 +149,8 @@ export function CompactHeader({
             </Button>
           )}
           <Button
-            className="button secondary"
+            className="profile-menu-item"
+            icon={<CircleHelp size={20} aria-hidden="true" />}
             to="/gestao/ajuda"
             onClick={() => menu.current?.close()}
             variant="ghost"
@@ -136,6 +158,9 @@ export function CompactHeader({
             Ajuda
           </Button>
           <Button
+            className="profile-menu-item"
+            variant="danger"
+            icon={<LogOut size={20} aria-hidden="true" />}
             disabled={!online}
             onClick={() => {
               menu.current?.close();
@@ -144,7 +169,6 @@ export function CompactHeader({
           >
             Sair
           </Button>
-          <Button onClick={() => menu.current?.close()}>Fechar menu</Button>
         </div>
       </dialog>
     </>

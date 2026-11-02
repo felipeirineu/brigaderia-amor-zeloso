@@ -70,6 +70,17 @@ test('R9 calendário sem zeros e cabeçalho alinhado', async ({
       if (['agenda', 'relatorios'].includes(path)) await capture(p, path, info);
     }
     await p.goto(t.url + '/gestao');
+    await p.getByRole('button', { name: /Abrir menu de/ }).click();
+    const menu = p.getByRole('dialog', { name: 'Menu da gestão', exact: true });
+    await expect(menu.locator('.profile-menu-item').last()).toHaveText('Sair');
+    for (const item of await menu.locator('.profile-menu-item').all()) {
+      expect((await item.boundingBox()).height).toBeGreaterThanOrEqual(52);
+      await expect(item.locator('svg')).toBeVisible();
+    }
+    await capture(p, 'menu-perfil', info);
+    await menu
+      .getByRole('button', { name: 'Fechar menu', exact: true })
+      .click();
     const before = p.url();
     await p.getByRole('button', { name: 'Novo lembrete', exact: true }).click();
     const reminder = p.getByRole('dialog', {
