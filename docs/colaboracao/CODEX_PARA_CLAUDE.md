@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R9-1:** Calendário mostra contagem visual apenas em dias com entrega, mantém contagem acessível e não simula zero enquanto carrega. Título do mês capitaliza só a primeira letra; cabeçalho alinhado em grade de sete colunas e setas regulares. Build/tipagem e três E2E de calendário aprovados; captura r9-depois-calendario. Sem alteração de schema/Cloudflare. Próximo R9-2.
+
 - **2026-11-02 — R5-10:** Guia curto de homologação com backup/restauração local, runner de todas as pendentes, pré-checagem consolidada e uma alteração humana das seis flags de gestão. Catálogo permanece OFF por AGENTS §8; não interpreta “todas ON” como autorização para publicar catálogo. Workflow_dispatch preparado, somente main, ambiente homologacao-d1, permissão contents:read e token D1 limitado à conta; padrão só leitura, aplicação exige confirmação humana e bloqueios de FKs/histórico/schema. Nenhum secret/ambiente foi criado, workflow disparado ou banco remoto consultado/alterado. Base no roteiro de ativação adiantada da R6-4; aviso no Hoje ainda pendente. 66 unitários, lint/tipagem/formatação, sintaxe Node/YAML e 56 E2E aprovados, um offline WebKit já ignorado. Ponto estável de parada para preservar cota: retomar em R6-1; R6-3/R6-6 já cobertos por R8-6, restante R6 e R7 pendentes.
 
 - **2026-11-02 — R5-9:** Photon usa User-Agent neutro BrigaderiaGestao/1.0; PLACES_USER_AGENT opcional só no Worker, com limite ASCII sem quebras de linha e fallback seguro. URL pessoal removida do cabeçalho. Guia explica o contato público da empresa na transferência, sem configurar variável remota. 63 unitários (inclui header HTTP padrão/configurado/inválido), tipagem/lint e integração de campo aprovados. Próximo R5-10.
@@ -234,3 +236,18 @@ Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compa
 | R5-10         | Entregue; testes/limites no histórico.                                                                                     |
 | R6            | R6-3/R6-6 cobertos por R8-6; guia da base adiantado, aviso pendente. R6-1/2/5/7/8 pendentes (Mapa parcialmente adiantado). |
 | R7            | Pendente após R6; nenhuma migração ou flag ativada.                                                                        |
+
+## R9 — rodada atual
+
+Revisão 52ec55f integrada por fast-forward. Plano antes do código: DayCalendar/workday/CSS (R9-1: contagem positiva e mês sem capitalizar preposição); títulos dos módulos em Mais (R9-2: manter semântica sem repetição visual); Reminders/Today (R9-3: criação em folha com validação/idempotência); Today/operations/finance (R9-4: valores → produção visual → confirmação individual/lote → entregas → lembretes); CompactHeader/CSS (R9-5: linhas uniformes e saída no fim); Today/guia (R9-6: definir nome sem bloquear a operação). Depois R6-1, R6-2, R6-4, R6-5, R6-7, R6-8 e R7 conforme briefing, sem ativação remota. Aceite: E2E móvel, capturas r9-depois-*, isolamento/auditoria/CAS mantidos, um commit e push por item. Protótipo usado apenas como referência visual; fixtures DEMONSTRAÇÃO independentes.
+
+| Item R9     | Status                                     |
+| ----------- | ------------------------------------------ |
+| R9-1        | Entregue; evidências/limites no histórico. |
+| R9-2        | Pendente                                   |
+| R9-3        | Pendente                                   |
+| R9-4        | Pendente                                   |
+| R9-5        | Pendente                                   |
+| R9-6        | Pendente                                   |
+| R6 restante | Pendente após R9; R6-3/6 já entregues      |
+| R7          | Pendente após R6                           |

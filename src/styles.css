@@ -1917,7 +1917,6 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 }
 .calendar-month h2 {
   font-size: 20px;
-  text-transform: capitalize;
 }
 .calendar-grid,
 .calendar-weekdays {
@@ -2073,4 +2072,22 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .order-card .delivery-complete.az-button {
   min-height: 56px;
   font-size: 17px;
+}
+
+.calendar-month {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+}
+.calendar-month h2 {
+  text-align: center;
+}
+.calendar-month .az-button {
+  min-width: 44px;
+  padding: 4px;
+}
+.calendar-grid > .az-button .az-button-label > span {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 38px;
 }

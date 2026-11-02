@@ -7,7 +7,12 @@ import {
 } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { useRemote, Failure, localDay } from './common';
-import { dayChip, shiftDay, shiftMonth } from '../../../shared/workday';
+import {
+  dayChip,
+  shiftDay,
+  shiftMonth,
+  monthTitle,
+} from '../../../shared/workday';
 function CalendarSheet({
   day,
   onSelect,
@@ -47,13 +52,7 @@ function CalendarSheet({
           >
             <ChevronLeft aria-hidden="true" />
           </Button>
-          <h2 aria-live="polite">
-            {new Intl.DateTimeFormat('pt-BR', {
-              month: 'long',
-              year: 'numeric',
-              timeZone: 'America/Fortaleza',
-            }).format(first)}
-          </h2>
+          <h2 aria-live="polite">{monthTitle(month)}</h2>
           <Button
             aria-label="Próximo mês"
             disabled={month === '2199-12'}
@@ -89,7 +88,7 @@ function CalendarSheet({
               >
                 <span>
                   {i + 1}
-                  <small>{view.data ? (count ?? 0) : '–'}</small>
+                  {view.data && (count ?? 0) > 0 && <small>{count}</small>}
                 </span>
               </Button>
             );

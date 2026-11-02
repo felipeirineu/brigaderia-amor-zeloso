@@ -44,3 +44,12 @@ export function dayChip(day: string, today = fortalezaDay()) {
             month: '2-digit',
           }).format(new Date(day + 'T12:00Z'));
 }
+
+export function monthTitle(month: string) {
+  const label = new Intl.DateTimeFormat('pt-BR', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'America/Fortaleza',
+  }).format(new Date(month + '-01T12:00Z'));
+  return label.charAt(0).toLocaleUpperCase('pt-BR') + label.slice(1);
+}
