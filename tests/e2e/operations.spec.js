@@ -103,7 +103,11 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
     await expect(
       second.getByRole('heading', { name: 'Hoje', exact: true }),
     ).toBeVisible();
-    await second.getByLabel('Dia de trabalho').fill('2030-01-07');
+    await second
+      .getByLabel('Dia de trabalho', { exact: true })
+      .or(second.getByLabel('Dia de trabalho no celular', { exact: true }))
+      .filter({ visible: true })
+      .fill('2030-01-07');
     await expect(
       second.getByRole('button', { name: 'Ajuda: Produzir hoje' }),
     ).toHaveCount(0);

@@ -32,6 +32,15 @@ test('R5 telas móveis com ações compartilhadas', async ({
     };
     await p.goto(t.url + '/api/access/start');
     await expect(p.locator('.order-card')).toBeVisible();
+    await expect(p.getByLabel('Dia de trabalho no celular')).toBeVisible();
+    expect(
+      (await p.locator('.order-card').first().boundingBox()).y,
+    ).toBeLessThanOrEqual(140);
+    const reminder = p.getByRole('heading', { name: 'Lembretes até este dia' });
+    if (await reminder.count())
+      expect((await reminder.boundingBox()).y).toBeGreaterThan(
+        (await p.locator('.order-card').first().boundingBox()).y,
+      );
     await capture('hoje');
     await p.goto(t.url + '/gestao/pedidos?novo=1');
     await p

@@ -107,7 +107,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
   const root = useRef<HTMLElement>(null);
   const focusBack =
     typeof document !== 'undefined'
-      ? document.getElementById('order-focus-back')
+      ? document.getElementById('mobile-header-actions')
       : null;
   const choice = useRef(0),
     pending = useRef(false),
