@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-02** — R8: revisão da entrega R5 (até `9e13cb9`) e **protótipo de referência** em `prototipo/index.html`. Ver seção **R8**. Ordem de trabalho atualizada no fim da seção.
 - **2026-11-01** — R7: visitas de apresentação com amostras grátis para clientes em potencial. Ver seção **R7**.
 - **2026-11-01** — R6: distância por rota de carro, tela do botão Mapa e saudação pelo horário. Ver seção **R6**. Referência visual: prévia interativa aprovada pelo responsável (cartões de entrega com km/min, folha "Rota até…").
 - **2026-11-01** — R5: revisão da entrega R2/R3/R4/P1 (até `796342b`), com capturas de tela. Foco: espaço útil no celular e simplificação da ativação. Ver seção **R5**.
@@ -16,6 +17,72 @@
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R8 — Revisão da R5 e protótipo de referência (2026-11-02)
+
+**O que foi revisado:**
+
+- Commits `cfc1c94`…`9e13cb9` (R5-1, R5-12, R5-3, R5-2 e R5-4), com CI **verde**.
+- As capturas `capturas/r5-depois-*`. Montagem para comparação em `capturas/r8-antes-1.png` e `r8-antes-2.png`.
+
+**Não foi feito:** não rodei a suíte e não abri em aparelho físico.
+
+**Aprovado:**
+
+- Cabeçalho compacto de 56 px.
+- Modo foco sem barra inferior, com os 5 sabores com foto visíveis sem rolar e ordenação por frequência.
+- Barra de total sem "R$ 0,00" quando vazia.
+- Clientes abrindo pela lista e cadastro em folha com GPS e câmera no início.
+- Componente `Button` único. Bom trabalho.
+
+### Protótipo de referência (novo)
+
+- [`prototipo/index.html`](prototipo/index.html) é uma prévia interativa feita pelo Claude e **aprovada pelo responsável** como alvo visual e de interação do app. Abra no navegador em 390×844.
+- Ela usa **dados fictícios**. Nomes reais e fotos pessoais foram trocados por "Operadora", "Administrador" e avatares genéricos.
+- Use como especificação de layout, hierarquia, espaçamentos, textos e fluxos. **Não copie dados de exemplo** e mantenha a arquitetura e as regras do app (servidor, validação, flags e AGENTS.md).
+- O CSS do protótipo (tokens, `.card`, `.btn-*`, `.chip`, `.icon-row`, `.kpi`, `.cal`, `.sheet`, `.seg`) pode servir de base direta para os componentes.
+- Fluxos que ele demonstra:
+  - Hoje por papel;
+  - entregar → receber → custo da corrida;
+  - pedido totem;
+  - folha do Mapa;
+  - WhatsApp com modelos;
+  - calendário com contagem;
+  - lembretes com aviso;
+  - gerar semana;
+  - visitas e amostras (R7);
+  - explicações "No app pronto".
+
+### Ajustes pedidos (prioridade alta: é o que eles mais vão ver)
+
+- **R8-1 — Cartão de entrega no Hoje** (hoje está desestruturado em `r5-depois-hoje`). Seguir o cartão do protótipo:
+  - **Linha 1:** avatar com iniciais, nome do cliente, "🕘 09:30 · endereço" e "🚗 6,4 km · 16 min de carro".
+  - **Linha 2:** fotos e quantidades dos sabores em pílulas ("3× Tradicional").
+  - **Linha 3:** pílula da condição de pagamento e total à direita.
+  - **Linha 4:** `icon-row` com **4 botões iguais: Mapa · WhatsApp · Uber · 99**. Google Maps, Waze e Mapas do iPhone ficam **dentro da folha do Mapa** (R6-2), não como botões soltos. "Copiar destino para 99" vira o comportamento do botão 99.
+  - **Linha 5:** botão verde grande "Marcar entregue", ou "Entregue e recebido" quando o pagamento é na entrega.
+  - **Não mostrar data e hora crua** ("02/11/2026, 00:24"). No dia atual, mostrar só a hora; nos outros dias, "Ter, 03/11 · 09:30".
+  - "Entregador: Operador" sai do corpo do cartão. Aparece só se for diferente de quem está logado, como pílula com foto ou nome.
+- **R8-2 — Título duplicado.** No celular o cabeçalho já mostra "Clientes", "Mais" e "Financeiro". Remover o `<h1>` repetido do corpo da página, ou trocar por um subtítulo útil, para ganhar ~60 px.
+- **R8-3 — Marcadores ▶ laranja** em "Opções da lista" e "Conta e localização". É o triângulo nativo de `<details>`, que aparece como emoji em alguns aparelhos. Usar o ícone Lucide `ChevronDown`/`ChevronRight`, com `list-style:none` e `::-webkit-details-marker{display:none}`.
+- **R8-4 — Cartões de cliente em largura total**, uma coluna no celular, como no protótipo. Hoje o cartão ocupa meia largura e quebra o nome ("DEMONST RAÇÃO").
+- **R8-5 — Menu do perfil:** o botão do cabeçalho mostra "Operador" (o papel). Mostrar a **foto** (R6-5) ou as iniciais do **nome de exibição** (R4-7), como no protótipo. O papel aparece só dentro do menu.
+- **R8-6 — Saudação e seletor de dia** (R6-3 e R6-6): "Bom dia, {nome}" com a data por extenso e o chip "📅 Hoje ▾" que abre o calendário com a contagem de entregas, como no protótipo. O "Hoje, 02/11 ▾" atual pode virar esse chip.
+- **R8-7 — Revisar pedido:**
+  - rótulos de seção em caixa alta pequena ("QUANDO", "COMO", "QUEM LEVA", "PAGAMENTO") como no protótipo;
+  - "Quem leva" com nomes de exibição e fotos ("A definir" vira chip discreto);
+  - data e hora com chips "Hoje / Amanhã / dia do pedido padrão" antes do seletor nativo.
+
+### Ordem de trabalho a partir de agora
+
+1. **Trazer as revisões R6 e R7**, que já estão no branch do Claude e ainda não foram mescladas ao main.
+2. **R8-1 a R8-7** (visual, alto impacto).
+3. **Restante da R5:** R5-5 (cartões de valor no financeiro), R5-6 (chips no lugar de select), R5-7 (quebra de "Deslocamentos"), R5-8 (teste de espaço), R5-9 (User-Agent) e R5-10 (ativação simplificada e workflow manual, sem executar nada remoto).
+4. **R6:** R6-3 e R6-6 primeiro (já cobertos pela R8-6), depois R6-1, R6-2, R6-4, R6-5, R6-7 e R6-8.
+5. **R7** (visitas e amostras).
+6. Commit e push a cada item, capturas `r8-depois-*` e status em `CODEX_PARA_CLAUDE.md`.
 
 ---
 
