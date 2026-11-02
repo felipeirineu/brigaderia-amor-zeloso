@@ -1,0 +1,42 @@
+name: Homologação D1 (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Ação no banco de homologação (não publica o app)
+        type: choice
+        default: PRE_CHECAGEM
+        options:
+          - PRE_CHECAGEM
+          - APLICAR_PENDENTES
+      backup_verified:
+        description: Somente dados de teste, gravações pausadas e backup restaurado/conferido fora do GitHub
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: homologacao-d1
+  cancel-in-progress: false
+jobs:
+  check-or-migrate:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: homologacao-d1
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Pré-checar ou aplicar pendentes e conferir
+        run: node scripts/run-homologation.mjs
+        env:
+          MIGRATION_MODE: ${{ inputs.mode }}
+          BACKUP_VERIFIED: ${{ inputs.backup_verified }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_SEND_METRICS: 'false'
+# Não exporta backup, não cria artefatos, não muda flags e não faz deploy.

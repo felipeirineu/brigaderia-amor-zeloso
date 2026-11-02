@@ -58,6 +58,11 @@ export default defineConfig({
     }),
   ],
   test: {
-    include: ['src/**/*.test.ts', 'worker/**/*.test.ts', 'shared/**/*.test.ts'],
+    include: [
+      'src/**/*.test.ts',
+      'worker/**/*.test.ts',
+      'shared/**/*.test.ts',
+      'scripts/**/*.test.mjs',
+    ],
   },
 });

@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R5-10:** Guia curto de homologação com backup/restauração local, runner de todas as pendentes, pré-checagem consolidada e uma alteração humana das seis flags de gestão. Catálogo permanece OFF por AGENTS §8; não interpreta “todas ON” como autorização para publicar catálogo. Workflow_dispatch preparado, somente main, ambiente homologacao-d1, permissão contents:read e token D1 limitado à conta; padrão só leitura, aplicação exige confirmação humana e bloqueios de FKs/histórico/schema. Nenhum secret/ambiente foi criado, workflow disparado ou banco remoto consultado/alterado. Base no roteiro de ativação adiantada da R6-4; aviso no Hoje ainda pendente. 66 unitários, lint/tipagem/formatação, sintaxe Node/YAML e 56 E2E aprovados, um offline WebKit já ignorado. Ponto estável de parada para preservar cota: retomar em R6-1; R6-3/R6-6 já cobertos por R8-6, restante R6 e R7 pendentes.
+
 - **2026-11-02 — R5-9:** Photon usa User-Agent neutro BrigaderiaGestao/1.0; PLACES_USER_AGENT opcional só no Worker, com limite ASCII sem quebras de linha e fallback seguro. URL pessoal removida do cabeçalho. Guia explica o contato público da empresa na transferência, sem configurar variável remota. 63 unitários (inclui header HTTP padrão/configurado/inválido), tipagem/lint e integração de campo aprovados. Próximo R5-10.
 
 - **2026-11-02 — R5-8:** E2E de espaço em 390×844 cobre primeiro cartão até 200 px conforme precedência R8, fonte alternativa, ausência de overflow, cinco sabores acima do rodapé, largura dos clientes e grade financeira. Anexa Hoje/Sabores ao relatório Playwright; seis E2E passaram nos três projetos. QA visual em design-qa.md e prancha conjunta; ação verde com ícone/altura 56 e nome longo sem aumentar a faixa da saudação. WebKit repetido após refinamento aprovado. CI de 51471c0 aprovou a correção de espaço anterior. Próximo R5-9.
@@ -208,20 +210,27 @@ Revisões R6/R7/R8 e protótipo integrados em a8a4a90. Protótipo aberto em Chro
 
 Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compacto, fotos em lote, quatro ações e entrega com validação existente); CompactHeader/Management/CSS (R8-2…5: uma hierarquia móvel, Lucide, largura total, iniciais); Today/calendário/API e datas (R8-6: Fortaleza, contagem agregada, dia selecionado); Totem (R8-7: rótulos, entregador e atalhos de data). Capturas r8-depois-* e E2E móveis, sem retirar autorização/CAS/idempotência. Rotas/tempo e fotos pessoais só serão exibidos com dados efetivamente disponíveis.
 
-| Revisão atual | Status                                                                                            |
-| ------------- | ------------------------------------------------------------------------------------------------- |
-| R8-1          | Cartão entregue; km/min de rota dependem de R6-1.                                                 |
-| R8-2          | Entregue (limites e testes no histórico).                                                         |
-| R8-3          | Entregue (limites e testes no histórico).                                                         |
-| R8-4          | Entregue (limites e testes no histórico).                                                         |
-| R8-5          | Entregue (limites e testes no histórico).                                                         |
-| R8-6          | Entregue (limites e testes no histórico).                                                         |
-| R8-7          | Interface entregue; fotos pessoais dependem de R6-5.                                              |
-| R5-5          | Entregue; testes/limites no histórico.                                                            |
-| R5-6          | Entregue; testes/limites no histórico.                                                            |
-| R5-7          | Entregue; testes/limites no histórico.                                                            |
-| R5-8          | Entregue; testes/limites no histórico.                                                            |
-| R5-9          | Entregue; testes/limites no histórico.                                                            |
-| R5-10         | Pendente.                                                                                         |
-| R6            | R6-3/R6-6 cobertos por R8-6; demais pendentes. Mapa parcialmente adiantado, preferência pendente. |
-| R7            | Pendente após R6; nenhuma migração ou flag ativada.                                               |
+## Relatório — R8 e complemento R5 (2026-11-02)
+
+- **Produzido:** revisões R6/R7/R8 e protótipo integrados; R8-1…7 implementados na interface, com dependências reais de rota/foto explicitamente pendentes; R5-5…10 concluídos em commits/pushes individuais. Guia e workflow manual preparados, sem execução remota. Capturas `r8-depois-*`, comparação conjunta e `design-qa.md` disponíveis.
+- **Testes executados:** 66 unitários; integração operacional (14 verificações), calendário agregado (fuso/mês, isolamento, autorização, ausência de PII), campo, contraste AA, build/tipagem/lint/formatação e sintaxe Node/YAML. Regressão completa final: 56 E2E passaram em Chromium móvel/desktop e WebKit móvel; um offline WebKit previamente ignorado. Guardas do runner executadas sem credenciais, encerrando antes de consultar D1. CI dos commits até 20359d1 aprovada; CI do último envio deve ser consultada no Actions do main.
+- **Limitações:** sem iPhone/Android físico, fluxo remoto de ativação ou teste de token Cloudflare real. Km/min de carro, fotos pessoais, avisos push e visitas não foram preenchidos com dados do protótipo. Tipografia existente preservada, sem promessa de clone pixel a pixel. Preferência de mapa e WhatsApp em folha ainda pendentes da R6.
+- **Pendências e retomada:** encerrar esta sessão em R5-10 para preservar a cota de validação/envio. Próximo **R6-1**, depois completar R6-2, R6-4 (aviso sem base), R6-5, R6-7 e R6-8; **R6-3 e R6-6 já cobertos**. Depois, R7-1…9 atrás de flag própria, com migração aditiva e testes de isolamento financeiro. R5-11 permanece proposta futura não bloqueante. Nenhuma migração, deploy, secret, conta paga ou configuração Cloudflare foram realizados pelo agente.
+
+| Revisão atual | Status                                                                                                                     |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| R8-1          | Cartão entregue; km/min de rota dependem de R6-1.                                                                          |
+| R8-2          | Entregue (limites e testes no histórico).                                                                                  |
+| R8-3          | Entregue (limites e testes no histórico).                                                                                  |
+| R8-4          | Entregue (limites e testes no histórico).                                                                                  |
+| R8-5          | Entregue (limites e testes no histórico).                                                                                  |
+| R8-6          | Entregue (limites e testes no histórico).                                                                                  |
+| R8-7          | Interface entregue; fotos pessoais dependem de R6-5.                                                                       |
+| R5-5          | Entregue; testes/limites no histórico.                                                                                     |
+| R5-6          | Entregue; testes/limites no histórico.                                                                                     |
+| R5-7          | Entregue; testes/limites no histórico.                                                                                     |
+| R5-8          | Entregue; testes/limites no histórico.                                                                                     |
+| R5-9          | Entregue; testes/limites no histórico.                                                                                     |
+| R5-10         | Entregue; testes/limites no histórico.                                                                                     |
+| R6            | R6-3/R6-6 cobertos por R8-6; guia da base adiantado, aviso pendente. R6-1/2/5/7/8 pendentes (Mapa parcialmente adiantado). |
+| R7            | Pendente após R6; nenhuma migração ou flag ativada.                                                                        |
