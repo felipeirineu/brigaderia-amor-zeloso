@@ -54,20 +54,40 @@ test('R6-1 rota salva nos cartões e linha reta explícita sem provedor', async 
     await p.goto(t.url + '/api/access/start');
     const route = p.locator('.order-card .route-info').first();
     await expect(route).toContainText('6,4 km · 16 min de carro');
-    await route
+    await expect(route.getByRole('button')).toHaveCount(0);
+    await expect(route.getByRole('link')).toHaveCount(0);
+    if (
+      (process.env.R9_CAPTURE === '1' || process.env.R12_CAPTURE === '1') &&
+      info.project.name === 'webkit-mobile'
+    )
+      await p.screenshot({
+        path:
+          'docs/colaboracao/capturas/' +
+          (process.env.R12_CAPTURE === '1' ? 'r12' : 'r9') +
+          '-depois-rota-entrega.png',
+      });
+    await p.getByRole('button', { name: 'Mapa', exact: true }).click();
+    const map = p.getByRole('dialog', { name: /Rota até/ });
+    await expect(map).toContainText('6,4 km · 16 min de carro');
+    await expect(
+      map.getByRole('link', { name: '© openrouteservice/HeiGIT', exact: true }),
+    ).toBeVisible();
+    await expect(map).toContainText('sem trânsito em tempo real');
+    await map
       .getByRole('button', { name: 'Ajuda: Rota de carro', exact: true })
       .click();
     await expect(
       p.getByRole('dialog', { name: 'Rota de carro', exact: true }),
     ).toContainText('não acompanha trânsito em tempo real');
     await p.getByRole('button', { name: 'Fechar ajuda', exact: true }).click();
-    if (process.env.R9_CAPTURE === '1' && info.project.name === 'webkit-mobile')
+    if (
+      process.env.R12_CAPTURE === '1' &&
+      info.project.name === 'webkit-mobile'
+    )
       await p.screenshot({
-        path: 'docs/colaboracao/capturas/r9-depois-rota-entrega.png',
+        path: 'docs/colaboracao/capturas/r12-depois-mapa-creditos.png',
       });
-    await p.getByRole('button', { name: 'Mapa', exact: true }).click();
-    const map = p.getByRole('dialog', { name: /Rota até/ });
-    await expect(map).toContainText('6,4 km · 16 min de carro');
+
     await map.getByRole('button', { name: 'Fechar mapa', exact: true }).click();
     await p.goto(t.url + '/gestao/clientes');
     await expect(p.locator('.route-info').first()).toContainText('6,4 km');
@@ -75,9 +95,15 @@ test('R6-1 rota salva nos cartões e linha reta explícita sem provedor', async 
       p.getByRole('button', { name: 'Recalcular rota', exact: true }),
     ).toBeVisible();
     expect(requests).toBe(1);
-    if (process.env.R9_CAPTURE === '1' && info.project.name === 'webkit-mobile')
+    if (
+      (process.env.R9_CAPTURE === '1' || process.env.R12_CAPTURE === '1') &&
+      info.project.name === 'webkit-mobile'
+    )
       await p.screenshot({
-        path: 'docs/colaboracao/capturas/r9-depois-rota-cliente.png',
+        path:
+          'docs/colaboracao/capturas/' +
+          (process.env.R12_CAPTURE === '1' ? 'r12' : 'r9') +
+          '-depois-rota-cliente.png',
       });
     // Cadastro muda, a estimativa perde validade; UI não mostra o valor antigo.
     await t.db.prepare('DELETE FROM route_cache').run();
@@ -89,9 +115,15 @@ test('R6-1 rota salva nos cartões e linha reta explícita sem provedor', async 
       p.getByRole('button', { name: 'Calcular rota', exact: true }),
     ).toBeVisible();
     expect(requests).toBe(1);
-    if (process.env.R9_CAPTURE === '1' && info.project.name === 'webkit-mobile')
+    if (
+      (process.env.R9_CAPTURE === '1' || process.env.R12_CAPTURE === '1') &&
+      info.project.name === 'webkit-mobile'
+    )
       await p.screenshot({
-        path: 'docs/colaboracao/capturas/r9-depois-rota-fallback.png',
+        path:
+          'docs/colaboracao/capturas/' +
+          (process.env.R12_CAPTURE === '1' ? 'r12' : 'r9') +
+          '-depois-rota-fallback.png',
       });
   } finally {
     await c.close();

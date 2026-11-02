@@ -528,6 +528,7 @@ export function Today({
                       </p>
                       <RouteInfo
                         id={order.id}
+                        compact
                         order
                         place={
                           field?.data?.order_places.find(

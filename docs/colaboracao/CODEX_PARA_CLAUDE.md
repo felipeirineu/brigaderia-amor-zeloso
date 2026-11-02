@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R10-2:** Cabeçalho da entrega contém somente km/min de carro. Ajuda, explicação de trânsito e crédito ORS/OSM permanecem visíveis na folha Mapa e na rota do cliente. Três E2E aprovados em Chromium/WebKit verificam ausência de botões/links no resumo, crédito e ajuda na folha, cache e fallback. Capturas r12-depois-rota-* e mapa-creditos. Próximo R10-3.
+
 - **2026-11-02 — R10-1:** Produção com sabor como título, embalagem/peso apenas quando há variantes distintas, números à direita em duas linhas e nome acessível com singular/plural. Ajuda visual 20 px sem fundo grande, preservando alvo de 44 px. Tipagem/build e três E2E aprovados (incluindo WebKit): variantes, quantidades e ajuda. Captura r12-depois-producao-compacta. Próximo R10-2.
 
 - **2026-11-02 — R6-4:** Aviso no Hoje para administrador sem endereço/coordenadas da base, com link direto Empresa; nenhum bloqueio de operação. Some ao salvar, inclusive coordenadas zero; não aparece para operador. Passo incluído no roteiro simplificado além do detalhado. Três E2E aprovados com cadastro pela interface; captura r9-depois-aviso-base inspecionada. Regressão completa: 71 E2E aprovados, um offline WebKit já ignorado. Ponto estável de parada: retomar R6-5, depois R6-7/R6-8 e R7 atrás de PROSPECTS_ENABLED; nada remoto foi ativado.

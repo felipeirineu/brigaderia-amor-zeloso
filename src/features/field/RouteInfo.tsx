@@ -9,10 +9,12 @@ export function RouteInfo({
   id,
   place,
   order = false,
+  compact = false,
 }: {
   id: string;
   place?: Place;
   order?: boolean;
+  compact?: boolean;
 }) {
   const c = useField(),
     [busy, setBusy] = useState(false),
@@ -30,24 +32,30 @@ export function RouteInfo({
         <p>
           <Car size={14} aria-hidden="true" />{' '}
           {r.route_km.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} km
-          · {Math.ceil(r.route_minutes)} min de carro <HelpTip topic="route" />
-          <small title={'Calculada em ' + dateTime(r.route_computed_at)}>
-            <a
-              href="https://openrouteservice.org/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              © openrouteservice/HeiGIT
-            </a>{' '}
-            ·{' '}
-            <a
-              href="https://www.openstreetmap.org/copyright"
-              target="_blank"
-              rel="noreferrer"
-            >
-              OSM
-            </a>
-          </small>
+          · {Math.ceil(r.route_minutes)} min de carro{' '}
+          {!compact && (
+            <>
+              <HelpTip topic="route" />
+              <small>Estimativa da base, sem trânsito em tempo real.</small>
+              <small title={'Calculada em ' + dateTime(r.route_computed_at)}>
+                <a
+                  href="https://openrouteservice.org/"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  © openrouteservice/HeiGIT
+                </a>{' '}
+                ·{' '}
+                <a
+                  href="https://www.openstreetmap.org/copyright"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  OSM
+                </a>
+              </small>
+            </>
+          )}
         </p>
       ) : km !== null ? (
         <p>
