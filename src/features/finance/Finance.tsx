@@ -27,42 +27,53 @@ export function FinanceSummary({ compact = false }: { compact?: boolean }) {
     'finance/summary' + (filter ? '?filter=' + encodeURIComponent(filter) : ''),
   );
   return (
-    <section className="panel">
+    <section className="panel finance-summary">
       <h2>{compact ? 'Recebimentos e a receber' : 'Resumo financeiro'}</h2>
       <Failure message={view.error} />
       {view.data && (
         <>
-          <div className="summary-grid">
-            <Button
-              className="panel"
-              to="/gestao/financeiro?filter=received"
-              variant="ghost"
-            >
-              Recebido hoje: {money(view.data.received_cents)}
-            </Button>
-            <Button
-              className="panel"
-              to="/gestao/financeiro?filter=overdue"
-              variant="ghost"
-            >
-              A receber vencido: {money(view.data.overdue_cents)}
-            </Button>
-            <Button
-              className="panel"
-              to="/gestao/financeiro?filter=week"
-              variant="ghost"
-            >
-              Vence esta semana: {money(view.data.week_cents)}
-              <small> Hoje a domingo</small>
-            </Button>
+          <div className="finance-kpis">
+            {[
+              [
+                'Recebido hoje',
+                view.data.received_cents,
+                '/gestao/financeiro?filter=received',
+                'Pix, dinheiro e cartão',
+              ],
+              [
+                'A receber',
+                view.data.receivable_cents,
+                '/gestao/financeiro',
+                'Entregas realizadas',
+              ],
+              [
+                'Vencido',
+                view.data.overdue_cents,
+                '/gestao/financeiro?filter=overdue',
+                'Saldos após o vencimento',
+              ],
+              [
+                'Vence esta semana',
+                view.data.week_cents,
+                '/gestao/financeiro?filter=week',
+                'Hoje a domingo',
+              ],
+            ].map(([label, value, to, note]) => (
+              <Button
+                key={String(label)}
+                variant="card"
+                className="finance-kpi"
+                to={String(to)}
+              >
+                <span>{label}</span>
+                <strong>{money(Number(value))}</strong>
+                <small>{note}</small>
+              </Button>
+            ))}
           </div>
-          <p>
-            Recebido líquido em {civilDate(view.data.day)}:{' '}
-            <strong>{money(view.data.received_cents)}</strong>
-          </p>
-          <p>
-            A receber de entregas:{' '}
-            <strong>{money(view.data.receivable_cents)}</strong>
+          <p className="finance-reference">
+            Valores líquidos em {civilDate(view.data.day)}. Saldos de entregas
+            realizadas.
           </p>
           {view.data.customers.map((c) => (
             <article key={c.id}>

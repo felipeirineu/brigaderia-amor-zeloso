@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R5-5:** Financeiro com quatro cartões tocáveis em grade 2×2: recebido hoje, a receber, vencido e vence esta semana. Rótulos pequenos, valores em destaque e navegação/filtros preservados; sem alterar cálculo financeiro. Build/tipagem e três E2E com medida de linhas/larguras e capturas aprovados. Próximo R5-6.
+
 - **2026-11-02 — R8-7:** Revisar pedido com seções Quando/Como/Quem leva/Pagamento em caixa alta, nomes de exibição/iniciais nos chips de entregador e atalhos Hoje/Amanhã/dia do pedido padrão antes do seletor nativo. Hora existente preservada nos atalhos e a do modelo restaurada ao escolher o padrão. Sem inventar horário comercial; sem horário prévio, o atalho usa a hora atual de Fortaleza. Fotos pessoais dependem da R6-5, sem imagens fictícias na UI real. Build/tipagem/lint e seis E2E de pedido/foco/revisão aprovados. Próximo R5-5.
 
 - **2026-11-02 — R8-6:** Saudação por Fortaleza, atualização ao voltar ao app, chip/calendário mensal com contagens agregadas privadas, hoje/amanhã/data livre e navegação de mês. Agenda fora de hoje, voltar para hoje, reabertura/perfil limpa o dia; passado só concluídos, futuro sem ação de entregar. Produção identifica os dias escolhidos. API com uma agregação e saída sem PII. 60 unitários (inclui seis fronteiras horárias), integração de fronteira de mês/fuso/isolamento/autorização e 12 E2E de operação/calendário/fluxos passaram; três do calendário repetidos com pedido futuro real de fixture. Build/tipagem/lint aprovados. A saudação R8 aprovada ocupa espaço: limite do primeiro cartão do Hoje atualizado de 140 para 200 px (protótipo sem faixa de prévia ≈189 px), explicitando a precedência da R8 sobre R5-8. Cinco sabores continuam cabendo sem rolar. Próximo R8-7; sem migração/Cloudflare.
@@ -198,15 +200,20 @@ Revisões R6/R7/R8 e protótipo integrados em a8a4a90. Protótipo aberto em Chro
 
 Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compacto, fotos em lote, quatro ações e entrega com validação existente); CompactHeader/Management/CSS (R8-2…5: uma hierarquia móvel, Lucide, largura total, iniciais); Today/calendário/API e datas (R8-6: Fortaleza, contagem agregada, dia selecionado); Totem (R8-7: rótulos, entregador e atalhos de data). Capturas r8-depois-* e E2E móveis, sem retirar autorização/CAS/idempotência. Rotas/tempo e fotos pessoais só serão exibidos com dados efetivamente disponíveis.
 
-| Revisão atual | Status                                                         |
-| ------------- | -------------------------------------------------------------- |
-| R8-1          | Entregue (limites e testes no histórico).                      |
-| R8-2          | Entregue (limites e testes no histórico).                      |
-| R8-3          | Entregue (limites e testes no histórico).                      |
-| R8-4          | Entregue (limites e testes no histórico).                      |
-| R8-5          | Entregue (limites e testes no histórico).                      |
-| R8-6          | Entregue (limites e testes no histórico).                      |
-| R8-7          | Entregue (limites e testes no histórico).                      |
-| R5-5 a R5-10  | Pendentes após R8.                                             |
-| R6            | Pendente; folha do Mapa adiantada, preferência ainda pendente. |
-| R7            | Pendente após R6; nenhuma migração ou flag ativada.            |
+| Revisão atual | Status                                                                                            |
+| ------------- | ------------------------------------------------------------------------------------------------- |
+| R8-1          | Cartão entregue; km/min de rota dependem de R6-1.                                                 |
+| R8-2          | Entregue (limites e testes no histórico).                                                         |
+| R8-3          | Entregue (limites e testes no histórico).                                                         |
+| R8-4          | Entregue (limites e testes no histórico).                                                         |
+| R8-5          | Entregue (limites e testes no histórico).                                                         |
+| R8-6          | Entregue (limites e testes no histórico).                                                         |
+| R8-7          | Interface entregue; fotos pessoais dependem de R6-5.                                              |
+| R5-5          | Entregue; testes/limites no histórico.                                                            |
+| R5-6          | Pendente.                                                                                         |
+| R5-7          | Pendente.                                                                                         |
+| R5-8          | Pendente.                                                                                         |
+| R5-9          | Pendente.                                                                                         |
+| R5-10         | Pendente.                                                                                         |
+| R6            | R6-3/R6-6 cobertos por R8-6; demais pendentes. Mapa parcialmente adiantado, preferência pendente. |
+| R7            | Pendente após R6; nenhuma migração ou flag ativada.                                               |

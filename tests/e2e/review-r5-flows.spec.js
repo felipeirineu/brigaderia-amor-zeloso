@@ -43,7 +43,7 @@ test('R5 telas móveis com ações compartilhadas', async ({
       expect((await reminder.boundingBox()).y).toBeGreaterThan(
         (await p.locator('.order-card').first().boundingBox()).y,
       );
-    await capture('hoje');
+    await capture(process.env.R8_CAPTURE ? 'hoje-confirmado' : 'hoje');
     await p.goto(t.url + '/gestao/pedidos?novo=1');
     await p
       .getByRole('button', { name: 'Cliente DEMONSTRAÇÃO R5', exact: true })
@@ -111,6 +111,17 @@ test('R5 telas móveis com ações compartilhadas', async ({
             exact: true,
           }),
         ).toBeVisible();
+      if (path === 'financeiro') {
+        const kpis = p.locator('.finance-kpi');
+        await expect(kpis).toHaveCount(4);
+        const boxes = await Promise.all(
+          (await kpis.all()).map((k) => k.boundingBox()),
+        );
+        expect(Math.abs(boxes[0].y - boxes[1].y)).toBeLessThan(1);
+        expect(boxes[2].y).toBeGreaterThan(boxes[0].y);
+        expect(Math.abs(boxes[2].y - boxes[3].y)).toBeLessThan(1);
+        expect(boxes[0].width).toBeCloseTo(boxes[1].width, 0);
+      }
       await capture(name);
       if (path === 'clientes') {
         await expect(p.getByRole('dialog')).toBeHidden();
