@@ -9,6 +9,7 @@ function luminance(hex) {
   return values[0] * 0.2126 + values[1] * 0.7152 + values[2] * 0.0722;
 }
 for (const [fg, bg] of [
+  ['FFFFFF', '2B7A49'],
   ['321D10', 'F9ECD7'],
   ['321D10', 'F1E2CC'],
   ['F9ECD7', '3E2B1E'],

@@ -84,6 +84,7 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
     ).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(help).toBeFocused();
+    await page.getByText('Mais ações do pedido', { exact: true }).click();
     await page.getByRole('link', { name: 'Abrir pedido', exact: true }).click();
     for (const name of [
       'Iniciar produção',

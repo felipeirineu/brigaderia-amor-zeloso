@@ -27,7 +27,7 @@ test('R5 telas móveis com ações compartilhadas', async ({
         testInfo.project.name === 'webkit-mobile'
       )
         await p.screenshot({
-          path: `docs/colaboracao/capturas/r5-depois-${name}.png`,
+          path: `docs/colaboracao/capturas/${process.env.R8_CAPTURE ? 'r8' : 'r5'}-depois-${name}.png`,
         });
     };
     await p.goto(t.url + '/api/access/start');

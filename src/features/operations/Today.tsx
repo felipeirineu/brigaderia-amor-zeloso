@@ -1,6 +1,7 @@
 import { createPortal } from 'react-dom';
 import { Button } from '../../components/Button';
-import { Transport } from '../field/Transport';
+import { DeliveryActions } from '../field/DeliveryActions';
+import { photoURL } from '../../../shared/flavors';
 import { TravelSheet } from '../field/TravelSheet';
 import { distance } from '../../../shared/field';
 import { useCourierLabels, useField, SiteAvatar } from '../field/FieldContext';
@@ -10,27 +11,21 @@ import { FinanceSummary } from '../finance/Finance';
 import { useEffect, useRef, useState } from 'react';
 
 import {
-  MessageCircle,
-  Truck,
+  Clock3,
+  Car,
   CheckCircle2,
   ChevronRight,
   RefreshCw,
   Undo2,
 } from 'lucide-react';
-import { api, dateTime, money } from '../api';
+import { api, money } from '../api';
 import { HelpTip } from '../../components/HelpTip';
 import {
   statusLabels,
   UNDO_SECONDS,
   type Status,
 } from '../../../shared/order-state';
-import {
-  useRemote,
-  Failure,
-  localDay,
-  MapLink,
-  type OperationalOrder,
-} from './common';
+import { useRemote, Failure, localDay, type OperationalOrder } from './common';
 function WorkdayChip({
   day,
   onChange,
@@ -370,98 +365,145 @@ export function Today({
               })
               .map((order) => (
                 <article className="panel order-card" key={order.id}>
-                  <div className="section-heading">
-                    <h3>{order.customer_name}</h3>
-                    {field && (
-                      <SiteAvatar
-                        id={order.customer_id}
-                        name={order.customer_name}
-                      />
-                    )}
-                    <span className={`status-tag status-${order.status}`}>
-                      <Truck size={16} aria-hidden="true" />
-                      {statusLabels[order.status]}
-                    </span>
+                  <div className="delivery-identity">
+                    <SiteAvatar
+                      id={order.customer_id}
+                      name={order.customer_name}
+                    />
+                    <div>
+                      <h3>{order.customer_name}</h3>
+                      <p className="delivery-address">
+                        <Clock3 size={14} aria-hidden="true" />{' '}
+                        {new Intl.DateTimeFormat('pt-BR', {
+                          timeZone: 'America/Fortaleza',
+                          ...(day === localDay()
+                            ? {}
+                            : {
+                                weekday: 'short',
+                                day: '2-digit',
+                                month: '2-digit',
+                              }),
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }).format(new Date(order.due_at))}{' '}
+                        ·{' '}
+                        {order.delivery_type === 'pickup'
+                          ? 'Retirada'
+                          : order.delivery_address || 'Endereço a preencher'}
+                      </p>
+                      {(() => {
+                        const place = field?.data?.order_places.find(
+                          (p) => p.order_id === order.id,
+                        )?.data;
+                        const km =
+                          place && field?.data
+                            ? distance(field.data.company.data, place)
+                            : null;
+                        return km == null ? null : (
+                          <p className="delivery-distance">
+                            <Car size={14} aria-hidden="true" /> ≈{' '}
+                            {km.toLocaleString('pt-BR', {
+                              maximumFractionDigits: 1,
+                            })}{' '}
+                            km em linha reta
+                          </p>
+                        );
+                      })()}
+                    </div>
                   </div>
-                  <p>
-                    {dateTime(order.due_at)} · {money(order.total_cents)}
-                  </p>
-                  <ul>
+                  <div className="delivery-flavors">
                     {order.items.map((i) => (
-                      <li key={i.variant_id}>
-                        {i.quantity} × {i.product_name} — {i.variant_label}
-                      </li>
+                      <span className="delivery-flavor" key={i.variant_id}>
+                        {i.photo_key && (
+                          <img
+                            src={photoURL(i.photo_key)}
+                            alt=""
+                            width={26}
+                            height={26}
+                          />
+                        )}
+                        {i.quantity}× {i.product_name}
+                      </span>
                     ))}
-                  </ul>
-                  <p>
-                    {order.delivery_type === 'pickup'
-                      ? 'Retirada'
-                      : order.delivery_address || 'Endereço a preencher'}
-                  </p>
-                  <p>
-                    Entregador:{' '}
-                    {order.courier === 'unassigned'
-                      ? 'A definir'
-                      : order.courier === 'owner'
-                        ? courierLabels.owner
-                        : order.courier === 'partner'
-                          ? courierLabels.partner
-                          : order.courier_name || 'Motoboy'}
-                  </p>
-                  <div className="actions">
-                    {order.delivery_type === 'delivery' && (
-                      <>
-                        <MapLink order={order} />
-                        <Transport order={order} />
-                      </>
+                  </div>
+                  <div className="delivery-payment">
+                    <span className="status-tag">
+                      {order.payment_mode === 'delivery'
+                        ? 'Na entrega'
+                        : order.payment_mode === 'advance'
+                          ? 'Adiantado'
+                          : order.payment_mode === 'credit'
+                            ? 'A prazo'
+                            : 'Pagamento a definir'}
+                    </span>
+                    <strong>{money(order.total_cents)}</strong>
+                  </div>
+                  {order.courier !== 'unassigned' &&
+                    order.courier !==
+                      (role === 'owner' ? 'owner' : 'partner') && (
+                      <span className="status-tag">
+                        {order.courier === 'courier'
+                          ? order.courier_name || 'Motoboy'
+                          : courierLabels[order.courier]}
+                      </span>
                     )}
-                    <Button
-                      className="button secondary"
-                      to={`/gestao/pedidos/${order.id}#whatsapp`}
-                      variant="ghost"
-                    >
-                      <MessageCircle size={20} aria-hidden="true" /> WhatsApp
-                    </Button>
+                  <DeliveryActions order={order} />
+                  <div className="actions">
                     {(order.status === 'out_for_delivery' ||
                       (order.status === 'ready' &&
                         order.delivery_type === 'pickup')) && (
                       <Button
-                        className="primary-action"
+                        className="delivery-complete"
+                        variant="success"
+                        size="large"
                         disabled={busy}
                         onClick={() =>
-                          void quick(
-                            order,
-                            order.delivery_type === 'pickup'
-                              ? 'picked_up'
-                              : 'delivered',
-                          )
+                          financial && order.payment_mode === 'delivery'
+                            ? setReceipt(order)
+                            : void quick(
+                                order,
+                                order.delivery_type === 'pickup'
+                                  ? 'picked_up'
+                                  : 'delivered',
+                              )
                         }
                         loading={busy}
                       >
                         {order.delivery_type === 'pickup'
                           ? 'Marcar retirado'
-                          : 'Marcar entregue'}
+                          : financial && order.payment_mode === 'delivery'
+                            ? 'Entregue e recebido'
+                            : 'Marcar entregue'}
                       </Button>
                     )}
-                    {financial &&
-                      !['draft', 'awaiting_confirmation', 'cancelled'].includes(
-                        order.status,
-                      ) && (
-                        <Button
-                          disabled={busy}
-                          onClick={() => setReceipt(order)}
-                          loading={busy}
-                        >
-                          Recebi R$
-                        </Button>
-                      )}
-                    <Button
-                      className="button"
-                      to={`/gestao/pedidos/${order.id}`}
-                      variant="ghost"
-                    >
-                      Abrir pedido <ChevronRight size={20} aria-hidden="true" />
-                    </Button>
+                    <details className="delivery-more">
+                      <summary>Mais ações do pedido</summary>
+                      {financial &&
+                        ![
+                          'draft',
+                          'awaiting_confirmation',
+                          'cancelled',
+                        ].includes(order.status) && (
+                          <Button
+                            disabled={busy}
+                            onClick={() => setReceipt(order)}
+                            loading={busy}
+                          >
+                            Recebi R$
+                          </Button>
+                        )}
+                      <Button
+                        className="button"
+                        to={`/gestao/pedidos/${order.id}`}
+                        variant="ghost"
+                      >
+                        Abrir pedido{' '}
+                        <ChevronRight size={20} aria-hidden="true" />
+                      </Button>
+                      <span className={`status-tag status-${order.status}`}>
+                        {statusLabels[order.status]}
+                      </span>
+                    </details>
                   </div>
                 </article>
               ))}

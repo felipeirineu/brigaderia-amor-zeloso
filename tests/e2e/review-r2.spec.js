@@ -78,6 +78,7 @@ test('Hoje mantém contexto: saldo pré-preenchido, chips, entrega/recebimento e
     await expect(
       page.getByRole('heading', { name: 'Hoje', exact: true }),
     ).toBeVisible();
+    await page.getByText('Mais ações do pedido', { exact: true }).click();
     await page.getByRole('button', { name: 'Recebi R$', exact: true }).click();
     const sheet = page.getByRole('dialog', { name: 'Recebimento rápido' });
     await expect(sheet).toBeVisible();

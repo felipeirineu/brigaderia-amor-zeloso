@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R8-1:** cartão com avatar, hora Fortaleza/endereço, sabores/fotos em pílulas, condição/total, quatro ações iguais e ação verde de largura total. Mapa abre folha com três apps; 99 copia o destino. Recebimento combinado reutiliza saldo, CAS/idempotência e confirmação humana existentes. Ações secundárias recolhidas. API consulta fotos e condições em lote, sem N+1 ou migração. Build/tipagem/lint, contraste verde AA 5,27:1, 14 integrações operacionais e E2E de entrega/campo/operação/recebimento aprovados; regressão financeira conferida antes do envio. Capturas r8-depois-hoje/mapa. Pendente: km/min reais do R6-1 e preferência do mapa R6-2; a linha reta é explicitamente rotulada. Próximo R8-2.
+
 - **2026-11-02 — R5-4:** lista/busca primeiro, cartões editáveis e conta/localização expansíveis. Novo cliente (inclusive atalho +) e edição em folha nativa; Escape/Cancelar descartam o rascunho e mantêm a lista. GPS por toque e câmera/galeria no início; foto WebP comprimida em memória, enviada só após salvar. O cadastro e a foto são duas operações: falha na foto informa que o cliente já foi salvo e orienta conferir/repetir no editor, sem recriar o cliente. CAS e idempotência existentes preservados. Build/tipagem/lint/formatação e 53 unitários aprovados; 53 E2E passaram nos três projetos; um teste offline WebKit já ignorado permanece assim. Capturas com dados DEMONSTRAÇÃO. Nenhuma migração/deploy/alteração no Cloudflare.
 
 - **2026-11-02 — R5-2:** entregas primeiro para operadora, sem alterar a visão administrativa. Data móvel nativa no cabeçalho; chip de proximidade acessível. Doze E2E de operações/agenda passaram; fluxos R5 e recebimento R2 passaram nos três projetos. Build/tipagem/lint aprovados. Sem alteração remota; próximo R5-4.
@@ -177,3 +179,17 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 - **Testes executados:** build/tipagem, lint/formatação, 53 unitários; E2E Chromium móvel/desktop e WebKit móvel, incluindo espaço em 390×844, cadastro com GPS/foto, cancelamento, edição, atalho de cadastro, pedidos e recebimentos. Resultado consolidado final: 53 E2E aprovados, um offline WebKit previamente ignorado; 53 unitários aprovados.
 - **Limitações:** câmera e instalação em aparelho físico ainda não homologadas; ordem manual de sabores é local ao navegador (popularidade é compartilhada). Foto pode falhar separadamente do cadastro, com aviso explícito e recuperação pelo editor existente.
 - **Pendências:** demais itens R5-5 a R5-11 fora desta sessão; sincronização da ordem manual, homologação física e ativação continuam pendentes. As asserções de espaço necessárias aos itens desta entrega estão nos E2E, sem declarar toda a revisão visual R5-8 concluída. Nenhuma operação Cloudflare remota foi executada.
+
+## R8 — plano e aceite
+
+Revisões R6/R7/R8 e protótipo integrados em a8a4a90. Protótipo aberto em Chromium local a 390×844. Ordem: R8-1…7 → R5-5…10 → R6 → R7, um commit/push por item. Sem operação Cloudflare remota. Dados do protótipo não serão copiados.
+
+Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compacto, fotos em lote, quatro ações e entrega com validação existente); CompactHeader/Management/CSS (R8-2…5: uma hierarquia móvel, Lucide, largura total, iniciais); Today/calendário/API e datas (R8-6: Fortaleza, contagem agregada, dia selecionado); Totem (R8-7: rótulos, entregador e atalhos de data). Capturas r8-depois-* e E2E móveis, sem retirar autorização/CAS/idempotência. Rotas/tempo e fotos pessoais só serão exibidos com dados efetivamente disponíveis.
+
+| Revisão atual | Status                                                                 |
+| ------------- | ---------------------------------------------------------------------- |
+| R8-1          | Entregue; cálculo de rota e foto pessoal dependem da R6.               |
+| R8-2 a R8-7   | Pendentes, nesta ordem.                                                |
+| R5-5 a R5-10  | Pendentes após R8.                                                     |
+| R6            | Pendente; folha do Mapa adiantada na R8-1, preferência ainda pendente. |
+| R7            | Pendente após R6; nenhuma migração/flag ativada.                       |

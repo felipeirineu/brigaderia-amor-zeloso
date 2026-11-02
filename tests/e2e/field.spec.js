@@ -129,7 +129,13 @@ test('R4 localização por toque, foto privada, perfil e despesa após entrega',
       p.getByText('Foto comprimida salva.', { exact: true }),
     ).toBeVisible();
     await p.goto(t.url + '/gestao');
-    await expect(p.locator('.order-card')).toContainText(
+    await expect(
+      p.getByRole('button', {
+        name: 'Abrir menu de Entregas DEMONSTRAÇÃO',
+        exact: true,
+      }),
+    ).toBeVisible();
+    await expect(p.locator('.order-card')).not.toContainText(
       'Entregas DEMONSTRAÇÃO',
     );
     const uber = p.getByRole('link', { name: 'Abrir Uber', exact: true });

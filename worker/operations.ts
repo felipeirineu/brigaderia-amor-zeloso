@@ -1,3 +1,4 @@
+import { mobileReady } from './mobile-ready';
 import { fieldReady } from './field-ready';
 import { snapshotPlaces } from './order-places';
 import { financeReady } from './finance-ready';
@@ -57,10 +58,11 @@ export async function operations(
     );
     if (!parsedDay.success) throw new HttpError(400, 'Data inválida.');
     const day = parsedDay.data;
+    const financial = await financeReady(env);
     const rows = (
       await db
         .prepare(
-          "SELECT * FROM orders WHERE organization_id=? AND active=1 AND status<>'cancelled' AND due_at>=? AND due_at<? ORDER BY due_at,id LIMIT 201",
+          `SELECT o.*${financial ? ",COALESCE(json_extract(t.data,'$.mode'),'unset') AS payment_mode" : ''} FROM orders o ${financial ? 'LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id' : ''} WHERE o.organization_id=? AND o.active=1 AND o.status<>'cancelled' AND o.due_at>=? AND o.due_at<? ORDER BY o.due_at,o.id LIMIT 201`,
         )
         .bind(org, utcStart(day), utcStart(addDays(day, 2)))
         .all<Row>()
@@ -73,6 +75,18 @@ export async function operations(
       'orders',
       selected.map((o) => String(o.id)),
     );
+    const photoRows =
+      (await mobileReady(env)) && selected.length
+        ? (
+            await db
+              .prepare(
+                'SELECT v.id,COALESCE(v.photo_key,p.photo_key) AS photo_key FROM product_variants v JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE v.organization_id=? AND v.id IN(SELECT DISTINCT i.variant_id FROM order_items i WHERE i.organization_id=? AND i.order_id IN(SELECT value FROM json_each(?)))',
+              )
+              .bind(org, org, JSON.stringify(selected.map((o) => o.id)))
+              .all<{ id: string; photo_key: string | null }>()
+          ).results
+        : [];
+    const photos = new Map(photoRows.map((r) => [r.id, r.photo_key]));
     const orders = selected.map((o) => ({
       ...o,
       status: String(o.status),
@@ -82,7 +96,10 @@ export async function operations(
       create_key: undefined,
       create_hash: undefined,
       mutation_id: undefined,
-      items: children.get(String(o.id)) ?? [],
+      items: (children.get(String(o.id)) ?? []).map((i) => ({
+        ...i,
+        photo_key: photos.get(String(i.variant_id)) ?? null,
+      })),
     }));
     // A lista de cartões é limitada; a produção agrega TODOS os pedidos do período.
     const production = (
@@ -105,7 +122,7 @@ export async function operations(
       orders,
       production,
       totals,
-      received_available: await financeReady(env),
+      received_available: financial,
       truncated,
     });
   }

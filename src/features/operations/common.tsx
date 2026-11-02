@@ -5,6 +5,7 @@ import { MapPin } from 'lucide-react';
 import { api } from '../api';
 import type { Status } from '../../../shared/order-state';
 interface Item {
+  photo_key?: string | null;
   variant_id: string;
   quantity: number;
   product_name?: string;
@@ -25,6 +26,7 @@ export interface OperationalOrder {
   courier: 'unassigned' | 'owner' | 'partner' | 'courier';
   courier_name: string;
   courier_fee_cents: number;
+  payment_mode?: string;
   total_cents: number;
   items: Item[];
 }

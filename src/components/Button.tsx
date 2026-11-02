@@ -2,7 +2,8 @@
 import type { ComponentPropsWithRef, ReactNode } from 'react';
 import { Link, type LinkProps } from 'react-router-dom';
 import { Check, LoaderCircle } from 'lucide-react';
-type Variant = 'primary' | 'tonal' | 'ghost' | 'danger' | 'chip' | 'card';
+type Variant =
+  'primary' | 'tonal' | 'ghost' | 'danger' | 'success' | 'chip' | 'card';
 type Common = {
   variant?: Variant;
   size?: 'default' | 'large' | 'compact';
