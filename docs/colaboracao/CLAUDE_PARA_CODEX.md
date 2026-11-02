@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-03** — R11: **caixa mista confirmada pelo proprietário**. Protótipo atualizado com a montagem da caixa. Ver seção **R11** (prioridade antes da R6-5).
 - **2026-11-02** — R10: revisão da R9 e da R6-1/2/4 (até `172bb25`). Acabamentos e retomada: R6-5 → R6-7 → R6-8 → R7. Ver seção **R10**.
 - **2026-11-02** — R9: revisão da R8 e do restante da R5 (até `a9ce57a`). Pequenos acabamentos e ordem: R9 → R6 → R7 → homologação. Ver seção **R9**.
 - **2026-11-02** — R8: revisão da entrega R5 (até `9e13cb9`) e **protótipo de referência** em `prototipo/index.html`. Ver seção **R8**. Ordem de trabalho atualizada no fim da seção.
@@ -19,6 +20,44 @@
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R11 — Caixa mista (confirmada pelo proprietário, 2026-11-03)
+
+O administrador confirmou ao ver a prévia: **às vezes eles fazem caixas mistas**, com sabores variados na mesma caixa de 12. Isso resolve a pendência "caixa mista: a confirmar" do §4. Mesmo preço da caixa (R$ 42,00), mesmo peso por unidade.
+
+**Referência:** `prototipo/index.html`. Em Novo pedido → Sabores, o primeiro cartão é **"Caixa mista"** (borda tracejada, mosaico de fotos). Ele abre a folha "Montar caixa mista" com:
+
+- a caixa de 12 desenhada (4×3), com as fotos ocupando os espaços;
+- os sabores com +/− em **unidades**;
+- o aviso "Faltam N de 12";
+- os botões "Limpar" e "Completar com {sabor}";
+- "Adicionar caixa mista", só habilitado com 12/12.
+
+Depois, a caixa aparece na grade como linha própria, com a composição ("8 Tradicional + 3 Limão + 1 Cajuzinho"), "Editar sabores" e +/− de quantidade de caixas iguais. Caixas idênticas somam quantidade.
+
+- **R11-1 — Modelo de dados.**
+  - Item de pedido com **composição por sabor** (unidades), ligado à variante da embalagem: preço e `units_per_box` vêm dela.
+  - Validação no servidor: soma das unidades = `units_per_box`, cada unidade ≥ 1 e sabores ativos.
+  - Snapshot da composição no pedido, como já é feito com nome e preço.
+  - Migração **aditiva** (ex.: `order_item_components`), sem alterar itens existentes.
+  - Itens de sabor único continuam como estão.
+- **R11-2 — Pedido padrão e "Gerar semana"** aceitam caixas mistas (ex.: Café: 2 cx Tradicional + 1 cx mista 4 Côco/4 Limão/4 Cajuzinho). A geração copia a composição e a edição do rascunho permite "Editar sabores".
+- **R11-3 — Produção ("Produzir hoje e amanhã")** passa a somar **unidades por sabor**: caixas de sabor único × 12 + unidades das mistas, mostrando "76 un." e, abaixo, "6 cx + 4 un.". O total do card fica em unidades e caixas.
+- **R11-4 — Textos e mensagens:**
+  - cartões de entrega, revisar, pedidos, WhatsApp, CSV e relatórios mostram "1× Mista: 4 Côco + 4 Limão + 4 Cajuzinho";
+  - relatórios por sabor contam as unidades das mistas no sabor certo; o ranking de sabores usa unidades.
+- **R11-5 — Custo e compras:** ficha técnica e lista de compras (P1-4/P1-5) consideram as unidades por sabor das mistas.
+- **R11-6 — Documentação:** atualizar `docs/INFORMACOES_COMERCIAIS.md` com "caixa mista permitida, mesmo preço da caixa, composição livre entre os sabores ativos, total igual às unidades por caixa". Tirar "caixa mista" das pendências.
+- **Aceite:**
+  - E2E mobile: montar 8+3+1, adicionar, somar uma segunda idêntica, editar e confirmar;
+  - produção mostra unidades corretas;
+  - o servidor recusa 11/12 e 13/12;
+  - pedidos antigos sem composição continuam iguais;
+  - gerar semana com modelo misto não duplica.
+
+**Ordem:** fazer a R11 logo após os acabamentos da R10 (R10-1 a R10-4) e **antes** da R6-5, porque afeta pedidos reais desde o primeiro dia.
 
 ---
 
@@ -817,7 +856,7 @@ Aposentar as planilhas de Excel e deixar a brigaderia inteira na palma da mão. 
 
 - Atualizar `docs/INFORMACOES_COMERCIAIS.md` com os três novos sabores. Cadastrar só no ambiente privado, nunca em seed, bundle público ou service worker.
 - As fotos do Instagram mostram outras coberturas. **Não cadastrar sabores a partir de fotos.** Novos sabores serão cadastrados pelo PC.
-- **A confirmar:** caixa mista, unidade avulsa, outros tamanhos de caixa, preço diferenciado para revenda.
+- **Caixa mista: confirmada** (ver R11). **A confirmar:** unidade avulsa, outros tamanhos de caixa, preço diferenciado para revenda.
 - **Sugestão de modelagem:** um produto "Caixa 12 un." com preço único e **composição por sabor** nos itens do pedido (ex.: 2 caixas = 12 Tradicional + 6 Cajuzinho + 6 Côco). A validação garante que a soma das unidades seja múltiplo de 12. Se a caixa mista não for permitida, isso vira regra configurável ("um sabor por caixa"). A produção sempre soma **unidades por sabor**.
 
 ## 5. Identidade visual

@@ -1,4 +1,4 @@
-<!-- Protótipo de referência visual e de interação (R8). Dados fictícios. Abrir no navegador: docs/colaboracao/prototipo/index.html. Nomes reais e fotos pessoais foram substituídos de propósito. -->
+<!-- Protótipo de referência visual e de interação (R8/R11). Dados fictícios. Abrir no navegador: docs/colaboracao/prototipo/index.html. Nomes reais e fotos pessoais foram substituídos de propósito. -->
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Protótipo Amor Zeloso</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -209,6 +209,15 @@ button.date-chip{border:0;cursor:pointer;min-height:42px;flex:none}
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--tonal);border-radius:999px;padding:4px}
 .seg button{min-height:44px;border:2px solid transparent;border-radius:999px;background:none;font:inherit;font-weight:700;color:var(--choc);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--card);border-color:var(--gold);box-shadow:var(--shadow)}
+.mixpic{display:inline-grid;grid-template-columns:1fr 1fr;width:26px;height:26px;border-radius:50%;overflow:hidden;flex:none}
+.mixpic img{width:100%;height:100%;object-fit:cover;border-radius:0!important}
+.mixpic.rv{width:40px;height:40px;border-radius:12px}
+.dline .mixpic{width:34px;height:34px;border-radius:10px}
+.mixpic.big{width:100%;aspect-ratio:16/11;height:auto;border-radius:12px;gap:2px;background:var(--card)}
+.mixcard{border:2px dashed var(--gold)!important}
+.box12{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px;border-radius:18px;background:var(--tonal);max-width:320px;margin:0 auto;width:100%}
+.box12 img,.box12 i{aspect-ratio:1;width:100%;border-radius:50%;object-fit:cover;display:block}
+.box12 i{border:2px dashed color-mix(in srgb,var(--gold) 70%,transparent);background:var(--card)}
 .date-chip{display:inline-flex;align-items:center;gap:6px;background:var(--tonal);border-radius:999px;padding:6px 12px;font-weight:600;font-size:14px;color:var(--choc)}
 .date-chip svg{width:16px;height:16px}
 </style>
@@ -263,16 +272,21 @@ const FLAVORS=[
  {k:'tradicional',n:'Tradicional'},{k:'cajuzinho',n:'Cajuzinho'},{k:'coco',n:'Côco'},{k:'casadinho',n:'Casadinho'},{k:'limao',n:'Limão'}];
 const F=k=>FLAVORS.find(f=>f.k===k);
 const img=k=>`img/${k}.webp`;
+const MIXES={mixA:{coco:4,limao:4,cajuzinho:4}};let mixSeq=0;
+const isMix=k=>k.startsWith('mix');
+const compTxt=c=>Object.entries(c).filter(([,u])=>u).map(([f,u])=>`${u} ${F(f).n}`).join(' + ');
+const nameOf=k=>isMix(k)?'Caixa mista':F(k).n;
+const pic=(k,cls='')=>isMix(k)?`<span class="mixpic ${cls}">${Object.keys(MIXES[k]).filter(f=>MIXES[k][f]).slice(0,4).map(f=>`<img src="${img(f)}" alt="">`).join('')}</span>`:`<img class="${cls}" src="${img(k)}" alt="">`;
 const CUSTOMERS=[
  {id:'c1',n:'Lanchonete Sabor da Praça',s:'Exemplo · toda terça',ini:'LS',pay:'A prazo · semanal',last:{tradicional:3,cajuzinho:2}},
- {id:'c2',n:'Café Brisa do Mar',s:'Exemplo · toda quinta',ini:'CB',pay:'Na entrega',last:{tradicional:2,coco:1,limao:1}},
+ {id:'c2',n:'Café Brisa do Mar',s:'Exemplo · toda quinta',ini:'CB',pay:'Na entrega',last:{tradicional:2,mixA:1}},
  {id:'c3',n:'Restaurante Recanto',s:'Exemplo · quinzenal',ini:'RR',pay:'Adiantado',last:{casadinho:2,tradicional:2}},
  {id:'c4',n:'Padaria Pão Dourado',s:'Exemplo · toda sexta',ini:'PD',pay:'A prazo · mensal',last:{tradicional:4}},
 ];
 const C=id=>CUSTOMERS.find(c=>c.id===id);
 let deliveries=[
  {id:'d1',c:'c1',addr:'Av. Epitácio Pessoa, 1200 · Tambaú',q:'Av. Epitácio Pessoa, 1200, Tambaú, João Pessoa - PB',km:'6,4',min:16,time:'09:30',items:{tradicional:3,cajuzinho:2},pay:'A prazo · semanal',status:'pending'},
- {id:'d2',c:'c2',addr:'R. Silvino Lopes, 410 · Cabo Branco',q:'Rua Silvino Lopes, 410, Cabo Branco, João Pessoa - PB',km:'7,9',min:19,time:'11:00',items:{tradicional:2,coco:1,limao:1},pay:'Na entrega',status:'pending'},
+ {id:'d2',c:'c2',addr:'R. Silvino Lopes, 410 · Cabo Branco',q:'Rua Silvino Lopes, 410, Cabo Branco, João Pessoa - PB',km:'7,9',min:19,time:'11:00',items:{tradicional:2,mixA:1},pay:'Na entrega',status:'pending'},
  {id:'d3',c:'c4',addr:'R. das Trincheiras, 88 · Centro',q:'Rua das Trincheiras, 88, Centro, João Pessoa - PB',km:'3,1',min:9,time:'15:00',items:{tradicional:4},pay:'A prazo · mensal',status:'pending'},
 ];
 let toConfirm=[{c:'c3',items:{casadinho:2,tradicional:2},when:'Amanhã · 10:00',sel:true},{c:'c1',items:{tradicional:3,cajuzinho:2},when:'Terça · 09:30',sel:true}];
@@ -307,13 +321,13 @@ function remCard(){const list=reminders.filter(r=>r.day===S.day).sort((a,b)=>a.t
  return `<section class="card"><div class="row between"><h3>Lembretes</h3><button class="btn btn-tonal" style="--h:42px" type="button" data-act="newRem">${svg('plus')}Novo lembrete</button></div>
  ${list.length?list.map(r=>`<div class="rem ${r.done?'is-done':''}"><button class="tick" type="button" data-rem-done="${r.id}" aria-pressed="${r.done}" aria-label="${r.done?'Reabrir':'Concluir'}: ${esc(r.t)}">${r.done?svg('check'):''}</button><div style="min-width:0"><b>${esc(r.t)}</b><div class="small muted">${svg('clock').replace('<svg','<svg style="width:13px;height:13px;vertical-align:-2px"')} ${r.time} · ${svg('bell').replace('<svg','<svg style="width:13px;height:13px;vertical-align:-2px"')} ${notifyText(r)} · ${esc(r.who)}</div></div></div>`).join(''):'<p class="muted small" style="margin:0">Nenhum lembrete neste dia.</p>'}</section>`}
 const firstName=()=>S.role==='alda'?'Operadora':'Administrador';
-const itemsTxt=it=>Object.entries(it).map(([k,q])=>`${q} cx ${F(k).n}`).join(', ');
+const itemsTxt=it=>Object.entries(it).map(([k,q])=>isMix(k)?`${q} cx mista (${compTxt(MIXES[k])})`:`${q} cx ${F(k).n}`).join(', ');
 function waTemplates(d){const c=C(d.c);const sig=`\n\n${firstName()} · Brigaderia Amor Zeloso`;
  return {'A caminho':`Olá, ${c.n}! Aqui é a ${firstName()}, da Brigaderia Amor Zeloso. Estou a caminho com seu pedido (${itemsTxt(d.items)}). Chego por volta das ${d.time}.`+sig,
   'Chegando':`Olá! Estou chegando com o pedido da Brigaderia Amor Zeloso. Em poucos minutos estou aí.`+sig,
   'Entregue':`Pedido entregue! ${itemsTxt(d.items)}, total ${brl(total(d.items))}. Obrigada pela parceria!`+sig,
   'Cobrança':`Olá, ${c.n}! Segue o valor do pedido entregue: ${brl(total(d.items))} (${itemsTxt(d.items)}). Pode ser por Pix ou na próxima entrega. Obrigada!`+sig}}
-function orderTemplates(){const o=S.order,c=C(o.c);return {'Confirmação':`Olá, ${c.n}! Seu pedido está confirmado:\n${Object.entries(o.items).map(([k,q])=>`• ${q} cx ${F(k).n}`).join('\n')}\nTotal: ${brl(total(o.items))}\nEntrega: ${o.when}.\n\nObrigada! Brigaderia Amor Zeloso`}}
+function orderTemplates(){const o=S.order,c=C(o.c);return {'Confirmação':`Olá, ${c.n}! Seu pedido está confirmado:\n${Object.entries(o.items).map(([k,q])=>`• ${q} cx ${isMix(k)?'mista ('+compTxt(MIXES[k])+')':F(k).n}`).join('\n')}\nTotal: ${brl(total(o.items))}\nEntrega: ${o.when}.\n\nObrigada! Brigaderia Amor Zeloso`}}
 const PROSPECTS=[
  {id:'p1',n:'Cafeteria Grão Fino',contact:'Marina (gerente)',ini:'GF',addr:'R. Infante Dom Henrique, 300 · Tambaú',q:'Rua Infante Dom Henrique, 300, Tambaú, João Pessoa - PB',km:'6,1',min:15,status:'A visitar',day:TODAY,time:'16:30',plan:{tradicional:2,cajuzinho:2,limao:2},samples:null,note:'',how:'Indicação do Café Brisa do Mar'},
  {id:'p2',n:'Empório Sabor Local',contact:'Seu Jorge (dono)',ini:'ES',addr:'Av. Nego, 150 · Tambaú',q:'Avenida Nego, 150, Tambaú, João Pessoa - PB',km:'6,8',min:17,status:'Retornar',day:addD(TODAY,-4),next:addD(TODAY,1),time:'10:00',plan:{},samples:{tradicional:2,cajuzinho:2,coco:2},note:'Gostou muito do Cajuzinho. Pediu a tabela de preços.',how:'Instagram'},
@@ -342,7 +356,7 @@ const S={day:TODAY,role:'alda',view:'hoje',order:null,sheet:null,toast:null};
 const app=document.getElementById('app');
 const boxes=items=>Object.values(items).reduce((a,b)=>a+b,0);
 const total=items=>boxes(items)*PRICE;
-const thumbs=items=>`<div class="thumbs">${Object.entries(items).map(([k,q])=>`<span class="thumb"><img src="${img(k)}" alt="">${q}× ${esc(F(k).n)}</span>`).join('')}</div>`;
+const thumbs=items=>`<div class="thumbs">${Object.entries(items).map(([k,q])=>(isMix(k)?`<span class="thumb">${pic(k)}${q}× Mista: ${esc(compTxt(MIXES[k]))}</span>`:`<span class="thumb"><img src="${img(k)}" alt="">${q}× ${esc(F(k).n)}</span>`)).join('')}</div>`;
 
 function header(title){return `<header class="top"><img class="logo" src="img/logo.webp" alt="Brigaderia Amor Zeloso"><h1>${esc(title)}</h1><button class="avatar has-photo" type="button" data-ext="Menu do perfil" aria-label="Menu de ${S.role==='alda'?'Operadora':'Administrador'}"><img src="img/${S.role==='alda'?'operadora':'administrador'}.webp" alt=""></button></header>`}
 function nav(){const it=[['hoje','home','Hoje'],['pedidos','list','Pedidos'],['plus','plus',''],['clientes','users','Clientes'],['mais','dots','Mais']];
@@ -365,10 +379,10 @@ function viewHojeOperadora(){
  ${visitCards()}${remCard()}`}
 
 function viewHojeAdministrador(){
- const prod={};deliveriesFor(S.day).concat(deliveriesFor(addD(S.day,1)),S.day===TODAY?toConfirm.map(t=>({items:t.items})):[]).forEach(d=>Object.entries(d.items).forEach(([k,q])=>prod[k]=(prod[k]||0)+q));
+ const prod={};deliveriesFor(S.day).concat(deliveriesFor(addD(S.day,1)),S.day===TODAY?toConfirm.map(t=>({items:t.items})):[]).forEach(d=>Object.entries(d.items).forEach(([k,q])=>{if(isMix(k))Object.entries(MIXES[k]).forEach(([f,u])=>prod[f]=(prod[f]||0)+u*q);else prod[k]=(prod[k]||0)+q*12}));
  const max=Math.max(1,...Object.values(prod));
  const order=FLAVORS.filter(f=>prod[f.k]).sort((a,b)=>prod[b.k]-prod[a.k]);
- const totalBoxes=Object.values(prod).reduce((a,b)=>a+b,0);
+ const totalUnits=Object.values(prod).reduce((a,b)=>a+b,0);const cxTxt=u=>{const c=Math.floor(u/12),r=u%12;return c&&r?`${c} cx + ${r} un.`:c?`${c} cx`:`${r} un.`};
  return `<div class="row between" style="flex-wrap:nowrap"><div style="min-width:0"><p class="eyebrow">${longDay(S.day)}</p><h2>${S.day===TODAY?hello()+', Administrador':'Planejamento do dia'}</h2></div>${dayBtn()}</div>${backToday()}
  <div class="kpis">
   <button class="kpi" type="button" data-ext="Recebimentos"><span>Recebido hoje</span><strong>${brl(receivedToday)}</strong><em>Pix, dinheiro e cartão</em></button>
@@ -376,8 +390,8 @@ function viewHojeAdministrador(){
   <button class="kpi" type="button" data-ext="Vencidos"><span>Vencido</span><strong style="color:var(--warn)">${brl(21000)}</strong><em>1 cliente · 3 dias</em></button>
   <button class="kpi" type="button" data-ext="Corridas"><span>Corridas na semana</span><strong>${brl(tripsWeek)}</strong><em>Uber, 99 e motoboy</em></button>
  </div>
- <section class="card"><div class="row between"><h3>Produzir ${S.day===TODAY?'hoje e amanhã':chipDay(S.day)+' e '+chipDay(addD(S.day,1))}</h3><span class="pill">${totalBoxes} caixas · ${totalBoxes*12} un.</span></div>
- ${order.length?'':'<p class="muted small" style="margin:0">Nada a produzir nestes dias.</p>'}${order.map(f=>`<div class="prod-row"><img src="${img(f.k)}" alt=""><div><b>${esc(f.n)}</b><div class="bar"><i style="width:${Math.round(prod[f.k]/max*100)}%"></i></div></div><div class="num">${prod[f.k]} cx<small>${prod[f.k]*12} un.</small></div></div>`).join('')}${sampleRow()}
+ <section class="card"><div class="row between"><h3>Produzir ${S.day===TODAY?'hoje e amanhã':chipDay(S.day)+' e '+chipDay(addD(S.day,1))}</h3><span class="pill">${totalUnits} un. · ${Math.round(totalUnits/12*10)/10} cx</span></div>
+ ${order.length?'':'<p class="muted small" style="margin:0">Nada a produzir nestes dias.</p>'}${order.map(f=>`<div class="prod-row"><img src="${img(f.k)}" alt=""><div><b>${esc(f.n)}</b><div class="bar"><i style="width:${Math.round(prod[f.k]/max*100)}%"></i></div></div><div class="num">${prod[f.k]} un.<small>${cxTxt(prod[f.k])}</small></div></div>`).join('')}${sampleRow()}
  </section>
  <section class="card"><div class="row between"><h3>Pedidos para confirmar</h3><span class="pill warn">${toConfirm.length}</span></div>
  ${toConfirm.length?toConfirm.map((t,i)=>`<label class="line" style="cursor:pointer"><span class="row" style="flex-wrap:nowrap;gap:10px"><input type="checkbox" data-tc="${i}" ${t.sel?'checked':''} style="width:22px;height:22px;accent-color:var(--choc)"><span><b>${esc(C(t.c).n)}</b><br><span class="small muted">${esc(t.when)} · ${boxes(t.items)} caixas</span></span></span><b class="num">${brl(total(t.items))}</b></label>`).join('')+`<button class="btn btn-primary btn-block" type="button" data-act="confirmAll">${svg('check')}Confirmar ${toConfirm.filter(t=>t.sel).length} pedido(s)</button>`:'<p class="muted small" style="margin:0">Tudo confirmado.</p>'}
@@ -393,7 +407,7 @@ function draftSection(){if(!drafts)return '';const end=addD(WEEK0,6);const sel=d
  return `<section class="card" style="border:2px solid var(--gold)"><div class="row between"><div><p class="eyebrow">Semana de ${chipDay(WEEK0).replace(/^\w+, /,'')} a ${chipDay(end).replace(/^\w+, /,'')}</p><h3>Rascunhos para revisar</h3></div><span class="pill warn">${drafts.length}</span></div>
  <p class="small muted" style="margin:0">Criados a partir do pedido padrão de cada cliente. Ajuste as quantidades se alguém pediu diferente e confirme.</p>
  ${drafts.map((d,i)=>`<div class="draft ${d.sel?'':'off'}"><div class="row between" style="flex-wrap:nowrap"><label class="row" style="flex-wrap:nowrap;gap:10px;cursor:pointer;min-width:0"><input type="checkbox" data-dsel="${i}" ${d.sel?'checked':''} style="width:24px;height:24px;accent-color:var(--choc);flex:none"><span style="min-width:0"><b>${esc(C(d.c).n)}</b><br><span class="small muted">${chipDay(d.day)} · ${d.time}</span></span></label><b class="num">${brl(total(d.items))}</b></div>
-  ${Object.entries(d.items).map(([k,q])=>`<div class="dline"><img src="${img(k)}" alt=""><span>${F(k).n}</span><div class="stepper"><button type="button" data-dq="${i}|${k}|-1" aria-label="Diminuir ${F(k).n}">${svg('minus')}</button><b>${q} cx</b><button type="button" data-dq="${i}|${k}|1" aria-label="Aumentar ${F(k).n}">${svg('plus')}</button></div></div>`).join('')}</div>`).join('')}
+  ${Object.entries(d.items).map(([k,q])=>`<div class="dline">${pic(k)}<span>${isMix(k)?'Mista: '+compTxt(MIXES[k]):F(k).n}</span><div class="stepper"><button type="button" data-dq="${i}|${k}|-1" aria-label="Diminuir ${nameOf(k)}">${svg('minus')}</button><b>${q} cx</b><button type="button" data-dq="${i}|${k}|1" aria-label="Aumentar ${nameOf(k)}">${svg('plus')}</button></div></div>`).join('')}</div>`).join('')}
  <button class="btn btn-primary btn-lg btn-block" type="button" data-act="confirmDrafts" ${sel.length?'':'disabled'}>${svg('check')}Confirmar ${sel.length} pedido${sel.length===1?'':'s'}</button></section>`}
 function viewPedidos(){const all=deliveries.map(d=>({c:d.c,when:'Hoje · '+d.time,items:d.items,st:d.status==='pending'?'Confirmado':'Entregue'})).concat(toConfirm.map(t=>({c:t.c,when:t.when,items:t.items,st:'Para confirmar'})),Object.keys(confirmedGen).sort().flatMap(k=>confirmedGen[k].map(d=>({c:d.c,when:chipDay(k)+' · '+d.time,items:d.items,st:'Confirmado'}))));
  return `<div class="row between"><h2>Pedidos</h2><button class="btn btn-tonal" type="button" data-act="genWeek">${svg('cal')}Gerar semana</button></div>
@@ -407,7 +421,7 @@ function startOrder(){S.order={step:1,c:null,items:{},when:'Hoje',deliv:'Entrega
 function viewOrder(){const o=S.order;const steps=`<div class="steps" aria-label="Passo ${o.step} de 3">${[1,2,3].map(n=>`<span class="${n<=o.step?'on':''}"></span>`).join('')}</div>`;
  const head=`<header class="top"><button class="avatar" type="button" data-act="oback" aria-label="Voltar">${svg('back')}</button><h1>${o.step===1?'Para quem?':o.step===2?esc(C(o.c).n):o.step===3?'Revisar pedido':'Pedido confirmado'}</h1></header>`;
  if(o.step===4){const c=C(o.c);return head+`<main class="success"><div class="check">${svg('check')}</div><h2>Pedido confirmado</h2><p class="muted" style="margin:0">${boxes(o.items)} caixas · ${brl(total(o.items))} · ${esc(o.when)}</p>
-  <div class="bubble">Olá, ${esc(c.n)}! Seu pedido está confirmado:\n${Object.entries(o.items).map(([k,q])=>`• ${q} cx ${F(k).n}`).join('\n')}\nTotal: ${brl(total(o.items))}\nEntrega: ${esc(o.when)}.\nObrigada! Brigaderia Amor Zeloso</div>
+  <div class="bubble">Olá, ${esc(c.n)}! Seu pedido está confirmado:\n${Object.entries(o.items).map(([k,q])=>`• ${q} cx ${isMix(k)?'mista ('+compTxt(MIXES[k])+')':F(k).n}`).join('\n')}\nTotal: ${brl(total(o.items))}\nEntrega: ${esc(o.when)}.\nObrigada! Brigaderia Amor Zeloso</div>
   <button class="btn btn-ok btn-lg btn-block" type="button" data-wa="order">${svg('chat')}Avisar no WhatsApp</button>
   <button class="btn btn-tonal btn-block" type="button" data-act="ofinish">Voltar para o Hoje</button></main>`}
  if(o.step===1)return head+`<main>${steps}<p class="muted" style="margin:0">Toque no cliente. Os mais frequentes aparecem primeiro.</p>
@@ -415,10 +429,11 @@ function viewOrder(){const o=S.order;const steps=`<div class="steps" aria-label=
   <button class="btn btn-ghost" type="button" data-ext="Cadastrar cliente">${svg('plus')}Cadastrar cliente</button></main>`;
  const n=boxes(o.items);
  if(o.step===2)return head+`<main>${steps}<div class="row between"><span class="muted small">Toque para adicionar caixas de 12</span><button class="btn btn-tonal" style="--h:40px;font-size:14px" type="button" data-act="repeat">Repetir último</button></div>
-  <div class="grid2">${FLAVORS.map(f=>{const q=o.items[f.k]||0;return `<div class="flavor ${q?'sel':''}" role="button" tabindex="0" data-add="${f.k}" aria-label="${f.n}, ${q} caixas, adicionar"><img src="${img(f.k)}" alt=""><span class="name">${f.n}</span><span class="price">${brl(PRICE)} · cx 12</span>${q?`<span class="badge">${q}</span><div class="stepper"><button type="button" data-sub="${f.k}" aria-label="Diminuir ${f.n}">${svg('minus')}</button><b>${q} cx</b><button type="button" data-add2="${f.k}" aria-label="Aumentar ${f.n}">${svg('plus')}</button></div>`:''}</div>`}).join('')}</div></main>
+  <div class="grid2"><button class="flavor mixcard" type="button" data-act="newMix" aria-label="Montar caixa mista com sabores variados"><span class="mixpic big">${FLAVORS.slice(0,4).map(f=>`<img src="${img(f.k)}" alt="">`).join('')}</span><span class="name">Caixa mista</span><span class="price">${brl(PRICE)} · escolha os 12</span></button>${FLAVORS.map(f=>{const q=o.items[f.k]||0;return `<div class="flavor ${q?'sel':''}" role="button" tabindex="0" data-add="${f.k}" aria-label="${f.n}, ${q} caixas, adicionar"><img src="${img(f.k)}" alt=""><span class="name">${f.n}</span><span class="price">${brl(PRICE)} · cx 12</span>${q?`<span class="badge">${q}</span><div class="stepper"><button type="button" data-sub="${f.k}" aria-label="Diminuir ${f.n}">${svg('minus')}</button><b>${q} cx</b><button type="button" data-add2="${f.k}" aria-label="Aumentar ${f.n}">${svg('plus')}</button></div>`:''}</div>`}).join('')}</div>
+  ${Object.keys(o.items).filter(isMix).map(k=>`<section class="card mixline"><div class="row" style="flex-wrap:nowrap;gap:12px">${pic(k,'rv')}<div style="min-width:0;flex:1"><b>Caixa mista</b><div class="small muted">${esc(compTxt(MIXES[k]))}</div></div></div><div class="row between"><button class="btn btn-ghost" type="button" data-editmix="${k}">Editar sabores</button><div class="stepper"><button type="button" data-sub="${k}" aria-label="Menos caixas mistas">${svg('minus')}</button><b>${o.items[k]} cx</b><button type="button" data-add2="${k}" aria-label="Mais caixas mistas">${svg('plus')}</button></div></div></section>`).join('')}</main>
   <div class="totalbar">${n?`<div class="t"><small>${n} caixa${n>1?'s':''}</small><strong>${brl(total(o.items))}</strong></div><button class="btn btn-primary btn-lg" type="button" data-act="review">Revisar</button>`:`<button class="btn btn-primary btn-lg" type="button" disabled>Toque nos sabores para montar</button>`}</div>`;
  const chips=(key,opts)=>`<div class="chips">${opts.map(v=>`<button class="chip" type="button" data-set="${key}" data-val="${v}" aria-pressed="${o[key]===v}">${key==='courier'&&(v==='Operadora'||v==='Administrador')?`<img src="img/${v==='Operadora'?'operadora':'administrador'}.webp" alt="">`:(o[key]===v?svg('check'):'')}${v}</button>`).join('')}</div>`;
- return head+`<main>${steps}<section class="card">${Object.entries(o.items).map(([k,q])=>`<div class="line"><span class="row" style="flex-wrap:nowrap"><img src="${img(k)}" alt="" style="width:40px;height:40px;border-radius:12px;object-fit:cover"><b>${q} cx ${F(k).n}</b></span><b class="num">${brl(q*PRICE)}</b></div>`).join('')}<div class="line"><b>Total</b><b class="num" style="font-size:20px">${brl(total(o.items))}</b></div></section>
+ return head+`<main>${steps}<section class="card">${Object.entries(o.items).map(([k,q])=>`<div class="line"><span class="row" style="flex-wrap:nowrap">${pic(k,'rv')}<span style="min-width:0"><b>${q} cx ${nameOf(k)}</b>${isMix(k)?`<br><span class="small muted">${esc(compTxt(MIXES[k]))}</span>`:''}</span></span><b class="num">${brl(q*PRICE)}</b></div>`).join('')}<div class="line"><b>Total</b><b class="num" style="font-size:20px">${brl(total(o.items))}</b></div></section>
   <div><p class="eyebrow">Quando</p>${chips('when',['Hoje','Amanhã','Terça'])}</div>
   <div><p class="eyebrow">Como</p>${chips('deliv',['Entrega','Retirada'])}</div>
   ${o.deliv==='Entrega'?`<div><p class="eyebrow">Quem leva</p>${chips('courier',['Operadora','Administrador','Motoboy'])}</div>`:''}
@@ -467,6 +482,13 @@ function sheetHTML(){const s=S.sheet;if(!s)return'';
   ${p.status!=='Virou cliente'&&p.status!=='Não teve interesse'?`<button class="btn btn-ok btn-lg btn-block" type="button" data-convert="${p.id}">${svg('spark')}Virou cliente!</button><button class="btn btn-ghost" type="button" data-nointerest="${p.id}">Não teve interesse</button>`:''}</div></div>`}
  if(s.type==='welcome'){return `<div class="scrim" data-act="closeSheet"><div class="sheet" role="dialog" aria-label="Novo cliente" style="text-align:center;align-items:center"><div class="grab"></div><div class="check">${svg('spark')}</div><h2>${esc(s.n)} agora é cliente!</h2><p class="muted" style="margin:0">O histórico de visitas e amostras fica guardado na ficha.</p>
   <button class="btn btn-primary btn-lg btn-block" type="button" data-ext="Pedido padrão">${svg('cal')}Definir pedido padrão semanal</button><button class="btn btn-tonal btn-block" type="button" data-act="newFor">${svg('plus')}Fazer o primeiro pedido</button></div></div>`}
+ if(s.type==='mix'){const tot=units(s.comp),left=12-tot;const slots=[];Object.entries(s.comp).forEach(([f,u])=>{for(let i=0;i<u;i++)slots.push(f)});while(slots.length<12)slots.push(null);
+  return `<div class="scrim" data-act="closeSheet"><div class="sheet" role="dialog" aria-label="Montar caixa mista" style="max-height:94%;overflow-y:auto"><div class="grab"></div><p class="eyebrow">Caixa com 12 · ${brl(PRICE)}</p><h2>Montar caixa mista</h2>
+  <div class="box12" aria-label="${tot} de 12 preenchidos">${slots.map(f=>f?`<img src="${img(f)}" alt="${F(f).n}">`:'<i></i>').join('')}</div>
+  <p class="small" style="margin:0;text-align:center;font-weight:600;color:${left?'var(--warn)':'var(--ok)'}">${left?`Faltam ${left} de 12`:'Caixa completa ✓'}</p>
+  <div>${FLAVORS.map(f=>`<div class="dline"><img src="${img(f.k)}" alt=""><span>${f.n}</span><div class="stepper"><button type="button" data-mq="${f.k}|-1" aria-label="Menos ${f.n}">${svg('minus')}</button><b>${s.comp[f.k]||0} un.</b><button type="button" data-mq="${f.k}|1" aria-label="Mais ${f.n}" ${left?'':'disabled'}>${svg('plus')}</button></div></div>`).join('')}</div>
+  <div class="chips"><button class="chip" type="button" data-act="mixClear">Limpar</button>${tot&&left?`<button class="chip" type="button" data-act="mixFill">Completar com ${F(Object.keys(s.comp).filter(f=>s.comp[f])[0]).n}</button>`:''}</div>
+  <button class="btn btn-primary btn-lg btn-block" type="button" data-act="saveMix" ${left?'disabled':''}>${svg('check')}${s.edit?'Salvar caixa mista':'Adicionar caixa mista'}</button></div></div>`}
  if(s.type==='cal'){const [y,m]=s.month.split('-').map(Number);const first=new Date(Date.UTC(y,m-1,1,12));const start=first.getUTCDay();const days=new Date(Date.UTC(y,m,0,12)).getUTCDate();
   const mon=cap(new Intl.DateTimeFormat('pt-BR',{month:'long',year:'numeric',timeZone:'UTC'}).format(first));let cells='';for(let i=0;i<start;i++)cells+='<span></span>';
   for(let d=1;d<=days;d++){const k=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;const n=deliveriesFor(k).length;
@@ -555,6 +577,14 @@ app.addEventListener('click',e=>{
  if(ds.convert){S.sheet=null;convert(P(ds.convert));return}
  if(ds.nointerest){P(ds.nointerest).status='Não teve interesse';S.sheet=null;toast('Contato marcado como sem interesse');S.keepScroll=true;render();return}
  if(ds.act==='newFor'){const id=S.newCust;S.sheet=null;startOrder();S.order.c=id;S.order.step=2;render();return}
+ if(ds.act==='newMix'){S.sheet={type:'mix',comp:{}};S.keepScroll=true;render();return}
+ if(ds.editmix){S.sheet={type:'mix',comp:{...MIXES[ds.editmix]},edit:ds.editmix};S.keepScroll=true;render();return}
+ if(ds.mq){const [f,dv]=ds.mq.split('|');const c=S.sheet.comp;const n=Math.max(0,(c[f]||0)+Number(dv));if(Number(dv)>0&&units(c)>=12)return;if(n)c[f]=n;else delete c[f];render();return}
+ if(ds.act==='mixClear'){S.sheet.comp={};render();return}
+ if(ds.act==='mixFill'){const c=S.sheet.comp;const f=Object.keys(c).filter(x=>c[x])[0];c[f]+=12-units(c);render();return}
+ if(ds.act==='saveMix'){const c=S.sheet.comp;if(units(c)!==12)return;const sig=JSON.stringify(Object.keys(c).sort().map(f=>[f,c[f]]));
+  if(S.sheet.edit){MIXES[S.sheet.edit]={...c}}else{let k=Object.keys(S.order.items).find(x=>isMix(x)&&JSON.stringify(Object.keys(MIXES[x]).sort().map(f=>[f,MIXES[x][f]]))===sig);if(k)S.order.items[k]++;else{k='mix'+(++mixSeq);MIXES[k]={...c};S.order.items[k]=1}}
+  S.sheet=null;toast('Caixa mista pronta: '+compTxt(c));S.keepScroll=true;render();return}
  if(ds.act==='genWeek'){if(drafts||Object.keys(confirmedGen).length){toast('Esta semana já foi gerada. Nada foi duplicado.');S.keepScroll=true;render();return}
   drafts=[];for(let i=0;i<7;i++){const k=addD(WEEK0,i);const w=parseK(k).getUTCDay();SCHED.forEach(sc=>{if(w!==sc.w)return;if(sc.every&&Math.round((parseK(k)-parseK('2026-01-07'))/6048e5)%2)return;drafts.push({c:sc.c,day:k,time:sc.time,items:{...C(sc.c).last},sel:true})})}
   toast(drafts.length+' rascunhos criados a partir dos pedidos padrão');render();return}
