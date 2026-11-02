@@ -85,7 +85,70 @@ test('R5 telas móveis com ações compartilhadas', async ({
           exact: true,
         }),
       ).toBeVisible();
+      if (path === 'clientes')
+        await expect(
+          p.getByRole('button', {
+            name: 'Editar Cliente DEMONSTRAÇÃO R5',
+            exact: true,
+          }),
+        ).toBeVisible();
       await capture(name);
+      if (path === 'clientes') {
+        await expect(p.getByRole('dialog')).toBeHidden();
+        await expect(p.getByLabel('Buscar por nome')).toBeVisible();
+        await p
+          .getByRole('button', { name: 'Novo cliente', exact: true })
+          .click();
+        const sheet = p.getByRole('dialog', {
+          name: 'Novo cliente',
+          exact: true,
+        });
+        await expect(sheet).toBeVisible();
+        const locate = await sheet
+          .getByRole('button', { name: 'Usar minha localização', exact: true })
+          .boundingBox();
+        const field = await sheet
+          .getByLabel('Nome', { exact: true })
+          .boundingBox();
+        expect(locate.y).toBeLessThan(field.y);
+        await expect(
+          sheet.getByRole('button', { name: 'Tirar foto', exact: true }),
+        ).toBeVisible();
+        await expect(
+          sheet.getByLabel('Câmera do novo cliente'),
+        ).toHaveAttribute('capture', 'environment');
+        await capture('cliente-formulario');
+        await sheet
+          .getByLabel('Nome', { exact: true })
+          .fill('Rascunho DEMONSTRAÇÃO');
+        await p.keyboard.press('Escape');
+        await expect(sheet).toBeHidden();
+        await expect(
+          p.getByRole('button', {
+            name: 'Editar Rascunho DEMONSTRAÇÃO',
+            exact: true,
+          }),
+        ).toHaveCount(0);
+        await p
+          .getByRole('button', {
+            name: 'Editar Cliente DEMONSTRAÇÃO R5',
+            exact: true,
+          })
+          .click();
+        await expect(
+          p.getByRole('dialog', { name: 'Editar cliente', exact: true }),
+        ).toBeVisible();
+        await expect(p.getByLabel('Nome', { exact: true })).toHaveValue(
+          'Cliente DEMONSTRAÇÃO R5',
+        );
+        await p.getByRole('button', { name: 'Cancelar', exact: true }).click();
+        await p.goto(t.url + '/gestao/clientes?novo=1');
+        await expect(
+          p.getByRole('dialog', { name: 'Novo cliente', exact: true }),
+        ).toBeVisible();
+        await p.getByRole('button', { name: 'Fechar', exact: true }).click();
+        await expect(p).not.toHaveURL(/novo=1/);
+      }
     }
   } finally {
     await c.close();

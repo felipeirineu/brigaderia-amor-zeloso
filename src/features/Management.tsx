@@ -4,8 +4,9 @@ import { CompactHeader } from './mobile/CompactHeader';
 import { Backup } from './p1/Backup';
 import { ImportCustomers } from './p1/ImportCustomers';
 import { Stock } from './p1/Stock';
-import { FieldProvider, useField } from './field/FieldContext';
+import { FieldProvider, SiteAvatar, useField } from './field/FieldContext';
 import { SiteEditor, CompanyEditor, SiteInfo } from './field/SiteEditor';
+import { CustomerCapture } from './field/CustomerCapture';
 import { PlaceFields } from './field/PlaceFields';
 import { Travel } from './field/Travel';
 import { emptyPlace, type Place } from '../../shared/field';
@@ -249,7 +250,28 @@ function Customers({ financial = false }: { financial?: boolean }) {
     active: true,
   });
   const key = useRef(crypto.randomUUID());
+  const sheet = useRef<HTMLDialogElement>(null);
+  const [search, setSearch] = useSearchParams();
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [captureBusy, setCaptureBusy] = useState(false);
+  const [photoNotice, setPhotoNotice] = useState('');
+  const [draft, setDraft] = useState(0);
+  useEffect(() => {
+    if (search.get('novo') === '1') sheet.current?.showModal();
+  }, [search]);
+  function close() {
+    sheet.current?.close();
+    if (search.has('novo')) {
+      const next = new URLSearchParams(search);
+      next.delete('novo');
+      setSearch(next, { replace: true });
+    }
+    reset();
+  }
   function reset() {
+    setPhoto(null);
+    setCaptureBusy(false);
+    setDraft((d) => d + 1);
     setEditing(null);
     setForm({ name: '', phone: '', email: '', notes: '', active: true });
     setSite(null);
@@ -258,100 +280,184 @@ function Customers({ financial = false }: { financial?: boolean }) {
   }
   function submit(e: FormEvent) {
     e.preventDefault();
+    if (save.busy || captureBusy) return;
     void save.save(
-      () =>
-        api(
+      async () => {
+        const result = await api<{ id: string }>(
           `customers${editing ? `/${editing.id}` : ''}`,
           editing ? 'PUT' : 'POST',
           {
             ...form,
             ...(editing ? { version: editing.version } : {}),
-            ...(field && site
+            ...(field && (site || photo)
               ? {
                   site: {
-                    data: { ...site, name: form.name },
+                    data: { ...(site ?? emptyPlace()), name: form.name },
                     version: siteVersion,
                   },
                 }
               : {}),
           },
           key.current,
-        ),
+        );
+        if (field && photo) {
+          try {
+            await api(
+              `field/customers/${editing?.id ?? result.id}/photo`,
+              'PUT',
+              {
+                version: siteVersion + 1,
+                base64: photo,
+              },
+            );
+            setPhotoNotice('Cliente e foto salvos.');
+          } catch {
+            setPhotoNotice(
+              'Cliente salvo. Não foi possível confirmar a foto. Confira em “Localização, foto e Instagram” antes de tentar novamente.',
+            );
+          }
+        }
+      },
       () => {
-        reset();
+        close();
         void field?.refresh();
       },
     );
   }
   return (
     <>
-      <h1>Clientes</h1>
-      <p>
-        Contatos privados da sua organização. Telefone com DDD; endereço não é
-        obrigatório.
-      </p>
+      <div className="page-heading customer-heading">
+        <h1>Clientes</h1>
+        <Button
+          variant="primary"
+          onClick={() => {
+            reset();
+            setPhotoNotice('');
+            sheet.current?.showModal();
+          }}
+        >
+          <Icon name="novo" size={18} /> Novo cliente
+        </Button>
+      </div>
       <ErrorMessage message={list.error || save.error} />
       <p role="status">{save.notice}</p>
-      <form className="data-form panel" onSubmit={submit}>
-        <h2>{editing ? 'Editar cliente' : 'Novo cliente'}</h2>
-        <label>
-          Nome
-          <input
-            required
-            maxLength={120}
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-          />
-        </label>
-        <label>
-          Telefone
-          <input
-            required
-            type="tel"
-            value={form.phone}
-            onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          />
-        </label>
-        <label>
-          E-mail (opcional)
-          <input
-            type="email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
-          />
-        </label>
-        <label>
-          Notas operacionais
-          <textarea
-            maxLength={1000}
-            value={form.notes}
-            onChange={(e) => setForm({ ...form, notes: e.target.value })}
-          />
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={form.active}
-            onChange={(e) => setForm({ ...form, active: e.target.checked })}
-          />{' '}
-          Ativo
-        </label>
-        {field && (
-          <PlaceFields
-            value={site ?? emptyPlace()}
-            onChange={setSite}
-            onName={(name) => setForm({ ...form, name: name || form.name })}
-          />
-        )}
-        <div className="actions">
-          <Button disabled={save.busy} variant="primary" loading={save.busy}>
-            Salvar cliente
-          </Button>
-          <Button type="button" onClick={reset}>
-            Limpar edição
-          </Button>
-        </div>
-      </form>
+      <p role="status">{photoNotice}</p>
+      <dialog
+        ref={sheet}
+        className="help-sheet customer-sheet"
+        aria-label={editing ? 'Editar cliente' : 'Novo cliente'}
+        onCancel={(e) => {
+          e.preventDefault();
+          if (!save.busy) close();
+        }}
+      >
+        <form className="data-form sheet-body" onSubmit={submit}>
+          <div className="customer-sheet-heading">
+            <h2>{editing ? 'Editar cliente' : 'Novo cliente'}</h2>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={save.busy}
+              onClick={close}
+            >
+              Fechar
+            </Button>
+          </div>
+          <fieldset disabled={save.busy} className="customer-form-fields">
+            <ErrorMessage message={save.error} />
+            {field && (
+              <CustomerCapture
+                key={draft}
+                onLocate={(coordinates) =>
+                  setSite((s) => ({ ...(s ?? emptyPlace()), ...coordinates }))
+                }
+                onPhoto={setPhoto}
+                onBusy={setCaptureBusy}
+              />
+            )}
+
+            <label>
+              Nome
+              <input
+                required
+                maxLength={120}
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </label>
+            <label>
+              Telefone
+              <input
+                required
+                type="tel"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+              />
+            </label>
+            <label>
+              E-mail (opcional)
+              <input
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+              />
+            </label>
+            <label>
+              Notas operacionais
+              <textarea
+                maxLength={1000}
+                value={form.notes}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              />
+            </label>
+            <label>
+              <input
+                type="checkbox"
+                checked={form.active}
+                onChange={(e) => setForm({ ...form, active: e.target.checked })}
+              />{' '}
+              Ativo
+            </label>
+            {field && (
+              <details>
+                <summary>Endereço e Instagram</summary>
+                <PlaceFields
+                  hideLocation
+                  value={site ?? emptyPlace()}
+                  onChange={setSite}
+                  onName={(name) =>
+                    setForm({ ...form, name: name || form.name })
+                  }
+                />
+                <label>
+                  Instagram (opcional)
+                  <input
+                    value={site?.instagram ?? ''}
+                    onChange={(e) =>
+                      setSite({
+                        ...(site ?? emptyPlace()),
+                        instagram: e.target.value,
+                      })
+                    }
+                  />
+                </label>
+              </details>
+            )}
+            <div className="actions">
+              <Button
+                disabled={save.busy || captureBusy}
+                variant="primary"
+                loading={save.busy}
+              >
+                Salvar cliente
+              </Button>
+              <Button type="button" disabled={save.busy} onClick={close}>
+                Cancelar
+              </Button>
+            </div>
+          </fieldset>
+        </form>
+      </dialog>
       <label>
         Buscar por nome
         <input
@@ -360,59 +466,32 @@ function Customers({ financial = false }: { financial?: boolean }) {
           onChange={(e) => setQuery(e.target.value)}
         />
       </label>
-      <label>
-        <input
-          type="checkbox"
-          checked={all}
-          onChange={(e) => setAll(e.target.checked)}
-        />{' '}
-        Incluir arquivados
-      </label>
-      <Button onClick={() => void list.reload()}>Atualizar lista</Button>
+      <details className="customer-list-options">
+        <summary>Opções da lista</summary>
+        <label>
+          <input
+            type="checkbox"
+            checked={all}
+            onChange={(e) => setAll(e.target.checked)}
+          />{' '}
+          Incluir arquivados
+        </label>
+        <Button onClick={() => void list.reload()}>Atualizar lista</Button>
+      </details>
       {list.loading ? (
         <p role="status">Carregando…</p>
       ) : list.data.length === 0 ? (
         <p>Nenhum cliente encontrado.</p>
       ) : (
-        <div className="record-list">
+        <div className="customer-tiles customer-records">
           {list.data.map((c) => (
             <article className="panel" key={c.id}>
-              <h2>{c.name}</h2>
-              <SiteInfo id={c.id} name={c.name} />
-              {financial && (
-                <>
-                  <Button
-                    className="button"
-                    to={`/gestao/clientes/${c.id}/b2b`}
-                    variant="ghost"
-                  >
-                    Dados B2B e padrões
-                  </Button>{' '}
-                  <Button
-                    className="button"
-                    to={`/gestao/financeiro/${c.id}`}
-                    variant="ghost"
-                  >
-                    Conta e recebimentos
-                  </Button>
-                  {(balances?.customers.find((b) => b.id === c.id)
-                    ?.overdue_days ?? 0) > 0 && (
-                    <p role="alert">
-                      Saldo vencido há{' '}
-                      {
-                        balances?.customers.find((b) => b.id === c.id)
-                          ?.overdue_days
-                      }{' '}
-                      dias. Novos pedidos continuam permitidos.
-                    </p>
-                  )}
-                </>
-              )}
-              <p>
-                {c.phone} · {c.active ? 'Ativo' : 'Arquivado'}
-              </p>
               <Button
+                variant="card"
+                className="customer-tile customer-edit"
+                aria-label={`Editar ${c.name}`}
                 onClick={() => {
+                  reset();
                   setEditing(c);
                   const existing = field?.data?.sites.find(
                     (s) => s.id === c.id,
@@ -426,31 +505,76 @@ function Customers({ financial = false }: { financial?: boolean }) {
                     notes: c.notes,
                     active: !!c.active,
                   });
+                  sheet.current?.showModal();
                 }}
               >
-                Editar {c.name}
+                <SiteAvatar id={c.id} name={c.name} />
+                <span>
+                  <span role="heading" aria-level={2}>
+                    {c.name}
+                  </span>
+                  <small>
+                    {c.phone} · {c.active ? 'Ativo' : 'Arquivado'}
+                  </small>
+                </span>
               </Button>
-              {!!c.active && (
-                <Button
-                  disabled={save.busy}
-                  onClick={() => {
-                    if (
-                      confirm(
-                        'Arquivar este cliente? O histórico será preservado.',
+              <details>
+                <summary>Conta e localização</summary>
+                <SiteInfo id={c.id} name={c.name} />
+                {financial && (
+                  <>
+                    <Button
+                      className="button"
+                      to={`/gestao/clientes/${c.id}/b2b`}
+                      variant="ghost"
+                    >
+                      Dados B2B e padrões
+                    </Button>{' '}
+                    <Button
+                      className="button"
+                      to={`/gestao/financeiro/${c.id}`}
+                      variant="ghost"
+                    >
+                      Conta e recebimentos
+                    </Button>
+                    {(balances?.customers.find((b) => b.id === c.id)
+                      ?.overdue_days ?? 0) > 0 && (
+                      <p role="alert">
+                        Saldo vencido há{' '}
+                        {
+                          balances?.customers.find((b) => b.id === c.id)
+                            ?.overdue_days
+                        }{' '}
+                        dias. Novos pedidos continuam permitidos.
+                      </p>
+                    )}
+                  </>
+                )}
+                <p>
+                  {c.phone} · {c.active ? 'Ativo' : 'Arquivado'}
+                </p>
+                {!!c.active && (
+                  <Button
+                    disabled={save.busy}
+                    onClick={() => {
+                      if (
+                        confirm(
+                          'Arquivar este cliente? O histórico será preservado.',
+                        )
                       )
-                    )
-                      void save.save(() =>
-                        api(`customers/${c.id}`, 'DELETE', {
-                          version: c.version,
-                        }),
-                      );
-                  }}
-                  variant="danger"
-                  loading={save.busy}
-                >
-                  Arquivar {c.name}
-                </Button>
-              )}
+                        void save.save(() =>
+                          api(`customers/${c.id}`, 'DELETE', {
+                            version: c.version,
+                          }),
+                        );
+                    }}
+                    variant="danger"
+                    loading={save.busy}
+                  >
+                    Arquivar {c.name}
+                  </Button>
+                )}
+              </details>
             </article>
           ))}
         </div>
@@ -1603,7 +1727,7 @@ export function Management() {
                   </Button>
                   <Button
                     className="button"
-                    to="/gestao/clientes"
+                    to="/gestao/clientes?novo=1"
                     onClick={() => quick.current?.close()}
                     variant="ghost"
                   >

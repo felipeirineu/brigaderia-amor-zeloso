@@ -1624,3 +1624,72 @@ button,
     padding: 6px;
   }
 }
+
+.customer-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.customer-edit {
+  width: 100%;
+  text-align: left;
+}
+.customer-edit small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+.customer-sheet .data-form {
+  margin: 0;
+}
+.customer-capture {
+  padding: 12px;
+  border-radius: 14px;
+}
+.customer-capture p {
+  font-size: 0.85rem;
+  margin: 6px 0;
+}
+.customer-records article.panel {
+  padding: 0;
+  overflow: hidden;
+}
+.customer-records .customer-edit {
+  border: 0;
+  box-shadow: none;
+  border-radius: 18px 18px 0 0;
+}
+.customer-records details {
+  padding: 8px 12px;
+}
+.customer-records summary {
+  font-size: 0.8rem;
+}
+.customer-records [role='heading'] {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.customer-capture input[hidden] {
+  display: none;
+}
+.customer-sheet-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.customer-sheet-heading h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+.customer-form-fields {
+  display: grid;
+  gap: 12px;
+  border: 0;
+  padding: 0;
+}
+.customer-list-options {
+  margin: 12px 0;
+}

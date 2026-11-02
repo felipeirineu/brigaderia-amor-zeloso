@@ -67,8 +67,10 @@ test('R4 localização por toque, foto privada, perfil e despesa após entrega',
       p.getByText('Nome atualizado.', { exact: true }),
     ).toBeVisible();
     await p.goto(t.url + '/gestao/clientes');
+    await p.getByRole('button', { name: 'Novo cliente', exact: true }).click();
     await p.getByLabel('Nome', { exact: true }).fill('Novo local DEMONSTRAÇÃO');
     await p.getByLabel('Telefone', { exact: true }).fill('11900000001');
+    await p.getByText('Endereço e Instagram', { exact: true }).click();
     await p
       .getByLabel('Endereço do estabelecimento', { exact: true })
       .fill('Destino DEMONSTRAÇÃO');
@@ -76,6 +78,23 @@ test('R4 localização por toque, foto privada, perfil e despesa após entrega',
       .getByRole('button', { name: 'Usar minha localização', exact: true })
       .click();
     await expect(p.getByLabel('Latitude', { exact: true })).toHaveValue('0');
+    const buffer = await sharp({
+      create: { width: 400, height: 200, channels: 3, background: '#321d10' },
+    })
+      .png()
+      .toBuffer();
+    await p
+      .getByLabel('Galeria do novo cliente', { exact: true })
+      .setInputFiles({
+        name: 'fachada-demonstracao.png',
+        mimeType: 'image/png',
+        buffer,
+      });
+    await expect(
+      p.getByText('Foto pronta. Será enviada ao salvar o cliente.', {
+        exact: true,
+      }),
+    ).toBeVisible();
     await p
       .getByRole('button', { name: 'Salvar cliente', exact: true })
       .click();
@@ -86,14 +105,21 @@ test('R4 localização por toque, foto privada, perfil e despesa após entrega',
       }),
     });
     await expect(card).toBeVisible();
+    await expect(
+      p.getByText('Cliente e foto salvos.', { exact: true }),
+    ).toBeVisible();
+    await expect(
+      card
+        .getByRole('button', {
+          name: 'Editar Novo local DEMONSTRAÇÃO',
+          exact: true,
+        })
+        .locator('img'),
+    ).toBeVisible();
+    await card.getByText('Conta e localização', { exact: true }).click();
     await card
       .getByRole('link', { name: 'Localização, foto e Instagram' })
       .click();
-    const buffer = await sharp({
-      create: { width: 400, height: 200, channels: 3, background: '#321d10' },
-    })
-      .png()
-      .toBuffer();
     await p.getByLabel('Escolher da galeria', { exact: true }).setInputFiles({
       name: 'fachada-demonstracao.png',
       mimeType: 'image/png',
