@@ -18,7 +18,7 @@
     {
       "binding": "DB",
       "database_name": "brigaderia-amor-zeloso-homologacao",
-      "database_id": "36e18df9-761a-4828-b41d-1a0aadf0b20f",
+      "database_id": "7dbe82ad-7dc7-4373-8817-b55ad95a979a",
       "migrations_dir": "database/migrations",
     },
   ],
