@@ -123,6 +123,7 @@ export function Today({
       boxes: number;
       units: number;
       weight_grams: number;
+      units_per_box: number;
     }[];
     totals: { expected_cents: number; delivered_cents: number };
     received_available: boolean;
@@ -385,7 +386,25 @@ export function Today({
                       )}
                       <div>
                         <strong>
-                          {line.name} · {line.label} · {line.weight_grams} g/un.
+                          {line.name}
+                          {new Set(
+                            view
+                              .data!.production.filter(
+                                (p) => p.name === line.name,
+                              )
+                              .map(
+                                (p) =>
+                                  p.label +
+                                  '|' +
+                                  p.weight_grams +
+                                  '|' +
+                                  p.units_per_box,
+                              ),
+                          ).size > 1 && (
+                            <small className="production-variant">
+                              {line.label} · {line.weight_grams} g/un.
+                            </small>
+                          )}
                         </strong>
                         <div className="production-bar" aria-hidden="true">
                           <span
@@ -403,9 +422,13 @@ export function Today({
                           />
                         </div>
                       </div>
-                      <span>
-                        {line.boxes} caixas · {line.units} unidades
-                      </span>
+                      <div
+                        className="production-counts"
+                        aria-label={`${line.boxes} ${line.boxes === 1 ? 'caixa' : 'caixas'} · ${line.units} ${line.units === 1 ? 'unidade' : 'unidades'}`}
+                      >
+                        <strong>{line.boxes} cx</strong>
+                        <small>{line.units} un.</small>
+                      </div>
                       <small>{dayChip(line.day)}</small>
                     </li>
                   ))}
