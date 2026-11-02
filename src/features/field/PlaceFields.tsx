@@ -7,7 +7,9 @@ export function PlaceFields({
   value,
   onChange,
   onName,
+  hideLocation = false,
 }: {
+  hideLocation?: boolean;
   value: Place;
   onChange: (p: Place) => void;
   onName?: (name: string) => void;
@@ -61,13 +63,17 @@ export function PlaceFields({
   return (
     <fieldset>
       <legend>Localização do estabelecimento</legend>
-      <p>
-        A localização será do estabelecimento. Use o botão somente quando
-        estiver nele; confira antes de salvar.
-      </p>
-      <Button type="button" disabled={busy} onClick={locate} loading={busy}>
-        Usar minha localização
-      </Button>
+      {!hideLocation && (
+        <>
+          <p>
+            A localização será do estabelecimento. Use o botão somente quando
+            estiver nele; confira antes de salvar.
+          </p>
+          <Button type="button" disabled={busy} onClick={locate} loading={busy}>
+            Usar minha localização
+          </Button>
+        </>
+      )}
       <label>
         Buscar estabelecimento
         <input

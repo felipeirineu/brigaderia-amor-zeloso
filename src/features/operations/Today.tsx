@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { Button } from '../../components/Button';
 import { Transport } from '../field/Transport';
 import { TravelSheet } from '../field/TravelSheet';
@@ -30,6 +31,30 @@ import {
   MapLink,
   type OperationalOrder,
 } from './common';
+function WorkdayChip({
+  day,
+  onChange,
+}: {
+  day: string;
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="workday-chip">
+      <span>
+        {day === localDay() ? 'Hoje, ' : ''}
+        {day.slice(8, 10)}/{day.slice(5, 7)} ▾
+      </span>
+      <input
+        aria-label="Dia de trabalho no celular"
+        type="date"
+        value={day}
+        onChange={(e) => {
+          if (e.target.value) onChange(e.target.value);
+        }}
+      />
+    </label>
+  );
+}
 function DayTotals({
   totals,
   financial = false,
@@ -142,8 +167,13 @@ export function Today({
       setBusy(false);
     }
   }
+  const dateSlot = document.getElementById('mobile-header-actions');
   return (
-    <>
+    <div
+      className={
+        role === 'operator' ? 'today-page operator-today' : 'today-page'
+      }
+    >
       {trip && (
         <TravelSheet
           orders={[trip]}
@@ -151,16 +181,9 @@ export function Today({
           onSaved={() => setNotice('Despesa de deslocamento registrada.')}
         />
       )}
-      {field && (
-        <label>
-          <input
-            type="checkbox"
-            checked={near}
-            onChange={(e) => setNear(e.target.checked)}
-          />
-          Ordenar por proximidade da base (linha reta)
-        </label>
-      )}
+      {role === 'operator' &&
+        dateSlot &&
+        createPortal(<WorkdayChip day={day} onChange={setDay} />, dateSlot)}
       <div className="page-heading today-heading">
         <div>
           <p className="eyebrow">SUA ROTINA</p>
@@ -175,7 +198,7 @@ export function Today({
           <RefreshCw size={20} aria-hidden="true" />
         </Button>
       </div>
-      <label>
+      <label className="workday-inline">
         Dia de trabalho
         <input
           type="date"
@@ -240,7 +263,7 @@ export function Today({
         </Button>
       )}
 
-      {p1 && <TodayReminders day={day} />}
+      {p1 && role === 'owner' && <TodayReminders day={day} />}
       {undo && (
         <Button
           disabled={busy}
@@ -310,9 +333,21 @@ export function Today({
           {role === 'owner' && (
             <DayTotals totals={view.data.totals} financial={financial} />
           )}
-          <h2>
-            {role === 'owner' ? 'Pedidos e pendências' : 'Entregas do dia'}
-          </h2>
+          <div className="deliveries-heading">
+            <h2>
+              {role === 'owner' ? 'Pedidos e pendências' : 'Entregas do dia'}
+            </h2>
+            {field && (
+              <Button
+                variant="chip"
+                aria-label="Ordenar por proximidade da base (linha reta)"
+                aria-pressed={near}
+                onClick={() => setNear(!near)}
+              >
+                Proximidade
+              </Button>
+            )}
+          </div>
           <div className="record-list">
             {view.data.orders
               .filter(
@@ -440,6 +475,7 @@ export function Today({
               </Button>
             </section>
           )}
+          {p1 && role === 'operator' && <TodayReminders day={day} />}
           {financial && role !== 'owner' && <FinanceSummary compact />}
           {role !== 'owner' && (
             <DayTotals totals={view.data.totals} financial={financial} />
@@ -448,6 +484,6 @@ export function Today({
       ) : (
         !view.error && <p role="status">Carregando seu dia…</p>
       )}
-    </>
+    </div>
   );
 }

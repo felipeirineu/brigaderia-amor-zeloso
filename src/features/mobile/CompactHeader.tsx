@@ -60,8 +60,20 @@ export function CompactHeader({
         >
           <img src="/brand/logo.webp" alt="" width={32} height={32} />
         </Button>
-        <strong className="compact-title">{title}</strong>
-        <span id="order-focus-back" />
+        <strong
+          className="compact-title"
+          role={
+            operations && role === 'operator' && !segment
+              ? 'heading'
+              : undefined
+          }
+          aria-level={
+            operations && role === 'operator' && !segment ? 1 : undefined
+          }
+        >
+          {title}
+        </strong>
+        <span id="mobile-header-actions" />
         <Button
           ref={trigger}
           className="profile-menu-trigger"

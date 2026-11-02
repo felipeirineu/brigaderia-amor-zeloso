@@ -44,7 +44,11 @@ test('agenda privada, ICS e lembrete visível/concluído no Hoje', async ({
     const download = await downloadEvent;
     expect(download.suggestedFilename()).toBe('agenda-amor-zeloso.ics');
     await page.goto(t.url + '/gestao');
-    await page.getByLabel('Dia de trabalho').fill('2030-01-07');
+    await page
+      .getByLabel('Dia de trabalho', { exact: true })
+      .or(page.getByLabel('Dia de trabalho no celular', { exact: true }))
+      .filter({ visible: true })
+      .fill('2030-01-07');
     await expect(
       page.getByRole('heading', { name: 'Ligar · DEMONSTRAÇÃO', exact: true }),
     ).toBeVisible();

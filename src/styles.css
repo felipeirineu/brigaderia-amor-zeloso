@@ -1546,10 +1546,11 @@ button,
   .order-focus .totem-bar .az-button {
     width: 100%;
   }
-  .compact-header:has(#order-focus-back:not(:empty)) .profile-menu-trigger {
+  .compact-header:has(#mobile-header-actions:not(:empty))
+    .profile-menu-trigger {
     max-width: 48px;
   }
-  .compact-header:has(#order-focus-back:not(:empty))
+  .compact-header:has(#mobile-header-actions:not(:empty))
     .profile-menu-trigger
     .az-button-label
     > span {
@@ -1561,4 +1562,134 @@ button,
   .order-focus .totem-back {
     display: none;
   }
+}
+
+/* R5-2: a operadora começa pelas entregas, com o dia na linha do cabeçalho. */
+.workday-chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: #f1e2cc;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  margin: 0;
+}
+.workday-chip input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  cursor: pointer;
+}
+.workday-chip:focus-within {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+.deliveries-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.deliveries-heading h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+@media (max-width: 700px) {
+  .operator-today .today-heading,
+  .operator-today .workday-inline {
+    display: none !important;
+  }
+  .operator-today .deliveries-heading {
+    min-height: 48px;
+    margin: 0 0 8px;
+  }
+  .operator-today .deliveries-heading h2 {
+    font-size: 1rem;
+  }
+  .operator-today .record-list .order-card {
+    margin: 0;
+  }
+  .operator-today > p:empty {
+    margin: 0;
+  }
+  .compact-header > a.az-button {
+    min-width: 40px;
+    padding: 4px;
+  }
+  .compact-header .profile-menu-trigger.az-button {
+    padding: 6px;
+  }
+}
+
+.customer-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.customer-edit {
+  width: 100%;
+  text-align: left;
+}
+.customer-edit small {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+.customer-sheet .data-form {
+  margin: 0;
+}
+.customer-capture {
+  padding: 12px;
+  border-radius: 14px;
+}
+.customer-capture p {
+  font-size: 0.85rem;
+  margin: 6px 0;
+}
+.customer-records article.panel {
+  padding: 0;
+  overflow: hidden;
+}
+.customer-records .customer-edit {
+  border: 0;
+  box-shadow: none;
+  border-radius: 18px 18px 0 0;
+}
+.customer-records details {
+  padding: 8px 12px;
+}
+.customer-records summary {
+  font-size: 0.8rem;
+}
+.customer-records [role='heading'] {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.customer-capture input[hidden] {
+  display: none;
+}
+.customer-sheet-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.customer-sheet-heading h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+.customer-form-fields {
+  display: grid;
+  gap: 12px;
+  border: 0;
+  padding: 0;
+}
+.customer-list-options {
+  margin: 12px 0;
 }
