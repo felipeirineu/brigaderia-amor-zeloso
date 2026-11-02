@@ -1,5 +1,6 @@
 import { DisclosureSummary } from '../../components/DisclosureSummary';
-import { createPortal } from 'react-dom';
+import { DayCalendar } from './DayCalendar';
+import { greeting, dayChip, shiftDay } from '../../../shared/workday';
 import { Button } from '../../components/Button';
 import { DeliveryActions } from '../field/DeliveryActions';
 import { photoURL } from '../../../shared/flavors';
@@ -27,30 +28,6 @@ import {
   type Status,
 } from '../../../shared/order-state';
 import { useRemote, Failure, localDay, type OperationalOrder } from './common';
-function WorkdayChip({
-  day,
-  onChange,
-}: {
-  day: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <label className="workday-chip">
-      <span>
-        {day === localDay() ? 'Hoje, ' : ''}
-        {day.slice(8, 10)}/{day.slice(5, 7)} ▾
-      </span>
-      <input
-        aria-label="Dia de trabalho no celular"
-        type="date"
-        value={day}
-        onChange={(e) => {
-          if (e.target.value) onChange(e.target.value);
-        }}
-      />
-    </label>
-  );
-}
 function DayTotals({
   totals,
   financial = false,
@@ -107,7 +84,30 @@ export function Today({
     const timer = setTimeout(() => setCombinedUndo(null), UNDO_SECONDS * 1000);
     return () => clearTimeout(timer);
   }, [combinedUndo]);
-  const [day, setDay] = useState(localDay);
+  const [day, setDay] = useState(localDay),
+    [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const reset = () => setDay(localDay());
+    const wake = () => {
+      if (document.visibilityState === 'visible') {
+        setNow(new Date());
+        reset();
+      }
+    };
+    window.addEventListener('reset-workday', reset);
+    document.addEventListener('visibilitychange', wake);
+    return () => {
+      window.removeEventListener('reset-workday', reset);
+      document.removeEventListener('visibilitychange', wake);
+      window.dispatchEvent(
+        new CustomEvent('workday-change', { detail: localDay() }),
+      );
+    };
+  }, []);
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('workday-change', { detail: day }));
+  }, [day]);
+
   const view = useRemote<{
     day: string;
     orders: OperationalOrder[];
@@ -163,7 +163,6 @@ export function Today({
       setBusy(false);
     }
   }
-  const dateSlot = document.getElementById('mobile-header-actions');
   return (
     <div
       className={
@@ -177,13 +176,41 @@ export function Today({
           onSaved={() => setNotice('Despesa de deslocamento registrada.')}
         />
       )}
-      {role === 'operator' &&
-        dateSlot &&
-        createPortal(<WorkdayChip day={day} onChange={setDay} />, dateSlot)}
+      <div className="today-greeting">
+        <div>
+          <p className="eyebrow">
+            {new Intl.DateTimeFormat('pt-BR', {
+              timeZone: 'America/Fortaleza',
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+            }).format(new Date(day + 'T12:00Z'))}
+          </p>
+          <h2>
+            {day === localDay()
+              ? greeting(now) +
+                (field?.data?.staff.find((s) => s.id === field.data!.user_id)
+                  ?.version
+                  ? ', ' +
+                    field.data.staff.find((s) => s.id === field.data!.user_id)!
+                      .display_name
+                  : '')
+              : role === 'owner'
+                ? 'Planejamento do dia'
+                : 'Entregas do dia'}
+          </h2>
+        </div>
+        <DayCalendar day={day} onSelect={setDay} />
+      </div>
+      {day !== localDay() && (
+        <Button variant="ghost" onClick={() => setDay(localDay())}>
+          Voltar para hoje
+        </Button>
+      )}
       <div className="page-heading today-heading">
         <div>
           <p className="eyebrow">SUA ROTINA</p>
-          <h1>Hoje</h1>
+          <h1>{day === localDay() ? 'Hoje' : 'Agenda'}</h1>
           <p>
             {role === 'owner'
               ? 'Produção e pedidos em um só lugar.'
@@ -299,7 +326,11 @@ export function Today({
           {role === 'owner' && (
             <section className="panel">
               <h2>
-                Produzir hoje / amanhã <HelpTip topic="production" />
+                Produzir{' '}
+                {day === localDay()
+                  ? 'hoje / amanhã'
+                  : `${dayChip(day)} e ${dayChip(shiftDay(day, 1))}`}{' '}
+                <HelpTip topic="production" />
               </h2>
               {view.data.production.length ? (
                 <ul className="production-list">
@@ -311,7 +342,7 @@ export function Today({
                       <span>
                         {line.units} unidades · {line.boxes} embalagens
                       </span>
-                      <small>{line.day === day ? 'Hoje' : 'Amanhã'}</small>
+                      <small>{dayChip(line.day)}</small>
                     </li>
                   ))}
                 </ul>
@@ -348,6 +379,8 @@ export function Today({
             {view.data.orders
               .filter(
                 (o) =>
+                  (day >= localDay() ||
+                    ['delivered', 'picked_up'].includes(o.status)) &&
                   new Date(Date.parse(o.due_at) - 10800000)
                     .toISOString()
                     .slice(0, 10) === day,
@@ -450,33 +483,34 @@ export function Today({
                     )}
                   <DeliveryActions order={order} />
                   <div className="actions">
-                    {(order.status === 'out_for_delivery' ||
-                      (order.status === 'ready' &&
-                        order.delivery_type === 'pickup')) && (
-                      <Button
-                        className="delivery-complete"
-                        variant="success"
-                        size="large"
-                        disabled={busy}
-                        onClick={() =>
-                          financial && order.payment_mode === 'delivery'
-                            ? setReceipt(order)
-                            : void quick(
-                                order,
-                                order.delivery_type === 'pickup'
-                                  ? 'picked_up'
-                                  : 'delivered',
-                              )
-                        }
-                        loading={busy}
-                      >
-                        {order.delivery_type === 'pickup'
-                          ? 'Marcar retirado'
-                          : financial && order.payment_mode === 'delivery'
-                            ? 'Entregue e recebido'
-                            : 'Marcar entregue'}
-                      </Button>
-                    )}
+                    {day === localDay() &&
+                      (order.status === 'out_for_delivery' ||
+                        (order.status === 'ready' &&
+                          order.delivery_type === 'pickup')) && (
+                        <Button
+                          className="delivery-complete"
+                          variant="success"
+                          size="large"
+                          disabled={busy}
+                          onClick={() =>
+                            financial && order.payment_mode === 'delivery'
+                              ? setReceipt(order)
+                              : void quick(
+                                  order,
+                                  order.delivery_type === 'pickup'
+                                    ? 'picked_up'
+                                    : 'delivered',
+                                )
+                          }
+                          loading={busy}
+                        >
+                          {order.delivery_type === 'pickup'
+                            ? 'Marcar retirado'
+                            : financial && order.payment_mode === 'delivery'
+                              ? 'Entregue e recebido'
+                              : 'Marcar entregue'}
+                        </Button>
+                      )}
                     <details className="delivery-more">
                       <DisclosureSummary>
                         Mais ações do pedido
@@ -504,19 +538,28 @@ export function Today({
                         <ChevronRight size={20} aria-hidden="true" />
                       </Button>
                       <span className={`status-tag status-${order.status}`}>
-                        {statusLabels[order.status]}
+                        {day > localDay()
+                          ? 'Agendada'
+                          : statusLabels[order.status]}
                       </span>
                     </details>
                   </div>
                 </article>
               ))}
           </div>
-          {view.data.orders.length === 0 && (
+          {!view.data.orders.some(
+            (o) =>
+              new Date(Date.parse(o.due_at) - 10800000)
+                .toISOString()
+                .slice(0, 10) === day &&
+              (day >= localDay() ||
+                ['delivered', 'picked_up'].includes(o.status)),
+          ) && (
             <section className="empty-state">
               <CheckCircle2 size={36} aria-hidden="true" />
               <h2>Nenhuma entrega neste período.</h2>
-              <Button to="/gestao/recorrentes" variant="ghost">
-                Preparar pedidos da semana
+              <Button to="/gestao/pedidos?novo=1" variant="primary">
+                Novo pedido
               </Button>
             </section>
           )}

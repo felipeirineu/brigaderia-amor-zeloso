@@ -1,3 +1,4 @@
+import { shiftMonth } from '../shared/workday';
 import { mobileReady } from './mobile-ready';
 import { fieldReady } from './field-ready';
 import { snapshotPlaces } from './order-places';
@@ -52,6 +53,24 @@ export async function operations(
         'INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) VALUES(?,?,?,?,?)',
       )
       .bind(crypto.randomUUID(), org, a.user_id, name, entity);
+  if (resource === 'today' && id === 'calendar' && req.method === 'GET') {
+    const month = url.searchParams.get('month') ?? '';
+    if (!/^(19|20|21)\d{2}-(0[1-9]|1[0-2])$/.test(month))
+      throw new HttpError(400, 'Mês inválido.');
+    const counts = (
+      await db
+        .prepare(
+          "SELECT date(due_at,'-3 hours') AS day,COUNT(*) AS count FROM orders WHERE organization_id=? AND active=1 AND delivery_type='delivery' AND status IN('confirmed','in_production','ready','out_for_delivery','delivered') AND due_at>=? AND due_at<? GROUP BY day ORDER BY day",
+        )
+        .bind(
+          org,
+          utcStart(month + '-01'),
+          utcStart(shiftMonth(month, 1) + '-01'),
+        )
+        .all()
+    ).results;
+    return json({ month, counts });
+  }
   if (resource === 'today' && req.method === 'GET') {
     const parsedDay = daySchema.safeParse(
       url.searchParams.get('date') || businessDay(),

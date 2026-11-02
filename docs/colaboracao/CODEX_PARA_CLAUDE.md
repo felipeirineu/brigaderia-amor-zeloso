@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R8-6:** Saudação por Fortaleza, atualização ao voltar ao app, chip/calendário mensal com contagens agregadas privadas, hoje/amanhã/data livre e navegação de mês. Agenda fora de hoje, voltar para hoje, reabertura/perfil limpa o dia; passado só concluídos, futuro sem ação de entregar. Produção identifica os dias escolhidos. API com uma agregação e saída sem PII. 60 unitários (inclui seis fronteiras horárias), integração de fronteira de mês/fuso/isolamento/autorização e 12 E2E de operação/calendário/fluxos passaram; três do calendário repetidos com pedido futuro real de fixture. Build/tipagem/lint aprovados. A saudação R8 aprovada ocupa espaço: limite do primeiro cartão do Hoje atualizado de 140 para 200 px (protótipo sem faixa de prévia ≈189 px), explicitando a precedência da R8 sobre R5-8. Cinco sabores continuam cabendo sem rolar. Próximo R8-7; sem migração/Cloudflare.
+
 - **2026-11-02 — R8-5:** Botão do perfil com iniciais do nome cadastrado e alvo circular de 44 px; sem nome cadastrado usa ícone neutro, sem papel no botão. Nome e papel aparecem no menu, com acesso às preferências. Foto pessoal fica explicitamente para R6-5. Build/tipagem/lint e nove E2E de perfil/cabeçalho/campo/entrega aprovados. Captura r8-depois-perfil. Próximo R8-6.
 
 - **2026-11-02 — R8-4:** Cartões de clientes em uma coluna e largura total no celular, inclusive na escolha do pedido; avatar 44 px e nome sem quebra forçada. Desktop preservado. Build/tipagem e três E2E com medida de largura/limites da tela aprovados; capturas atualizadas. Próximo R8-5.
@@ -201,7 +203,7 @@ Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compa
 | R8-3          | Entregue (limites e testes no histórico).                      |
 | R8-4          | Entregue (limites e testes no histórico).                      |
 | R8-5          | Entregue (limites e testes no histórico).                      |
-| R8-6          | Pendente.                                                      |
+| R8-6          | Entregue (limites e testes no histórico).                      |
 | R8-7          | Pendente.                                                      |
 | R5-5 a R5-10  | Pendentes após R8.                                             |
 | R6            | Pendente; folha do Mapa adiantada, preferência ainda pendente. |

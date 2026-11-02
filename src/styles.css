@@ -1889,3 +1889,88 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   font-size: 14px;
   font-weight: 700;
 }
+.today-greeting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.today-greeting .eyebrow {
+  font-size: 11px;
+  margin: 0 0 4px;
+}
+.today-greeting h2 {
+  font-size: 24px;
+  margin: 0;
+}
+.today-greeting .az-button {
+  font-size: 14px;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+.calendar-month {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.calendar-month h2 {
+  font-size: 20px;
+  text-transform: capitalize;
+}
+.calendar-grid,
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+.calendar-weekdays {
+  grid-column: 1/-1;
+  text-align: center;
+}
+.calendar-grid .az-button {
+  padding: 3px;
+  min-width: 0;
+  min-height: 48px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+.calendar-grid .az-button-icon {
+  display: none;
+}
+.calendar-grid small {
+  display: block;
+  font-size: 10px;
+}
+.calendar-grid .calendar-today {
+  outline: 2px solid #b8915b;
+  outline-offset: -2px;
+}
+.day-calendar .sheet-body {
+  padding: 18px 16px;
+}
+@media (max-width: 700px) {
+  .today-page .today-heading,
+  .today-page .workday-inline {
+    display: none;
+  }
+  .today-page .deliveries-heading h2 {
+    font-size: 14px;
+    font-family: inherit;
+  }
+  .today-page .deliveries-heading {
+    margin: 0 0 8px;
+  }
+}
+@media (max-width: 700px) {
+  .today-page .today-heading {
+    display: none !important;
+  }
+  .today-greeting {
+    margin-bottom: 8px;
+  }
+  .operator-today .deliveries-heading {
+    min-height: 44px;
+  }
+}

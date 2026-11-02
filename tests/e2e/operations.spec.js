@@ -1,3 +1,4 @@
+import { selectWorkday } from '../helpers/select-workday.mjs';
 import { expect, test } from '@playwright/test';
 import { runtime } from '../helpers/runtime.mjs';
 
@@ -71,7 +72,7 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
     await expect(
       page.getByRole('heading', { name: 'Hoje', exact: true }),
     ).toBeVisible();
-    await page.getByLabel('Dia de trabalho').fill('2030-01-07');
+    await selectWorkday(page, '2030-01-07');
     await expect(page.locator('.production-list')).toContainText('4 unidades');
     await page.screenshot({
       path: `test-results/today-owner-${testInfo.project.name}.png`,
@@ -97,6 +98,7 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
       );
     }
     const second = await operator.newPage();
+    await second.clock.setFixedTime(new Date('2030-01-07T12:00:00Z'));
     await second.goto(t.url + '/login');
     await second
       .getByRole('link', { name: 'Entrar com acesso seguro' })
@@ -104,11 +106,7 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
     await expect(
       second.getByRole('heading', { name: 'Hoje', exact: true }),
     ).toBeVisible();
-    await second
-      .getByLabel('Dia de trabalho', { exact: true })
-      .or(second.getByLabel('Dia de trabalho no celular', { exact: true }))
-      .filter({ visible: true })
-      .fill('2030-01-07');
+    await selectWorkday(second, '2030-01-07');
     await expect(
       second.getByRole('button', { name: 'Ajuda: Produzir hoje' }),
     ).toHaveCount(0);

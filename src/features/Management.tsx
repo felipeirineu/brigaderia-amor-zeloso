@@ -1682,7 +1682,12 @@ export function Management() {
         {session.operations && (
           <>
             <nav className="private-bottom-nav" aria-label="Atalhos do celular">
-              <NavLink to="/gestao/" end data-tour="today">
+              <NavLink
+                to="/gestao/"
+                end
+                data-tour="today"
+                onClick={() => window.dispatchEvent(new Event('reset-workday'))}
+              >
                 <Icon name="inicio" />
                 Hoje
               </NavLink>

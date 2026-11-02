@@ -1,7 +1,8 @@
 import { Button } from '../../components/Button';
-import { useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { CircleUserRound } from 'lucide-react';
+import { fortalezaDay } from '../../../shared/workday';
 import { useField } from '../field/FieldContext';
 const titles: Record<string, string> = {
   '': 'Hoje',
@@ -38,6 +39,12 @@ export function CompactHeader({
   operations: boolean;
   onLogout: () => void;
 }) {
+  const [workday, setWorkday] = useState(fortalezaDay);
+  useEffect(() => {
+    const receive = (e: Event) => setWorkday((e as CustomEvent<string>).detail);
+    window.addEventListener('workday-change', receive);
+    return () => window.removeEventListener('workday-change', receive);
+  }, []);
   const menu = useRef<HTMLDialogElement>(null),
     trigger = useRef<HTMLButtonElement>(null),
     field = useField(),
@@ -46,7 +53,9 @@ export function CompactHeader({
     title =
       segment === 'pedidos' && location.search.includes('novo')
         ? 'Novo pedido'
-        : (titles[segment] ?? 'Gestão'),
+        : !segment && workday !== fortalezaDay()
+          ? 'Agenda'
+          : (titles[segment] ?? 'Gestão'),
     own = field?.data?.staff.find((s) => s.id === field.data!.user_id),
     name = own?.version ? own.display_name : 'Meu perfil',
     initials = own?.version
@@ -70,14 +79,8 @@ export function CompactHeader({
         </Button>
         <strong
           className="compact-title"
-          role={
-            operations && role === 'operator' && !segment
-              ? 'heading'
-              : undefined
-          }
-          aria-level={
-            operations && role === 'operator' && !segment ? 1 : undefined
-          }
+          role={operations && !segment ? 'heading' : undefined}
+          aria-level={operations && !segment ? 1 : undefined}
         >
           {title}
         </strong>

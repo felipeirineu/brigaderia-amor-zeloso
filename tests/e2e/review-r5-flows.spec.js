@@ -32,10 +32,12 @@ test('R5 telas móveis com ações compartilhadas', async ({
     };
     await p.goto(t.url + '/api/access/start');
     await expect(p.locator('.order-card')).toBeVisible();
-    await expect(p.getByLabel('Dia de trabalho no celular')).toBeVisible();
+    await expect(
+      p.getByRole('button', { name: 'Escolher dia', exact: true }),
+    ).toBeVisible();
     expect(
       (await p.locator('.order-card').first().boundingBox()).y,
-    ).toBeLessThanOrEqual(140);
+    ).toBeLessThanOrEqual(200);
     const reminder = p.getByRole('heading', { name: 'Lembretes até este dia' });
     if (await reminder.count())
       expect((await reminder.boundingBox()).y).toBeGreaterThan(

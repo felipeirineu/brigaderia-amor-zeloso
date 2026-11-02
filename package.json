@@ -36,7 +36,8 @@
     "test:field": "node tests/integration/field.mjs",
     "test:inventory": "node tests/integration/inventory.mjs",
     "test:import": "node tests/integration/customer-import.mjs",
-    "test:backup": "node tests/integration/backup.mjs"
+    "test:backup": "node tests/integration/backup.mjs",
+    "test:workday": "node tests/integration/workday.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.3",

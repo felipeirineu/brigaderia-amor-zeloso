@@ -1,3 +1,4 @@
+import { fortalezaDay, shiftDay } from '../../shared/workday.ts';
 import { test, expect } from '@playwright/test';
 import { runtime } from '../helpers/runtime.mjs';
 import { reviewProject } from '../helpers/review-r5-project.mjs';
@@ -18,7 +19,7 @@ test('R8 cartão compacto, quatro atalhos e entrega validada no servidor', async
     },
   });
   try {
-    const { call } = await reviewProject(t);
+    const { call, customer, variants } = await reviewProject(t);
     const profile = await t.request('field/profile', {
       cookie: await t.login('operator@example.test'),
       method: 'PUT',
@@ -31,6 +32,16 @@ test('R8 cartão compacto, quatro atalhos e entrega validada no servidor', async
       await call(`orders/${order.id}/status`, { version: order.version, to });
       order = await call('orders/' + order.id, undefined, 'GET');
     }
+    await call('mobile/orders', {
+      customer_id: customer,
+      due_at: shiftDay(fortalezaDay(), 1) + 'T12:00:00Z',
+      items: [{ variant_id: variants[0].id, quantity: 1 }],
+      delivery: {
+        delivery_type: 'delivery',
+        delivery_address: 'Endereço DEMONSTRAÇÃO',
+        courier: 'partner',
+      },
+    });
     const p = await c.newPage();
     await p.goto(t.url + '/api/access/start');
     const avatar = p.getByRole('button', {
@@ -47,6 +58,31 @@ test('R8 cartão compacto, quatro atalhos e entrega validada no servidor', async
         path: 'docs/colaboracao/capturas/r8-depois-perfil.png',
       });
     await p.getByRole('button', { name: 'Fechar menu', exact: true }).click();
+    await p.getByRole('button', { name: 'Escolher dia', exact: true }).click();
+    const calendar = p.getByRole('dialog', {
+      name: 'Escolher dia de trabalho',
+      exact: true,
+    });
+    await expect(
+      calendar.getByRole('button', { name: /, 1 entregas/ }).first(),
+    ).toBeVisible();
+    if (process.env.R8_CAPTURE === '1' && info.project.name === 'webkit-mobile')
+      await p.screenshot({
+        path: 'docs/colaboracao/capturas/r8-depois-calendario.png',
+      });
+    await calendar.getByRole('button', { name: 'Amanhã', exact: true }).click();
+    await expect(p.locator('.compact-title')).toHaveText('Agenda');
+    await expect(
+      p.getByRole('button', { name: 'Marcar entregue', exact: true }),
+    ).toHaveCount(0);
+    await expect(p.locator('.order-card')).toContainText('Agendada');
+    await expect(
+      p.getByRole('button', { name: 'Voltar para hoje', exact: true }),
+    ).toBeVisible();
+    await p
+      .getByRole('button', { name: 'Voltar para hoje', exact: true })
+      .click();
+    await expect(p.locator('.compact-title')).toHaveText('Hoje');
     const card = p.locator('.order-card').first();
     await expect(card).toBeVisible();
     await expect(card.locator('.delivery-icon-row .az-button')).toHaveCount(4);

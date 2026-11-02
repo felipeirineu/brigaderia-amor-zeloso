@@ -28,6 +28,7 @@ jobs:
       - run: npm run test:p1
       - run: npm run test:finance
       - run: npm run test:operations
+      - run: npm run test:workday
       - run: npm run test:brand
       - run: npm run test:migrations
       - run: npm run db:migrate:local

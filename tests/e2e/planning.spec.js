@@ -1,3 +1,4 @@
+import { selectWorkday } from '../helpers/select-workday.mjs';
 import { expect, test } from '@playwright/test';
 import { runtime } from '../helpers/runtime.mjs';
 import { demoProject } from '../helpers/demo-project.mjs';
@@ -44,11 +45,7 @@ test('agenda privada, ICS e lembrete visível/concluído no Hoje', async ({
     const download = await downloadEvent;
     expect(download.suggestedFilename()).toBe('agenda-amor-zeloso.ics');
     await page.goto(t.url + '/gestao');
-    await page
-      .getByLabel('Dia de trabalho', { exact: true })
-      .or(page.getByLabel('Dia de trabalho no celular', { exact: true }))
-      .filter({ visible: true })
-      .fill('2030-01-07');
+    await selectWorkday(page, '2030-01-07');
     await expect(
       page.getByRole('heading', { name: 'Ligar · DEMONSTRAÇÃO', exact: true }),
     ).toBeVisible();
