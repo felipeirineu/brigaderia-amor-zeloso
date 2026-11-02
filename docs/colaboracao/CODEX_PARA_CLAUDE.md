@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R6-1:** Rota ORS driving-car no Worker com cache/fila privados, estimativas em cliente/entrega, recálculo administrativo, snapshots e ordenação por minutos. Migração 0014 preparada; secret/variável e publicação só pelo responsável, guia FASE_R6_ROTAS. Limite interno 1000 por janela de 24 h, espaçamento 3,1 s, timeout e espera por falha; nenhuma consulta externa em GET. D1 efêmero aprovou cache/repetição, concorrência com mudança de base, orçamento, autorização/isolamento/FKs e falha sem perder cadastro. Três E2E (WebKit/Chromium) aprovados, capturas r9-depois-rota-*; 66 unitários, seis testes SQL, backup/restauração e campo aprovados, lint/tipagem/build/formatação. Provedor real não ativado/testado com chave; CI dos seis commits R9 confirmado success. Próximo R6-2.
+
 - **2026-11-02 — R9-6:** Saudação sem nome cadastrado mostra chip Defina seu nome para Preferências, sem bloquear operação; desaparece após salvar. Guia de ativação atualizado. Espaço do Hoje preservado (limite 200 px), chip com alvo de 44 px e sem sugerir nomes fictícios. Inspeção visual corrigiu também a direção da linha do quadro Lembretes para h3/botão lado a lado. Build/tipagem/lint e nove E2E aprovados; dois WebKit repetidos com medida de alinhamento passaram. R9 concluída; próximo R6-1.
 
 - **2026-11-02 — R9-5:** Menu de perfil com linhas de 52 px, ícone/texto e estilo fantasma uniforme; Fechar no cabeçalho e Sair por último, em perigo discreto. Logout, foco e passeio preservados. Build/tipagem/lint e 12 E2E de perfil/gestão/logout/operação aprovados; captura do menu. Próximo R9-6.
@@ -251,13 +253,19 @@ Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compa
 
 Revisão 52ec55f integrada por fast-forward. Plano antes do código: DayCalendar/workday/CSS (R9-1: contagem positiva e mês sem capitalizar preposição); títulos dos módulos em Mais (R9-2: manter semântica sem repetição visual); Reminders/Today (R9-3: criação em folha com validação/idempotência); Today/operations/finance (R9-4: valores → produção visual → confirmação individual/lote → entregas → lembretes); CompactHeader/CSS (R9-5: linhas uniformes e saída no fim); Today/guia (R9-6: definir nome sem bloquear a operação). Depois R6-1, R6-2, R6-4, R6-5, R6-7, R6-8 e R7 conforme briefing, sem ativação remota. Aceite: E2E móvel, capturas r9-depois-*, isolamento/auditoria/CAS mantidos, um commit e push por item. Protótipo usado apenas como referência visual; fixtures DEMONSTRAÇÃO independentes.
 
-| Item R9     | Status                                     |
-| ----------- | ------------------------------------------ |
-| R9-1        | Entregue; evidências/limites no histórico. |
-| R9-2        | Entregue; evidências/limites no histórico. |
-| R9-3        | Entregue; evidências/limites no histórico. |
-| R9-4        | Entregue; evidências/limites no histórico. |
-| R9-5        | Entregue; evidências/limites no histórico. |
-| R9-6        | Entregue; evidências/limites no histórico. |
-| R6 restante | Pendente após R9; R6-3/6 já entregues      |
-| R7          | Pendente após R6                           |
+| Item R9     | Status                                                          |
+| ----------- | --------------------------------------------------------------- |
+| R9-1        | Entregue; evidências/limites no histórico.                      |
+| R9-2        | Entregue; evidências/limites no histórico.                      |
+| R9-3        | Entregue; evidências/limites no histórico.                      |
+| R9-4        | Entregue; evidências/limites no histórico.                      |
+| R9-5        | Entregue; evidências/limites no histórico.                      |
+| R9-6        | Entregue; evidências/limites no histórico.                      |
+| R6 restante | R6-1 entregue; R6-3/6 anteriores. Próximo R6-2; depois 4/5/7/8. |
+| R7          | Pendente após R6                                                |
+
+### Plano R6-1 antes do código
+
+Implementar adaptador OpenRouteService driving-car (gratuito Standard), cache privado por coordenadas/base/provedor e fila persistida na migração aditiva 0014. `worker/routing.ts`, ganchos de gravação em index/field/management, contexto de rotas em lote e RouteInfo em cliente/entrega. Salvar local/base enfileira; uma rota por invocação, continuação humana da fila, sem consulta ao abrir telas. Recalcular somente administrador. Não configurar secret nem aplicar migração remota.
+
+Aceite: chamada só no servidor, coordenadas sem nome/endereço no provedor, timeout/erros com linha reta rotulada, cache sem repetição, orçamento conservador e concorrência protegidos, mudança de base/destino nunca exibe rota antiga como atual, isolamento/autorização/FKs e mais de uma gravação testados em D1 efêmero. Fonte consultada: homepage ORS confirma chave Standard gratuita; FAQ oficial documenta 2000 direções/24 h e 40/min com janela móvel, e chave somente no servidor. Limite interno será inferior, sem garantia de cota disponível se a chave for usada fora deste app.

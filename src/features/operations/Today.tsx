@@ -1,3 +1,4 @@
+import { RouteInfo } from '../field/RouteInfo';
 import { PendingConfirmations } from './PendingConfirmations';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { DayCalendar } from './DayCalendar';
@@ -15,7 +16,6 @@ import { useEffect, useRef, useState } from 'react';
 
 import {
   Clock3,
-  Car,
   CheckCircle2,
   ChevronRight,
   RefreshCw,
@@ -419,7 +419,7 @@ export function Today({
             {field && (
               <Button
                 variant="chip"
-                aria-label="Ordenar por proximidade da base (linha reta)"
+                aria-label="Ordenar por proximidade da base (rota, quando calculada)"
                 aria-pressed={near}
                 onClick={() => setNear(!near)}
               >
@@ -449,7 +449,18 @@ export function Today({
                     ? (distance(field.data!.company.data, p) ?? Infinity)
                     : Infinity;
                 };
-                return km(a) - km(b);
+                const route = (o: OperationalOrder) =>
+                  field.data!.order_routes?.find((r) => r.id === o.id)
+                    ?.route_minutes;
+                const ar = route(a),
+                  br = route(b);
+                return ar !== undefined && br !== undefined
+                  ? ar - br
+                  : ar !== undefined
+                    ? -1
+                    : br !== undefined
+                      ? 1
+                      : km(a) - km(b);
               })
               .map((order) => (
                 <article className="panel order-card" key={order.id}>
@@ -479,24 +490,15 @@ export function Today({
                           ? 'Retirada'
                           : order.delivery_address || 'Endereço a preencher'}
                       </p>
-                      {(() => {
-                        const place = field?.data?.order_places.find(
-                          (p) => p.order_id === order.id,
-                        )?.data;
-                        const km =
-                          place && field?.data
-                            ? distance(field.data.company.data, place)
-                            : null;
-                        return km == null ? null : (
-                          <p className="delivery-distance">
-                            <Car size={14} aria-hidden="true" /> ≈{' '}
-                            {km.toLocaleString('pt-BR', {
-                              maximumFractionDigits: 1,
-                            })}{' '}
-                            km em linha reta
-                          </p>
-                        );
-                      })()}
+                      <RouteInfo
+                        id={order.id}
+                        order
+                        place={
+                          field?.data?.order_places.find(
+                            (p) => p.order_id === order.id,
+                          )?.data
+                        }
+                      />
                     </div>
                   </div>
                   <div className="delivery-flavors">

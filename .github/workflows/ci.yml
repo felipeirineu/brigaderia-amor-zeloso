@@ -35,6 +35,7 @@ jobs:
       - run: npm run build:pages
       - run: npm run test:mobile
       - run: npm run test:field
+      - run: npm run test:routing
       - run: npm run test:inventory
       - run: npm run test:import
       - run: npm run test:backup

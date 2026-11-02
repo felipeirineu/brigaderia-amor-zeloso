@@ -10,6 +10,8 @@ export interface Env {
   MOBILE_ENABLED?: string;
   FIELD_ENABLED?: string;
   PLACES_USER_AGENT?: string;
+  ROUTING_PROVIDER?: string;
+  ORS_API_KEY?: string;
   ASSETS?: { fetch: (r: Request) => Promise<Response> };
   ACCESS_TEAM_DOMAIN?: string;
   ACCESS_AUD?: string;

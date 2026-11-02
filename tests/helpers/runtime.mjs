@@ -16,6 +16,7 @@ export async function runtime({
   mobileEnabled = false,
   fieldEnabled = false,
   placesProvider = false,
+  routingProvider,
 } = {}) {
   const issuer = 'https://demonstracao-teste.cloudflareaccess.com';
   const { privateKey, publicKey } = await generateKeyPair('RS256');
@@ -51,24 +52,30 @@ export async function runtime({
         P1_TOOLS_ENABLED: toolsEnabled ? 'true' : 'false',
         MOBILE_ENABLED: mobileEnabled ? 'true' : 'false',
         FIELD_ENABLED: fieldEnabled ? 'true' : 'false',
+        ...(routingProvider
+          ? { ROUTING_PROVIDER: 'ors', ORS_API_KEY: 'demonstracao-route-key' }
+          : {}),
       },
       outboundService: async (req) =>
         new URL(req.url).href === `${issuer}/cdn-cgi/access/certs`
           ? Response.json({ keys: [jwk] })
-          : placesProvider && new URL(req.url).hostname === 'photon.komoot.io'
-            ? Response.json({
-                features: [
-                  {
-                    geometry: { coordinates: [0, 0] },
-                    properties: {
-                      name: 'Local DEMONSTRAÇÃO',
-                      street: 'Endereço DEMONSTRAÇÃO',
-                      district: 'Bairro DEMONSTRAÇÃO',
+          : routingProvider &&
+              new URL(req.url).hostname === 'api.openrouteservice.org'
+            ? routingProvider(req)
+            : placesProvider && new URL(req.url).hostname === 'photon.komoot.io'
+              ? Response.json({
+                  features: [
+                    {
+                      geometry: { coordinates: [0, 0] },
+                      properties: {
+                        name: 'Local DEMONSTRAÇÃO',
+                        street: 'Endereço DEMONSTRAÇÃO',
+                        district: 'Bairro DEMONSTRAÇÃO',
+                      },
                     },
-                  },
-                ],
-              })
-            : new Response('Network forbidden in tests', { status: 403 }),
+                  ],
+                })
+              : new Response('Network forbidden in tests', { status: 403 }),
       serviceBindings: {
         ASSETS: async (req) => {
           const path = decodeURIComponent(new URL(req.url).pathname);

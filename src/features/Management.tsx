@@ -1,3 +1,4 @@
+import { RouteInfo } from './field/RouteInfo';
 import { DisclosureSummary } from '../components/DisclosureSummary';
 import { FlavorOrder } from './mobile/FlavorOrder';
 import { Button } from '../components/Button';
@@ -519,6 +520,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
                   </small>
                 </span>
               </Button>
+              <RouteInfo id={c.id} />
               <details>
                 <DisclosureSummary>Conta e localização</DisclosureSummary>
                 <SiteInfo id={c.id} name={c.name} />

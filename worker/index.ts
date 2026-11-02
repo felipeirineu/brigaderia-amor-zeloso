@@ -1,3 +1,4 @@
+import { afterPlaceWrite } from './routing';
 import { field } from './field';
 import { flavorImages } from './flavor-images';
 import { mobile } from './mobile';
@@ -97,7 +98,12 @@ export default {
         return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie('', 0) });
       }
       if (pathname.startsWith('/api/field/'))
-        return await field(req, env, user);
+        return await afterPlaceWrite(
+          req,
+          await field(req, env, user),
+          env,
+          user,
+        );
       if (pathname.startsWith('/api/mobile/'))
         return await mobile(req, env, user);
       if (pathname.startsWith('/api/p1/')) return await p1(req, env, user);
@@ -110,7 +116,12 @@ export default {
         /^\/api\/orders\/[^/]+\/[^/]+/.test(pathname)
       )
         return await operations(req, env, user);
-      return await management(req, env, user);
+      return await afterPlaceWrite(
+        req,
+        await management(req, env, user),
+        env,
+        user,
+      );
     } catch (e) {
       if (e instanceof z.ZodError)
         return json(

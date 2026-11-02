@@ -1,3 +1,10 @@
+import {
+  routeSchema,
+  routingConfigured,
+  requestRoute,
+  processRoute,
+  routeContext,
+} from './routing';
 import { z } from 'zod';
 import { fieldReady } from './field-ready';
 import { body, HttpError, json, type Actor, type Env } from './security';
@@ -17,6 +24,22 @@ export async function field(req: Request, env: Env, a: Actor) {
     action = parts[5];
   if (resource === 'trips' || resource === 'travel-report')
     return travel(req, db, a, resource, id, action);
+  if (resource === 'routes' && req.method === 'POST') {
+    ownerOnly(a);
+    if (!routingConfigured(env) || !(await routeSchema(env)))
+      throw new HttpError(
+        503,
+        'Rota de carro ainda indisponível. Confira a configuração do serviço.',
+      );
+    const key = req.headers.get('Idempotency-Key');
+    if (!z.uuid().safeParse(key).success)
+      throw new HttpError(400, 'Chave de repetição inválida.');
+    await body(req, z.object({}).strict());
+    if (id === 'process') return json(await processRoute(env, a));
+    if (!z.uuid().safeParse(id).success)
+      throw new HttpError(404, 'Não encontrado.');
+    return json(await requestRoute(env, a, id, key!));
+  }
   if (resource === 'search' && req.method === 'POST') {
     const d = await body(
       req,
@@ -71,7 +94,15 @@ export async function field(req: Request, env: Env, a: Actor) {
         .bind(org)
         .all<{ order_id: string; data: string }>()
     ).results.map((p) => ({ order_id: p.order_id, data: JSON.parse(p.data) }));
+    const routing = await routeContext(
+      env,
+      org,
+      company ? JSON.parse(company.data) : emptyPlace(),
+      sites.map((s) => ({ id: s.id, data: JSON.parse(s.data) })),
+      orderPlaces,
+    );
     return json({
+      ...routing,
       order_places: orderPlaces,
       sites: sites.map((s) => ({ ...s, data: JSON.parse(s.data) })),
       staff,

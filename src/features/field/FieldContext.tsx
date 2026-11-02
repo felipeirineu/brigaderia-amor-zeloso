@@ -1,8 +1,12 @@
+import type { RouteEstimate } from '../../../shared/routing';
 /* eslint-disable react-refresh/only-export-components -- Contexto privado compartilhado. */
 import { createContext, useContext, type ReactNode } from 'react';
 import { useRemote, Failure } from '../operations/common';
 import type { Place } from '../../../shared/field';
 export interface FieldData {
+  routes?: (RouteEstimate & { id: string })[];
+  order_routes?: (RouteEstimate & { id: string })[];
+  routing?: { configured: boolean; remaining: number; retry_at: number };
   order_places: { order_id: string; data: Place }[];
   user_id: string;
   role: string;

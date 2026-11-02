@@ -1,3 +1,5 @@
+import { RouteInfo } from './RouteInfo';
+import { drainRoutes } from './route-queue';
 import { Button } from '../../components/Button';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -31,7 +33,7 @@ function Editor({
     setBusy(true);
     setError('');
     try {
-      await api(
+      const saved = await api<{ routes_queued?: boolean }>(
         company ? 'field/company' : 'field/customers/' + customer.id,
         'PUT',
         {
@@ -40,8 +42,21 @@ function Editor({
         },
         crypto.randomUUID(),
       );
+      let complete = true;
+      if (saved.routes_queued)
+        try {
+          complete = await drainRoutes();
+        } catch {
+          complete = false;
+        }
       await ctx.refresh();
       setDraft(null);
+      if (!complete) {
+        setNotice(
+          'Localização salva. Ainda há rotas pendentes; use Calcular próximas rotas.',
+        );
+        return;
+      }
       setNotice('Localização salva. Novos pedidos poderão usar este endereço.');
     } catch (e) {
       setError((e as Error).message);
@@ -74,6 +89,30 @@ function Editor({
       </h1>
       <Failure message={error} />
       <p role="status">{notice}</p>
+      {company && !!ctx.data?.routing?.remaining && (
+        <Button
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            void drainRoutes()
+              .then((done) =>
+                setNotice(
+                  done
+                    ? 'Rotas atualizadas.'
+                    : 'Ainda há rotas pendentes. Tente depois.',
+                ),
+              )
+              .then(ctx.refresh)
+              .catch(() =>
+                setNotice('Fila indisponível. A localização está preservada.'),
+              )
+              .finally(() => setBusy(false));
+          }}
+        >
+          Calcular próximas rotas ({ctx.data.routing.remaining})
+        </Button>
+      )}
+      {!company && <RouteInfo id={customer.id} />}
       <PlaceFields value={value} onChange={setDraft} />
       {!company && (
         <>

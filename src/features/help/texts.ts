@@ -1,4 +1,8 @@
 export const helpTexts = {
+  route: {
+    title: 'Rota de carro',
+    text: 'Estimativa entre a base e o destino, calculada uma vez e salva; não acompanha trânsito em tempo real. A rota no aplicativo de mapas parte do local atual do aparelho e pode levar outro tempo. Sem estimativa válida, a distância em linha reta é identificada. Abertura de telas não consulta o provedor. Confira o destino antes de sair.',
+  },
   recurring: {
     title: 'Pedido padrão',
     text: 'Guarde os itens que um cliente costuma pedir e o dia da semana. O modelo não é uma venda e pode ser pausado.',

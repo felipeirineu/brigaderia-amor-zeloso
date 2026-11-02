@@ -52,6 +52,9 @@ const tables = [
   'inventory_balances',
   'inventory_events',
   'customer_imports',
+  'route_cache',
+  'route_jobs',
+  'route_budget',
 ];
 export function inspect(
   database,
@@ -149,6 +152,8 @@ export function inspect(
     schema_p1_ready: p1,
     schema_mobile_ready: mobile,
     schema_field_ready: field,
+    schema_routes_ready:
+      field && tables.slice(43, 46).every((t) => names.has(t)),
     schema_tools_ready: p1 && tables.slice(40, 43).every((t) => names.has(t)),
     generated_condition_columns:
       generated.includes('payment_mode') && generated.includes('closing_cycle'),
