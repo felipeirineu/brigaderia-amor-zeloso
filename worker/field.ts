@@ -22,7 +22,7 @@ export async function field(req: Request, env: Env, a: Actor) {
       req,
       z.object({ q: z.string().trim().min(3).max(200) }).strict(),
     );
-    return json(await searchPlaces(db, org, d.q));
+    return json(await searchPlaces(db, org, d.q, env.PLACES_USER_AGENT));
   }
   if (resource === 'orders' && id && req.method === 'GET') {
     if (

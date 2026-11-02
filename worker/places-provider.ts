@@ -6,6 +6,7 @@ export async function searchPlaces(
   db: D1Database,
   org: string,
   query: string,
+  userAgent = 'BrigaderiaGestao/1.0',
 ): Promise<Place[]> {
   const key = await hash(query.toLowerCase()),
     now = Date.now();
@@ -31,8 +32,9 @@ export async function searchPlaces(
   try {
     res = await fetch(u, {
       headers: {
-        'User-Agent':
-          'BrigaderiaGestao/1.0 (+https://github.com/felipeirineu/brigaderia-amor-zeloso)',
+        'User-Agent': /^[\x20-\x7E]{1,200}$/.test(userAgent.trim())
+          ? userAgent.trim()
+          : 'BrigaderiaGestao/1.0',
         Accept: 'application/json',
       },
       signal: AbortSignal.timeout(8000),

@@ -28,3 +28,7 @@ Pare na etapa que falhou. Preserve backup, banco e registros. Nunca colar fragme
 No mesmo `wrangler.jsonc`, salvar primeiro `P1_TOOLS_ENABLED=false`, depois `FIELD_ENABLED=false`, depois `MOBILE_ENABLED=false` e `P1_ENABLED=false`, um deploy por etapa e aguardar deploy. Isso oculta módulos P1; não estorna despesas, apaga lembretes ou desfaz fichas. Depois, se necessário, `FINANCE_ENABLED=false`; por último `OPERATIONS_ENABLED=false`. Se já houver dinheiro/status registrados, pausar alterações enquanto corrige a causa. Não retornar a backend antigo que desconheça os eventos.
 
 Flags não fazem rollback de dados. Restauração/Time Travel exigem avaliação de registros posteriores e ensaio separado, realizados pelo responsável. Nada é apagado automaticamente. A pré-checagem apenas lê; o script de restauração só escreve em um estado **local novo**.
+
+## Identificação da busca de endereços (R5-9)
+
+O Worker envia ao Photon `BrigaderiaGestao/1.0` por padrão, sem URL pessoal. Na transferência, o administrador pode configurar a variável **PLACES_USER_AGENT** no Worker/Pages com o identificador e o contato público da própria empresa (até 200 caracteres ASCII, sem quebras de linha). É uma identificação pública enviada ao provedor; não colocar e-mail pessoal, token ou segredo. O campo é opcional e não vai para o navegador. Se estiver ausente ou inválido, usa o valor neutro. Nenhuma variável remota foi alterada nesta entrega.

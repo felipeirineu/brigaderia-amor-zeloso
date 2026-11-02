@@ -9,6 +9,7 @@ export interface Env {
   P1_TOOLS_ENABLED?: string;
   MOBILE_ENABLED?: string;
   FIELD_ENABLED?: string;
+  PLACES_USER_AGENT?: string;
   ASSETS?: { fetch: (r: Request) => Promise<Response> };
   ACCESS_TEAM_DOMAIN?: string;
   ACCESS_AUD?: string;
