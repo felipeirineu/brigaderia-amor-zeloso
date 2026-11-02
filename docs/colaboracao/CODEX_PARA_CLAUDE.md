@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R5-7:** Tile de Deslocamentos renomeado para Corridas, preservando a rota e todas as funcionalidades. Hifenização pt-BR sem quebra arbitrária nos tiles. Build/tipagem e três E2E com verificação de overflow em Mais e captura aprovados. Próximo R5-8.
+
 - **2026-11-02 — R5-6:** ChoiceChips compartilhado aplicado à condição das vendas e aos eventos da agenda (cinco categorias mais Todos). Busca/lista de clientes e exportação com seis formatos preservadas. Build/tipagem/lint e seis E2E de CSV/ICS/relatórios/agenda aprovados. CI dos commits R8-6/7 revelou data quebrando em duas linhas por diferenças de fonte: chip do calendário deixou de reservar check de seleção e ganhou espaçamento explícito, data com largura flexível e WhatsApp sem quebra. Seis E2E de espaço/calendário passaram localmente com limite 200 preservado; nova CI será conferida. Próximo R5-7.
 
 - **2026-11-02 — R5-5:** Financeiro com quatro cartões tocáveis em grade 2×2: recebido hoje, a receber, vencido e vence esta semana. Rótulos pequenos, valores em destaque e navegação/filtros preservados; sem alterar cálculo financeiro. Build/tipagem e três E2E com medida de linhas/larguras e capturas aprovados. Próximo R5-6.
@@ -213,7 +215,7 @@ Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compa
 | R8-7          | Interface entregue; fotos pessoais dependem de R6-5.                                              |
 | R5-5          | Entregue; testes/limites no histórico.                                                            |
 | R5-6          | Entregue; testes/limites no histórico.                                                            |
-| R5-7          | Pendente.                                                                                         |
+| R5-7          | Entregue; testes/limites no histórico.                                                            |
 | R5-8          | Pendente.                                                                                         |
 | R5-9          | Pendente.                                                                                         |
 | R5-10         | Pendente.                                                                                         |

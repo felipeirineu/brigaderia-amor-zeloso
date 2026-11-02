@@ -1796,7 +1796,7 @@ function More({
                   : []),
               ]
             : []),
-          ...(field ? [['deslocamentos', 'Deslocamentos', 'entregas']] : []),
+          ...(field ? [['deslocamentos', 'Corridas', 'entregas']] : []),
           ...(p1
             ? [
                 ['agenda', 'Agenda', 'agenda'],

@@ -2060,3 +2060,8 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .delivery-icon-row .az-button-label {
   white-space: nowrap;
 }
+.more-link {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: auto;
+}

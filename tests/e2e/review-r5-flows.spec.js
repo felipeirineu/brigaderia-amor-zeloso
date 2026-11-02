@@ -111,6 +111,15 @@ test('R5 telas móveis com ações compartilhadas', async ({
             exact: true,
           }),
         ).toBeVisible();
+      if (path === 'mais') {
+        await expect(
+          p.getByRole('link', { name: 'Corridas', exact: true }),
+        ).toBeVisible();
+        for (const tile of await p.locator('.more-link').all())
+          expect(
+            await tile.evaluate((e) => e.scrollWidth <= e.clientWidth),
+          ).toBe(true);
+      }
       if (path === 'financeiro') {
         const kpis = p.locator('.finance-kpi');
         await expect(kpis).toHaveCount(4);
