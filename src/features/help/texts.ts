@@ -29,7 +29,7 @@ export const helpTexts = {
   },
   composition: {
     title: 'Composição da caixa',
-    text: 'A quantidade do pedido é de embalagens. Unidades produzidas são embalagens × unidades por embalagem; caixa mista depende de confirmação dos proprietários.',
+    text: 'A quantidade do pedido é de embalagens. Unidades produzidas são embalagens × unidades por embalagem; a composição de cada caixa deve somar todas as suas unidades.',
   },
   production: {
     title: 'Produzir hoje',

@@ -25,7 +25,7 @@ A aplicação futura da migração deve seguir o runner de pendentes do [guia de
 - R11-3: produção em unidades por sabor, incluindo frações de caixa.
 - R11-4: textos de composição em cartões/pedidos/WhatsApp, CSV e relatórios por unidades.
 - R11-5: receitas e compras a partir das unidades por sabor.
-- R11-6: documentação comercial alinhada à confirmação do negócio.
+- R11-6 entregue: documentação comercial alinhada à regra vigente, sem tratar caixa mista como pendência de confirmação.
 - R12-1…4: calendário/horário, sugestão do pedido padrão e confirmação que abre a agenda do dia.
 
 Montagem visual, geração semanal mista, produção, relatórios e custos **não foram simulados como concluídos** nesta base. As capturas `r12-depois-*` desta rodada representam os acabamentos R10; os dados continuam fictícios e isolados dos cadastros reais.

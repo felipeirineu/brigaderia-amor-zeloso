@@ -117,3 +117,15 @@ Sequência após R4: estoque manual em milésimos da unidade do insumo, sem sald
 ### Situação após R3/R4 e complemento P1
 
 R4-0, R3-1…9, R4-1…7 e P1-1…9 implementados no código, com as limitações por módulo em FASE_R3.md, FASE_R4.md, P1_ETAPAS.md e P1_COMPLEMENTO.md. Estoque é manual/agregado; importação é somente de clientes; backup é SQL privado com restauração separada. Migrações 0010–0013 são aditivas. Flags MOBILE/FIELD/P1_TOOLS e catálogo permanecem false. Histórico anterior de fases preserva o que estava adiado em cada rodada; o status vigente está no canal CODEX_PARA_CLAUDE. Homologação física e ativação remota ainda são do administrador.
+
+
+## Ordem vigente — revisão R12
+
+As seções anteriores registram as entregas de cada rodada. A prioridade atual é:
+
+1. R10-1…4: acabamentos de produção, rota e lembretes — entregues.
+2. R11: caixa mista. R11-1 prepara modelo/API com migração 0015 aditiva e bloqueio de ativação; R11-6 registra a regra comercial já definida. Próximo R11-2 (montagem, modelos e geração), depois R11-3 (produção por sabor), R11-4 (textos/relatórios) e R11-5 (custo/compras). A caixa mista deixou de ser pendência comercial; implementação completa e testes E2E ainda são necessários. Não ativar MIXED_BOXES_ENABLED antes de concluir os consumidores.
+3. R12-1…4, junto da montagem/revisão: Hoje/Amanhã/calendário com contagem e sem dias passados, horário, sugestão editável do pedido padrão, confirmação com singular correto e link para a agenda do dia. Ainda pendente.
+4. R6-5, R6-7 e R6-8; depois R7 com PROSPECTS_ENABLED desligada até validação. Homologação física e ativação permanecem com o responsável.
+
+Critérios de aceite e status detalhados em FASE_R11_CAIXA_MISTA.md e CODEX_PARA_CLAUDE.md. Cada item recebe commit/push; sem deploy ou alteração remota de banco/configuração pelo agente.

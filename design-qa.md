@@ -39,3 +39,9 @@ Protótipo relido e aberto em 390×844; conteúdo fictício não importado. Capt
 As capturas de rota, preferência de mapas e aviso da base foram inspecionadas. Estimativa foi reduzida à linha principal e atribuição compacta; explicação de trânsito fica na ajuda para não alongar o cartão. Preferência mostra o último app e permite trocar; sem dado válido não se inventam km/min. Aviso da base aparece só ao administrador e some ao salvar endereço/coordenadas. Captura de rota usa resposta simulada identificada apenas na fixture; não valida deslocamento comercial.
 
 Limites: sem aparelho físico, chave real ORS, foto pessoal, push ou prospecção. Não certifica os itens R6-5/7/8 ou R7 ainda pendentes. Os achados e o `passed` acima se referem ao escopo visual descrito, não à conclusão de todo o briefing.
+
+## Complemento R10 (referência R12)
+
+Protótipo atualizado aberto nos fluxos Sabores → Caixa mista e Revisar → Quando em 390×844. Capturas `r12-depois-*` desta rodada conferem os acabamentos R10: nome de sabor e contagens em duas linhas, ajuda pequena, rota resumida sem créditos no cabeçalho, crédito na folha, círculo de lembrete e atalhos de data/hora. Inspeção visual feita nas capturas; nome de demonstração longo provoca quebra intencional em comparação com os sabores cadastrados mais curtos.
+
+A montagem mista do protótipo **não foi implementada nesta base** e nenhuma captura é apresentada como prova dela. R11-1 é modelo/API desligado; R11-2…5 e R12 permanecem pendentes. O teste operacional foi atualizado para verificar o rótulo acessível completo e “4 un.” após a abreviação visual, mantendo a validação dos números.

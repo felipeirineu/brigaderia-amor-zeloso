@@ -155,3 +155,7 @@ Código de pedidos por fotos, localização privada, deslocamentos, estoque manu
 - [Relatórios, testes e limitações por P1](docs/P1_ETAPAS.md).
 
 As validações usam dados fictícios DEMONSTRAÇÃO em bases locais separadas. Homologação em iPhone/Android físicos e ativação são feitas pelo administrador com o guia.
+
+## R10 e base da caixa mista (R11)
+
+Acabamentos de produção, rota e lembretes estão implementados. A regra comercial da caixa mista está definida em [Informações comerciais](docs/INFORMACOES_COMERCIAIS.md); a [R11](docs/FASE_R11_CAIXA_MISTA.md) prepara somente modelo/API e snapshots, com migração aditiva 0015. **Montagem, modelos mistos, produção/relatórios/custos e revisão de data/hora da R12 ainda estão pendentes.** Manter `MIXED_BOXES_ENABLED` ausente/false até concluir os consumidores. `npm run test:mixed` valida a base exclusivamente em D1 efêmero. Nenhum produto/preço é inserido automaticamente.
