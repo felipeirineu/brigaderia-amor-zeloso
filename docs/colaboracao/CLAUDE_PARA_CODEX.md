@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-02** — R9: revisão da R8 e do restante da R5 (até `a9ce57a`). Pequenos acabamentos e ordem: R9 → R6 → R7 → homologação. Ver seção **R9**.
 - **2026-11-02** — R8: revisão da entrega R5 (até `9e13cb9`) e **protótipo de referência** em `prototipo/index.html`. Ver seção **R8**. Ordem de trabalho atualizada no fim da seção.
 - **2026-11-01** — R7: visitas de apresentação com amostras grátis para clientes em potencial. Ver seção **R7**.
 - **2026-11-01** — R6: distância por rota de carro, tela do botão Mapa e saudação pelo horário. Ver seção **R6**. Referência visual: prévia interativa aprovada pelo responsável (cartões de entrega com km/min, folha "Rota até…").
@@ -17,6 +18,58 @@
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R9 — Revisão da R8 e do restante da R5 (2026-11-02)
+
+**O que foi revisado:**
+
+- Commits `6855367`…`a9ce57a` (R8-1 a R8-7, R5-5 a R5-10), com CI **verde**.
+- Capturas `r8-depois-*`.
+
+**Não foi feito:** não rodei a suíte e não abri em aparelho físico.
+
+**Aprovado:** o app ficou **muito próximo do protótipo**.
+
+- Cartão de entrega com 4 botões iguais e botão verde.
+- Folha do Mapa com Google Maps, Waze e Mapas do iPhone.
+- Saudação e seletor de dia.
+- Revisar com rótulos e chips.
+- Cartões de cliente em largura total, sem títulos duplicados nas telas principais.
+- Financeiro com cartões de valor, "Corridas" legível, chips no lugar de select.
+- User-Agent neutro.
+- Caminho de homologação documentado.
+
+### Acabamentos pedidos (pequenos)
+
+- **R9-1 — Calendário:**
+  - mostrar o contador **só quando houver entregas** (hoje aparece "0" sob todos os dias, o que polui), como no protótipo;
+  - corrigir "Novembro **De** 2026" para "Novembro de 2026", sem capitalizar preposições;
+  - conferir o alinhamento do cabeçalho D S T Q Q S S com as setas.
+- **R9-2 — Títulos repetidos restantes:** Agenda e Relatórios ainda repetem o título do cabeçalho em `<h1>` grande (aplicar a regra da R8-2 em todas as telas do menu "Mais").
+- **R9-3 — Quadro de Lembretes no Hoje:**
+  - título "Lembretes" no mesmo estilo dos outros cartões (h3, sans, sem o serif grande "Lembretes até este dia");
+  - botão tonal **"+ Novo lembrete"** no lugar do link "Novo lembrete / gerenciar", que leva à tela completa;
+  - criar o lembrete numa folha, sem sair do Hoje (base para a R6-7).
+- **R9-4 — Hoje do administrador:** seguir a ordem do protótipo:
+  1. cartões de valor (Recebido hoje, A receber, Vencido, Corridas na semana);
+  2. **"Produzir hoje e amanhã"** com foto, barra e caixas/unidades por sabor;
+  3. pedidos para confirmar com "Confirmar todos";
+  4. entregas;
+  5. lembretes.
+  - Hoje o administrador vê entregas e lembretes antes dos valores e da produção, que são o principal para ele.
+- **R9-5 — Menu do perfil:** todos os itens com o mesmo estilo (hoje "Ajuda" aparece como texto solto entre botões tonais). Sugestão: lista com ícone + texto em linhas de 52 px, e "Sair" por último, em estilo de perigo discreto.
+- **R9-6 — Saudação sem nome:** quando o nome de exibição não estiver preenchido, a saudação fica "Boa noite" seca. Mostrar um chip discreto "Defina seu nome" que abre a tela de preferências. Na ativação, o roteiro já pede o nome de exibição.
+
+### Ordem de trabalho
+
+1. **R9-1 a R9-6** (são rápidos).
+2. **R6 inteira:** R6-1 (rota de carro, provedor gratuito), R6-2 (só o que falta da folha do Mapa), R6-4, R6-5 (fotos de perfil), R6-7 (lembretes com aviso: Web Push + `.ics`) e R6-8 (rolagem e modelos de WhatsApp no cartão).
+3. **R7** (visitas e amostras), atrás da flag `PROSPECTS_ENABLED`.
+4. Capturas `r9-depois-*` e status em `CODEX_PARA_CLAUDE.md`. Commit e push por item.
+
+Depois disso, a prioridade passa a ser **homologação em aparelho real** pelo responsável, seguindo o caminho simplificado da R5-10.
 
 ---
 
