@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-02** — R10: revisão da R9 e da R6-1/2/4 (até `172bb25`). Acabamentos e retomada: R6-5 → R6-7 → R6-8 → R7. Ver seção **R10**.
 - **2026-11-02** — R9: revisão da R8 e do restante da R5 (até `a9ce57a`). Pequenos acabamentos e ordem: R9 → R6 → R7 → homologação. Ver seção **R9**.
 - **2026-11-02** — R8: revisão da entrega R5 (até `9e13cb9`) e **protótipo de referência** em `prototipo/index.html`. Ver seção **R8**. Ordem de trabalho atualizada no fim da seção.
 - **2026-11-01** — R7: visitas de apresentação com amostras grátis para clientes em potencial. Ver seção **R7**.
@@ -18,6 +19,60 @@
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R10 — Revisão da R9 e da R6-1, R6-2 e R6-4 (2026-11-02)
+
+**O que foi revisado:**
+
+- Commits `9811487`…`172bb25`, com CI **verde**.
+- Capturas `r9-depois-*` e `worker/routing.ts` (chave ORS só como secret no Worker).
+- Migração `0014_routes.sql`, aditiva.
+
+**Não foi feito:** não rodei a suíte e não abri em aparelho físico.
+
+**Aprovado:**
+
+- Calendário com contagem só nos dias com entrega.
+- Títulos únicos.
+- Lembrete criado em folha sem sair do Hoje.
+- Hoje do administrador com valores e produção primeiro.
+- Menu do perfil uniforme, com "Sair" por último.
+- Chip "Defina seu nome".
+- Rota de carro com cache, fila, orçamento e linha reta como reserva.
+- Folha do Mapa lembrando o último app usado.
+- Aviso para cadastrar a base.
+
+### Acabamentos pedidos (pequenos)
+
+- **R10-1 — "Produzir hoje e amanhã" do administrador:**
+  - mostrar o **nome do sabor** como título da linha. O rótulo da embalagem e as g/un. só aparecem quando houver mais de uma variante do mesmo sabor; hoje ocupam 4 linhas;
+  - números alinhados à direita, em duas linhas, como no protótipo ("6 cx" e "72 un.");
+  - **singular e plural** corretos ("1 caixa · 12 unidades");
+  - o botão de ajuda no título fica pequeno (ícone 20 px sem fundo grande).
+- **R10-2 — Cartão de entrega com rota:**
+  - o `HelpTip` grande e a atribuição "© openrouteservice/HeiGIT · OSM" quebram o alinhamento do cabeçalho do cartão (o avatar desce);
+  - deixar no cartão só "🚗 6,4 km · 16 min de carro";
+  - mover a atribuição e a explicação ("tempo estimado, sem trânsito") para a **folha do Mapa** e para a tela de rota do cliente, onde o crédito continua visível como pedem os termos.
+- **R10-3 — Lembretes no Hoje:**
+  - remover a mensagem fixa "Lembrete salvo com histórico." do cartão; o feedback vai para o toast;
+  - concluir com o **círculo de marcação** do protótipo (alvo de 44 px com rótulo acessível), no lugar do botão tonal "Concluir lembrete …";
+  - data e hora relativas: "Hoje · 09:16", "Amanhã · 10:00" ou "Qui, 05/11 · 10:00".
+- **R10-4 — Folha "Novo lembrete":**
+  - chips **Hoje / Amanhã** e **09:00 / 14:00 / 18:00** antes do seletor nativo, como no protótipo;
+  - o campo "Avisar no celular" entra com a R6-7.
+
+### Retomada (na ordem)
+
+1. **R10-1 a R10-4.**
+2. **R6-5:** fotos de perfil privadas.
+3. **R6-7:** lembretes com aviso no celular, com Web Push (VAPID como secret e cron idempotente) e `.ics` com alarme, botão "Enviar aviso de teste" e as limitações do iPhone explicadas.
+4. **R6-8:** rolagem ao topo e modelos de WhatsApp no cartão (A caminho, Chegando, Entregue, Cobrança).
+5. **R7:** visitas e amostras, atrás de `PROSPECTS_ENABLED`, com migração aditiva.
+6. Capturas `r10-depois-*`, status em `CODEX_PARA_CLAUDE.md`, commit e push por item.
+
+**Observação para o guia de ativação:** a homologação do responsável pode começar **em paralelo**, porque as próximas migrações são aditivas. Garantir que o caminho curto (R5-10) continue válido quando novas migrações forem acrescentadas: o runner aplica só as pendentes.
 
 ---
 
