@@ -23,7 +23,7 @@ test('R5 telas móveis com ações compartilhadas', async ({
     const p = await c.newPage();
     const capture = async (name) => {
       if (
-        process.env.R5_CAPTURE === '1' &&
+        (process.env.R5_CAPTURE === '1' || process.env.R8_CAPTURE === '1') &&
         testInfo.project.name === 'webkit-mobile'
       )
         await p.screenshot({
@@ -85,6 +85,9 @@ test('R5 telas móveis com ações compartilhadas', async ({
           exact: true,
         }),
       ).toBeVisible();
+      expect(
+        (await p.locator('.mobile-context-title').boundingBox()).height,
+      ).toBe(1);
       if (path === 'clientes')
         await expect(
           p.getByRole('button', {

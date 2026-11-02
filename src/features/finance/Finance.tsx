@@ -104,7 +104,7 @@ export function Finance({ role }: { role: string }) {
   );
   return (
     <>
-      <h1>Financeiro</h1>
+      <h1 className="mobile-context-title">Financeiro</h1>
       <Button to="/gestao/financeiro" variant="ghost">
         Todas as contas
       </Button>

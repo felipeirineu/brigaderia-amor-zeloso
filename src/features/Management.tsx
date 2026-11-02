@@ -327,7 +327,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
   return (
     <>
       <div className="page-heading customer-heading">
-        <h1>Clientes</h1>
+        <h1 className="mobile-context-title">Clientes</h1>
         <Button
           variant="primary"
           onClick={() => {
@@ -1776,7 +1776,7 @@ function More({
 }) {
   return (
     <>
-      <h1>Mais</h1>
+      <h1 className="mobile-context-title">Mais</h1>
       <div className="more-grid">
         {[
           ...(tools
