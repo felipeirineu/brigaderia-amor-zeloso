@@ -1,3 +1,4 @@
+import { PendingConfirmations } from './PendingConfirmations';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { DayCalendar } from './DayCalendar';
 import { greeting, dayChip, shiftDay } from '../../../shared/workday';
@@ -111,7 +112,11 @@ export function Today({
   const view = useRemote<{
     day: string;
     orders: OperationalOrder[];
+    pending_orders: OperationalOrder[];
+    pending_truncated: boolean;
+    travel_week_cents: number | null;
     production: {
+      photo_key: string | null;
       name: string;
       label: string;
       day: string;
@@ -286,7 +291,6 @@ export function Today({
         </Button>
       )}
 
-      {p1 && role === 'owner' && <TodayReminders day={day} />}
       {undo && (
         <Button
           disabled={busy}
@@ -323,12 +327,19 @@ export function Today({
               a busca em Pedidos para conferir os demais.
             </p>
           )}
+          {financial && role === 'owner' && (
+            <FinanceSummary
+              compact
+              dashboard
+              tripsCents={view.data.travel_week_cents}
+            />
+          )}
           {role === 'owner' && (
-            <section className="panel">
+            <section className="panel production-dashboard">
               <h2>
                 Produzir{' '}
                 {day === localDay()
-                  ? 'hoje / amanhã'
+                  ? 'hoje e amanhã'
                   : `${dayChip(day)} e ${dayChip(shiftDay(day, 1))}`}{' '}
                 <HelpTip topic="production" />
               </h2>
@@ -336,11 +347,36 @@ export function Today({
                 <ul className="production-list">
                   {view.data.production.map((line, i) => (
                     <li key={i}>
-                      <strong>
-                        {line.name} · {line.label} · {line.weight_grams} g/un.
-                      </strong>
+                      {line.photo_key && (
+                        <img
+                          src={photoURL(line.photo_key)}
+                          alt=""
+                          width={40}
+                          height={40}
+                        />
+                      )}
+                      <div>
+                        <strong>
+                          {line.name} · {line.label} · {line.weight_grams} g/un.
+                        </strong>
+                        <div className="production-bar" aria-hidden="true">
+                          <span
+                            style={{
+                              width:
+                                (100 * line.units) /
+                                  Math.max(
+                                    1,
+                                    ...view.data!.production.map(
+                                      (p) => p.units,
+                                    ),
+                                  ) +
+                                '%',
+                            }}
+                          />
+                        </div>
+                      </div>
                       <span>
-                        {line.units} unidades · {line.boxes} embalagens
+                        {line.boxes} caixas · {line.units} unidades
                       </span>
                       <small>{dayChip(line.day)}</small>
                     </li>
@@ -356,14 +392,15 @@ export function Today({
               )}
             </section>
           )}
-          {financial && role === 'owner' && <FinanceSummary compact />}
           {role === 'owner' && (
-            <DayTotals totals={view.data.totals} financial={financial} />
+            <PendingConfirmations
+              orders={view.data.pending_orders ?? []}
+              truncated={view.data.pending_truncated}
+              onChanged={view.refresh}
+            />
           )}
           <div className="deliveries-heading">
-            <h2>
-              {role === 'owner' ? 'Pedidos e pendências' : 'Entregas do dia'}
-            </h2>
+            <h2>Entregas do dia</h2>
             {field && (
               <Button
                 variant="chip"
@@ -379,6 +416,8 @@ export function Today({
             {view.data.orders
               .filter(
                 (o) =>
+                  (role !== 'owner' ||
+                    !['draft', 'awaiting_confirmation'].includes(o.status)) &&
                   (day >= localDay() ||
                     ['delivered', 'picked_up'].includes(o.status)) &&
                   new Date(Date.parse(o.due_at) - 10800000)
@@ -564,7 +603,7 @@ export function Today({
               </Button>
             </section>
           )}
-          {p1 && role === 'operator' && <TodayReminders day={day} />}
+          {p1 && <TodayReminders day={day} />}
           {financial && role !== 'owner' && <FinanceSummary compact />}
           {role !== 'owner' && (
             <DayTotals totals={view.data.totals} financial={financial} />

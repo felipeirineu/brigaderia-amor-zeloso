@@ -88,25 +88,43 @@ export async function operations(
     ).results;
     const truncated = rows.length > 200;
     const selected = rows.slice(0, 200);
+    const pendingRows =
+      a.role === 'owner'
+        ? (
+            await db
+              .prepare(
+                "SELECT * FROM orders WHERE organization_id=? AND active=1 AND status IN('draft','awaiting_confirmation') ORDER BY due_at,id LIMIT 51",
+              )
+              .bind(org)
+              .all<Row>()
+          ).results
+        : [];
+    const pendingSelected = pendingRows.slice(0, 50);
+    const parents = [
+      ...new Map(
+        [...selected, ...pendingSelected].map((o) => [String(o.id), o]),
+      ).values(),
+    ];
     const children = await childrenByParent(
       db,
       org,
       'orders',
-      selected.map((o) => String(o.id)),
+      parents.map((o) => String(o.id)),
     );
+    const mobile = await mobileReady(env);
     const photoRows =
-      (await mobileReady(env)) && selected.length
+      mobile && parents.length
         ? (
             await db
               .prepare(
                 'SELECT v.id,COALESCE(v.photo_key,p.photo_key) AS photo_key FROM product_variants v JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE v.organization_id=? AND v.id IN(SELECT DISTINCT i.variant_id FROM order_items i WHERE i.organization_id=? AND i.order_id IN(SELECT value FROM json_each(?)))',
               )
-              .bind(org, org, JSON.stringify(selected.map((o) => o.id)))
+              .bind(org, org, JSON.stringify(parents.map((o) => o.id)))
               .all<{ id: string; photo_key: string | null }>()
           ).results
         : [];
     const photos = new Map(photoRows.map((r) => [r.id, r.photo_key]));
-    const orders = selected.map((o) => ({
+    const serialize = (o: Row) => ({
       ...o,
       status: String(o.status),
       due_at: String(o.due_at),
@@ -119,12 +137,14 @@ export async function operations(
         ...i,
         photo_key: photos.get(String(i.variant_id)) ?? null,
       })),
-    }));
+    });
+    const orders = selected.map(serialize),
+      pending_orders = pendingSelected.map(serialize);
     // A lista de cartões é limitada; a produção agrega TODOS os pedidos do período.
     const production = (
       await db
         .prepare(
-          "SELECT date(o.due_at,'-3 hours') AS day,i.product_name AS name,i.variant_label AS label,i.weight_grams,i.units_per_box,SUM(i.quantity) AS boxes,SUM(i.quantity*i.units_per_box) AS units FROM order_items i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE o.organization_id=? AND o.active=1 AND o.status IN ('confirmed','in_production') AND o.due_at>=? AND o.due_at<? GROUP BY day,i.product_name,i.variant_label,i.weight_grams,i.units_per_box ORDER BY day,i.product_name,i.variant_label,i.weight_grams",
+          `SELECT date(o.due_at,'-3 hours') AS day,i.product_name AS name,i.variant_label AS label,i.weight_grams,i.units_per_box,SUM(i.quantity) AS boxes,SUM(i.quantity*i.units_per_box) AS units${mobile ? ',MIN(COALESCE(v.photo_key,p.photo_key)) AS photo_key' : ',NULL AS photo_key'} FROM order_items i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id ${mobile ? 'LEFT JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id LEFT JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id' : ''} WHERE o.organization_id=? AND o.active=1 AND o.status IN ('confirmed','in_production') AND o.due_at>=? AND o.due_at<? GROUP BY day,i.product_name,i.variant_label,i.weight_grams,i.units_per_box ORDER BY day,i.product_name,i.variant_label,i.weight_grams`,
         )
         .bind(org, utcStart(day), utcStart(addDays(day, 2)))
         .all()
@@ -135,10 +155,31 @@ export async function operations(
       )
       .bind(org, utcStart(day), utcStart(addDays(day, 1)))
       .first();
+    const today = businessDay(),
+      weekFrom = addDays(
+        today,
+        -((new Date(today + 'T12:00Z').getUTCDay() + 6) % 7),
+      );
+    const travel_week_cents =
+      a.role === 'owner' && (await fieldReady(env))
+        ? Number(
+            (
+              await db
+                .prepare(
+                  'SELECT COALESCE(SUM(CASE WHEN reversal_of IS NULL THEN amount_cents ELSE -amount_cents END),0) AS n FROM displacements WHERE organization_id=? AND occurred_at>=? AND occurred_at<?',
+                )
+                .bind(org, utcStart(weekFrom), utcStart(addDays(weekFrom, 7)))
+                .first<{ n: number }>()
+            )?.n ?? 0,
+          )
+        : null;
     return json({
       day,
       role: a.role,
       orders,
+      pending_orders,
+      pending_truncated: pendingRows.length > 50,
+      travel_week_cents,
       production,
       totals,
       received_available: financial,

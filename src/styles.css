@@ -2105,3 +2105,48 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .today-reminders > p:empty {
   margin: 0;
 }
+.production-dashboard h2,
+.pending-confirmations h3 {
+  font-family: inherit;
+  font-size: 17px;
+  margin: 0 0 12px;
+}
+.production-dashboard .production-list li {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+.production-dashboard .production-list li:not(:has(img)) {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.production-dashboard img {
+  border-radius: 12px;
+  object-fit: cover;
+}
+.production-dashboard strong {
+  font-size: 14px;
+}
+.production-dashboard li > span {
+  font-size: 13px;
+}
+.production-dashboard li > small {
+  grid-column: 1/-1;
+}
+.production-bar {
+  height: 8px;
+  background: #f1e2cc;
+  border-radius: 999px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.production-bar > span {
+  display: block;
+  height: 100%;
+  background: #b8915b;
+  border-radius: 999px;
+}
+.pending-confirmations > article {
+  border-bottom: 1px solid var(--border);
+  padding: 10px 0;
+}

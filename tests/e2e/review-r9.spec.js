@@ -107,3 +107,86 @@ test('R9 calendário sem zeros e cabeçalho alinhado', async ({
     await t.dispose();
   }
 });
+
+test('R9 administrador prioriza valores, produção e confirmação validada por pedido', async ({
+  browser,
+}, info) => {
+  const t = await runtime({
+    browserHTTP: true,
+    financeEnabled: true,
+    p1Enabled: true,
+    mobileEnabled: true,
+    fieldEnabled: true,
+  });
+  const c = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    extraHTTPHeaders: {
+      'Cf-Access-Jwt-Assertion': await t.token('owner@example.test'),
+    },
+  });
+  try {
+    const { call, customer, variants } = await reviewProject(t);
+    const due = new Date().toISOString();
+    const valid = await call('orders', {
+      customer_id: customer,
+      due_at: due,
+      items: [{ variant_id: variants[0].id, quantity: 1 }],
+    });
+    await call(
+      `orders/${valid.id}/delivery`,
+      {
+        version: 1,
+        delivery_type: 'delivery',
+        delivery_address: 'Endereço DEMONSTRAÇÃO',
+        courier: 'owner',
+      },
+      'PUT',
+    );
+    await call('orders', {
+      customer_id: customer,
+      due_at: due,
+      items: [{ variant_id: variants[1].id, quantity: 1 }],
+    });
+    const ownerToday = await call('today', undefined, 'GET');
+    expect(ownerToday.pending_orders).toHaveLength(2);
+    expect(ownerToday.travel_week_cents).toBe(0);
+    const op = await t.request('today', {
+      cookie: await t.login('operator@example.test'),
+    });
+    expect((await op.json()).pending_orders).toEqual([]);
+    const p = await c.newPage();
+    await p.goto(t.url + '/api/access/start');
+    await expect(p.locator('.finance-kpi')).toHaveCount(4);
+    await expect(p.locator('.production-list img')).toBeVisible();
+    const blocks = [
+      '.finance-summary',
+      '.production-dashboard',
+      '.pending-confirmations',
+      '.deliveries-heading',
+      '.today-reminders',
+    ];
+    const positions = await Promise.all(
+      blocks.map(async (s) => (await p.locator(s).boundingBox()).y),
+    );
+    expect(positions).toEqual([...positions].sort((a, b) => a - b));
+    await expect(p.locator('.finance-kpi').last()).toContainText(
+      'Corridas na semana',
+    );
+    const queue = p.locator('.pending-confirmations');
+    await expect(
+      queue.getByRole('button', { name: /Confirmar todos/ }),
+    ).toBeDisabled();
+    await capture(p, 'hoje-administrador', info);
+    for (const checkbox of await queue.getByRole('checkbox').all())
+      await checkbox.check();
+    await queue.getByRole('button', { name: /Confirmar todos/ }).click();
+    await expect(queue.getByRole('checkbox')).toHaveCount(1);
+    await expect(queue.getByRole('alert')).toBeVisible();
+    expect((await call('orders/' + valid.id, undefined, 'GET')).status).toBe(
+      'confirmed',
+    );
+  } finally {
+    await c.close();
+    await t.dispose();
+  }
+});

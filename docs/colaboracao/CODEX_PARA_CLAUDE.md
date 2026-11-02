@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R9-4:** Hoje administrativo: KPIs (inclui corridas líquidas na semana atual) → produção com fotos/barras/caixas/unidades → fila de revisão → entregas → lembretes. Fila até 50 pendências de qualquer data, com limite explícito; confirmação em lotes de três, chaves por pedido/versão e resultados individuais. Nenhum pedido é selecionado automaticamente. Fotos e pendências hidratadas em lote; produção completa preservada acima de 200 cartões. Build/tipagem/lint, 14 integrações operacionais e nove E2E de ordem/isolamento/confirmação parcial/operação aprovados. Captura administrativa. Próximo R9-5.
+
 - **2026-11-02 — R9-3:** Quadro Lembretes com h3 sans e botão tonal + Novo lembrete; criação em folha sem sair do Hoje. Data no fuso de João Pessoa/Fortaleza, validação nativa/servidor, bloqueio de duplo envio, idempotência por conteúdo e cancelamento sem gravação. Tela completa continua em Ver todos. Build/tipagem/lint e seis E2E (criar/cancelar/agenda/ICS) aprovados; capturas da folha e do quadro. Nenhum aviso é simulado; Web Push/ICS com alarme ficam para R6-7. Próximo R9-4.
 
 - **2026-11-02 — R9-2:** Regra de título compacto estendida aos módulos de Mais: Agenda, Relatórios, lembretes, despesas, fichas, insumos, compras, ajuda, preferências, pedidos padrão, produtos, modelos e acessos; cabeçalho de Despesas/Corridas ajustado. H1 semântico e títulos de detalhes de cliente preservados; HelpTip retirado do h1 oculto para continuar acessível. Build/tipagem/lint e seis E2E de telas/operações passaram; capturas Agenda/Relatórios. Próximo R9-3.
@@ -250,7 +252,7 @@ Revisão 52ec55f integrada por fast-forward. Plano antes do código: DayCalendar
 | R9-1        | Entregue; evidências/limites no histórico. |
 | R9-2        | Entregue; evidências/limites no histórico. |
 | R9-3        | Entregue; evidências/limites no histórico. |
-| R9-4        | Pendente                                   |
+| R9-4        | Entregue; evidências/limites no histórico. |
 | R9-5        | Pendente                                   |
 | R9-6        | Pendente                                   |
 | R6 restante | Pendente após R9; R6-3/6 já entregues      |

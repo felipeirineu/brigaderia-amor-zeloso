@@ -20,7 +20,15 @@ export interface Summary {
     week_cents: number;
   }[];
 }
-export function FinanceSummary({ compact = false }: { compact?: boolean }) {
+export function FinanceSummary({
+  compact = false,
+  dashboard = false,
+  tripsCents = null,
+}: {
+  compact?: boolean;
+  dashboard?: boolean;
+  tripsCents?: number | null;
+}) {
   const [search] = useSearchParams(),
     filter = compact ? '' : search.get('filter') || '';
   const view = useRemote<Summary>(
@@ -28,7 +36,9 @@ export function FinanceSummary({ compact = false }: { compact?: boolean }) {
   );
   return (
     <section className="panel finance-summary">
-      <h2>{compact ? 'Recebimentos e a receber' : 'Resumo financeiro'}</h2>
+      {!dashboard && (
+        <h2>{compact ? 'Recebimentos e a receber' : 'Resumo financeiro'}</h2>
+      )}
       <Failure message={view.error} />
       {view.data && (
         <>
@@ -53,10 +63,14 @@ export function FinanceSummary({ compact = false }: { compact?: boolean }) {
                 'Saldos após o vencimento',
               ],
               [
-                'Vence esta semana',
-                view.data.week_cents,
-                '/gestao/financeiro?filter=week',
-                'Hoje a domingo',
+                dashboard ? 'Corridas na semana' : 'Vence esta semana',
+                dashboard ? tripsCents : view.data.week_cents,
+                dashboard
+                  ? '/gestao/deslocamentos'
+                  : '/gestao/financeiro?filter=week',
+                dashboard
+                  ? 'Semana atual, líquido de estornos'
+                  : 'Hoje a domingo',
               ],
             ].map(([label, value, to, note]) => (
               <Button
@@ -64,46 +78,53 @@ export function FinanceSummary({ compact = false }: { compact?: boolean }) {
                 variant="card"
                 className="finance-kpi"
                 to={String(to)}
+                disabled={value === null}
               >
                 <span>{label}</span>
-                <strong>{money(Number(value))}</strong>
+                <strong>
+                  {value === null ? 'Indisponível' : money(Number(value))}
+                </strong>
                 <small>{note}</small>
               </Button>
             ))}
           </div>
-          <p className="finance-reference">
-            Valores líquidos em {civilDate(view.data.day)}. Saldos de entregas
-            realizadas.
-          </p>
-          {view.data.customers.map((c) => (
-            <article key={c.id}>
-              <Button to={`/gestao/financeiro/${c.id}`} variant="ghost">
-                {c.name}:{' '}
-                {money(
-                  filter === 'received'
-                    ? c.received_cents
-                    : filter === 'overdue'
-                      ? c.overdue_cents
-                      : filter === 'week'
-                        ? c.week_cents
-                        : c.balance_cents,
-                )}
-              </Button>
-              {c.overdue_days > 0 && (
-                <p role="alert">
-                  Saldo vencido há {c.overdue_days} dias. Sem bloqueio de
-                  pedido.
-                </p>
-              )}
-              {c.unconfigured > 0 && (
-                <p>Há entregas sem condição definida; confira a conta.</p>
-              )}
-            </article>
-          ))}
-          <p>
-            Rascunhos e valores ainda não entregues ficam separados de contas a
-            receber.
-          </p>
+          {!dashboard && (
+            <>
+              <p className="finance-reference">
+                Valores líquidos em {civilDate(view.data.day)}. Saldos de
+                entregas realizadas.
+              </p>
+              {view.data.customers.map((c) => (
+                <article key={c.id}>
+                  <Button to={`/gestao/financeiro/${c.id}`} variant="ghost">
+                    {c.name}:{' '}
+                    {money(
+                      filter === 'received'
+                        ? c.received_cents
+                        : filter === 'overdue'
+                          ? c.overdue_cents
+                          : filter === 'week'
+                            ? c.week_cents
+                            : c.balance_cents,
+                    )}
+                  </Button>
+                  {c.overdue_days > 0 && (
+                    <p role="alert">
+                      Saldo vencido há {c.overdue_days} dias. Sem bloqueio de
+                      pedido.
+                    </p>
+                  )}
+                  {c.unconfigured > 0 && (
+                    <p>Há entregas sem condição definida; confira a conta.</p>
+                  )}
+                </article>
+              ))}
+              <p>
+                Rascunhos e valores ainda não entregues ficam separados de
+                contas a receber.
+              </p>
+            </>
+          )}
         </>
       )}
     </section>
