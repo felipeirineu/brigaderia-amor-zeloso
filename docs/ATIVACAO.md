@@ -9,7 +9,7 @@ Use o [guia Windows com comandos, resultado esperado e o que fazer se der erro](
 - [ ] `npm run ops:preflight -- --remote brigaderia-amor-zeloso-homologacao`: conferir migrações/contagens e zero FKs. A saída não contém dados pessoais.
 - [ ] Exportar backup para `.local/` fora do Git. Arquivo maior que zero não basta: restaurar em ambiente separado com `npm run ops:restore-check -- .local/backup-antes-fase2.sql` e comparar contagens.
 - [ ] Se 0001/0002 aparecerem pendentes em banco já preenchido, parar e reconciliar o histórico; não reaplicar por tentativa.
-- [ ] Aplicar pelo runner apenas as pendentes, na ordem. **0003** status/pedidos padrão; **0004** entregador padrão; **0005** financeiro; **0006** revisão R2 (crédito/anulação/índices); **0007** lembretes; **0008** despesas; **0009** fichas/insumos; **0010** fotos/pedido simples; **0011** locais/perfis/deslocamentos; **0012** estoque; **0013** importações de clientes; **0014** cache/fila de rotas de carro (opcional, sem provedor configurado).
+- [ ] Aplicar pelo runner apenas as pendentes, na ordem. **0003** status/pedidos padrão; **0004** entregador padrão; **0005** financeiro; **0006** revisão R2 (crédito/anulação/índices); **0007** lembretes; **0008** despesas; **0009** fichas/insumos; **0010** fotos/pedido simples; **0011** locais/perfis/deslocamentos; **0012** estoque; **0013** importações de clientes; **0014** cache/fila de rotas de carro (opcional, sem provedor configurado); **0015** modelo aditivo de composição mista (montagem ainda bloqueada).
 - [ ] Rodar a pré-checagem novamente: `pending: []`, zero FKs, contagens anteriores preservadas e schema_operations/finance/p1_ready true. Conferir amostras privadas, sem publicar dados.
 - [ ] Primeiro `OPERATIONS_ENABLED=true`; FINANCE/P1 false. Deploy correto e teste de login/status/geração.
 - [ ] Depois `FINANCE_ENABLED=true`, somente com 0005/0006 conferidas. Deploy correto e teste de saldo/sinal/crédito/estorno/recebimento rápido/desfazer com DEMONSTRAÇÃO.
@@ -56,7 +56,7 @@ Este caminho foi **preparado, não executado**. Use quando o login da Fase 1 já
    npx wrangler d1 migrations apply brigaderia-amor-zeloso-homologacao --remote
    ```
 
-   Confira a lista antes de confirmar o segundo comando. No banco já usado, se **0001/0002** aparecerem pendentes, **pare e reconcilie o histórico conforme FASE_2A**; não tente recriar tabelas existentes. O runner usa os arquivos de `database/migrations` (atualmente 0001–0014), em ordem, e não reaplica as registradas. Se houver erro, pare: migrações anteriores podem ter sido aplicadas; preserve banco e backup.
+   Confira a lista antes de confirmar o segundo comando. No banco já usado, se **0001/0002** aparecerem pendentes, **pare e reconcilie o histórico conforme FASE_2A**; não tente recriar tabelas existentes. O runner usa os arquivos de `database/migrations` (atualmente 0001–0015), em ordem, e não reaplica as registradas. Se houver erro, pare: migrações anteriores podem ter sido aplicadas; preserve banco e backup.
 
 3. **Uma pré-checagem consolidada após o runner:**
 
@@ -94,3 +94,7 @@ Após o primeiro login de cada pessoa, tocar em **Defina seu nome** no Hoje (ou 
 ## Rota de carro opcional
 
 Após os módulos anteriores, siga [R6 — Rotas](FASE_R6_ROTAS.md). A migração 0014 prepara o cache; sem secret do provedor gratuito, continua a linha reta identificada. Nenhum serviço pago deve ser contratado automaticamente.
+
+## Caixa mista em desenvolvimento
+
+A migração 0015 prepara somente o modelo. Mantenha `MIXED_BOXES_ENABLED` ausente ou `false` até a conclusão dos consumidores e da montagem. `schema_mixed_model_ready` não equivale a funcionalidade pronta. Veja [situação da R11](FASE_R11_CAIXA_MISTA.md). O runner continua aplicando somente as pendentes.

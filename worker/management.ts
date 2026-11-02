@@ -1,3 +1,5 @@
+import { attachComponents, prepareItems, writeComponents } from './mixed';
+import type { ItemSnapshot } from '../shared/mixed';
 import { toolsReady } from './tools-ready';
 import { snapshotPlaces } from './order-places';
 import { fieldReady } from './field-ready';
@@ -17,15 +19,7 @@ import {
 } from './schemas';
 
 type Row = Record<string, string | number | null>;
-type Snapshot = {
-  variant_id: string;
-  product_name: string;
-  variant_label: string;
-  weight_grams: number;
-  units_per_box: number;
-  unit_price_cents: number;
-  quantity: number;
-};
+type Snapshot = ItemSnapshot;
 export async function management(req: Request, env: Env, a: Actor) {
   const original = req.clone(),
     fieldOriginal = req.clone();
@@ -448,34 +442,14 @@ export async function management(req: Request, env: Env, a: Actor) {
             .all<Snapshot>()
         ).results
       : [];
-    const items: Snapshot[] = [];
-    for (const item of d.items) {
-      const snapshot = old.find((o) => o.variant_id === item.variant_id);
-      if (snapshot) {
-        items.push({ ...snapshot, quantity: item.quantity });
-        continue;
-      }
-      const v = await db
-        .prepare(
-          'SELECT v.*,p.name FROM product_variants v JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE v.organization_id=? AND v.id=? AND v.active=1 AND p.active=1',
-        )
-        .bind(org, item.variant_id)
-        .first<Row>();
-      if (!v)
-        throw new HttpError(
-          400,
-          'Selecione variantes ativas da sua organização.',
-        );
-      items.push({
-        variant_id: item.variant_id,
-        quantity: item.quantity,
-        product_name: String(v.name),
-        variant_label: String(v.label),
-        weight_grams: Number(v.weight_grams),
-        units_per_box: Number(v.units_per_box),
-        unit_price_cents: Number(v.price_cents),
-      });
-    }
+    await attachComponents(db, org, old);
+    const items = await prepareItems(
+      env,
+      org,
+      d.items,
+      old,
+      d.composition_version,
+    );
     const total = items.reduce(
       (sum, i) => sum + i.quantity * i.unit_price_cents,
       0,
@@ -555,26 +529,14 @@ export async function management(req: Request, env: Env, a: Actor) {
         )
         .bind(org, entityId, ...guardArgs),
     );
-    for (const i of items)
-      statements.push(
-        db
-          .prepare(
-            `INSERT INTO order_items(id,organization_id,order_id,variant_id,product_name,variant_label,weight_grams,units_per_box,unit_price_cents,quantity) SELECT ?,?,?,?,?,?,?,?,?,? WHERE ${guard}`,
-          )
-          .bind(
-            crypto.randomUUID(),
-            org,
-            entityId,
-            i.variant_id,
-            i.product_name,
-            i.variant_label,
-            i.weight_grams,
-            i.units_per_box,
-            i.unit_price_cents,
-            i.quantity,
-            ...guardArgs,
-          ),
-      );
+    statements.push(
+      db
+        .prepare(
+          `INSERT INTO order_items(id,organization_id,order_id,variant_id,product_name,variant_label,weight_grams,units_per_box,unit_price_cents,quantity) SELECT json_extract(value,'$.id'),?,?,json_extract(value,'$.variant_id'),json_extract(value,'$.product_name'),json_extract(value,'$.variant_label'),json_extract(value,'$.weight_grams'),json_extract(value,'$.units_per_box'),json_extract(value,'$.unit_price_cents'),json_extract(value,'$.quantity') FROM json_each(?) WHERE ${guard}`,
+        )
+        .bind(org, entityId, JSON.stringify(items), ...guardArgs),
+      ...writeComponents(db, org, items, guard, guardArgs),
+    );
   }
   if (
     resource === 'orders' &&

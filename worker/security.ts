@@ -8,6 +8,7 @@ export interface Env {
   P1_ENABLED?: string;
   P1_TOOLS_ENABLED?: string;
   MOBILE_ENABLED?: string;
+  MIXED_BOXES_ENABLED?: string;
   FIELD_ENABLED?: string;
   PLACES_USER_AGENT?: string;
   ROUTING_PROVIDER?: string;

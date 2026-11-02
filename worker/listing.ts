@@ -1,3 +1,4 @@
+import { attachComponents } from './mixed';
 /** Hidrata no máximo 200 pais em lotes abaixo do limite de 100 bindings do D1. */
 export async function childrenByParent(
   db: D1Database,
@@ -34,5 +35,7 @@ export async function childrenByParent(
       grouped.set(parent, entries);
     }
   }
+  if (kind === 'orders')
+    await attachComponents(db, organization, [...grouped.values()].flat());
   return grouped;
 }

@@ -15,6 +15,12 @@ try {
   const { call, customer, owner, operator, outside, makeOrder, variant } =
     await demoProject(t);
   const order = await makeOrder();
+  await t.db
+    .prepare(
+      'INSERT INTO order_item_components(organization_id,item_id,variant_id,units,product_name,variant_label,weight_grams,units_per_box) SELECT organization_id,id,variant_id,units_per_box,product_name,variant_label,weight_grams,units_per_box FROM order_items WHERE organization_id=? AND order_id=?',
+    )
+    .bind(t.org, order)
+    .run();
   const day = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Fortaleza',
     year: 'numeric',
@@ -134,6 +140,7 @@ print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check'
       { input: sql, encoding: 'utf8' },
     ),
   );
+  assert.equal(restored.counts.order_item_components, 1);
   assert.equal(restored.counts.sessions, 0);
   assert.equal(restored.counts.login_attempts, 0);
   assert.equal(restored.organizations, 1);

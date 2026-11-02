@@ -28,6 +28,7 @@ export const databaseTables = [
   'memberships',
   'message_templates',
   'order_items',
+  'order_item_components',
   'order_places',
   'order_status_events',
   'order_terms',

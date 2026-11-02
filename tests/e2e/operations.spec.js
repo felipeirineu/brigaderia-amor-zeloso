@@ -73,7 +73,12 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
       page.getByRole('heading', { name: 'Hoje', exact: true }),
     ).toBeVisible();
     await selectWorkday(page, '2030-01-07');
-    await expect(page.locator('.production-list')).toContainText('4 unidades');
+    await expect(
+      page.locator('.production-list .production-counts'),
+    ).toHaveAttribute('aria-label', '2 caixas · 4 unidades');
+    await expect(
+      page.locator('.production-list .production-counts small'),
+    ).toHaveText('4 un.');
     await page.screenshot({
       path: `test-results/today-owner-${testInfo.project.name}.png`,
       fullPage: true,

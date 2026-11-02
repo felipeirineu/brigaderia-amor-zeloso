@@ -14,6 +14,7 @@ export async function runtime({
   p1Enabled = false,
   toolsEnabled = false,
   mobileEnabled = false,
+  mixedEnabled = false,
   fieldEnabled = false,
   placesProvider = false,
   routingProvider,
@@ -51,6 +52,7 @@ export async function runtime({
         P1_ENABLED: p1Enabled ? 'true' : 'false',
         P1_TOOLS_ENABLED: toolsEnabled ? 'true' : 'false',
         MOBILE_ENABLED: mobileEnabled ? 'true' : 'false',
+        MIXED_BOXES_ENABLED: mixedEnabled ? 'true' : 'false',
         FIELD_ENABLED: fieldEnabled ? 'true' : 'false',
         ...(routingProvider
           ? { ROUTING_PROVIDER: 'ors', ORS_API_KEY: 'demonstracao-route-key' }

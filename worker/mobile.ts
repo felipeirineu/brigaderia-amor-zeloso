@@ -1,3 +1,6 @@
+import { itemInputSchema, uniqueItems } from './mixed-domain';
+import { attachComponents, prepareItems, writeComponents } from './mixed';
+import type { ItemSnapshot } from '../shared/mixed';
 import { fieldReady } from './field-ready';
 import { snapshotPlaces } from './order-places';
 import { z } from 'zod';
@@ -16,17 +19,8 @@ const schema = z
       .datetime({ offset: true })
       .transform((v) => new Date(v).toISOString()),
     notes: z.string().trim().max(2000).default(''),
-    items: z
-      .array(
-        z
-          .object({
-            variant_id: z.uuid(),
-            quantity: z.number().int().min(1).max(10000),
-          })
-          .strict(),
-      )
-      .min(1)
-      .max(50),
+    items: z.array(itemInputSchema).min(1).max(50),
+    composition_version: z.literal(1).optional(),
     delivery: z
       .object({ ...deliverySchema.shape, version: z.number().optional() })
       .strict()
@@ -37,10 +31,7 @@ const schema = z
     terms: termsSchema.nullable().default(null),
   })
   .strict()
-  .refine(
-    (v) => new Set(v.items.map((i) => i.variant_id)).size === v.items.length,
-    'Variante repetida.',
-  );
+  .refine((v) => uniqueItems(v.items), 'Variante repetida.');
 type Row = Record<string, string | number | null>;
 export async function mobile(req: Request, env: Env, a: Actor) {
   if (!(await mobileReady(env)))
@@ -228,30 +219,14 @@ export async function mobile(req: Request, env: Env, a: Actor) {
             .all<Row>()
         ).results
       : [];
-    const variants = (
-      await db
-        .prepare(
-          "SELECT v.*,p.name FROM product_variants v JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE v.organization_id=? AND v.id IN(SELECT json_extract(value,'$.variant_id') FROM json_each(?)) AND v.active=1 AND p.active=1",
-        )
-        .bind(org, JSON.stringify(d.items))
-        .all<Row>()
-    ).results;
-    const items = d.items.map((i) => {
-      const previous = old.find((o) => o.variant_id === i.variant_id),
-        v = variants.find((v) => v.id === i.variant_id);
-      if (!previous && !v)
-        throw new HttpError(400, 'Variante não está disponível.');
-      return {
-        id: crypto.randomUUID(),
-        variant_id: i.variant_id,
-        quantity: i.quantity,
-        product_name: previous?.product_name ?? v!.name,
-        variant_label: previous?.variant_label ?? v!.label,
-        weight_grams: previous?.weight_grams ?? v!.weight_grams,
-        units_per_box: previous?.units_per_box ?? v!.units_per_box,
-        unit_price_cents: previous?.unit_price_cents ?? v!.price_cents,
-      };
-    });
+    await attachComponents(db, org, old);
+    const items = await prepareItems(
+      env,
+      org,
+      d.items,
+      old as unknown as ItemSnapshot[],
+      d.composition_version,
+    );
     const total = items.reduce(
       (n, i) => n + i.quantity * Number(i.unit_price_cents),
       0,
@@ -335,6 +310,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
             `INSERT INTO order_items(id,organization_id,order_id,variant_id,product_name,variant_label,weight_grams,units_per_box,unit_price_cents,quantity) SELECT json_extract(value,'$.id'),?,?,json_extract(value,'$.variant_id'),json_extract(value,'$.product_name'),json_extract(value,'$.variant_label'),json_extract(value,'$.weight_grams'),json_extract(value,'$.units_per_box'),json_extract(value,'$.unit_price_cents'),json_extract(value,'$.quantity') FROM json_each(?) WHERE ${g}`,
           )
           .bind(org, order, JSON.stringify(items), ...args),
+        ...writeComponents(db, org, items, g, args),
         ...(financial
           ? [
               db

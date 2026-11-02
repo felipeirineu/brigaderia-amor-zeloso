@@ -1,3 +1,4 @@
+import { validateMixedConfirmation } from './mixed';
 import { shiftMonth } from '../shared/workday';
 import { mobileReady } from './mobile-ready';
 import { fieldReady } from './field-ready';
@@ -778,6 +779,7 @@ export async function operations(
         400,
         'Informe o endereço de entrega ou selecione retirada antes de confirmar.',
       );
+    if (target === 'confirmed') await validateMixedConfirmation(env, org, id);
     const eventId = crypto.randomUUID();
     const result = await db.batch([
       db

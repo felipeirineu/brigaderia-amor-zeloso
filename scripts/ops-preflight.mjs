@@ -55,6 +55,7 @@ const tables = [
   'route_cache',
   'route_jobs',
   'route_budget',
+  'order_item_components',
 ];
 export function inspect(
   database,
@@ -152,6 +153,7 @@ export function inspect(
     schema_p1_ready: p1,
     schema_mobile_ready: mobile,
     schema_field_ready: field,
+    schema_mixed_model_ready: names.has('order_item_components'),
     schema_routes_ready:
       field && tables.slice(43, 46).every((t) => names.has(t)),
     schema_tools_ready: p1 && tables.slice(40, 43).every((t) => names.has(t)),

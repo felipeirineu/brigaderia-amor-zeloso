@@ -1,3 +1,4 @@
+import { itemInputSchema, uniqueItems } from './mixed-domain';
 import { placeSchema } from './field-domain';
 import { flavorPhotos } from '../shared/flavors';
 import { z } from 'zod';
@@ -65,22 +66,13 @@ export const orderSchema = z
       .datetime({ offset: true })
       .transform((s) => new Date(s).toISOString()),
     notes: text(2000).default(''),
-    items: z
-      .array(
-        z
-          .object({
-            variant_id: z.uuid(),
-            quantity: z.number().int().min(1).max(10000),
-          })
-          .strict(),
-      )
-      .min(1)
-      .max(50),
+    items: z.array(itemInputSchema).min(1).max(50),
+    composition_version: z.literal(1).optional(),
     version: z.number().int().positive().optional(),
   })
   .strict()
   .refine(
-    (v) => new Set(v.items.map((i) => i.variant_id)).size === v.items.length,
+    (v) => uniqueItems(v.items),
     'Combine as quantidades da mesma variante.',
   );
 export const memberSchema = z

@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R11-1:** Modelo/API de composição preparados, sem montagem na UI: 0015 aditiva, unidades por sabor vinculadas ao item, snapshots de nomes/peso/preço e leitura em lote. Escrita móvel/clássica na mesma transação/CAS; confirmação individual/lote revalida sabores. MIXED_BOXES_ENABLED ausente/false; não ativar antes de R11-2…5. Testes recusam 11/12, 13/12, pesos incompatíveis, duplicatas, dados externos e inativos; edição histórica, corrida de duas confirmações, migração sem mudar itens e backup com composição/FKs aprovados. 69 unitários, seis SQL, API (28), operações (14), móvel, listagem com 65 pais e backup aprovados. E2E completo: 80 aprovados/um offline WebKit ignorado; operações repetidas após revalidação. CI anterior detectou asserção antiga de texto de unidades após R10-1: corrigida para rótulo acessível e número visível, mantendo a verificação. Próximo R11-2 (montagem/modelos), sem afirmar a R11 completa.
+
 - **2026-11-02 — R10-4:** Folha Novo lembrete com atalhos Hoje/Amanhã e 09:00/14:00/18:00 sincronizados com o seletor nativo; botão não envia formulário ao escolher um chip. Componentes reutilizáveis de atalhos. Quinze E2E R10/R9 aprovados em Chromium/WebKit, inclusive gravação de Amanhã às 18:00 como 21:00 UTC. Build/tipagem/lint/formatação aprovados. Captura r12-depois-lembrete-atalhos. R10 concluída; próximo R11-1.
 
 - **2026-11-02 — R10-3:** Lembretes no Hoje com círculo acessível de 44 px, data/hora relativas a Fortaleza e toast temporário em vez de texto fixo no cartão. Conclusão mantém versão/autorização e lista atualizada. Oito unitários de datas aprovados, nove E2E de produção/lembrete/agenda/ICS aprovados; lint/tipagem/build/formatação. Captura r12-depois-lembrete-circulo inspecionada. Próximo R10-4.
@@ -304,3 +306,29 @@ Revisões integradas por fast-forward em ecb6e6b. Ordem vigente: R10-1…4, R11-
 Antes do código R10: Today/CSS/HelpTip para compactar produção mantendo variantes distintas, unidades e singular/plural; RouteInfo/DeliveryActions para crédito e ajuda fora do cabeçalho de entrega; TodayReminders e feedback temporário acessível para círculo de conclusão e data relativa; ReminderSheet para atalhos de dia/hora sem remover entrada nativa. Aceite: E2E móvel Chromium/WebKit, capturas r12-depois-*, autorização/CAS/idempotência existentes preservados. Cada item terá commit e push próprio; nada remoto além do GitHub.
 
 R11/R12: planejar modelo aditivo, snapshots e todos os consumidores antes de habilitar montagem; backend deve recusar composições inválidas e banco ainda não migrado continua com itens simples. Data usa Fortaleza, calendário agregado compartilhado sem dias passados, horário editável e sugestão identificada do modelo; confirmação abre agenda no dia escolhido. Documentar limites e próximo item se a rodada encerrar em ponto estável.
+
+### Plano R11-1 antes do código — composição e compatibilidade
+
+Migração aditiva 0015 cria `order_item_components` com FKs por organização/item/variante e snapshots de sabor/peso. Não altera linhas antigas. Modelo único de entrada para pedidos clássico/móvel: quantidade de caixas e componentes em unidades, soma igual à embalagem, sabores ativos, peso compatível e preço da embalagem lido no servidor. Combinações distintas podem usar a mesma embalagem; combinações idênticas exigem somar quantidade. Gravação de componentes na mesma transação/CAS/idempotência do pedido, sem consulta por componente.
+
+Arquivos: shared/mixed, worker/mixed[-domain], schemas/mobile/management/listing, migração, registro do backup e testes isolados. Leituras hidratam composição em lote mesmo com montagem desligada. Introduzir `MIXED_BOXES_ENABLED` desligada por padrão; **não ativar enquanto R11-2…5 não estiverem concluídas**, pois produção/relatórios/custos e interface serão adaptados nas etapas seguintes. Clientes antigos que tentem editar pedido misto sem declarar suporte recebem conflito, evitando apagar composição silenciosamente. Esta etapa entrega o modelo e APIs, não a montagem da caixa na interface.
+
+Aceite: recusar 11/12 e 13/12, negativos/duplicatas/inativos/outro tenant/peso incompatível; snapshots não mudam com renomeação/preço; duas caixas/composições da mesma embalagem; repetição/conflito/concorrência sem gravação parcial; banco anterior e pedidos antigos continuam funcionando. Backup/restauração com novas FKs; catálogo público continua negado.
+
+### Estado vigente antes da continuação da caixa mista
+
+| Item         | Status                                                                    |
+| ------------ | ------------------------------------------------------------------------- |
+| R10-1…4      | Entregues; capturas r12-depois-* e testes no histórico.                   |
+| R11-1        | Modelo/API entregue, montagem desligada. Guia FASE_R11_CAIXA_MISTA.       |
+| R11-2        | Próximo: montagem visual + modelos e geração semanal idempotente.         |
+| R11-3        | Pendente: produção por unidades dos componentes.                          |
+| R11-4        | Pendente: textos/WhatsApp/CSV/relatórios e ranking por unidades.          |
+| R11-5        | Pendente: custo/ficha/compras por componentes.                            |
+| R11-6        | Documentação comercial em atualização separada.                           |
+| R12-1…4      | Pendentes: calendário mínimo/contagem, horário, sugestão, sucesso/agenda. |
+| R6-5/7/8, R7 | Após R11/R12. Prospecção ainda não implementada/ativada.                  |
+
+Ponto estável de parada da rodada: R11-1 entregue e bloqueada para uso real; alinhar R11-6 em commit próprio e retomar **R11-2** na próxima sessão, antes da R6. `shared/mixed.ts` fornece tipos e chave canônica; `worker/mixed.ts` prepara/valida snapshots e composições; `item_id` e `composition_version: 1` protegem edições. As telas existentes não sabem editar composição; não remover esse bloqueio antes de adaptar os consumidores. O modelo recorrente tem UNIQUE por variante: planejar armazenamento aditivo para misturas distintas usando a mesma embalagem, sem reconstruir/apagar modelos atuais. `ScheduleShortcuts` pode ser reutilizado na R12; `DayCalendar` ainda precisa do limite de dias passados e Hoje precisa aceitar o dia do link de sucesso.
+
+Produzido: quatro acabamentos e modelo/API aditivo. Testes executados: registrados acima, exclusivamente com fixtures de demonstração/D1 local. Limitações: sem E2E de montagem mista (UI não implementada), sem ativação/homologação física. Pendências: R11-2…5/R12 e depois R6/R7. Nenhum deploy, migração remota, variável/secret ou alteração Cloudflare pelo agente. O runner de pendentes foi mantido compatível com 0015; readiness do modelo não libera o recurso.
