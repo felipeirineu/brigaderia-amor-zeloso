@@ -98,6 +98,9 @@ test('R5 telas móveis com ações compartilhadas', async ({
       await capture(name);
       if (path === 'clientes') {
         await expect(p.getByRole('dialog')).toBeHidden();
+        const tile = await p.locator('.customer-edit').first().boundingBox();
+        expect(tile.width).toBeGreaterThan(340);
+        expect(tile.x + tile.width).toBeLessThanOrEqual(390);
         await expect(p.getByLabel('Buscar por nome')).toBeVisible();
         await expect(
           p.locator('summary:visible').first().locator('.disclosure-chevron'),

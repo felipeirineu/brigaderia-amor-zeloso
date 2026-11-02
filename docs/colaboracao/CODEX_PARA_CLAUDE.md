@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R8-4:** Cartões de clientes em uma coluna e largura total no celular, inclusive na escolha do pedido; avatar 44 px e nome sem quebra forçada. Desktop preservado. Build/tipagem e três E2E com medida de largura/limites da tela aprovados; capturas atualizadas. Próximo R8-5.
+
 - **2026-11-02 — R8-3:** DisclosureSummary compartilhado com ChevronDown Lucide; marcador nativo oculto inclusive no Safari, rotação e reduced-motion. Build/tipagem/lint e seis E2E de campo/fluxos aprovados (os três fluxos repetidos após ajustar o seletor ao summary visível). Capturas atualizadas. Próximo R8-4; nenhum dado/serviço remoto alterado.
 
 - **2026-11-02 — R8-2:** Clientes/Mais/Financeiro sem título visual repetido no celular; h1 semântico preservado para leitor de tela e desktop intacto. Build/tipagem e três E2E dos fluxos/capturas passaram. Produzido e testado localmente, sem operação Cloudflare. Próximo R8-3.
@@ -195,7 +197,7 @@ Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compa
 | R8-1          | Entregue (limites e testes no histórico).                      |
 | R8-2          | Entregue (limites e testes no histórico).                      |
 | R8-3          | Entregue (limites e testes no histórico).                      |
-| R8-4          | Pendente.                                                      |
+| R8-4          | Entregue (limites e testes no histórico).                      |
 | R8-5          | Pendente.                                                      |
 | R8-6          | Pendente.                                                      |
 | R8-7          | Pendente.                                                      |

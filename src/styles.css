@@ -1851,3 +1851,23 @@ details[open] > .disclosure-summary > .disclosure-chevron {
     transition: none;
   }
 }
+@media (max-width: 700px) {
+  .customer-tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .customer-tile.az-button {
+    min-height: 72px;
+    padding: 12px;
+    gap: 12px;
+    overflow-wrap: normal;
+  }
+  .customer-tile > span:last-child {
+    min-width: 0;
+  }
+  .customer-tile .site-avatar,
+  .customer-tile .initial-avatar {
+    width: 44px;
+    height: 44px;
+    font-size: 15px;
+  }
+}
