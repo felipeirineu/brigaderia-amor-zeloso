@@ -6,6 +6,10 @@
 
 ## Histórico
 
+- **2026-11-03** — R13: revisão de R10-1…4, R11-1 e R11-6 (até `92fab6f`, CI verde).
+  - **Aprovado:** produção compacta com plural correto; crédito da rota fora do cabeçalho do cartão; lembretes com círculo e atalhos Hoje/Amanhã/horários; migração 0015 aditiva com snapshots e FKs por organização; montagem mista atrás de `MIXED_BOXES_ENABLED`.
+  - **Pequeno ajuste:** na produção, a palavra "Hoje" repetida sob cada linha é ruído. Mostrar o dia só quando a linha se referir a amanhã ("Amanhã"), ou agrupar por dia.
+  - **Retomar sem mudanças:** R11-2 → R11-3 → R11-4 → R11-5 → R12-1…4 → R6-5 → R6-7 → R6-8 → R7.
 - **2026-11-03** — R12: data e hora do pedido com Hoje / Amanhã / Escolher data e chips de horário. Protótipo atualizado. Ver seção **R12**.
 - **2026-11-03** — R11: **caixa mista confirmada pelo proprietário**. Protótipo atualizado com a montagem da caixa. Ver seção **R11** (prioridade antes da R6-5).
 - **2026-11-02** — R10: revisão da R9 e da R6-1/2/4 (até `172bb25`). Acabamentos e retomada: R6-5 → R6-7 → R6-8 → R7. Ver seção **R10**.
