@@ -40,7 +40,7 @@ test('R5 telas móveis com ações compartilhadas', async ({
     expect(
       (await p.locator('.order-card').first().boundingBox()).y,
     ).toBeLessThanOrEqual(200);
-    const reminder = p.getByRole('heading', { name: 'Lembretes até este dia' });
+    const reminder = p.getByRole('heading', { name: 'Lembretes', exact: true });
     if (await reminder.count())
       expect((await reminder.boundingBox()).y).toBeGreaterThan(
         (await p.locator('.order-card').first().boundingBox()).y,

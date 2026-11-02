@@ -2091,3 +2091,17 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   justify-content: center;
   min-height: 38px;
 }
+.today-reminders > .section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.today-reminders > .section-heading h3 {
+  font-family: inherit;
+  font-size: 17px;
+  margin: 0;
+}
+.today-reminders > p:empty {
+  margin: 0;
+}

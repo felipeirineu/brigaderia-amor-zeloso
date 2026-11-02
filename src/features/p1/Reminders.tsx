@@ -1,3 +1,5 @@
+import { Plus } from 'lucide-react';
+import { ReminderSheet } from './ReminderSheet';
 import { Button } from '../../components/Button';
 import { useRef, useState } from 'react';
 
@@ -24,15 +26,33 @@ const payload = (r: Reminder, done: boolean, active = true) => ({
 });
 export function TodayReminders({ day }: { day: string }) {
   const view = useRemote<Reminder[]>('p1/reminders?through=' + day),
+    [show, setShow] = useState(false),
+    [notice, setNotice] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
   return (
-    <section className="panel">
-      <h2>Lembretes até este dia</h2>
+    <section className="panel today-reminders">
+      {show && (
+        <ReminderSheet
+          day={day}
+          onClose={() => setShow(false)}
+          onSaved={() => {
+            setShow(false);
+            setNotice('Lembrete salvo com histórico.');
+            void view.refresh();
+          }}
+        />
+      )}
+      <div className="section-heading">
+        <h3>Lembretes</h3>
+        <Button variant="tonal" onClick={() => setShow(true)}>
+          <Plus size={18} aria-hidden="true" />
+          Novo lembrete
+        </Button>
+      </div>
+      <p role="status">{notice}</p>
       <Failure message={view.error || error} />
-      <Button to="/gestao/lembretes" variant="ghost">
-        Novo lembrete / gerenciar
-      </Button>
+
       {view.data?.length === 0 && <p>Nenhum lembrete pendente.</p>}
       {view.data?.map((r) => (
         <article key={r.id}>
@@ -60,6 +80,9 @@ export function TodayReminders({ day }: { day: string }) {
           </Button>
         </article>
       ))}
+      <Button to="/gestao/lembretes" variant="ghost">
+        Ver todos os lembretes
+      </Button>
     </section>
   );
 }

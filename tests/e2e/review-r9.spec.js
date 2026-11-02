@@ -69,6 +69,39 @@ test('R9 calendário sem zeros e cabeçalho alinhado', async ({
       expect((await heading.boundingBox()).height).toBe(1);
       if (['agenda', 'relatorios'].includes(path)) await capture(p, path, info);
     }
+    await p.goto(t.url + '/gestao');
+    const before = p.url();
+    await p.getByRole('button', { name: 'Novo lembrete', exact: true }).click();
+    const reminder = p.getByRole('dialog', {
+      name: 'Novo lembrete',
+      exact: true,
+    });
+    await expect(reminder).toBeVisible();
+    await reminder
+      .getByLabel('Título do lembrete', { exact: true })
+      .fill('Retornar DEMONSTRAÇÃO R9');
+    await capture(p, 'novo-lembrete', info);
+    await reminder
+      .getByRole('button', { name: 'Salvar lembrete', exact: true })
+      .click();
+    await expect(reminder).toBeHidden();
+    expect(p.url()).toBe(before);
+    await expect(
+      p.getByRole('heading', { name: 'Retornar DEMONSTRAÇÃO R9', exact: true }),
+    ).toBeVisible();
+    await p.getByRole('button', { name: 'Novo lembrete', exact: true }).click();
+    await p
+      .getByRole('dialog', { name: 'Novo lembrete', exact: true })
+      .getByLabel('Título do lembrete', { exact: true })
+      .fill('Cancelado DEMONSTRAÇÃO R9');
+    await p.getByRole('button', { name: 'Cancelar', exact: true }).click();
+    await expect(
+      p.getByRole('heading', {
+        name: 'Cancelado DEMONSTRAÇÃO R9',
+        exact: true,
+      }),
+    ).toHaveCount(0);
+    await capture(p, 'lembretes-hoje', info);
   } finally {
     await c.close();
     await t.dispose();

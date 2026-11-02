@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R9-3:** Quadro Lembretes com h3 sans e botão tonal + Novo lembrete; criação em folha sem sair do Hoje. Data no fuso de João Pessoa/Fortaleza, validação nativa/servidor, bloqueio de duplo envio, idempotência por conteúdo e cancelamento sem gravação. Tela completa continua em Ver todos. Build/tipagem/lint e seis E2E (criar/cancelar/agenda/ICS) aprovados; capturas da folha e do quadro. Nenhum aviso é simulado; Web Push/ICS com alarme ficam para R6-7. Próximo R9-4.
+
 - **2026-11-02 — R9-2:** Regra de título compacto estendida aos módulos de Mais: Agenda, Relatórios, lembretes, despesas, fichas, insumos, compras, ajuda, preferências, pedidos padrão, produtos, modelos e acessos; cabeçalho de Despesas/Corridas ajustado. H1 semântico e títulos de detalhes de cliente preservados; HelpTip retirado do h1 oculto para continuar acessível. Build/tipagem/lint e seis E2E de telas/operações passaram; capturas Agenda/Relatórios. Próximo R9-3.
 
 - **2026-11-02 — R9-1:** Calendário mostra contagem visual apenas em dias com entrega, mantém contagem acessível e não simula zero enquanto carrega. Título do mês capitaliza só a primeira letra; cabeçalho alinhado em grade de sete colunas e setas regulares. Build/tipagem e três E2E de calendário aprovados; captura r9-depois-calendario. Sem alteração de schema/Cloudflare. Próximo R9-2.
@@ -247,7 +249,7 @@ Revisão 52ec55f integrada por fast-forward. Plano antes do código: DayCalendar
 | ----------- | ------------------------------------------ |
 | R9-1        | Entregue; evidências/limites no histórico. |
 | R9-2        | Entregue; evidências/limites no histórico. |
-| R9-3        | Pendente                                   |
+| R9-3        | Entregue; evidências/limites no histórico. |
 | R9-4        | Pendente                                   |
 | R9-5        | Pendente                                   |
 | R9-6        | Pendente                                   |
