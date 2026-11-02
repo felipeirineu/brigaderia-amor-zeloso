@@ -2216,3 +2216,18 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .help-sheet [data-preferred='true'] {
   box-shadow: inset 0 0 0 2px var(--gold-ink);
 }
+.base-warning {
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 16px;
+  margin: 0 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.base-warning p {
+  flex: 1 1 220px;
+  margin: 0;
+}

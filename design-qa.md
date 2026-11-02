@@ -31,3 +31,11 @@ Interações verificadas nos E2E: calendário com contagem e mês, data futura s
 - Pendências funcionais R6/R7 não foram simuladas para preencher capturas.
 
 final result: passed
+
+## Complemento R9 / R6-1, R6-2 e R6-4 (02/11/2026)
+
+Protótipo relido e aberto em 390×844; conteúdo fictício não importado. Capturas `r9-depois-*` em WebKit móvel com D1 efêmero. Conferidos calendário sem zeros, títulos sem duplicação visual (h1 semântico preservado), cabeçalho dos lembretes com botão lado a lado, criação em folha, ordem dos blocos do administrador, menu com saída no fim e chip do nome.
+
+As capturas de rota, preferência de mapas e aviso da base foram inspecionadas. Estimativa foi reduzida à linha principal e atribuição compacta; explicação de trânsito fica na ajuda para não alongar o cartão. Preferência mostra o último app e permite trocar; sem dado válido não se inventam km/min. Aviso da base aparece só ao administrador e some ao salvar endereço/coordenadas. Captura de rota usa resposta simulada identificada apenas na fixture; não valida deslocamento comercial.
+
+Limites: sem aparelho físico, chave real ORS, foto pessoal, push ou prospecção. Não certifica os itens R6-5/7/8 ou R7 ainda pendentes. Os achados e o `passed` acima se referem ao escopo visual descrito, não à conclusão de todo o briefing.

@@ -222,6 +222,19 @@ export function Today({
         </div>
         <DayCalendar day={day} onSelect={setDay} />
       </div>
+      {role === 'owner' &&
+        day === localDay() &&
+        field?.data &&
+        (!field.data.company.data.address.trim() ||
+          field.data.company.data.latitude === null ||
+          field.data.company.data.longitude === null) && (
+          <aside className="base-warning" aria-label="Configurar base">
+            <p>Cadastre o endereço da base para ver distâncias e rotas.</p>
+            <Button to="/gestao/empresa" variant="tonal">
+              Cadastrar a base
+            </Button>
+          </aside>
+        )}
       {day !== localDay() && (
         <Button variant="ghost" onClick={() => setDay(localDay())}>
           Voltar para hoje

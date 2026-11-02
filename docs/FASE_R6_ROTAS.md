@@ -23,7 +23,7 @@ Para desabilitar novas chamadas, remova `ROUTING_PROVIDER` e faça a publicaçã
 - Proximidade: pedidos com rota calculada primeiro, ordenados por minutos; sem rota, distância em linha reta quando possível. O aplicativo de mapas calcula a navegação a partir da localização do próprio aparelho; o app de gestão não rastreia.
 - Backup inclui o schema técnico, mas exclui cache/fila e contador global de cota. Após restauração local, salvar os locais ou recalcular repõe estes metadados derivados. Não restaure um backup em produção por tentativa.
 
-Fontes consultadas em 02/11/2026: [plano gratuito](https://openrouteservice.org/), [FAQ e cotas](https://giscience.github.io/openrouteservice/frequently-asked-questions), [Directions](https://giscience.github.io/openrouteservice/api-reference/endpoints/directions/). Não foi criada conta nem configurada chave real nesta entrega. Provedor abstraído no Worker; trocar o adaptador exige revisar termos/atribuição/limites e o tipo do provedor, sem alterar o contrato de cliente/pedido.
+Fontes consultadas em 02/11/2026: [plano gratuito](https://openrouteservice.org/), [FAQ e cotas](https://giscience.github.io/openrouteservice/frequently-asked-questions), [Directions](https://giscience.github.io/openrouteservice/api-reference/endpoints/directions/). Não foi criada conta nem configurada chave real nesta entrega. Provedor abstraído no Worker; trocar o adaptador exige revisar termos/atribuição/limites e o identificador do provedor, sem alterar o contrato de cliente/pedido.
 
 ## Validação desta entrega
 

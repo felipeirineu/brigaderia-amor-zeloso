@@ -15,6 +15,7 @@ Use o [guia Windows com comandos, resultado esperado e o que fazer se der erro](
 - [ ] Depois `FINANCE_ENABLED=true`, somente com 0005/0006 conferidas. Deploy correto e teste de saldo/sinal/crédito/estorno/recebimento rápido/desfazer com DEMONSTRAÇÃO.
 - [ ] Por último `P1_ENABLED=true`, somente com 0007–0009. Deploy correto e teste de agenda/ICS/lembretes/CSV/despesas/ficha/compras.
 - [ ] Depois MOBILE_ENABLED=true (0010) e FIELD_ENABLED=true (0011), um deploy/teste por vez, conforme [R4](FASE_R4.md). Configure a base e o nome de exibição na gestão; não editar dados no bundle.
+- [ ] Após o primeiro login do administrador com FIELD ativo: **Configurações/Mais → Empresa**. Buscar o endereço ou usar **Usar minha localização** estando na base; conferir o ponto e a distância de um cliente de teste. O aviso no Hoje leva direto à tela e some após salvar endereço e coordenadas válidos. Se continuar, conferir os campos e a mensagem de gravação. Não colocar o endereço em código, docs ou chat.
 - [ ] Por último P1_TOOLS_ENABLED=true, com 0012/0013 e schema_tools_ready true. Testar estoque/importação/backup seguindo [Complemento P1](P1_COMPLEMENTO.md).
 - [ ] Catálogo continua OFF; não cadastrar chave Pix de exemplo na conta real, não enviar mensagem real nos ensaios.
 - [ ] Homologar Android/iPhone físicos e importação de arquivos em aplicativos autorizados; liberar cadastros somente depois das conferências.

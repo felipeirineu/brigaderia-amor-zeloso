@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R6-4:** Aviso no Hoje para administrador sem endereço/coordenadas da base, com link direto Empresa; nenhum bloqueio de operação. Some ao salvar, inclusive coordenadas zero; não aparece para operador. Passo incluído no roteiro simplificado além do detalhado. Três E2E aprovados com cadastro pela interface; captura r9-depois-aviso-base inspecionada. Regressão completa: 71 E2E aprovados, um offline WebKit já ignorado. Ponto estável de parada: retomar R6-5, depois R6-7/R6-8 e R7 atrás de PROSPECTS_ENABLED; nada remoto foi ativado.
+
 - **2026-11-02 — R6-2:** Cache técnico aceita identificador de provedor futuro sem nova migração; somente ORS implementado. Folha Mapa mostra estimativa salva/fallback, endereço e três apps, com último aplicativo escolhido persistido localmente por usuário (sem destinos), destaque e troca sempre acessível. Mantém folha em todas as aberturas, escolha permitida pelo briefing; não usa SDK/tiles/rastreamento. Seis E2E WebKit/Chromium aprovados: URLs de endereço e coordenadas zero, recarga e isolamento de preferência, quatro atalhos e entrega existentes. Captura r9-depois-mapa-preferencia inspecionada. Próximo R6-4.
 
 - **2026-11-02 — R6-1:** Rota ORS driving-car no Worker com cache/fila privados, estimativas em cliente/entrega, recálculo administrativo, snapshots e ordenação por minutos. Migração 0014 preparada; secret/variável e publicação só pelo responsável, guia FASE_R6_ROTAS. Limite interno 1000 por janela de 24 h, espaçamento 3,1 s, timeout e espera por falha; nenhuma consulta externa em GET. D1 efêmero aprovou cache/repetição, concorrência com mudança de base, orçamento, autorização/isolamento/FKs e falha sem perder cadastro. Três E2E (WebKit/Chromium) aprovados, capturas r9-depois-rota-*; 66 unitários, seis testes SQL, backup/restauração e campo aprovados, lint/tipagem/build/formatação. Provedor real não ativado/testado com chave; CI dos seis commits R9 confirmado success. Próximo R6-2.
@@ -233,23 +235,23 @@ Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compa
 - **Limitações:** sem iPhone/Android físico, fluxo remoto de ativação ou teste de token Cloudflare real. Km/min de carro, fotos pessoais, avisos push e visitas não foram preenchidos com dados do protótipo. Tipografia existente preservada, sem promessa de clone pixel a pixel. Preferência de mapa e WhatsApp em folha ainda pendentes da R6.
 - **Pendências e retomada:** encerrar esta sessão em R5-10 para preservar a cota de validação/envio. Próximo **R6-1**, depois completar R6-2, R6-4 (aviso sem base), R6-5, R6-7 e R6-8; **R6-3 e R6-6 já cobertos**. Depois, R7-1…9 atrás de flag própria, com migração aditiva e testes de isolamento financeiro. R5-11 permanece proposta futura não bloqueante. Nenhuma migração, deploy, secret, conta paga ou configuração Cloudflare foram realizados pelo agente.
 
-| Revisão atual | Status                                                                                                                     |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| R8-1          | Cartão entregue; km/min de rota dependem de R6-1.                                                                          |
-| R8-2          | Entregue (limites e testes no histórico).                                                                                  |
-| R8-3          | Entregue (limites e testes no histórico).                                                                                  |
-| R8-4          | Entregue (limites e testes no histórico).                                                                                  |
-| R8-5          | Entregue (limites e testes no histórico).                                                                                  |
-| R8-6          | Entregue (limites e testes no histórico).                                                                                  |
-| R8-7          | Interface entregue; fotos pessoais dependem de R6-5.                                                                       |
-| R5-5          | Entregue; testes/limites no histórico.                                                                                     |
-| R5-6          | Entregue; testes/limites no histórico.                                                                                     |
-| R5-7          | Entregue; testes/limites no histórico.                                                                                     |
-| R5-8          | Entregue; testes/limites no histórico.                                                                                     |
-| R5-9          | Entregue; testes/limites no histórico.                                                                                     |
-| R5-10         | Entregue; testes/limites no histórico.                                                                                     |
-| R6            | R6-3/R6-6 cobertos por R8-6; guia da base adiantado, aviso pendente. R6-1/2/5/7/8 pendentes (Mapa parcialmente adiantado). |
-| R7            | Pendente após R6; nenhuma migração ou flag ativada.                                                                        |
+| Revisão atual | Status                                                     |
+| ------------- | ---------------------------------------------------------- |
+| R8-1          | Cartão entregue; km/min de rota dependem de R6-1.          |
+| R8-2          | Entregue (limites e testes no histórico).                  |
+| R8-3          | Entregue (limites e testes no histórico).                  |
+| R8-4          | Entregue (limites e testes no histórico).                  |
+| R8-5          | Entregue (limites e testes no histórico).                  |
+| R8-6          | Entregue (limites e testes no histórico).                  |
+| R8-7          | Interface entregue; fotos pessoais dependem de R6-5.       |
+| R5-5          | Entregue; testes/limites no histórico.                     |
+| R5-6          | Entregue; testes/limites no histórico.                     |
+| R5-7          | Entregue; testes/limites no histórico.                     |
+| R5-8          | Entregue; testes/limites no histórico.                     |
+| R5-9          | Entregue; testes/limites no histórico.                     |
+| R5-10         | Entregue; testes/limites no histórico.                     |
+| R6            | R6-1/2/3/4/6 entregues. R6-5/7/8 pendentes; ver rodada R9. |
+| R7            | Pendente após R6; nenhuma migração ou flag ativada.        |
 
 ## R9 — rodada atual
 
@@ -263,7 +265,7 @@ Revisão 52ec55f integrada por fast-forward. Plano antes do código: DayCalendar
 | R9-4        | Entregue; evidências/limites no histórico.                       |
 | R9-5        | Entregue; evidências/limites no histórico.                       |
 | R9-6        | Entregue; evidências/limites no histórico.                       |
-| R6 restante | R6-1/2 entregues; R6-3/6 anteriores. Próximo R6-4; depois 5/7/8. |
+| R6 restante | R6-1/2/4 entregues; R6-3/6 anteriores. Retomar R6-5, depois 7/8. |
 | R7          | Pendente após R6                                                 |
 
 ### Plano R6-1 antes do código
@@ -275,3 +277,14 @@ Aceite: chamada só no servidor, coordenadas sem nome/endereço no provedor, tim
 ### Plano R6-2 antes do código
 
 Completar DeliveryActions e utilitário de preferência local: folha mostra estimativa salva (ou linha reta), endereço, três links já existentes e último app escolhido por usuário, sem gravar destinos no navegador. Manter folha sempre disponível para trocar de aplicativo; abertura direta é opcional no briefing. Sem SDK/tiles, rastreamento ou consulta externa. Aceite: URLs com coordenadas e endereço codificados, preferência preservada após recarregar e isolada por usuário, WebKit/Chromium e captura.
+
+### Plano R6-4 antes do código
+
+Today/estilos/guia: aviso exclusivo do administrador quando campo está ativo mas faltam endereço/coordenadas da base, com link direto Empresa. Sem bloquear entregas, inventar distância ou pedir endereço no chat. Some depois de salvar um local válido; operador não vê configuração administrativa. Aceite: três cenários E2E e captura; roteiro existente de primeiro login mantido, inclusive no caminho simplificado.
+
+### Relatório da rodada e ponto de retomada
+
+- **Produzido:** R9-1…6; R6-1 (rota de carro com cache/fila e fallback), R6-2 (folha/preferência de mapas), R6-4 (aviso/roteiro da base). Um commit e push no main por item; capturas `r9-depois-*`, guia de rotas e notas em `design-qa.md`. Revisão do Claude integrada em 52ec55f, sem alterar o briefing/protótipo.
+- **Testes executados:** lint, formatação, tipagem e build Pages; 66 unitários e seis SQL; integração de rotas em D1 efêmero com cache, concorrência, orçamento, falha, snapshots e isolamento; campo; backup/restauração local com FKs. E2E completo em Chromium móvel/desktop e WebKit móvel: **71 aprovados, um ignorado** (offline WebKit preexistente). Os três cenários da base também foram executados isoladamente. CI dos seis commits R9 e de R6-1/R6-2 confirmado aprovado; CI do último push acompanhado no fechamento da resposta.
+- **Limitações:** estimativa ORS testada com provedor simulado, sem chave real nem ensaio físico. Ativação humana posterior: 0014 e configuração gratuita descritas em FASE_R6_ROTAS. Sem deploy, migração remota, secret ou mudança Cloudflare nesta rodada. Fallback continua explícito; push e fotos pessoais não foram simulados para preencher a UI.
+- **Pendências/retomada:** parar após R6-4 para preservar validação/envio. Próximo **R6-5: fotos de perfil privadas** (compressão, câmera/galeria, troca própria e remoção administrativa, avatar/entregador/histórico). Depois **R6-7: lembretes Web Push e ICS com alarme**, incluindo ensaio Android/iPhone físicos que o agente não pode afirmar recebido neste ambiente; **R6-8: rolagem/WhatsApp em folha**. Em seguida **R7-1…9**, com visitas/amostras isoladas de venda/financeiro e flag `PROSPECTS_ENABLED` inicialmente desligada; nenhuma implementação/ativação dessa flag nesta rodada.
