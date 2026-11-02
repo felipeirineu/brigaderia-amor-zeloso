@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R8-3:** DisclosureSummary compartilhado com ChevronDown Lucide; marcador nativo oculto inclusive no Safari, rotação e reduced-motion. Build/tipagem/lint e seis E2E de campo/fluxos aprovados (os três fluxos repetidos após ajustar o seletor ao summary visível). Capturas atualizadas. Próximo R8-4; nenhum dado/serviço remoto alterado.
+
 - **2026-11-02 — R8-2:** Clientes/Mais/Financeiro sem título visual repetido no celular; h1 semântico preservado para leitor de tela e desktop intacto. Build/tipagem e três E2E dos fluxos/capturas passaram. Produzido e testado localmente, sem operação Cloudflare. Próximo R8-3.
 
 - **2026-11-02 — R8-1:** cartão com avatar, hora Fortaleza/endereço, sabores/fotos em pílulas, condição/total, quatro ações iguais e ação verde de largura total. Mapa abre folha com três apps; 99 copia o destino. Recebimento combinado reutiliza saldo, CAS/idempotência e confirmação humana existentes. Ações secundárias recolhidas. API consulta fotos e condições em lote, sem N+1 ou migração. Build/tipagem/lint, contraste verde AA 5,27:1, 14 integrações operacionais e E2E de entrega/campo/operação/recebimento aprovados; regressão financeira conferida antes do envio. Capturas r8-depois-hoje/mapa. Pendente: km/min reais do R6-1 e preferência do mapa R6-2; a linha reta é explicitamente rotulada. Próximo R8-2.
@@ -188,10 +190,15 @@ Revisões R6/R7/R8 e protótipo integrados em a8a4a90. Protótipo aberto em Chro
 
 Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compacto, fotos em lote, quatro ações e entrega com validação existente); CompactHeader/Management/CSS (R8-2…5: uma hierarquia móvel, Lucide, largura total, iniciais); Today/calendário/API e datas (R8-6: Fortaleza, contagem agregada, dia selecionado); Totem (R8-7: rótulos, entregador e atalhos de data). Capturas r8-depois-* e E2E móveis, sem retirar autorização/CAS/idempotência. Rotas/tempo e fotos pessoais só serão exibidos com dados efetivamente disponíveis.
 
-| Revisão atual | Status                                                                 |
-| ------------- | ---------------------------------------------------------------------- |
-| R8-1          | Entregue; cálculo de rota e foto pessoal dependem da R6.               |
-| R8-2 a R8-7   | Pendentes, nesta ordem.                                                |
-| R5-5 a R5-10  | Pendentes após R8.                                                     |
-| R6            | Pendente; folha do Mapa adiantada na R8-1, preferência ainda pendente. |
-| R7            | Pendente após R6; nenhuma migração/flag ativada.                       |
+| Revisão atual | Status                                                         |
+| ------------- | -------------------------------------------------------------- |
+| R8-1          | Entregue (limites e testes no histórico).                      |
+| R8-2          | Entregue (limites e testes no histórico).                      |
+| R8-3          | Entregue (limites e testes no histórico).                      |
+| R8-4          | Pendente.                                                      |
+| R8-5          | Pendente.                                                      |
+| R8-6          | Pendente.                                                      |
+| R8-7          | Pendente.                                                      |
+| R5-5 a R5-10  | Pendentes após R8.                                             |
+| R6            | Pendente; folha do Mapa adiantada, preferência ainda pendente. |
+| R7            | Pendente após R6; nenhuma migração ou flag ativada.            |

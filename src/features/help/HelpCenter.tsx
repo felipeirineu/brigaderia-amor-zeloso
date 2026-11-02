@@ -1,3 +1,4 @@
+import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { useField } from '../field/FieldContext';
 import { FinancialTutorial } from '../finance/Tutorial';
@@ -231,7 +232,7 @@ export function HelpCenter({
         <section className="panel">
           <h2>Estoque, importação e backup</h2>
           <details>
-            <summary>Conferir e movimentar estoque</summary>
+            <DisclosureSummary>Conferir e movimentar estoque</DisclosureSummary>
             <p>
               Em Mais → Estoque, escolha o insumo, tipo de movimento, quantidade
               e motivo. Confira a unidade. Previsão não baixa estoque; consumo
@@ -241,7 +242,9 @@ export function HelpCenter({
             </p>
           </details>
           <details>
-            <summary>Importar clientes (administrador)</summary>
+            <DisclosureSummary>
+              Importar clientes (administrador)
+            </DisclosureSummary>
             <p>
               Prepare CSV UTF-8 ou XLSX com nome e telefone, até 50 clientes.
               Não use fórmulas nem macros. Em Mais → Importar clientes, escolha
@@ -251,7 +254,9 @@ export function HelpCenter({
             </p>
           </details>
           <details>
-            <summary>Guardar e testar backup (administrador)</summary>
+            <DisclosureSummary>
+              Guardar e testar backup (administrador)
+            </DisclosureSummary>
             <p>
               Em Mais → Backup privado, baixe o arquivo e guarde fora do
               Git/chat. Ele contém dados pessoais, fotos, chave Pix cadastrada e
@@ -266,7 +271,7 @@ export function HelpCenter({
         <section className="panel">
           <h2>Rotinas P1</h2>
           <details>
-            <summary>Agenda e lembretes</summary>
+            <DisclosureSummary>Agenda e lembretes</DisclosureSummary>
             <ol>
               <li>
                 Em Mais → Agenda, escolha uma data e Semana/Mês; filtre o tipo
@@ -287,7 +292,7 @@ export function HelpCenter({
             </Button>
           </details>
           <details>
-            <summary>Relatórios e fluxo</summary>
+            <DisclosureSummary>Relatórios e fluxo</DisclosureSummary>
             <p>
               Vendas usam entregas efetivas. Aging é posição atual. Recebimentos
               e despesas registrados formam fluxo, não saldo bancário ou lucro.
@@ -299,7 +304,9 @@ export function HelpCenter({
             </Button>
           </details>
           <details>
-            <summary>Ficha, preço estimado e compras</summary>
+            <DisclosureSummary>
+              Ficha, preço estimado e compras
+            </DisclosureSummary>
             <ol>
               <li>
                 O administrador cadastra insumos, quantidade da embalagem e
@@ -325,7 +332,7 @@ export function HelpCenter({
 
       {Object.entries(helpTexts).map(([key, text]) => (
         <details className="panel" key={key}>
-          <summary>{text.title}</summary>
+          <DisclosureSummary>{text.title}</DisclosureSummary>
           <p>{text.text}</p>
         </details>
       ))}

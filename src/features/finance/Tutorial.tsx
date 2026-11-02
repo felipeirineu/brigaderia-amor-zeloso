@@ -1,3 +1,4 @@
+import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { useState } from 'react';
 
@@ -24,7 +25,9 @@ export function FinancialTutorial() {
         </Button>
       </div>
       <details>
-        <summary>Administrador: preparar condições e fechar o período</summary>
+        <DisclosureSummary>
+          Administrador: preparar condições e fechar o período
+        </DisclosureSummary>
         <ol>
           <li>
             Em Clientes, abra Dados B2B e padrões. Escolha a condição; a prazo
@@ -49,7 +52,9 @@ export function FinancialTutorial() {
         </ol>
       </details>
       <details>
-        <summary>Operador: registrar recebimento na entrega</summary>
+        <DisclosureSummary>
+          Operador: registrar recebimento na entrega
+        </DisclosureSummary>
         <ol>
           <li>
             No Hoje, toque Recebi R$ no cartão e confira o pedido selecionado.

@@ -1,3 +1,4 @@
+import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { useState } from 'react';
 import { Button } from '../../components/Button';
 import { flavorOrderKey, readFlavorOrder } from './flavorOrder';
@@ -27,7 +28,7 @@ export function FlavorOrder({
   }
   return (
     <details className="panel">
-      <summary>Ordem dos sabores neste navegador</summary>
+      <DisclosureSummary>Ordem dos sabores neste navegador</DisclosureSummary>
       <p>
         Desempata sabores com o mesmo número de pedidos. Salva somente a
         preferência de ordem, sem nomes, preços ou clientes. Não sincroniza

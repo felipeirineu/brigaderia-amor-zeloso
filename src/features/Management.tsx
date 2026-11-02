@@ -1,3 +1,4 @@
+import { DisclosureSummary } from '../components/DisclosureSummary';
 import { FlavorOrder } from './mobile/FlavorOrder';
 import { Button } from '../components/Button';
 import { CompactHeader } from './mobile/CompactHeader';
@@ -420,7 +421,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
             </label>
             {field && (
               <details>
-                <summary>Endereço e Instagram</summary>
+                <DisclosureSummary>Endereço e Instagram</DisclosureSummary>
                 <PlaceFields
                   hideLocation
                   value={site ?? emptyPlace()}
@@ -467,7 +468,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
         />
       </label>
       <details className="customer-list-options">
-        <summary>Opções da lista</summary>
+        <DisclosureSummary>Opções da lista</DisclosureSummary>
         <label>
           <input
             type="checkbox"
@@ -519,7 +520,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
                 </span>
               </Button>
               <details>
-                <summary>Conta e localização</summary>
+                <DisclosureSummary>Conta e localização</DisclosureSummary>
                 <SiteInfo id={c.id} name={c.name} />
                 {financial && (
                   <>

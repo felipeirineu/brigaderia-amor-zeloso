@@ -99,6 +99,15 @@ test('R5 telas móveis com ações compartilhadas', async ({
       if (path === 'clientes') {
         await expect(p.getByRole('dialog')).toBeHidden();
         await expect(p.getByLabel('Buscar por nome')).toBeVisible();
+        await expect(
+          p.locator('summary:visible').first().locator('.disclosure-chevron'),
+        ).toBeVisible();
+        expect(
+          await p
+            .locator('summary:visible')
+            .first()
+            .evaluate((e) => getComputedStyle(e).listStyleType),
+        ).toBe('none');
         await p
           .getByRole('button', { name: 'Novo cliente', exact: true })
           .click();

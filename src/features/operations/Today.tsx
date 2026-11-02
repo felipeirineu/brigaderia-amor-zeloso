@@ -1,3 +1,4 @@
+import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { createPortal } from 'react-dom';
 import { Button } from '../../components/Button';
 import { DeliveryActions } from '../field/DeliveryActions';
@@ -477,7 +478,9 @@ export function Today({
                       </Button>
                     )}
                     <details className="delivery-more">
-                      <summary>Mais ações do pedido</summary>
+                      <DisclosureSummary>
+                        Mais ações do pedido
+                      </DisclosureSummary>
                       {financial &&
                         ![
                           'draft',

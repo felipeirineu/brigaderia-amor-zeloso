@@ -1,3 +1,4 @@
+import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { Transport } from '../field/Transport';
 import { TravelSheet } from '../field/TravelSheet';
@@ -433,7 +434,7 @@ export function OrderDetail({
             )}
           </section>
           <details className="panel">
-            <summary>Histórico de status</summary>
+            <DisclosureSummary>Histórico de status</DisclosureSummary>
             {history.data?.length ? (
               <ol>
                 {history.data.map((event) => (

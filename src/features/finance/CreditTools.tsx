@@ -1,3 +1,4 @@
+import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
 import { useRef, useState } from 'react';
@@ -57,7 +58,7 @@ export function CreditTools({
         registra novo dinheiro entrando.
       </p>
       <details>
-        <summary>Registrar adiantamento sem pedido</summary>
+        <DisclosureSummary>Registrar adiantamento sem pedido</DisclosureSummary>
         <form
           className="data-form"
           onSubmit={(e) => {
