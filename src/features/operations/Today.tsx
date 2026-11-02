@@ -191,19 +191,34 @@ export function Today({
               month: 'long',
             }).format(new Date(day + 'T12:00Z'))}
           </p>
-          <h2>
-            {day === localDay()
-              ? greeting(now) +
-                (field?.data?.staff.find((s) => s.id === field.data!.user_id)
-                  ?.version
-                  ? ', ' +
-                    field.data.staff.find((s) => s.id === field.data!.user_id)!
-                      .display_name
-                  : '')
-              : role === 'owner'
-                ? 'Planejamento do dia'
-                : 'Entregas do dia'}
-          </h2>
+          <div className="today-identity">
+            <h2>
+              {day === localDay()
+                ? greeting(now) +
+                  (field?.data?.staff.find((s) => s.id === field.data!.user_id)
+                    ?.version
+                    ? ', ' +
+                      field.data.staff.find(
+                        (s) => s.id === field.data!.user_id,
+                      )!.display_name
+                    : '')
+                : role === 'owner'
+                  ? 'Planejamento do dia'
+                  : 'Entregas do dia'}
+            </h2>
+            {day === localDay() &&
+              field?.data &&
+              !field.data.staff.find((s) => s.id === field.data!.user_id)
+                ?.version && (
+                <Button
+                  to="/gestao/preferencias"
+                  variant="tonal"
+                  className="name-tip"
+                >
+                  Defina seu nome
+                </Button>
+              )}
+          </div>
         </div>
         <DayCalendar day={day} onSelect={setDay} />
       </div>

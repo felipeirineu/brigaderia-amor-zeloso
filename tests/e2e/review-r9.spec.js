@@ -81,6 +81,27 @@ test('R9 calendário sem zeros e cabeçalho alinhado', async ({
     await menu
       .getByRole('button', { name: 'Fechar menu', exact: true })
       .click();
+    await expect(
+      p.getByRole('link', { name: 'Defina seu nome', exact: true }),
+    ).toBeVisible();
+    await capture(p, 'defina-seu-nome', info);
+    await p.getByRole('link', { name: 'Defina seu nome', exact: true }).click();
+    await p
+      .getByLabel('Nome de exibição', { exact: true })
+      .fill('Equipe DEMONSTRAÇÃO R9');
+    await p
+      .getByRole('button', { name: 'Salvar nome de exibição', exact: true })
+      .click();
+    await expect(
+      p.getByText('Nome atualizado.', { exact: true }),
+    ).toBeVisible();
+    await p.goto(t.url + '/gestao');
+    await expect(p.locator('.today-greeting h2')).toContainText(
+      'Equipe DEMONSTRAÇÃO R9',
+    );
+    await expect(
+      p.getByRole('link', { name: 'Defina seu nome', exact: true }),
+    ).toHaveCount(0);
     const before = p.url();
     await p.getByRole('button', { name: 'Novo lembrete', exact: true }).click();
     const reminder = p.getByRole('dialog', {
@@ -112,6 +133,15 @@ test('R9 calendário sem zeros e cabeçalho alinhado', async ({
         exact: true,
       }),
     ).toHaveCount(0);
+    const reminderHeader = p.locator('.today-reminders > .section-heading'),
+      labelBox = await reminderHeader.locator('h3').boundingBox(),
+      buttonBox = await reminderHeader.getByRole('button').boundingBox();
+    expect(buttonBox.x).toBeGreaterThan(labelBox.x + labelBox.width);
+    expect(
+      Math.abs(
+        labelBox.y + labelBox.height / 2 - buttonBox.y - buttonBox.height / 2,
+      ),
+    ).toBeLessThan(1);
     await capture(p, 'lembretes-hoje', info);
   } finally {
     await c.close();

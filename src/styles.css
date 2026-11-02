@@ -2170,3 +2170,30 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .profile-menu .profile-menu-item .az-button-label {
   text-align: left;
 }
+.today-identity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.today-identity h2 {
+  flex: 1;
+  min-width: 0;
+}
+.today-greeting .name-tip.az-button {
+  min-height: 44px;
+  font-size: 11px;
+  padding: 0 8px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.today-greeting:has(.name-tip) h2 {
+  font-size: 20px;
+}
+.today-page:has(.name-tip) .today-greeting,
+.today-page:has(.name-tip) .deliveries-heading {
+  margin-bottom: 0;
+}
+.today-reminders > .section-heading {
+  flex-direction: row;
+  margin-bottom: 8px;
+}

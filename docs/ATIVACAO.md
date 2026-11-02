@@ -87,3 +87,5 @@ Depois, em **Actions → Homologação D1 (manual) → Run workflow**, escolher 
 3. Após resultado verde e contagens conferidas, seguir os passos 4–6 acima. O GitHub não recebe o backup: não há upload de SQL/artefato pelo workflow. Os logs mostram apenas metadados e contagens.
 
 Sem secret ou ambiente configurados, o workflow encerra com orientação; não use outro banco para “testar se funciona”. A criação do ambiente, secret, aprovação e qualquer operação remota ficam a cargo do administrador. Não foram realizadas nesta rodada.
+
+Após o primeiro login de cada pessoa, tocar em **Defina seu nome** no Hoje (ou perfil → Nome de exibição e preferências), informar o nome usado pela equipe e salvar. Esperado: saudação com o nome, iniciais no avatar e chip oculto. Se não salvar, verificar a mensagem e a conexão; a operação continua disponível sem nome. Não inserir um nome de demonstração em conta real.
