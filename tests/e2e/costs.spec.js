@@ -27,6 +27,23 @@ test('relatórios CSV, despesa/estorno, ficha/preço e compras privadas', async 
     await expect(
       page.getByRole('heading', { name: 'Relatórios', exact: true }),
     ).toBeVisible();
+    const conditions = page.getByRole('group', {
+      name: 'Condição das vendas',
+      exact: true,
+    });
+    await conditions
+      .getByRole('button', { name: 'Na entrega', exact: true })
+      .click();
+    await expect(
+      conditions.getByRole('button', { name: 'Na entrega', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await conditions
+      .getByRole('button', { name: 'Todas', exact: true })
+      .click();
+    if (process.env.R8_CAPTURE === '1' && info.project.name === 'webkit-mobile')
+      await page.screenshot({
+        path: 'docs/colaboracao/capturas/r8-depois-relatorios.png',
+      });
     const event = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Exportar relatório CSV' }).click();
     expect((await event).suggestedFilename()).toBe('relatorio-orders.csv');

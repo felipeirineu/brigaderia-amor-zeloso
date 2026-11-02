@@ -2029,3 +2029,34 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   font-size: 12px;
   color: var(--muted);
 }
+.choice-chips {
+  border: 0;
+  padding: 0;
+  margin: 12px 0;
+  min-width: 0;
+}
+.choice-chips legend {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.today-greeting > div {
+  flex: 1;
+  min-width: 0;
+}
+.today-greeting .eyebrow {
+  letter-spacing: 0.08em;
+  font-weight: 500;
+  line-height: 1.4;
+}
+.workday-calendar-trigger {
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.workday-calendar-trigger .az-button-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.delivery-icon-row .az-button-label {
+  white-space: nowrap;
+}

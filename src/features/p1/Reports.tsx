@@ -1,3 +1,4 @@
+import { ChoiceChips } from '../../components/ChoiceChips';
 import { Button } from '../../components/Button';
 import { useState } from 'react';
 import { useRemote, Failure, localDay } from '../operations/common';
@@ -80,19 +81,18 @@ export function Reports() {
             }}
           />
         </label>
-        <label>
-          Condição das vendas
-          <select
-            value={condition}
-            onChange={(e) => setCondition(e.target.value)}
-          >
-            <option value="all">Todas</option>
-            <option value="unset">A definir</option>
-            <option value="advance">Adiantado</option>
-            <option value="delivery">Na entrega</option>
-            <option value="credit">A prazo</option>
-          </select>
-        </label>
+        <ChoiceChips
+          label="Condição das vendas"
+          value={condition}
+          onChange={setCondition}
+          options={[
+            ['all', 'Todas'],
+            ['unset', 'A definir'],
+            ['advance', 'Adiantado'],
+            ['delivery', 'Na entrega'],
+            ['credit', 'A prazo'],
+          ]}
+        />
         <label>
           Cliente do relatório
           <select

@@ -1,3 +1,4 @@
+import { ChoiceChips } from '../../components/ChoiceChips';
 import { Button } from '../../components/Button';
 import { useState } from 'react';
 
@@ -58,17 +59,19 @@ export function Agenda() {
           </Button>
         ))}
       </div>
-      <label>
-        Eventos
-        <select value={kind} onChange={(e) => setKind(e.target.value)}>
-          <option value="">Todos</option>
-          <option value="delivery">Pedidos/entregas</option>
-          <option value="production">Produção planejada</option>
-          <option value="closing">Fechamentos</option>
-          <option value="due">Vencimentos</option>
-          <option value="reminder">Lembretes</option>
-        </select>
-      </label>
+      <ChoiceChips
+        label="Eventos"
+        value={kind}
+        onChange={setKind}
+        options={[
+          ['', 'Todos'],
+          ['delivery', 'Pedidos/entregas'],
+          ['production', 'Produção planejada'],
+          ['closing', 'Fechamentos'],
+          ['due', 'Vencimentos'],
+          ['reminder', 'Lembretes'],
+        ]}
+      />
       <p>
         {civilDate(from)} a {civilDate(to)}
       </p>

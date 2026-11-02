@@ -150,7 +150,8 @@ export function DayCalendar({
     <>
       <Button
         ref={trigger}
-        variant="chip"
+        variant="tonal"
+        className="workday-calendar-trigger"
         aria-label="Escolher dia"
         onClick={() => setOpen(true)}
       >

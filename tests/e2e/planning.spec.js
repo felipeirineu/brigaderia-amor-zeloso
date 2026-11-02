@@ -4,7 +4,7 @@ import { runtime } from '../helpers/runtime.mjs';
 import { demoProject } from '../helpers/demo-project.mjs';
 test('agenda privada, ICS e lembrete visível/concluído no Hoje', async ({
   browser,
-}) => {
+}, info) => {
   const t = await runtime({
       browserHTTP: true,
       financeEnabled: true,
@@ -40,6 +40,18 @@ test('agenda privada, ICS e lembrete visível/concluído no Hoje', async ({
         exact: true,
       }),
     ).toBeVisible();
+    const events = page.getByRole('group', { name: 'Eventos', exact: true });
+    await events
+      .getByRole('button', { name: 'Lembretes', exact: true })
+      .click();
+    await expect(
+      events.getByRole('button', { name: 'Lembretes', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await events.getByRole('button', { name: 'Todos', exact: true }).click();
+    if (process.env.R8_CAPTURE === '1' && info.project.name === 'webkit-mobile')
+      await page.screenshot({
+        path: 'docs/colaboracao/capturas/r8-depois-agenda.png',
+      });
     const downloadEvent = page.waitForEvent('download');
     await page.getByRole('button', { name: 'Exportar agenda ICS' }).click();
     const download = await downloadEvent;
