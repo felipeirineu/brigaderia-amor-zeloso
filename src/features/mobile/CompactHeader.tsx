@@ -47,9 +47,17 @@ export function CompactHeader({
       segment === 'pedidos' && location.search.includes('novo')
         ? 'Novo pedido'
         : (titles[segment] ?? 'Gestão'),
-    name =
-      field?.data?.staff.find((s) => s.id === field.data!.user_id)
-        ?.display_name || (role === 'owner' ? 'Administrador' : 'Operador');
+    own = field?.data?.staff.find((s) => s.id === field.data!.user_id),
+    name = own?.version ? own.display_name : 'Meu perfil',
+    initials = own?.version
+      ? own.display_name
+          .trim()
+          .split(/\s+/)
+          .slice(0, 2)
+          .map((w) => w[0])
+          .join('')
+          .toLocaleUpperCase('pt-BR')
+      : '';
   return (
     <>
       <header className="compact-header" aria-label="Cabeçalho da gestão">
@@ -80,8 +88,13 @@ export function CompactHeader({
           aria-label={'Abrir menu de ' + name}
           onClick={() => menu.current?.showModal()}
         >
-          <CircleUserRound size={24} aria-hidden="true" />
-          <span>{name}</span>
+          {initials ? (
+            <span className="profile-initials" aria-hidden="true">
+              {initials}
+            </span>
+          ) : (
+            <CircleUserRound size={24} aria-hidden="true" />
+          )}
         </Button>
       </header>
       <dialog
@@ -92,6 +105,14 @@ export function CompactHeader({
       >
         <div className="sheet-body">
           <h2>{name}</h2>
+          <p>{role === 'owner' ? 'Administrador' : 'Operador'}</p>
+          <Button
+            to="/gestao/preferencias"
+            variant="ghost"
+            onClick={() => menu.current?.close()}
+          >
+            Nome de exibição e preferências
+          </Button>
           {operations && online && (
             <Button
               onClick={() => {

@@ -19,6 +19,13 @@ test('R8 cartão compacto, quatro atalhos e entrega validada no servidor', async
   });
   try {
     const { call } = await reviewProject(t);
+    const profile = await t.request('field/profile', {
+      cookie: await t.login('operator@example.test'),
+      method: 'PUT',
+      key: crypto.randomUUID(),
+      data: { display_name: 'Equipe DEMONSTRAÇÃO', version: 0 },
+    });
+    expect(profile.ok).toBe(true);
     let order = (await call('orders', undefined, 'GET'))[0];
     for (const to of ['in_production', 'ready', 'out_for_delivery']) {
       await call(`orders/${order.id}/status`, { version: order.version, to });
@@ -26,6 +33,20 @@ test('R8 cartão compacto, quatro atalhos e entrega validada no servidor', async
     }
     const p = await c.newPage();
     await p.goto(t.url + '/api/access/start');
+    const avatar = p.getByRole('button', {
+      name: 'Abrir menu de Equipe DEMONSTRAÇÃO',
+      exact: true,
+    });
+    await expect(avatar).toHaveText('ED');
+    await avatar.click();
+    await expect(
+      p.getByRole('dialog', { name: 'Menu da gestão' }),
+    ).toContainText('Operador');
+    if (process.env.R8_CAPTURE === '1' && info.project.name === 'webkit-mobile')
+      await p.screenshot({
+        path: 'docs/colaboracao/capturas/r8-depois-perfil.png',
+      });
+    await p.getByRole('button', { name: 'Fechar menu', exact: true }).click();
     const card = p.locator('.order-card').first();
     await expect(card).toBeVisible();
     await expect(card.locator('.delivery-icon-row .az-button')).toHaveCount(4);

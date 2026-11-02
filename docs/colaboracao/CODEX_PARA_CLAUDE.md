@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R8-5:** Botão do perfil com iniciais do nome cadastrado e alvo circular de 44 px; sem nome cadastrado usa ícone neutro, sem papel no botão. Nome e papel aparecem no menu, com acesso às preferências. Foto pessoal fica explicitamente para R6-5. Build/tipagem/lint e nove E2E de perfil/cabeçalho/campo/entrega aprovados. Captura r8-depois-perfil. Próximo R8-6.
+
 - **2026-11-02 — R8-4:** Cartões de clientes em uma coluna e largura total no celular, inclusive na escolha do pedido; avatar 44 px e nome sem quebra forçada. Desktop preservado. Build/tipagem e três E2E com medida de largura/limites da tela aprovados; capturas atualizadas. Próximo R8-5.
 
 - **2026-11-02 — R8-3:** DisclosureSummary compartilhado com ChevronDown Lucide; marcador nativo oculto inclusive no Safari, rotação e reduced-motion. Build/tipagem/lint e seis E2E de campo/fluxos aprovados (os três fluxos repetidos após ajustar o seletor ao summary visível). Capturas atualizadas. Próximo R8-4; nenhum dado/serviço remoto alterado.
@@ -198,7 +200,7 @@ Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compa
 | R8-2          | Entregue (limites e testes no histórico).                      |
 | R8-3          | Entregue (limites e testes no histórico).                      |
 | R8-4          | Entregue (limites e testes no histórico).                      |
-| R8-5          | Pendente.                                                      |
+| R8-5          | Entregue (limites e testes no histórico).                      |
 | R8-6          | Pendente.                                                      |
 | R8-7          | Pendente.                                                      |
 | R5-5 a R5-10  | Pendentes após R8.                                             |
