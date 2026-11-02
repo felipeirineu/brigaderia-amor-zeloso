@@ -30,6 +30,8 @@ test('R5 telas móveis com ações compartilhadas', async ({
           path: `docs/colaboracao/capturas/${process.env.R8_CAPTURE ? 'r8' : 'r5'}-depois-${name}.png`,
         });
     };
+    const consoleErrors = [];
+    p.on('pageerror', (e) => consoleErrors.push(e.message));
     await p.goto(t.url + '/api/access/start');
     await expect(p.locator('.order-card')).toBeVisible();
     await expect(
@@ -43,6 +45,17 @@ test('R5 telas móveis com ações compartilhadas', async ({
       expect((await reminder.boundingBox()).y).toBeGreaterThan(
         (await p.locator('.order-card').first().boundingBox()).y,
       );
+    const fallback = await p.addStyleTag({
+      content: ':root {font-family:"DejaVu Sans", sans-serif}',
+    });
+    expect(
+      (await p.locator('.order-card').first().boundingBox()).y,
+    ).toBeLessThanOrEqual(200);
+    await fallback.evaluate((e) => e.remove());
+    await testInfo.attach('Hoje-390x844', {
+      body: await p.screenshot(),
+      contentType: 'image/png',
+    });
     await capture(process.env.R8_CAPTURE ? 'hoje-confirmado' : 'hoje');
     await p.goto(t.url + '/gestao/pedidos?novo=1');
     await p
@@ -63,6 +76,10 @@ test('R5 telas móveis com ações compartilhadas', async ({
       expect(box.y).toBeGreaterThanOrEqual(0);
       expect(box.y + box.height).toBeLessThanOrEqual(footer.y);
     }
+    await testInfo.attach('Sabores-390x844', {
+      body: await p.screenshot(),
+      contentType: 'image/png',
+    });
     await capture('sabores');
     await p.locator('.flavor-add').first().click();
     await p.getByRole('button', { name: /Revisar pedido/ }).click();
@@ -131,6 +148,11 @@ test('R5 telas móveis com ações compartilhadas', async ({
         expect(Math.abs(boxes[2].y - boxes[3].y)).toBeLessThan(1);
         expect(boxes[0].width).toBeCloseTo(boxes[1].width, 0);
       }
+      expect(
+        await p.evaluate(
+          () => document.documentElement.scrollWidth <= window.innerWidth,
+        ),
+      ).toBe(true);
       await capture(name);
       if (path === 'clientes') {
         await expect(p.getByRole('dialog')).toBeHidden();
@@ -201,6 +223,7 @@ test('R5 telas móveis com ações compartilhadas', async ({
         await expect(p).not.toHaveURL(/novo=1/);
       }
     }
+    expect(consoleErrors).toEqual([]);
   } finally {
     await c.close();
     await t.dispose();

@@ -2065,3 +2065,12 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   word-break: normal;
   hyphens: auto;
 }
+.today-greeting h2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.order-card .delivery-complete.az-button {
+  min-height: 56px;
+  font-size: 17px;
+}

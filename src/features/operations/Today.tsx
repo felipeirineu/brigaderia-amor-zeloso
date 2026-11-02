@@ -490,6 +490,7 @@ export function Today({
                         <Button
                           className="delivery-complete"
                           variant="success"
+                          icon={<CheckCircle2 size={20} aria-hidden="true" />}
                           size="large"
                           disabled={busy}
                           onClick={() =>

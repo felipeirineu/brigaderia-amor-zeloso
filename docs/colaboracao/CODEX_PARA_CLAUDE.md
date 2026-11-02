@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R5-8:** E2E de espaço em 390×844 cobre primeiro cartão até 200 px conforme precedência R8, fonte alternativa, ausência de overflow, cinco sabores acima do rodapé, largura dos clientes e grade financeira. Anexa Hoje/Sabores ao relatório Playwright; seis E2E passaram nos três projetos. QA visual em design-qa.md e prancha conjunta; ação verde com ícone/altura 56 e nome longo sem aumentar a faixa da saudação. WebKit repetido após refinamento aprovado. CI de 51471c0 aprovou a correção de espaço anterior. Próximo R5-9.
+
 - **2026-11-02 — R5-7:** Tile de Deslocamentos renomeado para Corridas, preservando a rota e todas as funcionalidades. Hifenização pt-BR sem quebra arbitrária nos tiles. Build/tipagem e três E2E com verificação de overflow em Mais e captura aprovados. Próximo R5-8.
 
 - **2026-11-02 — R5-6:** ChoiceChips compartilhado aplicado à condição das vendas e aos eventos da agenda (cinco categorias mais Todos). Busca/lista de clientes e exportação com seis formatos preservadas. Build/tipagem/lint e seis E2E de CSV/ICS/relatórios/agenda aprovados. CI dos commits R8-6/7 revelou data quebrando em duas linhas por diferenças de fonte: chip do calendário deixou de reservar check de seleção e ganhou espaçamento explícito, data com largura flexível e WhatsApp sem quebra. Seis E2E de espaço/calendário passaram localmente com limite 200 preservado; nova CI será conferida. Próximo R5-7.
@@ -216,7 +218,7 @@ Arquivos/aceite: Today, DeliveryActions, Button e API Today (R8-1: cartão compa
 | R5-5          | Entregue; testes/limites no histórico.                                                            |
 | R5-6          | Entregue; testes/limites no histórico.                                                            |
 | R5-7          | Entregue; testes/limites no histórico.                                                            |
-| R5-8          | Pendente.                                                                                         |
+| R5-8          | Entregue; testes/limites no histórico.                                                            |
 | R5-9          | Pendente.                                                                                         |
 | R5-10         | Pendente.                                                                                         |
 | R6            | R6-3/R6-6 cobertos por R8-6; demais pendentes. Mapa parcialmente adiantado, preferência pendente. |

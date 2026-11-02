@@ -85,6 +85,7 @@ test('R8 cartão compacto, quatro atalhos e entrega validada no servidor', async
     await expect(p.locator('.compact-title')).toHaveText('Hoje');
     const card = p.locator('.order-card').first();
     await expect(card).toBeVisible();
+    expect((await card.boundingBox()).y).toBeLessThanOrEqual(200);
     await expect(card.locator('.delivery-icon-row .az-button')).toHaveCount(4);
     await expect(card.locator('.delivery-flavor img')).toBeVisible();
     await expect(
@@ -95,6 +96,13 @@ test('R8 cartão compacto, quatro atalhos e entrega validada no servidor', async
         .getByRole('button', { name: 'Marcar entregue', exact: true })
         .evaluate((e) => getComputedStyle(e).backgroundColor),
     ).toBe('rgb(43, 122, 73)');
+    expect(
+      (
+        await card
+          .getByRole('button', { name: 'Marcar entregue', exact: true })
+          .boundingBox()
+      ).height,
+    ).toBeGreaterThanOrEqual(56);
     if (process.env.R8_CAPTURE === '1' && info.project.name === 'webkit-mobile')
       await p.screenshot({
         path: 'docs/colaboracao/capturas/r8-depois-hoje.png',
