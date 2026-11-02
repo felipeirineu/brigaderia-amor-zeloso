@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-03** — R12: data e hora do pedido com Hoje / Amanhã / Escolher data e chips de horário. Protótipo atualizado. Ver seção **R12**.
 - **2026-11-03** — R11: **caixa mista confirmada pelo proprietário**. Protótipo atualizado com a montagem da caixa. Ver seção **R11** (prioridade antes da R6-5).
 - **2026-11-02** — R10: revisão da R9 e da R6-1/2/4 (até `172bb25`). Acabamentos e retomada: R6-5 → R6-7 → R6-8 → R7. Ver seção **R10**.
 - **2026-11-02** — R9: revisão da R8 e do restante da R5 (até `a9ce57a`). Pequenos acabamentos e ordem: R9 → R6 → R7 → homologação. Ver seção **R9**.
@@ -20,6 +21,28 @@
 - **2026-11-01** — Revisão 2: R1 e Fase 2B (commits `2771c8e`…`f47d798`). Ver seção **R2** abaixo.
 - **2026-11-01** — Revisão 1 da entrega técnica + Fase 2A (commits `bc79256`…`bff1961`). Ver seção **R1** abaixo.
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
+
+---
+
+## R12 — Data e hora no Revisar pedido (2026-11-03)
+
+Pedido do responsável ao ver a prévia: em "QUANDO", as opções devem ser **Hoje · Amanhã · 📅 Escolher data**, e não um dia da semana fixo. Referência no `prototipo/index.html` (Novo pedido → Revisar).
+
+- **R12-1 — Data:**
+  - chips **Hoje** e **Amanhã**;
+  - **"📅 Escolher data"** abre a **mesma folha de calendário do Hoje** (R6-6/R9-1), com a contagem de entregas de cada dia, para ver se o dia já está cheio;
+  - dias passados desabilitados;
+  - depois da escolha, o chip passa a mostrar o dia ("📅 Qui, 05/11") e fica selecionado;
+  - o seletor nativo `datetime-local` sai do caminho principal (pode ficar como acessibilidade alternativa).
+- **R12-2 — Horário:** chips **09:00 · 14:00 · 18:00** e um chip com seletor de hora para outro horário.
+  - Os padrões podem vir da janela de entrega do cliente (cadastro B2B) ou do pedido padrão, quando existirem.
+- **R12-3 — Sugestão do pedido padrão:** se o cliente tiver pedido padrão, pré-selecionar o próximo dia e o horário do modelo. Ele continua editável e é apresentado como sugestão.
+- **R12-4 — Confirmação:**
+  - a tela de sucesso mostra "Qui, 05/11 · 14:00";
+  - o botão "Ver na agenda de qui, 05/11" abre o Hoje/Agenda naquele dia, com o pedido já listado;
+  - "1 caixa" no singular.
+- **Aceite:** E2E mobile em que escolher data no calendário → horário → confirmar → "Ver na agenda" mostra o pedido no dia certo, no fuso de Fortaleza.
+- **Ordem:** junto da R11, pois as duas mexem no Revisar pedido.
 
 ---
 
