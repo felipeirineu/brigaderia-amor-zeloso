@@ -1,4 +1,6 @@
-import { Plus } from 'lucide-react';
+import { Circle, Plus } from 'lucide-react';
+import { Toast } from '../../components/Toast';
+import { relativeDateTime } from '../../../shared/workday';
 import { ReminderSheet } from './ReminderSheet';
 import { Button } from '../../components/Button';
 import { useRef, useState } from 'react';
@@ -38,7 +40,7 @@ export function TodayReminders({ day }: { day: string }) {
           onClose={() => setShow(false)}
           onSaved={() => {
             setShow(false);
-            setNotice('Lembrete salvo com histórico.');
+            setNotice('Lembrete salvo.');
             void view.refresh();
           }}
         />
@@ -50,16 +52,16 @@ export function TodayReminders({ day }: { day: string }) {
           Novo lembrete
         </Button>
       </div>
-      <p role="status">{notice}</p>
+      {notice && <Toast message={notice} onClose={() => setNotice('')} />}
       <Failure message={view.error || error} />
 
       {view.data?.length === 0 && <p>Nenhum lembrete pendente.</p>}
       {view.data?.map((r) => (
-        <article key={r.id}>
-          <h3>{r.title}</h3>
-          <p>{dateTime(r.due_at)}</p>
-          {r.notes && <p>{r.notes}</p>}
+        <article key={r.id} className="today-reminder-row">
           <Button
+            className="reminder-check"
+            variant="ghost"
+            aria-label={`Concluir lembrete ${r.title}`}
             disabled={busy}
             onClick={() => {
               setBusy(true);
@@ -70,14 +72,22 @@ export function TodayReminders({ day }: { day: string }) {
                 payload(r, true),
                 crypto.randomUUID(),
               )
-                .then(view.refresh)
+                .then(() => {
+                  setNotice('Lembrete concluído.');
+                  return view.refresh();
+                })
                 .catch((e) => setError(e.message))
                 .finally(() => setBusy(false));
             }}
             loading={busy}
           >
-            Concluir lembrete {r.title}
+            <Circle size={24} aria-hidden="true" />
           </Button>
+          <div>
+            <h3>{r.title}</h3>
+            <p>{relativeDateTime(r.due_at)}</p>
+            {r.notes && <p>{r.notes}</p>}
+          </div>
         </article>
       ))}
       <Button to="/gestao/lembretes" variant="ghost">

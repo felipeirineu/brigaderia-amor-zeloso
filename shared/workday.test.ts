@@ -26,3 +26,16 @@ describe('Fortaleza sem depender do fuso do aparelho', () => {
     expect(dayChip('2026-11-03', '2026-11-02')).toBe('Amanhã');
   });
 });
+
+import { relativeDateTime } from './workday';
+it('lembrete relativo segue Fortaleza nas viradas do dia', () => {
+  expect(relativeDateTime('2026-11-03T02:16:00Z', '2026-11-02')).toBe(
+    'Hoje · 23:16',
+  );
+  expect(relativeDateTime('2026-11-03T13:00:00Z', '2026-11-02')).toBe(
+    'Amanhã · 10:00',
+  );
+  expect(relativeDateTime('2026-11-05T13:00:00Z', '2026-11-02')).toBe(
+    'Qui, 05/11 · 10:00',
+  );
+});

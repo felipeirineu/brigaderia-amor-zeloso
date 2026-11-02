@@ -84,3 +84,55 @@ test('R10-1 produção compacta preserva variantes e quantidades', async ({
     await t.dispose();
   }
 });
+
+test('R10-3 lembrete tem data relativa, círculo e feedback temporário', async ({
+  browser,
+}, info) => {
+  const t = await runtime({
+    browserHTTP: true,
+    financeEnabled: true,
+    p1Enabled: true,
+  });
+  const c = await browser.newContext({
+    viewport: { width: 390, height: 844 },
+    extraHTTPHeaders: {
+      'Cf-Access-Jwt-Assertion': await t.token('operator@example.test'),
+    },
+  });
+  try {
+    const { call } = await demoProject(t);
+    const { fortalezaDay } = await import('../../shared/workday.ts');
+    const day = fortalezaDay();
+    await call('p1/reminders', {
+      title: 'Lembrete DEMONSTRAÇÃO R10',
+      notes: '',
+      customer_id: null,
+      due_at: day + 'T12:16:00Z',
+    });
+    const p = await c.newPage();
+    await p.goto(t.url + '/api/access/start');
+    const panel = p.locator('.today-reminders');
+    await expect(panel).toContainText('Hoje · 09:16');
+    await expect(panel).not.toContainText('Lembrete salvo com histórico.');
+    const circle = panel.getByRole('button', {
+      name: 'Concluir lembrete Lembrete DEMONSTRAÇÃO R10',
+      exact: true,
+    });
+    await expect(circle).toHaveText('');
+    expect((await circle.boundingBox()).height).toBeGreaterThanOrEqual(44);
+    await expect(circle.locator('svg')).toBeVisible();
+    await panel.scrollIntoViewIfNeeded();
+    await capture(p, 'lembrete-circulo', info);
+    await circle.click();
+    await expect(p.locator('.feedback-toast')).toHaveText(
+      'Lembrete concluído.',
+    );
+    await expect(circle).toHaveCount(0);
+    await expect(p.locator('.feedback-toast')).toHaveCount(0, {
+      timeout: 6000,
+    });
+  } finally {
+    await c.close();
+    await t.dispose();
+  }
+});

@@ -53,3 +53,20 @@ export function monthTitle(month: string) {
   }).format(new Date(month + '-01T12:00Z'));
   return label.charAt(0).toLocaleUpperCase('pt-BR') + label.slice(1);
 }
+
+export function shortDay(day: string, today = fortalezaDay()) {
+  const label = dayChip(day, today).replace('.', '');
+  return label.charAt(0).toLocaleUpperCase('pt-BR') + label.slice(1);
+}
+export function relativeDateTime(iso: string, today = fortalezaDay()) {
+  return (
+    shortDay(fortalezaDay(new Date(iso)), today) +
+    ' · ' +
+    new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Fortaleza',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(new Date(iso))
+  );
+}

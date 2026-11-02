@@ -2257,3 +2257,46 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   background: transparent;
   vertical-align: middle;
 }
+.feedback-toast {
+  position: fixed;
+  z-index: 30;
+  bottom: calc(100px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: calc(100% - 32px);
+  background: var(--chocolate);
+  color: var(--cream);
+  border-radius: 16px;
+  padding: 14px 20px;
+  box-shadow: 0 8px 28px #321d1033;
+}
+.today-reminders .today-reminder-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.today-reminder-row > div {
+  min-width: 0;
+  flex: 1;
+}
+.today-reminder-row h3 {
+  margin: 2px 0 4px;
+  font-size: 15px;
+}
+.today-reminder-row p {
+  margin: 2px 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.az-button.reminder-check {
+  width: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: none;
+}

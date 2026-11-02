@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R10-3:** Lembretes no Hoje com círculo acessível de 44 px, data/hora relativas a Fortaleza e toast temporário em vez de texto fixo no cartão. Conclusão mantém versão/autorização e lista atualizada. Oito unitários de datas aprovados, nove E2E de produção/lembrete/agenda/ICS aprovados; lint/tipagem/build/formatação. Captura r12-depois-lembrete-circulo inspecionada. Próximo R10-4.
+
 - **2026-11-02 — R10-2:** Cabeçalho da entrega contém somente km/min de carro. Ajuda, explicação de trânsito e crédito ORS/OSM permanecem visíveis na folha Mapa e na rota do cliente. Três E2E aprovados em Chromium/WebKit verificam ausência de botões/links no resumo, crédito e ajuda na folha, cache e fallback. Capturas r12-depois-rota-* e mapa-creditos. Próximo R10-3.
 
 - **2026-11-02 — R10-1:** Produção com sabor como título, embalagem/peso apenas quando há variantes distintas, números à direita em duas linhas e nome acessível com singular/plural. Ajuda visual 20 px sem fundo grande, preservando alvo de 44 px. Tipagem/build e três E2E aprovados (incluindo WebKit): variantes, quantidades e ajuda. Captura r12-depois-producao-compacta. Próximo R10-2.
