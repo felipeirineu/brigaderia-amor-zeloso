@@ -357,7 +357,7 @@ export async function routeContext(
         'SELECT * FROM route_cache WHERE organization_id=? AND fingerprint IN(SELECT value FROM json_each(?))',
       )
       .bind(org, JSON.stringify(keys))
-      .all<RouteEstimate & { fingerprint: string; provider: 'ors' }>()
+      .all<RouteEstimate & { fingerprint: string; provider: string }>()
   ).results;
   const map = new Map(
     rows.map((r) => [

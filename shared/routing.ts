@@ -1,6 +1,6 @@
 import type { Place } from './field';
 export interface RouteEstimate {
-  route_provider: 'ors';
+  route_provider: string;
   route_km: number;
   route_minutes: number;
   route_computed_at: string;

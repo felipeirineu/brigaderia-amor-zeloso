@@ -65,6 +65,10 @@ test('R6-1 rota salva nos cartões e linha reta explícita sem provedor', async 
       await p.screenshot({
         path: 'docs/colaboracao/capturas/r9-depois-rota-entrega.png',
       });
+    await p.getByRole('button', { name: 'Mapa', exact: true }).click();
+    const map = p.getByRole('dialog', { name: /Rota até/ });
+    await expect(map).toContainText('6,4 km · 16 min de carro');
+    await map.getByRole('button', { name: 'Fechar mapa', exact: true }).click();
     await p.goto(t.url + '/gestao/clientes');
     await expect(p.locator('.route-info').first()).toContainText('6,4 km');
     await expect(

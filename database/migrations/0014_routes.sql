@@ -1,7 +1,7 @@
 -- Metadados derivados privados; nenhuma despesa/cliente/pedido é criado.
 CREATE TABLE route_cache (
  organization_id TEXT NOT NULL REFERENCES organizations(id), fingerprint TEXT NOT NULL,
- provider TEXT NOT NULL CHECK(provider='ors'), route_km REAL NOT NULL CHECK(route_km>=0), route_minutes REAL NOT NULL CHECK(route_minutes>=0),
+ provider TEXT NOT NULL CHECK(length(provider) BETWEEN 1 AND 40), route_km REAL NOT NULL CHECK(route_km>=0), route_minutes REAL NOT NULL CHECK(route_minutes>=0),
  route_computed_at TEXT NOT NULL, PRIMARY KEY(organization_id,fingerprint)
 );
 CREATE TABLE route_jobs (
