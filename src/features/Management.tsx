@@ -644,7 +644,7 @@ function Products({ mobile = false }: { mobile?: boolean }) {
   }
   return (
     <>
-      <h1>Produtos</h1>
+      <h1 className="mobile-context-title">Produtos</h1>
       {mobile && <FlavorOrder products={list.data} />}
       <p>
         Preço por unidade de venda (por exemplo, uma caixa). Dados publicados
@@ -1348,7 +1348,7 @@ function Accesses() {
   const [role, setRole] = useState('operator');
   return (
     <>
-      <h1>Acessos autorizados</h1>
+      <h1 className="mobile-context-title">Acessos autorizados</h1>
       <p>
         Somente o administrador autoriza novos acessos. O e-mail também deve ser
         permitido pela política do Cloudflare Access.

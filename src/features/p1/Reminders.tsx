@@ -110,7 +110,7 @@ export function Reminders() {
   }
   return (
     <>
-      <h1>Lembretes</h1>
+      <h1 className="mobile-context-title">Lembretes</h1>
       <Failure message={error || view.error || customers.error} />
       <p role="status">{notice}</p>
       <form

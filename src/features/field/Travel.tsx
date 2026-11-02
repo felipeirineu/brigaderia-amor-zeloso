@@ -54,7 +54,7 @@ export function Travel() {
   }
   return (
     <>
-      <h1>Deslocamentos</h1>
+      <h1 className="mobile-context-title">Deslocamentos</h1>
       <p>
         Custos pagos de entrega. Correções geram estorno; registre o valor
         correto em novo lançamento.

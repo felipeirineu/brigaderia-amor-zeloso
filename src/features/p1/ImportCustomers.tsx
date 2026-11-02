@@ -84,7 +84,7 @@ export function ImportCustomers() {
   }
   return (
     <section className="panel">
-      <h1>Importar clientes</h1>
+      <h1 className="mobile-context-title">Importar clientes</h1>
       <p>
         Somente contatos autorizados. CSV UTF-8 ou XLSX, até 50 clientes e 1 MB.
         Cabeçalho: nome, telefone, email e notas (os dois últimos opcionais).

@@ -135,9 +135,10 @@ export function Recurring() {
   }
   return (
     <>
-      <h1>
-        Pedidos padrão <HelpTip topic="recurring" />
-      </h1>
+      <h1 className="mobile-context-title">Pedidos padrão</h1>
+      <div className="page-context-help">
+        <HelpTip topic="recurring" />
+      </div>
       <Failure
         message={error || plans.error || customers.error || products.error}
       />

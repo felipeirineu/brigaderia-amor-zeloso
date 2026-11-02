@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-02 — R9-2:** Regra de título compacto estendida aos módulos de Mais: Agenda, Relatórios, lembretes, despesas, fichas, insumos, compras, ajuda, preferências, pedidos padrão, produtos, modelos e acessos; cabeçalho de Despesas/Corridas ajustado. H1 semântico e títulos de detalhes de cliente preservados; HelpTip retirado do h1 oculto para continuar acessível. Build/tipagem/lint e seis E2E de telas/operações passaram; capturas Agenda/Relatórios. Próximo R9-3.
+
 - **2026-11-02 — R9-1:** Calendário mostra contagem visual apenas em dias com entrega, mantém contagem acessível e não simula zero enquanto carrega. Título do mês capitaliza só a primeira letra; cabeçalho alinhado em grade de sete colunas e setas regulares. Build/tipagem e três E2E de calendário aprovados; captura r9-depois-calendario. Sem alteração de schema/Cloudflare. Próximo R9-2.
 
 - **2026-11-02 — R5-10:** Guia curto de homologação com backup/restauração local, runner de todas as pendentes, pré-checagem consolidada e uma alteração humana das seis flags de gestão. Catálogo permanece OFF por AGENTS §8; não interpreta “todas ON” como autorização para publicar catálogo. Workflow_dispatch preparado, somente main, ambiente homologacao-d1, permissão contents:read e token D1 limitado à conta; padrão só leitura, aplicação exige confirmação humana e bloqueios de FKs/histórico/schema. Nenhum secret/ambiente foi criado, workflow disparado ou banco remoto consultado/alterado. Base no roteiro de ativação adiantada da R6-4; aviso no Hoje ainda pendente. 66 unitários, lint/tipagem/formatação, sintaxe Node/YAML e 56 E2E aprovados, um offline WebKit já ignorado. Ponto estável de parada para preservar cota: retomar em R6-1; R6-3/R6-6 já cobertos por R8-6, restante R6 e R7 pendentes.
@@ -244,7 +246,7 @@ Revisão 52ec55f integrada por fast-forward. Plano antes do código: DayCalendar
 | Item R9     | Status                                     |
 | ----------- | ------------------------------------------ |
 | R9-1        | Entregue; evidências/limites no histórico. |
-| R9-2        | Pendente                                   |
+| R9-2        | Entregue; evidências/limites no histórico. |
 | R9-3        | Pendente                                   |
 | R9-4        | Pendente                                   |
 | R9-5        | Pendente                                   |

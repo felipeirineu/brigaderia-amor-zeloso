@@ -69,7 +69,9 @@ function Editor({
   }
   return (
     <section className="panel">
-      <h1>{company ? 'Endereço da empresa' : customer.name}</h1>
+      <h1 className={company ? 'mobile-context-title' : undefined}>
+        {company ? 'Endereço da empresa' : customer.name}
+      </h1>
       <Failure message={error} />
       <p role="status">{notice}</p>
       <PlaceFields value={value} onChange={setDraft} />

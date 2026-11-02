@@ -138,7 +138,7 @@ export function HelpCenter({
   const field = useField();
   return (
     <>
-      <h1>Ajuda</h1>
+      <h1 className="mobile-context-title">Ajuda</h1>
       <section className="panel">
         <h2>Pedido por fotos</h2>
         <p>

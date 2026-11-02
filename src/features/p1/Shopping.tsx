@@ -28,7 +28,7 @@ export function Shopping() {
     }>(`p1/shopping?from=${from}&to=${to}`);
   return (
     <>
-      <h1>Lista de compras</h1>
+      <h1 className="mobile-context-title">Lista de compras</h1>
       <Button to="/gestao/fichas" variant="ghost">
         Conferir fichas técnicas
       </Button>

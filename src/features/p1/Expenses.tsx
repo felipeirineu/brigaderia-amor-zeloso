@@ -74,7 +74,7 @@ export function Expenses() {
   }
   return (
     <>
-      <h1>Despesas e fluxo de caixa</h1>
+      <h1 className="mobile-context-title">Despesas e fluxo de caixa</h1>
       <Failure message={error || view.error || orders.error} />
       <p role="status">{notice}</p>
       <div className="data-form panel">

@@ -8,7 +8,7 @@ export function Backup() {
     [notice, setNotice] = useState('');
   return (
     <section className="panel">
-      <h1>Backup da organização</h1>
+      <h1 className="mobile-context-title">Backup da organização</h1>
       <p>
         Baixa SQL completo da organização com cadastros, pedidos, eventos,
         fotos, autorizações de acesso e chave Pix cadastrada. Sessões, tokens de

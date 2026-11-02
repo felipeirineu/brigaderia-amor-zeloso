@@ -56,7 +56,7 @@ export function Reports() {
     );
   return (
     <>
-      <h1>Relatórios</h1>
+      <h1 className="mobile-context-title">Relatórios</h1>
       <Failure message={error || view.error || customers.error} />
       <div className="data-form panel">
         <label>

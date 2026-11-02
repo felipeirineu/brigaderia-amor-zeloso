@@ -37,7 +37,7 @@ export function Stock({ role }: { role: string }) {
     [id, setId] = useState('');
   return (
     <>
-      <h1>Estoque</h1>
+      <h1 className="mobile-context-title">Estoque</h1>
       <Button to="/gestao/insumos" variant="ghost">
         Cadastrar insumos e embalagens
       </Button>

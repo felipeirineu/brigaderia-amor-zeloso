@@ -20,9 +20,10 @@ export function MessageTemplates() {
     [notice, setNotice] = useState('');
   return (
     <>
-      <h1>
-        Modelos de mensagem <HelpTip topic="whatsapp" />
-      </h1>
+      <h1 className="mobile-context-title">Modelos de mensagem</h1>
+      <div className="page-context-help">
+        <HelpTip topic="whatsapp" />
+      </div>
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
       <p>

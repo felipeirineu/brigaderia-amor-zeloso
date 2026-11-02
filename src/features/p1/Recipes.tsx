@@ -70,7 +70,7 @@ export function Supplies() {
   }
   return (
     <>
-      <h1>Insumos e embalagens</h1>
+      <h1 className="mobile-context-title">Insumos e embalagens</h1>
       <Button to="/gestao/fichas" variant="ghost">
         Fichas técnicas
       </Button>
@@ -223,7 +223,7 @@ export function Recipes() {
   }
   return (
     <>
-      <h1>Fichas técnicas e preço sugerido</h1>
+      <h1 className="mobile-context-title">Fichas técnicas e preço sugerido</h1>
       <div className="actions">
         <Button className="button" to="/gestao/insumos" variant="ghost">
           Insumos e embalagens

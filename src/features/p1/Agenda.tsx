@@ -35,7 +35,7 @@ export function Agenda() {
   }>(`p1/calendar?${query}`);
   return (
     <>
-      <h1>Agenda</h1>
+      <h1 className="mobile-context-title">Agenda</h1>
       <p>
         Semana/mês no fuso de Fortaleza. Produção é planejada para o prazo do
         pedido, sem horário de produção inventado.

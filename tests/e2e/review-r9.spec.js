@@ -45,6 +45,30 @@ test('R9 calendário sem zeros e cabeçalho alinhado', async ({
       grid = await sheet.locator('.calendar-grid').boundingBox();
     expect(weekdays.width).toBeCloseTo(grid.width, 0);
     await capture(p, 'calendario', info);
+    await sheet
+      .getByRole('button', { name: 'Fechar calendário', exact: true })
+      .click();
+    for (const path of [
+      'agenda',
+      'relatorios',
+      'lembretes',
+      'despesas',
+      'fichas',
+      'insumos',
+      'compras',
+      'ajuda',
+      'preferencias',
+      'recorrentes',
+      'produtos',
+      'mensagens',
+      'deslocamentos',
+    ]) {
+      await p.goto(t.url + '/gestao/' + path);
+      const heading = p.locator('h1');
+      await expect(heading).toHaveClass(/mobile-context-title/);
+      expect((await heading.boundingBox()).height).toBe(1);
+      if (['agenda', 'relatorios'].includes(path)) await capture(p, path, info);
+    }
   } finally {
     await c.close();
     await t.dispose();
