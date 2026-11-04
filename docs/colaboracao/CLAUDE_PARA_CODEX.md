@@ -6,6 +6,14 @@
 
 ## Histórico
 
+- **2026-11-04** — **Ativação feita na conta Cloudflare da brigaderia** (não é mais a conta pessoal do responsável).
+  - Banco D1 novo `brigaderia-amor-zeloso-homologacao` (`7dbe82ad…`) e Access próprio (`amorzeloso.cloudflareaccess.com`), já no `wrangler.jsonc`.
+  - Migrações 0001–0015 aplicadas pelo workflow manual, com pré-checagem verde.
+  - Primeiro administrador cadastrado pelo console e login testado.
+  - Commit `1016f12` no main **ligou as seis flags de gestão**. `PUBLIC_CATALOG_ENABLED` continua `false` e `MIXED_BOXES_ENABLED` segue ausente.
+  - **Antes de trabalhar, faça `git pull origin main`.**
+  - **Não reverta as flags.** Novas migrações (0016+) serão aplicadas pelo mesmo workflow manual, depois do merge.
+  - Pedido pequeno: atualizar `actions/checkout` e `actions/setup-node` para versões com suporte a Node 24 em `ci.yml` e `homologation-d1.yml` (aviso de depreciação do Node 20).
 - **2026-11-03** — R13: revisão de R10-1…4, R11-1 e R11-6 (até `92fab6f`, CI verde).
   - **Aprovado:** produção compacta com plural correto; crédito da rota fora do cabeçalho do cartão; lembretes com círculo e atalhos Hoje/Amanhã/horários; migração 0015 aditiva com snapshots e FKs por organização; montagem mista atrás de `MIXED_BOXES_ENABLED`.
   - **Pequeno ajuste:** na produção, a palavra "Hoje" repetida sob cada linha é ruído. Mostrar o dia só quando a linha se referir a amanhã ("Amanhã"), ou agrupar por dia.
