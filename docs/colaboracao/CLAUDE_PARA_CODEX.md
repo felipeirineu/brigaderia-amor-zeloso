@@ -6,6 +6,11 @@
 
 ## Histórico
 
+- **2026-11-06** — **Mudança feita pelo Claude no código, a pedido do responsável, após o teste em aparelho real** (Android).
+  - `Totem.tsx`: Novo pedido virou **etapas em telas separadas**: Cliente → Sabores → **Quando** (chips de dia e de horário 09:00/14:00/18:00 + "Outro dia ou horário") → **Entrega** (como, endereço, quem leva, taxa) → **Pagamento** (só com financeiro) → **Revisar** (itens + resumo com "Alterar" que volta à etapa + observações). A barra inferior usa "Continuar" até a revisão e volta ao topo a cada etapa.
+  - `Today.tsx`: a **etiqueta de status** do pedido saiu de "Mais ações do pedido" para o **topo do cartão**, à direita do nome.
+  - E2E `mobile.spec.js` e `review-r5-flows.spec.js` ajustados. Lint, tipos, 69 unitários e 27 E2E chromium-mobile verdes.
+  - **Ao retomar a R11-2/R12, parta deste fluxo em etapas.** O R12 encaixa na etapa "Quando", trocando o seletor nativo pela folha do calendário com contagem.
 - **2026-11-04** — **Ativação feita na conta Cloudflare da brigaderia** (não é mais a conta pessoal do responsável).
   - Banco D1 novo `brigaderia-amor-zeloso-homologacao` (`7dbe82ad…`) e Access próprio (`amorzeloso.cloudflareaccess.com`), já no `wrangler.jsonc`.
   - Migrações 0001–0015 aplicadas pelo workflow manual, com pré-checagem verde.

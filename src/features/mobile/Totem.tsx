@@ -107,6 +107,16 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     [busy, setBusy] = useState(false),
     [success, setSuccess] = useState('');
   const root = useRef<HTMLElement>(null);
+  const flow = financial
+      ? ['Cliente', 'Sabores', 'Quando', 'Entrega', 'Pagamento', 'Revisar']
+      : ['Cliente', 'Sabores', 'Quando', 'Entrega', 'Revisar'],
+    WHEN = 2,
+    DELIVERY = 3,
+    PAYMENT = financial ? 4 : -1,
+    REVIEW = flow.length - 1;
+  useEffect(() => {
+    if (typeof window !== 'undefined') window.scrollTo(0, 0);
+  }, [step]);
   const focusBack =
     typeof document !== 'undefined'
       ? document.getElementById('mobile-header-actions')
@@ -322,7 +332,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
           focusBack,
         )}
       <ol className="step-indicator" aria-label="Etapas do pedido">
-        {['Cliente', 'Sabores', 'Revisar', 'Confirmar'].map((s, i) => (
+        {flow.map((s, i) => (
           <li key={s} aria-current={step === i ? 'step' : undefined}>
             {i + 1}. {s}
           </li>
@@ -517,34 +527,11 @@ export function Totem({ financial = false }: { financial?: boolean }) {
             ))}
         </>
       )}
-      {step === 2 && (
+      {step === WHEN && (
         <>
-          <h2>Revise seu pedido</h2>
-          <p>{customer?.name}</p>
-          {selected.map((v) => (
-            <article className="review-line" key={v.id}>
-              {v.photo_key && (
-                <img
-                  src={photoURL(v.photo_key)}
-                  alt=""
-                  width={64}
-                  height={64}
-                />
-              )}
-              <div>
-                <h3>
-                  {v.product_name} · {v.label}
-                </h3>
-                <QuantityInput
-                  aria-label={'Revisar quantidade de ' + v.product_name}
-                  value={counts[v.id]}
-                  onValueChange={(n) => setCounts({ ...counts, [v.id]: n })}
-                />
-                <p>{money(price(v) * counts[v.id])}</p>
-              </div>
-            </article>
-          ))}
-          <h3 className="order-section-label">Quando</h3>
+          <h2 className="wizard-question">Quando entregar?</h2>
+          <p className="wizard-hint">{customer?.name}</p>
+          <h3 className="order-section-label">Dia</h3>
           <div
             className="chips"
             role="group"
@@ -578,8 +565,23 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               </Button>
             ))}
           </div>
+          <h3 className="order-section-label">Horário</h3>
+          <div className="chips" role="group" aria-label="Atalhos de horário">
+            {['09:00', '14:00', '18:00'].map((h) => (
+              <Button
+                key={h}
+                variant="chip"
+                aria-pressed={due.slice(11, 16) === h}
+                onClick={() =>
+                  setDue((due.slice(0, 10) || fortalezaDay()) + 'T' + h)
+                }
+              >
+                {h}
+              </Button>
+            ))}
+          </div>
           <label>
-            Data e hora do pedido
+            Outro dia ou horário
             <input
               type="datetime-local"
               value={due}
@@ -587,6 +589,11 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               onChange={(e) => setDue(e.target.value)}
             />
           </label>
+        </>
+      )}
+      {step === DELIVERY && (
+        <>
+          <h2 className="wizard-question">Como vai chegar?</h2>
           <h3 className="order-section-label">Como</h3>
           <div className="chips" aria-label="Entrega ou retirada">
             <Button
@@ -654,35 +661,114 @@ export function Totem({ financial = false }: { financial?: boolean }) {
             value={fee}
             onValueChange={setFee}
           />
-          {financial && (
-            <>
-              <h3 className="order-section-label">Pagamento</h3>
-              <div className="chips" aria-label="Condição de pagamento">
-                {(['unset', 'advance', 'delivery', 'credit'] as const).map(
-                  (mode) => (
-                    <Button
-                      key={mode}
-                      disabled={
-                        mode === 'credit' &&
-                        defaults?.profile.terms.mode !== 'credit' &&
-                        !editing
-                      }
-                      aria-pressed={terms.mode === mode}
-                      onClick={() => setTerms({ ...terms, mode })}
-                    >
-                      {mode === 'unset'
-                        ? 'A definir'
-                        : mode === 'advance'
-                          ? 'Adiantado'
-                          : mode === 'delivery'
-                            ? 'Na entrega'
-                            : 'A prazo'}
-                    </Button>
-                  ),
-                )}
+        </>
+      )}
+      {step === PAYMENT && (
+        <>
+          <h2 className="wizard-question">Como vai pagar?</h2>
+          <h3 className="order-section-label">Pagamento</h3>
+          <div className="chips" aria-label="Condição de pagamento">
+            {(['unset', 'advance', 'delivery', 'credit'] as const).map(
+              (mode) => (
+                <Button
+                  key={mode}
+                  disabled={
+                    mode === 'credit' &&
+                    defaults?.profile.terms.mode !== 'credit' &&
+                    !editing
+                  }
+                  aria-pressed={terms.mode === mode}
+                  onClick={() => setTerms({ ...terms, mode })}
+                >
+                  {mode === 'unset'
+                    ? 'A definir'
+                    : mode === 'advance'
+                      ? 'Adiantado'
+                      : mode === 'delivery'
+                        ? 'Na entrega'
+                        : 'A prazo'}
+                </Button>
+              ),
+            )}
+          </div>
+        </>
+      )}
+      {step === REVIEW && (
+        <>
+          <h2 className="wizard-question">Revise e confirme</h2>
+          <p className="wizard-hint">{customer?.name}</p>
+          {selected.map((v) => (
+            <article className="review-line" key={v.id}>
+              {v.photo_key && (
+                <img
+                  src={photoURL(v.photo_key)}
+                  alt=""
+                  width={64}
+                  height={64}
+                />
+              )}
+              <div>
+                <h3>
+                  {v.product_name} · {v.label}
+                </h3>
+                <QuantityInput
+                  aria-label={'Revisar quantidade de ' + v.product_name}
+                  value={counts[v.id]}
+                  onValueChange={(n) => setCounts({ ...counts, [v.id]: n })}
+                />
+                <p>{money(price(v) * counts[v.id])}</p>
               </div>
-            </>
-          )}
+            </article>
+          ))}
+          <ul className="order-summary" aria-label="Resumo do pedido">
+            <li>
+              <span>
+                <small>Quando</small>
+                {due
+                  ? new Intl.DateTimeFormat('pt-BR', {
+                      weekday: 'short',
+                      day: '2-digit',
+                      month: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      timeZone: 'UTC',
+                    }).format(new Date(due + ':00Z'))
+                  : 'A escolher'}
+              </span>
+              <Button variant="ghost" onClick={() => setStep(WHEN)}>
+                Alterar
+              </Button>
+            </li>
+            <li>
+              <span>
+                <small>Como</small>
+                {deliveryType === 'pickup'
+                  ? 'Retirada'
+                  : 'Entrega' + (address ? ' · ' + address : '')}
+                {deliveryType === 'delivery' && ' · ' + courierLabels[courier]}
+              </span>
+              <Button variant="ghost" onClick={() => setStep(DELIVERY)}>
+                Alterar
+              </Button>
+            </li>
+            {financial && (
+              <li>
+                <span>
+                  <small>Pagamento</small>
+                  {terms.mode === 'advance'
+                    ? 'Adiantado'
+                    : terms.mode === 'delivery'
+                      ? 'Na entrega'
+                      : terms.mode === 'credit'
+                        ? 'A prazo'
+                        : 'A definir'}
+                </span>
+                <Button variant="ghost" onClick={() => setStep(PAYMENT)}>
+                  Alterar
+                </Button>
+              </li>
+            )}
+          </ul>
           <label>
             Observações
             <textarea
@@ -703,15 +789,16 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               ? `Total ${money(total)}`
               : 'Toque nos sabores para montar o pedido'}
           </strong>
-          {step === 1 ? (
+          {step < REVIEW ? (
             <Button
               className="primary-action"
-              disabled={busy || !selected.length}
-              onClick={() => setStep(2)}
+              disabled={busy || !selected.length || (step === WHEN && !due)}
+              onClick={() => setStep(step + 1)}
               variant="primary"
               loading={busy}
             >
-              Revisar pedido{selected.length ? ' · ' + money(total) : ''}
+              Continuar
+              {step === 1 && selected.length ? ' · ' + money(total) : ''}
             </Button>
           ) : (
             <Button

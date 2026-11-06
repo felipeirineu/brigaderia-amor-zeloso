@@ -537,6 +537,13 @@ export function Today({
                         }
                       />
                     </div>
+                    <span
+                      className={`status-tag status-${order.status} delivery-status`}
+                    >
+                      {day > localDay()
+                        ? 'Agendada'
+                        : statusLabels[order.status]}
+                    </span>
                   </div>
                   <div className="delivery-flavors">
                     {order.items.map((i) => (
@@ -631,11 +638,6 @@ export function Today({
                         Abrir pedido{' '}
                         <ChevronRight size={20} aria-hidden="true" />
                       </Button>
-                      <span className={`status-tag status-${order.status}`}>
-                        {day > localDay()
-                          ? 'Agendada'
-                          : statusLabels[order.status]}
-                      </span>
                     </details>
                   </div>
                 </article>

@@ -1714,6 +1714,12 @@ button,
 }
 .delivery-identity > div {
   min-width: 0;
+  flex: 1;
+}
+.delivery-identity .delivery-status {
+  align-self: flex-start;
+  flex: none;
+  white-space: nowrap;
 }
 .delivery-identity h3 {
   margin: 0;
@@ -2312,4 +2318,41 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   font-size: 11px;
   letter-spacing: 0.08em;
   margin-bottom: 8px;
+}
+
+/* Pedido em etapas: cada tela com uma decisão e resumo final. */
+.wizard-question {
+  margin: 4px 0 0;
+  font-size: 22px;
+}
+.wizard-hint {
+  margin: 0;
+  color: var(--muted, #6b5547);
+}
+.order-summary {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.order-summary li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #fffdf9;
+  box-shadow: 0 1px 2px rgb(50 29 16 / 0.06);
+}
+.order-summary li > span {
+  min-width: 0;
+}
+.order-summary small {
+  display: block;
+  color: var(--muted, #6b5547);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }

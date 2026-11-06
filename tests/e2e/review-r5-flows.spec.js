@@ -82,13 +82,13 @@ test('R5 telas móveis com ações compartilhadas', async ({
     });
     await capture('sabores');
     await p.locator('.flavor-add').first().click();
-    await p.getByRole('button', { name: /Revisar pedido/ }).click();
+    await p.getByRole('button', { name: /^Continuar/ }).click();
     await expect(
-      p.getByRole('heading', { name: 'Revise seu pedido' }),
+      p.getByRole('heading', { name: 'Quando entregar?' }),
     ).toBeVisible();
-    for (const name of ['Quando', 'Como', 'Quem leva', 'Pagamento'])
+    for (const name of ['Dia', 'Horário'])
       await expect(p.getByRole('heading', { name, exact: true })).toBeVisible();
-    const due = p.getByLabel('Data e hora do pedido', { exact: true });
+    const due = p.getByLabel('Outro dia ou horário', { exact: true });
     await p
       .getByRole('group', { name: 'Atalhos de data do pedido', exact: true })
       .getByRole('button', { name: 'Amanhã', exact: true })

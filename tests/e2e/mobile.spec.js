@@ -36,18 +36,15 @@ test('R3 fotos, padrão, revisão e confirmação no celular', async ({
     await expect(tile).toHaveAccessibleName(/2 embalagens/);
     await tile.click();
     await expect(tile).toHaveAccessibleName(/3 embalagens/);
-    await p.getByRole('button', { name: /Revisar pedido/ }).click();
+    const next = () => p.getByRole('button', { name: /^Continuar/ }).click();
+    await next();
     await expect(
-      p.getByRole('heading', { name: 'Revise seu pedido' }),
+      p.getByRole('heading', { name: 'Quando entregar?' }),
     ).toBeVisible();
-    const q = p.getByRole('textbox', {
-      name: 'Revisar quantidade de Produto DEMONSTRAÇÃO P1',
-      exact: true,
-    });
-    await q.focus();
-    await expect(q).toHaveValue('');
-    await q.blur();
-    await expect(q).toHaveValue('3');
+    await next();
+    await expect(
+      p.getByRole('heading', { name: 'Como vai chegar?' }),
+    ).toBeVisible();
     const amount = p.getByLabel('Taxa combinada (R$)');
     await amount.focus();
     await amount.pressSequentially('4200');
@@ -63,6 +60,16 @@ test('R3 fotos, padrão, revisão e confirmação no celular', async ({
     await amount.blur();
     await expect(amount).toHaveValue('42,00');
     expect(await amount.evaluate((e) => e.checkValidity())).toBe(true);
+    const review = p.getByRole('heading', { name: 'Revise e confirme' });
+    while (!(await review.isVisible())) await next();
+    const q = p.getByRole('textbox', {
+      name: 'Revisar quantidade de Produto DEMONSTRAÇÃO P1',
+      exact: true,
+    });
+    await q.focus();
+    await expect(q).toHaveValue('');
+    await q.blur();
+    await expect(q).toHaveValue('3');
     await p
       .getByRole('button', { name: 'Confirmar pedido', exact: true })
       .click();
