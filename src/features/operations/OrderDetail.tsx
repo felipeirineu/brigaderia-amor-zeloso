@@ -139,7 +139,7 @@ export function OrderDetail({
                 to={`/gestao/pedidos/${id}/editar-simples`}
                 variant="ghost"
               >
-                Ajustar por fotos
+                Ajustar pedido
               </Button>
             )}
           <p>

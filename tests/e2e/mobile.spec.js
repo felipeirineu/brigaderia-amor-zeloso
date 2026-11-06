@@ -45,7 +45,9 @@ test('R3 fotos, padrão, revisão e confirmação no celular', async ({
     await expect(
       p.getByRole('heading', { name: 'Como vai chegar?' }),
     ).toBeVisible();
-    const amount = p.getByLabel('Taxa combinada (R$)');
+    await p.getByRole('button', { name: /Motoboy/ }).click();
+    await p.getByLabel('Nome do motoboy').fill('Motoboy DEMONSTRAÇÃO');
+    const amount = p.getByLabel('Valor combinado com o motoboy (R$)');
     await amount.focus();
     await amount.pressSequentially('4200');
     await expect(amount).toHaveValue('42,00');

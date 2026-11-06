@@ -9,6 +9,7 @@ import { api, money, nextWeeklyTime } from '../api';
 import { Failure, useRemote } from '../operations/common';
 import { MoneyInput, QuantityInput } from '../../components/NumericInputs';
 import { photoURL } from '../../../shared/flavors';
+import { emptyPlace } from '../../../shared/field';
 import {
   emptyTerms,
   type B2BProfile,
@@ -89,7 +90,6 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     ),
     [defaults, setDefaults] = useState<Defaults | null>(null),
     [counts, setCounts] = useState<Record<string, number>>({}),
-    [variants, setVariants] = useState<Record<string, string>>({}),
     [due, setDue] = useState(''),
     [planDue, setPlanDue] = useState(''),
     [notes, setNotes] = useState(''),
@@ -107,6 +107,22 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     [busy, setBusy] = useState(false),
     [success, setSuccess] = useState('');
   const root = useRef<HTMLElement>(null);
+  const site = customer
+      ? field?.data?.sites.find((x) => x.id === customer.id)
+      : undefined,
+    savedAddress =
+      site?.data.address ||
+      (defaults
+        ? [
+            defaults.profile.address,
+            defaults.profile.neighborhood,
+            defaults.profile.reference,
+          ]
+            .filter(Boolean)
+            .join(' ')
+        : ''),
+    [saveAddress, setSaveAddress] = useState(true),
+    [addressNotice, setAddressNotice] = useState('');
   const flow = financial
       ? ['Cliente', 'Sabores', 'Quando', 'Entrega', 'Pagamento', 'Revisar']
       : ['Cliente', 'Sabores', 'Quando', 'Entrega', 'Revisar'],
@@ -267,7 +283,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
             delivery_address: address,
             courier,
             courier_name: courierName,
-            courier_fee_cents: fee ?? 0,
+            courier_fee_cents: courier === 'courier' ? (fee ?? 0) : 0,
           },
           terms: financial ? terms : null,
         },
@@ -280,8 +296,35 @@ export function Totem({ financial = false }: { financial?: boolean }) {
         data,
         request.current.key,
       );
+      if (
+        field &&
+        customer &&
+        deliveryType === 'delivery' &&
+        !savedAddress &&
+        saveAddress &&
+        address.trim()
+      )
+        try {
+          await api(
+            'field/customers/' + customer.id,
+            'PUT',
+            {
+              data: {
+                ...(site?.data ?? emptyPlace()),
+                address: address.trim(),
+              },
+              version: site?.version ?? 0,
+            },
+            crypto.randomUUID(),
+          );
+          await field.refresh();
+          setAddressNotice('Endereço salvo no cadastro do cliente.');
+        } catch {
+          setAddressNotice(
+            'Pedido salvo, mas o endereço não foi gravado no cadastro. Edite em Clientes.',
+          );
+        }
       setSuccess(result.id);
-      setStep(3);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -291,20 +334,34 @@ export function Totem({ financial = false }: { financial?: boolean }) {
   }
   if (success)
     return (
-      <section className="panel">
+      <section className="panel order-success">
+        <span className="success-check" aria-hidden="true">
+          ✓
+        </span>
         <h1>Pedido confirmado</h1>
-        <p>Seu pedido foi salvo. Confira o texto antes de avisar o cliente.</p>
-        <Button
-          className="button primary-action"
-          to={`/gestao/pedidos/${success}#whatsapp`}
-          variant="primary"
-        >
-          Avisar no WhatsApp
-        </Button>
-        <Button className="button" to="/gestao" variant="ghost">
-          Ir para Hoje
-        </Button>
-        <Button onClick={() => navigate('/gestao/pedidos')}>Ver pedidos</Button>
+        <p>
+          {customer?.name} · {money(total)}
+        </p>
+        {addressNotice && <p role="status">{addressNotice}</p>}
+        <div className="stacked-actions">
+          <Button
+            className="button primary-action"
+            to={`/gestao/pedidos/${success}#whatsapp`}
+            variant="primary"
+          >
+            Avisar no WhatsApp
+          </Button>
+          <Button className="button" to="/gestao">
+            Ver no Hoje
+          </Button>
+          <Button
+            className="button"
+            variant="ghost"
+            onClick={() => window.location.assign('/gestao/pedidos?novo=1')}
+          >
+            Fazer outro pedido
+          </Button>
+        </div>
       </section>
     );
   return (
@@ -417,89 +474,82 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               defaults?.ranking,
               readFlavorOrder(),
               defaults?.product_order,
-            ).map((p) => {
+            ).flatMap((p) => {
               const active = p.variants.filter((v) => v.active);
-              if (!active.length) return null;
-              const v =
-                  active.find((v) => v.id === variants[p.id]) ??
-                  active.find((v) => counts[v.id] > 0) ??
-                  active[0],
-                count = counts[v.id] ?? 0,
-                key = v.photo_key || p.photo_key;
-              return (
-                <article className="flavor-card" key={p.id}>
-                  <Button
-                    className="flavor-add"
-                    disabled={busy || count >= 10000}
-                    aria-label={`${p.name}, ${count ? count + ' embalagens, ' : ''}adicionar`}
-                    onClick={() =>
-                      setCounts({
-                        ...counts,
-                        [v.id]: Math.min(10000, count + 1),
-                      })
-                    }
+              return active.map((v) => {
+                const count = counts[v.id] ?? 0,
+                  key = v.photo_key || p.photo_key,
+                  title = active.length > 1 ? v.label : p.name;
+                return (
+                  <article
+                    className={`flavor-card${count ? ' is-selected' : ''}`}
+                    key={v.id}
                   >
-                    {key ? (
-                      <img
-                        src={photoURL(key)}
-                        alt=""
-                        width={120}
-                        height={120}
-                      />
-                    ) : (
-                      <span className="flavor-placeholder" aria-hidden="true">
-                        {p.name.charAt(0)}
-                      </span>
-                    )}
-                    <strong>{p.name}</strong>
-                    <span>
-                      {money(
-                        price({ ...v, product_name: p.name, photo_key: key }),
-                      )}
-                    </span>
-                    {count > 0 && <b className="quantity-badge">{count}</b>}
-                  </Button>
-                  {active.length > 1 && (
-                    <div
-                      className="chips"
-                      aria-label={`Embalagem de ${p.name}`}
+                    <Button
+                      className="flavor-add"
+                      disabled={busy || count >= 10000}
+                      aria-label={`${title}, ${count ? count + ' embalagens, ' : ''}adicionar`}
+                      onClick={() =>
+                        setCounts({
+                          ...counts,
+                          [v.id]: Math.min(10000, count + 1),
+                        })
+                      }
                     >
-                      {active.map((v) => (
+                      {key ? (
+                        <img
+                          src={photoURL(key)}
+                          alt=""
+                          width={120}
+                          height={120}
+                        />
+                      ) : (
+                        <span className="flavor-placeholder" aria-hidden="true">
+                          {title.charAt(0)}
+                        </span>
+                      )}
+                      <strong>{title}</strong>
+                      <span>
+                        {money(
+                          price({ ...v, product_name: p.name, photo_key: key }),
+                        )}
+                      </span>
+                      {count > 0 && <b className="quantity-badge">{count}</b>}
+                    </Button>
+                    {count > 0 && (
+                      <div className="flavor-stepper">
                         <Button
-                          key={v.id}
-                          aria-pressed={
-                            v.id ===
-                            (variants[p.id] ||
-                              active.find((v) => counts[v.id] > 0)?.id ||
-                              active[0].id)
-                          }
+                          className="flavor-step"
+                          type="button"
+                          aria-label={'Diminuir quantidade de ' + title}
+                          onClick={() => {
+                            const next = { ...counts };
+                            if (count === 1) delete next[v.id];
+                            else next[v.id] = count - 1;
+                            setCounts(next);
+                          }}
+                        >
+                          −
+                        </Button>
+                        <b>{count} cx</b>
+                        <Button
+                          type="button"
+                          aria-label={'Aumentar quantidade de ' + title}
+                          disabled={busy || count >= 10000}
                           onClick={() =>
-                            setVariants({ ...variants, [p.id]: v.id })
+                            setCounts({
+                              ...counts,
+                              [v.id]: Math.min(10000, count + 1),
+                            })
                           }
                         >
-                          {v.label}
-                          {counts[v.id] > 0 ? ` · ${counts[v.id]}` : ''}
+                          +
                         </Button>
-                      ))}
-                    </div>
-                  )}
-                  {count > 0 && (
-                    <Button
-                      className="flavor-subtract"
-                      type="button"
-                      aria-label={'Diminuir quantidade de ' + p.name}
-                      onClick={() => {
-                        const next = { ...counts };
-                        if (count === 1) delete next[v.id];
-                        else next[v.id] = count - 1;
-                        setCounts(next);
-                      }}
-                    >
-                      −
-                    </Button>
-                  )}
-                </article>
-              );
+                      </div>
+                    )}
+                  </article>
+                );
+              });
             })}
           </div>
           {historical
@@ -610,13 +660,50 @@ export function Totem({ financial = false }: { financial?: boolean }) {
             </Button>
           </div>
           {deliveryType === 'delivery' && (
-            <label>
-              Endereço da entrega
-              <textarea
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
-            </label>
+            <>
+              <h3 className="order-section-label">Endereço</h3>
+              {savedAddress ? (
+                <label className="check-row">
+                  <input
+                    type="checkbox"
+                    checked={address === savedAddress}
+                    onChange={(e) =>
+                      setAddress(e.target.checked ? savedAddress : '')
+                    }
+                  />
+                  <span>
+                    Usar o endereço do cliente
+                    <small>{savedAddress}</small>
+                  </span>
+                </label>
+              ) : (
+                <p className="wizard-hint">
+                  Este cliente ainda não tem endereço salvo.
+                </p>
+              )}
+              {address !== savedAddress || !savedAddress ? (
+                <>
+                  <label>
+                    Endereço desta entrega
+                    <textarea
+                      value={address}
+                      placeholder="Rua, número, bairro e referência"
+                      onChange={(e) => setAddress(e.target.value)}
+                    />
+                  </label>
+                  {field && !savedAddress && (
+                    <label className="check-row">
+                      <input
+                        type="checkbox"
+                        checked={saveAddress}
+                        onChange={(e) => setSaveAddress(e.target.checked)}
+                      />
+                      <span>Salvar no cadastro do cliente</span>
+                    </label>
+                  )}
+                </>
+              ) : null}
+            </>
           )}
           <h3 className="order-section-label">Quem leva</h3>
           <div
@@ -656,11 +743,13 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               />
             </label>
           )}
-          <MoneyInput
-            label="Taxa combinada (R$)"
-            value={fee}
-            onValueChange={setFee}
-          />
+          {courier === 'courier' && (
+            <MoneyInput
+              label="Valor combinado com o motoboy (R$)"
+              value={fee}
+              onValueChange={setFee}
+            />
+          )}
         </>
       )}
       {step === PAYMENT && (
@@ -672,13 +761,24 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               (mode) => (
                 <Button
                   key={mode}
-                  disabled={
-                    mode === 'credit' &&
-                    defaults?.profile.terms.mode !== 'credit' &&
-                    !editing
-                  }
                   aria-pressed={terms.mode === mode}
-                  onClick={() => setTerms({ ...terms, mode })}
+                  onClick={() =>
+                    setTerms(
+                      mode === 'credit'
+                        ? defaults?.profile.terms.mode === 'credit'
+                          ? defaults.profile.terms
+                          : {
+                              ...terms,
+                              mode,
+                              cycle:
+                                terms.cycle === 'fourteen_days'
+                                  ? 'fixed_days'
+                                  : terms.cycle,
+                              due_days: terms.due_days ?? 0,
+                            }
+                        : { ...terms, mode },
+                    )
+                  }
                 >
                   {mode === 'unset'
                     ? 'A definir'
@@ -691,6 +791,63 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               ),
             )}
           </div>
+          {terms.mode === 'credit' && (
+            <>
+              <h3 className="order-section-label">Fechamento</h3>
+              <div className="chips" role="group" aria-label="Fechamento">
+                {(
+                  [
+                    ['weekly', 'Semanal'],
+                    ['fixed_days', 'Quinzenal (dia 15 e fim do mês)'],
+                    ['monthly', 'Mensal'],
+                  ] as const
+                ).map(([cycle, label]) => (
+                  <Button
+                    key={cycle}
+                    variant="chip"
+                    aria-pressed={terms.cycle === cycle}
+                    onClick={() =>
+                      setTerms({
+                        ...terms,
+                        cycle,
+                        fixed_days:
+                          cycle === 'fixed_days' ? [15, 31] : terms.fixed_days,
+                      })
+                    }
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+              <h3 className="order-section-label">Pagar</h3>
+              <div
+                className="chips"
+                role="group"
+                aria-label="Prazo após o fechamento"
+              >
+                {(
+                  [
+                    [0, 'No fechamento'],
+                    [7, '7 dias depois'],
+                    [15, '15 dias depois'],
+                  ] as const
+                ).map(([days, label]) => (
+                  <Button
+                    key={days}
+                    variant="chip"
+                    aria-pressed={terms.due_days === days}
+                    onClick={() => setTerms({ ...terms, due_days: days })}
+                  >
+                    {label}
+                  </Button>
+                ))}
+              </div>
+              <p className="wizard-hint">
+                Vale para este pedido. Para mudar o padrão do cliente, use a
+                conta dele no Financeiro.
+              </p>
+            </>
+          )}
         </>
       )}
       {step === REVIEW && (
@@ -760,7 +917,12 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                     : terms.mode === 'delivery'
                       ? 'Na entrega'
                       : terms.mode === 'credit'
-                        ? 'A prazo'
+                        ? 'A prazo · ' +
+                          (terms.cycle === 'weekly'
+                            ? 'semanal'
+                            : terms.cycle === 'monthly'
+                              ? 'mensal'
+                              : 'quinzenal')
                         : 'A definir'}
                 </span>
                 <Button variant="ghost" onClick={() => setStep(PAYMENT)}>

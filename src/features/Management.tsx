@@ -901,7 +901,7 @@ function Orders({
               aria-pressed={mode.simple}
               onClick={() => mode.setPreference('simple')}
             >
-              Pedido por fotos
+              Modo simples
             </Button>
             <Button
               aria-pressed={!mode.simple}
@@ -1055,7 +1055,7 @@ function FullOrders({
           to="/gestao/pedidos?novo=1"
           variant="primary"
         >
-          Novo pedido por fotos
+          Novo pedido
         </Button>
       ) : (
         <form className="data-form panel" onSubmit={submit}>

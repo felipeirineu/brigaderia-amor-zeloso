@@ -2356,3 +2356,82 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
+
+/* Grade de sabores: um cartão por sabor, sem chips amontoados. */
+.flavor-card {
+  align-self: start;
+}
+.flavor-card.is-selected {
+  outline: 2px solid #b8915b;
+  outline-offset: -2px;
+}
+.flavor-stepper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 6px;
+}
+.flavor-stepper .button,
+.flavor-stepper button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+}
+.flavor-stepper b {
+  font-variant-numeric: tabular-nums;
+}
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: #fffdf9;
+  cursor: pointer;
+}
+.check-row input {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  accent-color: #321d10;
+}
+.check-row small {
+  display: block;
+  color: var(--muted, #6b5547);
+  font-size: 14px;
+}
+.order-success {
+  text-align: center;
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+}
+.success-check {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #e3f1e7;
+  color: #2f7a4b;
+  font-size: 36px;
+  font-weight: 700;
+}
+.stacked-actions {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+.stacked-actions > * {
+  width: 100%;
+  justify-content: center;
+}
+.flavor-stepper .flavor-step,
+.flavor-stepper .button {
+  flex: none;
+}
+.flavor-stepper b {
+  flex: 1;
+  text-align: center;
+}

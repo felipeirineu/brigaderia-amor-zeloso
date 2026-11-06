@@ -6,6 +6,13 @@
 
 ## Histórico
 
+- **2026-11-06 (2)** — Ajustes do Claude após o 2º teste em aparelho (`Totem.tsx`, `Management.tsx`, `OrderDetail.tsx`, `HelpCenter.tsx`, CSS):
+  - **Sabores:** um cartão por variante ativa. Quando o produto tem várias variantes, o título é o rótulo da variante (ex.: produto "Brigadeiro" com variantes por sabor). Saem os chips de embalagem e entra o stepper − N cx + sob o cartão.
+  - **Entrega:** "Usar o endereço do cliente" quando há endereço salvo. Sem endereço, o campo vem com "Salvar no cadastro do cliente" (PUT `field/customers/:id` após confirmar, sem bloquear o pedido).
+  - **Taxa:** o valor só aparece para motoboy ("Valor combinado com o motoboy") e é enviado 0 nos outros casos.
+  - **A prazo:** liberado no pedido, com fechamento (semanal / quinzenal 15 e fim do mês / mensal) e prazo (no fechamento / 7 / 15 dias). Vale para o pedido; o padrão do cliente continua no Financeiro.
+  - **Sucesso:** botões empilhados (Avisar no WhatsApp, Ver no Hoje, Fazer outro pedido).
+  - **Textos:** "Pedido por fotos" → "Modo simples"; "Novo pedido por fotos" → "Novo pedido"; "Ajustar por fotos" → "Ajustar pedido".
 - **2026-11-06** — **Mudança feita pelo Claude no código, a pedido do responsável, após o teste em aparelho real** (Android).
   - `Totem.tsx`: Novo pedido virou **etapas em telas separadas**: Cliente → Sabores → **Quando** (chips de dia e de horário 09:00/14:00/18:00 + "Outro dia ou horário") → **Entrega** (como, endereço, quem leva, taxa) → **Pagamento** (só com financeiro) → **Revisar** (itens + resumo com "Alterar" que volta à etapa + observações). A barra inferior usa "Continuar" até a revisão e volta ao topo a cada etapa.
   - `Today.tsx`: a **etiqueta de status** do pedido saiu de "Mais ações do pedido" para o **topo do cartão**, à direita do nome.

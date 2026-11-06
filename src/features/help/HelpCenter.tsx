@@ -140,7 +140,7 @@ export function HelpCenter({
     <>
       <h1 className="mobile-context-title">Ajuda</h1>
       <section className="panel">
-        <h2>Pedido por fotos</h2>
+        <h2>Novo pedido (modo simples)</h2>
         <p>
           Em Mais → Preferências escolha Modo simples. Escolha o cliente e toque
           na foto para adicionar uma embalagem. Use + ou − para ajustar; Remover
