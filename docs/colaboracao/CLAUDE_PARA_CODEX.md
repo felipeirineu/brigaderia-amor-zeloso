@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-07 (4)** — R14: revisão de R11-4/R11-5 aprovada, com 4 acabamentos e os dois PRs do Dependabot. Ver seção **R14**.
 - **2026-11-07 (3)** — Segurança (Claude, a pedido do responsável). Ver `docs/SEGURANCA_AUDITORIA.md`:
   - `npm run test:security` (no CI): 117 verificações de sessão, JWT, CSRF, IDOR, papéis, catálogo e cabeçalhos. **Toda rota nova precisa entrar nessa matriz.**
   - Workflow `Segurança` (gitleaks, npm audit, CodeQL, dependency-review, ZAP local) e Dependabot mensal.
@@ -69,6 +70,33 @@
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
 
 ---
+
+## R14 — Revisão de R11-4 e R11-5 (até `28e52d4`, 2026-11-07)
+
+### Aprovado
+
+- `worker/flavor-lines.ts`: uma consulta (itens simples + componentes), rateio por maior resto em BigInt sem perder centavo, desempate determinístico, guarda de composição inconsistente e limite de 10000 linhas. Correto.
+- Relatórios: ranking por unidades, "caixas de um sabor" separado de "unidades em caixas mistas", vendas atribuídas sem dupla contagem, CSV com composição.
+- Custo do pedido e compras: custo por unidades de cada componente; ficha/insumo ausente torna a estimativa indisponível em vez de zero; checagem de versão do pedido; nenhuma gravação.
+- `GET /api/p1/order-costs/:id` entrou na matriz de segurança (401/404/200). CI e Segurança verdes no branch e no main.
+- Fluxo seguido: branch → checks verdes → avanço do main no mesmo SHA.
+
+### Ajustes pedidos (pequenos)
+
+1. **Nome do sabor sem a embalagem repetida.** Com dados reais, toda linha vira "Tradicional — Caixa 12 un.". Mostre `variant_label` só quando o produto tiver mais de uma variante ativa, ou quando os componentes de uma caixa forem do mesmo produto (caso "Brigadeiro" com sabores como variantes). É a mesma regra do cartão do Hoje e do WhatsApp (`operations.ts`). Vale para Relatórios, Custo, Compras e `flavorItemTexts`.
+2. **Esconder partes zeradas.** "0 caixas de um sabor" e "0 unidades em caixas mistas" não devem aparecer no ranking.
+3. **CSV: caixas equivalentes com 2 casas** (`(units/units_per_box).toFixed(2)` ou inteiro quando exato), para não sair 1.3333333333.
+4. **Custo visível para a operadora:** está liberado como as fichas. Mantenha assim, mas confirme na ajuda que o custo é uma estimativa. Se o Felipe pedir para esconder da Alda, troque por `ownerOnly` e atualize a matriz (403).
+
+### Dependabot (os dois PRs estão vermelhos; não fazer merge como estão)
+
+- **#2, npm:** falhou em segundos, provavelmente no `npm ci`. A causa provável é o TypeScript 6 → 7 (major), com conflito de peer no `typescript-eslint`. Ignore o major do TypeScript em `.github/dependabot.yml` (`ignore: [{dependency-name: typescript, update-types: ["version-update:semver-major"]}]`) e deixe o Dependabot recriar o PR com o restante.
+- **#1, Actions:** a validação passou; falhou só o job "Novas dependências no PR" (`dependency-review-action`). Confira no log se a causa é o Dependency graph desligado nas configurações. Se for, anote para o Felipe ativar (Settings → Code security). Não use `continue-on-error`.
+- Os majors das Actions (checkout/setup-node 7 etc.) também resolvem o aviso de Node 20.
+
+### Ordem a partir de agora
+
+R14 (acima) → caixa mista em modelos recorrentes e no editor do PC → R12 → R6-5 → R6-7 → R6-8 → R7.
 
 ## R12 — Data e hora no Revisar pedido (2026-11-03)
 
