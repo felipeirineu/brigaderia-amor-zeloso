@@ -1,3 +1,4 @@
+import { flavorLines, flavorItemTexts } from './flavor-lines';
 import { z } from 'zod';
 import { receivables } from './receivables';
 import { businessDay, addDays } from './operations-domain';
@@ -46,22 +47,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
       'Mais de 1000 vendas no período; reduza o período.',
     );
   const selected = sold.map((o) => o.id),
-    items = (
-      await db
-        .prepare(
-          'SELECT i.order_id,i.product_name,i.variant_label,i.weight_grams,i.units_per_box,i.quantity,i.unit_price_cents FROM order_items i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE i.organization_id=? AND i.order_id IN(SELECT value FROM json_each(?))',
-        )
-        .bind(org, JSON.stringify(selected))
-        .all<{
-          order_id: string;
-          product_name: string;
-          variant_label: string;
-          weight_grams: number;
-          units_per_box: number;
-          quantity: number;
-          unit_price_cents: number;
-        }>()
-    ).results;
+    items = await flavorLines(db, org, selected);
   const clients = new Map<
       string,
       { id: string; name: string; orders: number; total_cents: number }
@@ -74,6 +60,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         weight_grams: number;
         units_per_box: number;
         boxes: number;
+        mixed_units: number;
         units: number;
         total_cents: number;
       }
@@ -107,12 +94,14 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         weight_grams: i.weight_grams,
         units_per_box: i.units_per_box,
         boxes: 0,
+        mixed_units: 0,
         units: 0,
         total_cents: 0,
       };
-    p.boxes += i.quantity;
-    p.units += i.quantity * i.units_per_box;
-    p.total_cents += i.quantity * i.unit_price_cents;
+    p.boxes += i.boxes;
+    p.units += i.units;
+    p.mixed_units += i.mixed ? i.units : 0;
+    p.total_cents += i.allocated_cents;
     products.set(key, p);
   }
   const received = await db
@@ -146,6 +135,9 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
   const orders = sold.map((o) => ({
     id: o.id,
     customer_name: o.customer_name,
+    items_text: flavorItemTexts(items.filter((i) => i.order_id === o.id)).join(
+      '; ',
+    ),
     date: o.business_date,
     total_cents: o.total_cents,
     paid_cents: o.paid_cents,
@@ -213,6 +205,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     position_day: businessDay(),
     sales_cents: sold.reduce((n, o) => n + o.total_cents, 0),
     orders_count: sold.length,
+    revenue_allocation: 'unidades por sabor; maior resto por item',
     received_cents: received?.cents ?? 0,
     received_scope:
       mode === 'all'
@@ -249,6 +242,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         'Pedido',
         'Cliente',
         'Data efetiva',
+        'Itens e composição',
         'Total (centavos)',
         'Recebido atual (centavos)',
         'Saldo atual (centavos)',
@@ -259,6 +253,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         o.id,
         o.customer_name,
         o.date,
+        o.items_text,
         o.total_cents,
         o.paid_cents,
         o.balance_cents,
@@ -276,9 +271,11 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         'Variante',
         'Peso g',
         'Unidades por embalagem',
-        'Embalagens',
+        'Caixas de um sabor',
         'Unidades',
-        'Vendas (centavos)',
+        'Unidades em caixas mistas',
+        'Caixas equivalentes (unidades/capacidade)',
+        'Vendas atribuídas por unidades (centavos)',
       ],
       rows: result.products.map((p) => [
         p.name,
@@ -287,6 +284,8 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         p.units_per_box,
         p.boxes,
         p.units,
+        p.mixed_units,
+        p.units / p.units_per_box,
         p.total_cents,
       ]),
     },

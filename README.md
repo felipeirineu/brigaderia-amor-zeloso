@@ -156,6 +156,6 @@ Código de pedidos por fotos, localização privada, deslocamentos, estoque manu
 
 As validações usam dados fictícios DEMONSTRAÇÃO em bases locais separadas. Homologação em iPhone/Android físicos e ativação são feitas pelo administrador com o guia.
 
-## R10 e base da caixa mista (R11)
+## R11 — caixa mista e continuação
 
-Acabamentos de produção, rota e lembretes estão implementados. A regra comercial da caixa mista está definida em [Informações comerciais](docs/INFORMACOES_COMERCIAIS.md); a [R11](docs/FASE_R11_CAIXA_MISTA.md) prepara somente modelo/API e snapshots, com migração aditiva 0015. **Montagem, modelos mistos, produção/relatórios/custos e revisão de data/hora da R12 ainda estão pendentes.** Manter `MIXED_BOXES_ENABLED` ausente/false até concluir os consumidores. `npm run test:mixed` valida a base exclusivamente em D1 efêmero. Nenhum produto/preço é inserido automaticamente.
+O estado vigente está no [guia R11](docs/FASE_R11_CAIXA_MISTA.md) e no histórico de colaboração. A montagem mista e a produção por sabor já foram entregues com o Claude; o app foi ativado na conta da brigaderia. **Não reverter flags com base nos relatórios históricos deste README.** Esta continuação corrige os relatórios por composição e, depois, custos/compras; modelos recorrentes, editor do PC e R12 seguem na ordem registrada. Sem cadastro automático de produtos/preços. A [auditoria de segurança](docs/SEGURANCA_AUDITORIA.md) define a matriz de rotas e os checks antes de publicar.

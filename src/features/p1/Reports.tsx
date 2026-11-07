@@ -29,6 +29,7 @@ interface Report {
     name: string;
     variant: string;
     boxes: number;
+    mixed_units: number;
     units: number;
     total_cents: number;
   }[];
@@ -186,16 +187,26 @@ export function Reports() {
             <h2>Ranking de clientes</h2>
             {view.data.customers.map((c) => (
               <p key={c.id}>
-                {c.name} · {c.orders} pedidos · {money(c.total_cents)}
+                {c.name} · {c.orders} {c.orders === 1 ? 'pedido' : 'pedidos'} ·{' '}
+                {money(c.total_cents)}
               </p>
             ))}
           </section>
           <section className="panel">
             <h2>Ranking de produtos / sabores</h2>
+            <p className="muted">
+              Ranking por unidades. O valor de uma caixa mista é rateado pelos
+              sabores conforme as unidades de cada um. Não é preço avulso.
+            </p>
             {view.data.products.map((p, i) => (
               <p key={i}>
-                {p.name} — {p.variant}: {p.boxes} embalagens · {p.units}{' '}
-                unidades · {money(p.total_cents)}
+                {p.name} — {p.variant}:{' '}
+                <strong>
+                  {p.units} {p.units === 1 ? 'unidade' : 'unidades'}
+                </strong>{' '}
+                · {p.boxes} {p.boxes === 1 ? 'caixa' : 'caixas'} de um sabor ·{' '}
+                {p.mixed_units} {p.mixed_units === 1 ? 'unidade' : 'unidades'}{' '}
+                em caixas mistas · vendas atribuídas: {money(p.total_cents)}
               </p>
             ))}
           </section>

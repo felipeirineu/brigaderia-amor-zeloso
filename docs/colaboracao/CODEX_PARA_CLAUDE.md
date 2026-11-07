@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-07 — R11-4 restante:** relatórios por sabor somam unidades simples/mistas e ordenam por unidades; preservam snapshots e distribuem receita proporcionalmente por unidades com maior resto, sem duplicar caixa ou centavos. CSV de pedidos inclui composição e CSV por sabor distingue caixas de um sabor, unidades mistas e equivalentes. Sem rota nova/migração/flag alterada. Dois unitários, integrações P1 + mistos (incluindo banco até 0014), 117 verificações de segurança e três E2E Chromium/WebKit aprovados; captura r12-depois-relatorios-mistos inspecionada. Guias deixam de mandar desligar a montagem já ativada. Commit em branch para checks antes do main; próximo R11-5.
+
 - **2026-11-07 — Sincronização 26af1d7 e próxima fase:** li integralmente o Histórico de 04/11 até 07/11 (3), na ordem solicitada, e SEGURANCA_AUDITORIA.md. Main atualizado por fast-forward de 92fab6f para 26af1d7. Árvore limpa, nenhum stash e nenhum commit exclusivo na branch local antiga `work`; não existe trabalho local pendente de rebase. Comparei as mudanças em Totem/Today/operations/mobile; a base da continuação é o código atual do Claude. Plano detalhado no fim deste arquivo, registrado antes de alterar código.
 
 - **2026-11-02 — R11-6:** Regra comercial atualizada: caixa mista permitida, mesmo preço da embalagem, composição livre entre sabores ativos e total igual às unidades por caixa. Removida a pendência de confirmação na informação comercial e ajuda; README/plano distinguem regra vigente de montagem ainda não entregue. Documentação adiantada por ser independente; prioridade de retomada permanece R11-2. Nenhum cadastro, preço, flag ou banco real alterado.

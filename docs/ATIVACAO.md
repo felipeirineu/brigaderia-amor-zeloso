@@ -1,5 +1,7 @@
 # Ativação — índice único para o administrador
 
+**Estado em 07/11/2026:** a conta da brigaderia já está ativada, com 0001–0015 aplicadas e montagem mista ligada, conforme o histórico. O checklist abaixo registra a instalação inicial; não reaplicar migrações nem reverter flags em ambiente ativo. Novas pendentes exigem o workflow humano e as conferências da auditoria.
+
 **O agente não ativa nada remoto nesta rodada.** O código está no main; confira o CI do commit que será ativado antes de usar o painel. Nunca enviar backups, dados de clientes, chave Pix ou tokens ao chat/GitHub.
 
 Use o [guia Windows com comandos, resultado esperado e o que fazer se der erro](FASE_2A.md#ativação--passos-curtos-no-windows-powershell). Mantenha este checklist aberto:
@@ -9,7 +11,7 @@ Use o [guia Windows com comandos, resultado esperado e o que fazer se der erro](
 - [ ] `npm run ops:preflight -- --remote brigaderia-amor-zeloso-homologacao`: conferir migrações/contagens e zero FKs. A saída não contém dados pessoais.
 - [ ] Exportar backup para `.local/` fora do Git. Arquivo maior que zero não basta: restaurar em ambiente separado com `npm run ops:restore-check -- .local/backup-antes-fase2.sql` e comparar contagens.
 - [ ] Se 0001/0002 aparecerem pendentes em banco já preenchido, parar e reconciliar o histórico; não reaplicar por tentativa.
-- [ ] Aplicar pelo runner apenas as pendentes, na ordem. **0003** status/pedidos padrão; **0004** entregador padrão; **0005** financeiro; **0006** revisão R2 (crédito/anulação/índices); **0007** lembretes; **0008** despesas; **0009** fichas/insumos; **0010** fotos/pedido simples; **0011** locais/perfis/deslocamentos; **0012** estoque; **0013** importações de clientes; **0014** cache/fila de rotas de carro (opcional, sem provedor configurado); **0015** modelo aditivo de composição mista (montagem ainda bloqueada).
+- [ ] Aplicar pelo runner apenas as pendentes, na ordem. **0003** status/pedidos padrão; **0004** entregador padrão; **0005** financeiro; **0006** revisão R2 (crédito/anulação/índices); **0007** lembretes; **0008** despesas; **0009** fichas/insumos; **0010** fotos/pedido simples; **0011** locais/perfis/deslocamentos; **0012** estoque; **0013** importações de clientes; **0014** cache/fila de rotas de carro (opcional, sem provedor configurado); **0015** modelo aditivo de composição mista (já ativada conforme o histórico).
 - [ ] Rodar a pré-checagem novamente: `pending: []`, zero FKs, contagens anteriores preservadas e schema_operations/finance/p1_ready true. Conferir amostras privadas, sem publicar dados.
 - [ ] Primeiro `OPERATIONS_ENABLED=true`; FINANCE/P1 false. Deploy correto e teste de login/status/geração.
 - [ ] Depois `FINANCE_ENABLED=true`, somente com 0005/0006 conferidas. Deploy correto e teste de saldo/sinal/crédito/estorno/recebimento rápido/desfazer com DEMONSTRAÇÃO.
@@ -97,4 +99,4 @@ Após os módulos anteriores, siga [R6 — Rotas](FASE_R6_ROTAS.md). A migraçã
 
 ## Caixa mista em desenvolvimento
 
-A migração 0015 prepara somente o modelo. Mantenha `MIXED_BOXES_ENABLED` ausente ou `false` até a conclusão dos consumidores e da montagem. `schema_mixed_model_ready` não equivale a funcionalidade pronta. Veja [situação da R11](FASE_R11_CAIXA_MISTA.md). O runner continua aplicando somente as pendentes.
+A restrição temporária da entrega inicial foi superada pela ativação registrada em 07/11. Não desligar `MIXED_BOXES_ENABLED` sem aprovação. `schema_mixed_model_ready` indica presença do modelo, não a conclusão de todos os consumidores. Veja [situação da R11](FASE_R11_CAIXA_MISTA.md). O runner continua aplicando somente as pendentes.
