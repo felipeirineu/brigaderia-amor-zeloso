@@ -18,6 +18,7 @@ export async function runtime({
   fieldEnabled = false,
   placesProvider = false,
   routingProvider,
+  port = 0,
 } = {}) {
   const issuer = 'https://demonstracao-teste.cloudflareaccess.com';
   const { privateKey, publicKey } = await generateKeyPair('RS256');
@@ -205,7 +206,7 @@ export async function runtime({
         outgoing.end('Fixture transport error');
       }
     });
-    await new Promise((resolve) => proxy.listen(0, '127.0.0.1', resolve));
+    await new Promise((resolve) => proxy.listen(port, '127.0.0.1', resolve));
     url = `http://127.0.0.1:${proxy.address().port}`;
   }
   async function dispose() {

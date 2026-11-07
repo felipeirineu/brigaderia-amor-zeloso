@@ -1,0 +1,98 @@
+name: Segurança
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '17 9 * * 1'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  segredos:
+    name: Segredos no histórico (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: false
+          GITLEAKS_ENABLE_COMMENTS: false
+
+  dependencias:
+    name: Dependências (npm audit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      # O que vai para o servidor e o navegador: falha em alta ou crítica.
+      - run: npm audit --omit=dev --audit-level=high
+      # Ferramentas de build: falha só em crítica; moderadas ficam no relatório.
+      - run: npm audit --audit-level=critical
+
+  codeql:
+    name: Análise de código (CodeQL)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v3
+
+  revisao-dependencias:
+    name: Novas dependências no PR
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
+  zap:
+    name: Teste dinâmico (OWASP ZAP, alvo local)
+    # Manual e semanal: sobe o app com D1 efêmero e dados fictícios no próprio
+    # runner. Não acessa o site publicado nem o banco da Cloudflare.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm run build:pages
+      - name: Subir alvo local
+        run: |
+          node scripts/zap-target.mjs > zap-target.log 2>&1 &
+          for i in $(seq 1 60); do
+            grep -q 'Alvo ZAP pronto' zap-target.log && exit 0
+            sleep 1
+          done
+          cat zap-target.log
+          exit 1
+      - uses: zaproxy/action-baseline@v0.14.0
+        with:
+          target: http://127.0.0.1:8788/gestao
+          rules_file_name: .zap/rules.tsv
+          cmd_options: '-a -j'
+          allow_issue_writing: false
+          # Primeira execução só relata; depois de triar os alertas, mudar para true.
+          fail_action: false
+          artifact_name: relatorio-zap
