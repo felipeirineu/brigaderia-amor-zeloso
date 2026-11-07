@@ -125,7 +125,9 @@ try {
     ).status,
     409,
   );
-  const now = new Date().toISOString().slice(0, 10);
+  const now = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Fortaleza',
+  }).format(new Date());
   const rows = await call(
     `p1/inventory/${s.id}?from=${now}&to=${now}`,
     undefined,
