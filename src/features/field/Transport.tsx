@@ -28,7 +28,11 @@ function Buttons({ place, base = false }: { place: Place; base?: boolean }) {
             onClick={() => {
               void navigator.clipboard
                 .writeText(place.address)
-                .then(() => setMessage('Endereço copiado: cole no destino'))
+                .then(() =>
+                  setMessage(
+                    'Endereço copiado. Abra o app da 99 e cole no destino.',
+                  ),
+                )
                 .catch(() =>
                   setMessage(
                     'Não foi possível copiar. Copie o endereço mostrado acima.',
@@ -36,15 +40,7 @@ function Buttons({ place, base = false }: { place: Place; base?: boolean }) {
                 );
             }}
           >
-            Copiar destino para 99
-          </Button>
-          <Button
-            className="button"
-            href="https://99app.com/"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Abrir 99
+            Copiar endereço para a 99
           </Button>
           <Button
             className="button"

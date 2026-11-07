@@ -10,6 +10,7 @@ import { orderDefaults } from './finance';
 import { operationalReady } from './operational-ready';
 import { z } from 'zod';
 import { childrenByParent } from './listing';
+import { orderNumber } from './order-number';
 import { body, HttpError, json, hash, type Actor, type Env } from './security';
 import {
   customerSchema,
@@ -107,7 +108,7 @@ export async function management(req: Request, env: Env, a: Actor) {
     const rows = (
       await db
         .prepare(
-          `SELECT * FROM ${resource} WHERE organization_id=?${id ? ' AND id=?' : ''}${status} AND ${resource === 'customers' ? '(name LIKE ? OR phone LIKE ?)' : `${field} LIKE ?`} ORDER BY ${resource === 'orders' ? 'due_at' : 'name'} LIMIT 200`,
+          `SELECT *${resource === 'orders' ? ',' + orderNumber('orders') : ''} FROM ${resource} WHERE organization_id=?${id ? ' AND id=?' : ''}${status} AND ${resource === 'customers' ? '(name LIKE ? OR phone LIKE ?)' : `${field} LIKE ?`} ORDER BY ${resource === 'orders' ? 'due_at' : 'name'} LIMIT 200`,
         )
         .bind(
           org,

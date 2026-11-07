@@ -68,7 +68,11 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
           onClick={() => {
             void navigator.clipboard
               .writeText(place.address)
-              .then(() => setNotice('Endereço copiado. Cole no destino do 99.'))
+              .then(() =>
+                setNotice(
+                  'Endereço copiado. Abra o app da 99 e cole no destino.',
+                ),
+              )
               .catch(() =>
                 setNotice(
                   'Não foi possível copiar. Abra Mapa para copiar o endereço.',

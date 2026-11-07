@@ -29,7 +29,7 @@ export function CustomerProfile() {
       <Button to="/gestao/clientes" variant="ghost">
         Clientes
       </Button>
-      <h1>Cadastro B2B e condições</h1>
+      <h1>Dados do estabelecimento e condições</h1>
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
       {view.data && (
@@ -44,7 +44,7 @@ export function CustomerProfile() {
               );
             }}
           >
-            Editar dados B2B
+            Editar dados do estabelecimento
           </Button>
           <form
             className="panel data-form"
@@ -167,7 +167,7 @@ export function CustomerProfile() {
               onChange={(terms) => change({ terms })}
             />
             <Button disabled={busy} variant="primary" loading={busy}>
-              Salvar padrões B2B
+              Salvar padrões do cliente
             </Button>
           </form>
           <Button

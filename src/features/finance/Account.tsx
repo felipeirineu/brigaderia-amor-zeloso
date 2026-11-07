@@ -12,6 +12,7 @@ interface LedgerOrder {
   customer_name: string;
   status: string;
   version: number;
+  number?: number;
   total_cents: number;
   paid_cents: number;
   balance_cents: number;
@@ -146,7 +147,7 @@ export function Account() {
         <>
           <h2>{data.customer.name}</h2>
           <Button to={`/gestao/clientes/${id}/b2b`} variant="ghost">
-            Editar condições B2B
+            Editar condições do cliente
           </Button>
           <section className="panel">
             <h2>A receber: {money(data.receivable_cents)}</h2>
@@ -226,8 +227,9 @@ export function Account() {
                   )
                   .map((o) => (
                     <option key={o.id} value={`order:${o.id}`}>
-                      Pedido {o.id.slice(0, 8)} · {civilDate(o.business_date)} ·
-                      saldo {money(o.balance_cents)}
+                      Pedido {o.number ? 'nº ' + o.number : o.id.slice(0, 8)} ·{' '}
+                      {civilDate(o.business_date)} · saldo{' '}
+                      {money(o.balance_cents)}
                     </option>
                   ))}
                 {data.closings
@@ -341,7 +343,7 @@ export function Account() {
               <article key={o.id}>
                 <h3>
                   <Button to={`/gestao/pedidos/${o.id}`} variant="ghost">
-                    Pedido {o.id.slice(0, 8)}
+                    Pedido {o.number ? 'nº ' + o.number : o.id.slice(0, 8)}
                   </Button>{' '}
                   · {civilDate(o.business_date)}
                 </h3>
@@ -367,7 +369,8 @@ export function Account() {
                       })
                     }
                   >
-                    Condição deste pedido {o.id.slice(0, 8)}
+                    Condição do pedido{' '}
+                    {o.number ? 'nº ' + o.number : o.id.slice(0, 8)}
                   </Button>
                 )}
                 {['delivered', 'picked_up'].includes(o.status) &&

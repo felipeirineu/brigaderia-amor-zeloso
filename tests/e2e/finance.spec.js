@@ -67,7 +67,9 @@ test('B2B, pedido preenchido, sinal, fechamento, Pix assistido e tutorial sem gr
       .fill('Loja DEMONSTRAÇÃO');
     await page.getByLabel('Quando cobrar').selectOption('credit');
     await page.getByLabel('Prazo após fechamento (dias)').fill('3');
-    await page.getByRole('button', { name: 'Salvar padrões B2B' }).click();
+    await page
+      .getByRole('button', { name: 'Salvar padrões do cliente' })
+      .click();
     await expect(page.getByRole('status')).toContainText('Padrões salvos');
     await page.goto(t.url + '/gestao/pedidos');
     await page

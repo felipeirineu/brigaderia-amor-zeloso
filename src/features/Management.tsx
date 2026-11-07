@@ -531,7 +531,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
                       to={`/gestao/clientes/${c.id}/b2b`}
                       variant="ghost"
                     >
-                      Dados B2B e padrões
+                      Dados do estabelecimento
                     </Button>{' '}
                     <Button
                       className="button"

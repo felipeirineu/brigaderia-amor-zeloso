@@ -6,6 +6,18 @@
 
 ## Histórico
 
+- **2026-11-07** — 3ª rodada de ajustes do Claude após teste em aparelho:
+  - **Número do pedido:** sequencial por organização, calculado na leitura (`worker/order-number.ts`, sem migração). Aparece em listagens, no extrato e no `{numero_pedido}` do WhatsApp ("nº 3").
+  - **Hoje:**
+    - `paid_cents` por pedido entra na consulta do Hoje; o cartão mostra "Pago · R$ X" ou "Recebido R$ X · falta R$ Y";
+    - "Recebi R$" some quando está quitado; "Corrigir recebimento" leva à conta do cliente (estorno);
+    - títulos fora do dia atual: "Planejamento" / "Entregas".
+  - **99:** sem o link "Abrir 99" (o site só oferecia baixar o app); fica só copiar o endereço.
+  - **CSS:**
+    - `.button:hover` só em aparelhos com hover (no celular o hover "grudava" e deixava botões claros com fundo escuro e texto escuro);
+    - `HelpTip` só com o ícone (?) de 18 px, sem fundo, e alvo de toque de 44 px.
+  - **Textos:** "B2B" virou "Dados do estabelecimento" / "Condições do cliente".
+  - **Observação de dados:** o responsável cadastrou um produto "Brigadeiro" com os sabores como variantes. O modelo esperado é um produto por sabor, com a variante "Caixa 12 un.". A orientação ao responsável é recadastrar; não mudar o modelo de dados por isso.
 - **2026-11-06 (2)** — Ajustes do Claude após o 2º teste em aparelho (`Totem.tsx`, `Management.tsx`, `OrderDetail.tsx`, `HelpCenter.tsx`, CSS):
   - **Sabores:** um cartão por variante ativa. Quando o produto tem várias variantes, o título é o rótulo da variante (ex.: produto "Brigadeiro" com variantes por sabor). Saem os chips de embalagem e entra o stepper − N cx + sob o cartão.
   - **Entrega:** "Usar o endereço do cliente" quando há endereço salvo. Sem endereço, o campo vem com "Salvar no cadastro do cliente" (PUT `field/customers/:id` após confirmar, sem bloquear o pedido).

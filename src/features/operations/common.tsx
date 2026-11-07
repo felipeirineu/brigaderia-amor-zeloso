@@ -27,6 +27,8 @@ export interface OperationalOrder {
   courier_name: string;
   courier_fee_cents: number;
   payment_mode?: string;
+  paid_cents?: number;
+  number?: number;
   total_cents: number;
   items: Item[];
 }

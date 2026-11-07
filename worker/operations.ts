@@ -1,3 +1,4 @@
+import { orderNumber } from './order-number';
 import { validateMixedConfirmation } from './mixed';
 import { shiftMonth } from '../shared/workday';
 import { mobileReady } from './mobile-ready';
@@ -82,7 +83,7 @@ export async function operations(
     const rows = (
       await db
         .prepare(
-          `SELECT o.*${financial ? ",COALESCE(json_extract(t.data,'$.mode'),'unset') AS payment_mode" : ''} FROM orders o ${financial ? 'LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id' : ''} WHERE o.organization_id=? AND o.active=1 AND o.status<>'cancelled' AND o.due_at>=? AND o.due_at<? ORDER BY o.due_at,o.id LIMIT 201`,
+          `SELECT o.*,${orderNumber('o')}${financial ? ",COALESCE(json_extract(t.data,'$.mode'),'unset') AS payment_mode,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -pa.amount_cents ELSE pa.amount_cents END) FROM payment_allocations pa JOIN payment_events e ON e.organization_id=pa.organization_id AND e.id=pa.event_id WHERE pa.organization_id=o.organization_id AND pa.order_id=o.id),0) AS paid_cents" : ''} FROM orders o ${financial ? 'LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id' : ''} WHERE o.organization_id=? AND o.active=1 AND o.status<>'cancelled' AND o.due_at>=? AND o.due_at<? ORDER BY o.due_at,o.id LIMIT 201`,
         )
         .bind(org, utcStart(day), utcStart(addDays(day, 2)))
         .all<Row>()
@@ -606,7 +607,9 @@ export async function operations(
     throw new HttpError(404, 'Não encontrado.');
   const order = await db
     .prepare(
-      'SELECT * FROM orders WHERE organization_id=? AND id=? AND active=1',
+      'SELECT *,' +
+        orderNumber('orders') +
+        ' FROM orders WHERE organization_id=? AND id=? AND active=1',
     )
     .bind(org, id)
     .first<Row>();
@@ -859,7 +862,9 @@ export async function operations(
     try {
       message = interpolate(content, {
         cliente: String(order.customer_name),
-        numero_pedido: String(order.id).slice(0, 8),
+        numero_pedido: order.number
+          ? 'nº ' + String(order.number)
+          : String(order.id).slice(0, 8),
         itens: items
           .map(
             (i) =>

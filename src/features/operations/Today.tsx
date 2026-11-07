@@ -204,8 +204,8 @@ export function Today({
                       )!.display_name
                     : '')
                 : role === 'owner'
-                  ? 'Planejamento do dia'
-                  : 'Entregas do dia'}
+                  ? 'Planejamento'
+                  : 'Entregas'}
             </h2>
             {day === localDay() &&
               field?.data &&
@@ -561,15 +561,28 @@ export function Today({
                     ))}
                   </div>
                   <div className="delivery-payment">
-                    <span className="status-tag">
-                      {order.payment_mode === 'delivery'
-                        ? 'Na entrega'
-                        : order.payment_mode === 'advance'
-                          ? 'Adiantado'
-                          : order.payment_mode === 'credit'
-                            ? 'A prazo'
-                            : 'Pagamento a definir'}
-                    </span>
+                    {financial && (order.paid_cents ?? 0) > 0 ? (
+                      <span
+                        className={`status-tag ${(order.paid_cents ?? 0) >= order.total_cents ? 'status-delivered' : ''}`}
+                      >
+                        {(order.paid_cents ?? 0) >= order.total_cents
+                          ? 'Pago · ' + money(order.paid_cents ?? 0)
+                          : 'Recebido ' +
+                            money(order.paid_cents ?? 0) +
+                            ' · falta ' +
+                            money(order.total_cents - (order.paid_cents ?? 0))}
+                      </span>
+                    ) : (
+                      <span className="status-tag">
+                        {order.payment_mode === 'delivery'
+                          ? 'Na entrega'
+                          : order.payment_mode === 'advance'
+                            ? 'Adiantado'
+                            : order.payment_mode === 'credit'
+                              ? 'A prazo'
+                              : 'Pagamento a definir'}
+                      </span>
+                    )}
                     <strong>{money(order.total_cents)}</strong>
                   </div>
                   {order.courier !== 'unassigned' &&
@@ -621,7 +634,8 @@ export function Today({
                           'draft',
                           'awaiting_confirmation',
                           'cancelled',
-                        ].includes(order.status) && (
+                        ].includes(order.status) &&
+                        (order.paid_cents ?? 0) < order.total_cents && (
                           <Button
                             disabled={busy}
                             onClick={() => setReceipt(order)}
@@ -630,6 +644,15 @@ export function Today({
                             Recebi R$
                           </Button>
                         )}
+                      {financial && (order.paid_cents ?? 0) > 0 && (
+                        <Button
+                          className="button"
+                          to={`/gestao/financeiro/${order.customer_id}`}
+                          variant="ghost"
+                        >
+                          Corrigir recebimento
+                        </Button>
+                      )}
                       <Button
                         className="button"
                         to={`/gestao/pedidos/${order.id}`}

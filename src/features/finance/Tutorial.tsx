@@ -30,8 +30,8 @@ export function FinancialTutorial() {
         </DisclosureSummary>
         <ol>
           <li>
-            Em Clientes, abra Dados B2B e padrões. Escolha a condição; a prazo
-            exige periodicidade e dias para pagar.
+            Em Clientes, abra Dados do estabelecimento e padrões. Escolha a
+            condição; a prazo exige periodicidade e dias para pagar.
           </li>
           <li>
             Confira a cópia da condição no pedido. Uma exceção deve ser salva

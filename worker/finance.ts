@@ -1,3 +1,4 @@
+import { orderNumber } from './order-number';
 import { financeR2 } from './finance-r2';
 import { canReverse } from './reversal-policy';
 import { z } from 'zod';
@@ -39,7 +40,9 @@ export async function accountView(
   const orders = (
     await db
       .prepare(
-        "SELECT o.id,o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,(SELECT MAX(e.created_at) FROM order_status_events e WHERE e.organization_id=o.organization_id AND e.order_id=o.id AND e.to_status IN ('delivered','picked_up')) AS completed_at,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents FROM orders o LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=? AND o.customer_id=? ORDER BY o.due_at,o.id LIMIT 1001",
+        'SELECT o.id,' +
+          orderNumber('o') +
+          ",o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,(SELECT MAX(e.created_at) FROM order_status_events e WHERE e.organization_id=o.organization_id AND e.order_id=o.id AND e.to_status IN ('delivered','picked_up')) AS completed_at,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents FROM orders o LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=? AND o.customer_id=? ORDER BY o.due_at,o.id LIMIT 1001",
       )
       .bind(org, customer)
       .all<Row>()

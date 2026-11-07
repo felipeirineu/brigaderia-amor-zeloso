@@ -283,8 +283,10 @@ main {
   font-size: 0.82rem;
   min-height: 48px;
 }
-.button:hover {
-  background: #533021;
+@media (hover: hover) {
+  .button:not(.az-button):hover {
+    background: #533021;
+  }
 }
 .button.secondary {
   background: transparent;
@@ -2434,4 +2436,24 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .flavor-stepper b {
   flex: 1;
   text-align: center;
+}
+
+/* Ícone de ajuda: só o (?) em círculo, sem aparência de botão; alvo de toque continua 44 px. */
+.az-button.help-trigger,
+.help-trigger {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0 !important;
+  margin: -10px 0;
+  color: var(--gold-ink, #8a6634);
+  vertical-align: middle;
+}
+.help-trigger svg {
+  width: 18px;
+  height: 18px;
 }
