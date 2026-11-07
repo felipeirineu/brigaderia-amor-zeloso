@@ -132,12 +132,16 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
                 ? '31–60 dias'
                 : '61+ dias',
     }));
+  const linesByOrder = new Map<string, typeof items>();
+  for (const item of items) {
+    const group = linesByOrder.get(item.order_id) ?? [];
+    group.push(item);
+    linesByOrder.set(item.order_id, group);
+  }
   const orders = sold.map((o) => ({
     id: o.id,
     customer_name: o.customer_name,
-    items_text: flavorItemTexts(items.filter((i) => i.order_id === o.id)).join(
-      '; ',
-    ),
+    items_text: flavorItemTexts(linesByOrder.get(o.id) ?? []).join('; '),
     date: o.business_date,
     total_cents: o.total_cents,
     paid_cents: o.paid_cents,

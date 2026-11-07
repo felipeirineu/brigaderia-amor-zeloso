@@ -1,3 +1,4 @@
+import { flavorLines } from './flavor-lines';
 import { z } from 'zod';
 import { HttpError, json, type Actor } from './security';
 import { ownerOnly, p1Mutation, requestRange } from './p1-common';
@@ -24,7 +25,7 @@ interface Recipe {
   units_per_box: number | null;
   components: (CostComponent & { unit: string })[];
 }
-async function readRecipes(db: D1Database, org: string) {
+export async function readRecipes(db: D1Database, org: string) {
   const rows = (
     await db
       .prepare(
@@ -81,25 +82,41 @@ export async function recipes(
           estimate: estimateRecipe(r, r.components),
         })),
       });
-    const { from, to } = requestRange(req, 30),
-      demand = (
-        await db
-          .prepare(
-            "SELECT i.variant_id,MIN(i.product_name||' — '||i.variant_label) AS name,SUM(i.quantity*i.units_per_box) AS units,COUNT(DISTINCT o.id) AS orders_count FROM order_items i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE o.organization_id=? AND o.active=1 AND o.status IN('confirmed','in_production') AND o.due_at>=? AND o.due_at<? GROUP BY i.variant_id",
-          )
-          .bind(org, utcStart(from), utcStart(addDays(to, 1)))
-          .all<{
-            variant_id: string;
-            name: string;
-            units: number;
-            orders_count: number;
-          }>()
-      ).results;
-    if (demand.reduce((n, d) => n + d.orders_count, 0) > 1000)
+    const { from, to } = requestRange(req, 30);
+    const orders = (
+      await db
+        .prepare(
+          "SELECT id FROM orders WHERE organization_id=? AND active=1 AND status IN('confirmed','in_production') AND due_at>=? AND due_at<? LIMIT 1001",
+        )
+        .bind(org, utcStart(from), utcStart(addDays(to, 1)))
+        .all<{ id: string }>()
+    ).results;
+    if (orders.length > 1000)
       throw new HttpError(
         409,
-        'Compras excedem 1000 linhas de pedido; reduza o período.',
+        'Compras excedem 1000 pedidos; reduza o período.',
       );
+    const lines = await flavorLines(
+      db,
+      org,
+      orders.map((o) => o.id),
+    );
+    const byVariant = new Map<
+      string,
+      { variant_id: string; name: string; units: number; orders: Set<string> }
+    >();
+    for (const line of lines) {
+      const d = byVariant.get(line.variant_id) ?? {
+        variant_id: line.variant_id,
+        name: line.product_name + ' — ' + line.variant_label,
+        units: 0,
+        orders: new Set<string>(),
+      };
+      d.units = safeQuantity(BigInt(d.units) + BigInt(line.units));
+      d.orders.add(line.order_id);
+      byVariant.set(line.variant_id, d);
+    }
+    const demand = [...byVariant.values()];
     const missing: string[] = [],
       batches: {
         recipe_id: string;

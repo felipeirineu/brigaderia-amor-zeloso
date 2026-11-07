@@ -1,3 +1,4 @@
+import { orderCosts } from './order-costs';
 import { backup } from './backup';
 import { customerImport } from './customer-import';
 import { toolsReady } from './tools-ready';
@@ -35,6 +36,7 @@ export async function p1(req: Request, env: Env, a: Actor) {
       throw new HttpError(503, 'Estoque ainda não ativado.');
     return inventory(req, env.DB!, a, id);
   }
+  if (resource === 'order-costs') return orderCosts(req, env.DB!, a, id);
   if (['reports', 'reports.csv'].includes(resource) && req.method === 'GET')
     return reports(req, env.DB!, a);
   if (['expenses', 'cashflow', 'cashflow.csv'].includes(resource))

@@ -2,7 +2,7 @@
 
 PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com preparação para catálogo público e atendimento assistido pelo WhatsApp.
 
-> **Estado:** gestão da Fase 1 validada em homologação. Revisão R1 e Fase 2B financeira implementadas/testadas; operação e financeiro permanecem OFF até backup, migrações e ativação do banco remoto.
+> **Estado em 07/11/2026:** gestão privada ativada na conta da brigaderia, conforme o histórico. Montagem mista e produção por sabor disponíveis; catálogo público desligado. Relatórios/custos por composição seguem a continuação documentada na R11. Os relatos de fases anteriores abaixo são históricos, não instruções para reverter flags.
 
 ## Objetivos
 
@@ -158,4 +158,4 @@ As validações usam dados fictícios DEMONSTRAÇÃO em bases locais separadas. 
 
 ## R11 — caixa mista e continuação
 
-O estado vigente está no [guia R11](docs/FASE_R11_CAIXA_MISTA.md) e no histórico de colaboração. A montagem mista e a produção por sabor já foram entregues com o Claude; o app foi ativado na conta da brigaderia. **Não reverter flags com base nos relatórios históricos deste README.** Esta continuação corrige os relatórios por composição e, depois, custos/compras; modelos recorrentes, editor do PC e R12 seguem na ordem registrada. Sem cadastro automático de produtos/preços. A [auditoria de segurança](docs/SEGURANCA_AUDITORIA.md) define a matriz de rotas e os checks antes de publicar.
+O estado vigente está no [guia R11](docs/FASE_R11_CAIXA_MISTA.md) e no histórico de colaboração. A montagem mista e a produção por sabor já foram entregues com o Claude; o app foi ativado na conta da brigaderia. **Não reverter flags com base nos relatórios históricos deste README.** Esta continuação entrega relatórios e custos/compras por composição; modelos recorrentes, editor do PC e R12 seguem na ordem registrada. Sem cadastro automático de produtos/preços. A [auditoria de segurança](docs/SEGURANCA_AUDITORIA.md) define a matriz de rotas e os checks antes de publicar.

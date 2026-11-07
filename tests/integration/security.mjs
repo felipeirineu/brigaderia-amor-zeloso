@@ -56,6 +56,7 @@ try {
     'p1/expenses',
     'p1/inventory',
     'p1/recipes',
+    'p1/order-costs/' + order,
     'p1/reminders',
     'p1/reports',
     'p1/reports.csv',
@@ -178,6 +179,7 @@ try {
     'orders/' + order,
     'finance/customers/' + customer,
     'mobile/defaults/' + customer,
+    'p1/order-costs/' + order,
   ]) {
     const r = await t.request(path, { cookie: outside });
     ok(r.status === 404, `outra organização leu ${path}: ${r.status}`);
@@ -210,6 +212,17 @@ try {
   ok(still.status === 'confirmed', 'pedido mudou após tentativa externa');
   const cust = await call('customers/' + customer, undefined, 'GET');
   ok(cust.name !== 'Invasão', 'cliente mudou após tentativa externa');
+
+  ok(
+    (await t.request('p1/order-costs/' + order, { cookie: operator }))
+      .status === 200,
+    'operadora autorizada consulta custo, assim como fichas',
+  );
+  ok(
+    (await t.request('p1/order-costs/' + fake, { cookie: owner })).status ===
+      404,
+    'custo de pedido inexistente não existe',
+  );
 
   // 6. Papéis: operadora não acessa funções exclusivas do owner.
   for (const [path, method, data] of [

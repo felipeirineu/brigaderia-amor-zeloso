@@ -1533,6 +1533,11 @@ button,
   .order-focus .flavor-grid {
     gap: 8px;
   }
+  /* Margem para a variação das métricas da fonte do sistema. */
+  .order-focus .flavor-card img {
+    width: 118px;
+    height: 118px;
+  }
   .order-focus .totem-bar {
     display: grid;
     grid-template-columns: 1fr;

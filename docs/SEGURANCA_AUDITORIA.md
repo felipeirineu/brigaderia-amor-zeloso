@@ -158,3 +158,9 @@ Recomendação: tornar privado antes de transferir o repositório ao Tiago. A se
 | Mensal                      | Aplicar PR do Dependabot depois do CI verde; ensaio de backup                                        | Felipe                                  |
 | A cada novo acesso ou saída | Atualizar a política do Access **e** `authorized_emails`                                             | Felipe/Tiago                            |
 | Na entrega do presente      | Transferir o repositório, trocar o token `CLOUDFLARE_API_TOKEN` do GitHub, revisar membros do Access | Felipe                                  |
+
+## Continuação de 07/11 — consulta de custo por composição
+
+R11-5 acrescenta `GET /api/p1/order-costs/:id`, somente leitura. Segue `actor()`, P1 ativo e organização do pedido; sem sessão recebe 401, pedido de outra organização/inexistente recebe 404. Operadora pode consultar, assim como fichas; não é uma rota exclusiva de owner. Não aceita gravação nem cria evento financeiro/estoque. Resposta privada usa `no-store` e cabeçalhos do JSON da API.
+
+A matriz `test:security` passou de 117 para **122 verificações**, incluindo essa rota, a consulta autorizada pela operadora e ID inexistente. Integrações de custos também conferem 405 para POST e nenhum efeito em despesas/estoque. Os demais itens e as tarefas humanas desta auditoria continuam válidos; isto não afirma ensaio em dados reais, configuração de rulesets ou execução manual do ZAP.

@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-07 — R11-5:** custo de produção por composição no detalhe do pedido e compras por unidades simples/mistas, com ficha atual e arredondamento unitário já usado no simulador. Falta de ficha/custo/insumo ativo deixa total indisponível; zero cadastrado continua válido. Sem despesa/baixa/preço automático. Nova GET p1/order-costs/:id: 401 sem sessão, 404 fora da organização, operadora autorizada; matriz passou a 122. 71 unitários, integrações P1/mistas e 89 E2E aprovados, um offline WebKit preexistente ignorado. Achado visual reproduzido em 26af1d7 corrigido só no CSS móvel (fotos 120→118 px), mantendo fluxo e asserção. Capturas de custo/compras inspecionadas. CI/Segurança de R11-4 verdes antes do avanço main para f4230a6; custo segue o mesmo protocolo. Próximo: misturas em modelos recorrentes/editor do PC.
+
 - **2026-11-07 — R11-4 restante:** relatórios por sabor somam unidades simples/mistas e ordenam por unidades; preservam snapshots e distribuem receita proporcionalmente por unidades com maior resto, sem duplicar caixa ou centavos. CSV de pedidos inclui composição e CSV por sabor distingue caixas de um sabor, unidades mistas e equivalentes. Sem rota nova/migração/flag alterada. Dois unitários, integrações P1 + mistos (incluindo banco até 0014), 117 verificações de segurança e três E2E Chromium/WebKit aprovados; captura r12-depois-relatorios-mistos inspecionada. Guias deixam de mandar desligar a montagem já ativada. Commit em branch para checks antes do main; próximo R11-5.
 
 - **2026-11-07 — Sincronização 26af1d7 e próxima fase:** li integralmente o Histórico de 04/11 até 07/11 (3), na ordem solicitada, e SEGURANCA_AUDITORIA.md. Main atualizado por fast-forward de 92fab6f para 26af1d7. Árvore limpa, nenhum stash e nenhum commit exclusivo na branch local antiga `work`; não existe trabalho local pendente de rebase. Comparei as mudanças em Totem/Today/operations/mobile; a base da continuação é o código atual do Claude. Plano detalhado no fim deste arquivo, registrado antes de alterar código.
@@ -357,3 +359,23 @@ Meu relatório anterior deixava montagem, produção e ativação mista pendente
 ### Ordem posterior preservada
 
 Depois desta fase: misturas em modelos recorrentes/geração semanal e no editor do PC (comparar a preservação existente com composition_version 1); R12 na etapa Quando com calendário/contagem; R6-5 → R6-7 → R6-8 → R7. Actions do Node ficam por último, após conferir as propostas do Dependabot, sem misturar manutenção de infraestrutura com a correção de cálculos. O produto cadastrado por engano com sabores como variantes não autoriza migração ou remodelagem automática dos dados; manter a orientação registrada no histórico.
+
+### Achado de validação antes do ajuste de CSS
+
+A suíte completa local passou em 87 E2E e falhou em duas medições Chromium do R5: último cartão termina em 752,296875 px e rodapé começa em 750,375 px. Reproduzido exatamente numa cópia limpa de 26af1d7, com Chromium oficial 156 e com o Chromium 154 instalado. Não foi causado por alteração de Totem/Today/operations/mobile (esses quatro arquivos continuam sem diff). Corrigir apenas o tamanho das fotos da grade móvel em 2 px para preservar margem com métricas da fonte do sistema, mantendo 44 px dos controles, grade e fluxo atuais. Critério: a mesma asserção estrita passa em Chromium e WebKit; não adicionar tolerância ou ignorar teste.
+
+## Relatório — continuação sincronizada de 07/11
+
+- **Produzido:** sincronização e plano registrados antes do código; R11-4 restante (relatórios/ranking/CSV por composição) e R11-5 (consulta privada de custo e compras por sabor). Guias refletem a montagem já ativada, sem instrução para desligá-la. Consulta de custo aparece sob os itens do pedido e só carrega ao abrir a seção. O detalhe também identifica composições existentes e usa IDs de linha como chave, sem mudar o editor do PC.
+- **Testes executados:** lint/formatação/tipagem/build; 71 unitários; integrações P1 (agenda, relatórios antigos/mistos, despesas, fichas/compras antigas/mistas), 122 verificações de segurança, compatibilidade até 0014, snapshots e isolamento. E2E integral: 89 aprovados, um offline WebKit ignorado. Chromium oficial 156 e WebKit móvel. Antes do ajuste de CSS houve duas falhas de medida; reprodução idêntica em cópia limpa de 26af1d7, ajuste sem tolerância no teste, 12 cenários relacionados e suíte completa aprovados em seguida. Capturas r12-depois-relatorios-mistos/custo-misto/compras-mistas.
+- **Limitações:** custo usa fichas/insumos atuais e arredondamento por unidade, não custo histórico congelado. Não inclui entrega/despesas fora da ficha, não é lucro apurado. Compras usa lotes/embalagens inteiros; pode diferir do custo proporcional. Até 1000 pedidos/vendas e 10000 linhas de sabores, sem truncar silenciosamente. Nenhum ensaio em aparelho ou dado real nesta rodada; não foi executado ZAP manual nem alterado ruleset. CI e Segurança são acompanhados por SHA antes do avanço de main.
+- **Pendências:** misturas em modelos recorrentes/geração semanal e editor de pedidos do PC; R12 na etapa Quando; R6-5/7/8 e R7; Actions Node por último (Dependabot já abriu proposta). Nenhuma flag, Access, D1 ou migração remota alterada. Totem.tsx, Today.tsx, operations.ts e mobile.ts permanecem sem diff contra 26af1d7.
+
+| Próxima ordem     | Status vigente                                                          |
+| ----------------- | ----------------------------------------------------------------------- |
+| R11-4 restante    | Entregue: relatórios por unidades, composição no CSV e rateio exato.    |
+| R11-5             | Entregue: estimativa de produção por composição e compras consolidadas. |
+| Modelos/PC mistos | Próximo; preservar as misturas existentes e o fluxo do Claude.          |
+| R12               | Depois: calendário com contagem na etapa Quando.                        |
+| R6-5/7/8 e R7     | Na sequência já registrada; não iniciados nesta fase.                   |
+| Actions Node      | Depois das funcionalidades, conferindo Dependabot.                      |

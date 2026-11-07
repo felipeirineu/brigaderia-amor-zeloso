@@ -1643,6 +1643,7 @@ export function Management() {
                   path="pedidos/:id"
                   element={
                     <OrderDetail
+                      p1={session.p1}
                       financial={session.finance}
                       mobile={session.mobile}
                     />

@@ -55,3 +55,25 @@ export async function mixedAnalysisProject(t) {
   };
   return { ...base, variants, day, order: order.id, deliver };
 }
+export async function seedAnalysisRecipe(call, variant, index) {
+  const supply = await call('p1/supplies', {
+    name: `Insumo ${index} DEMONSTRAÇÃO mista`,
+    unit: 'g',
+    pack_quantity_milli: 1000000,
+    pack_cost_cents: 1000,
+  });
+  const data = {
+    name: `Ficha ${index} DEMONSTRAÇÃO mista`,
+    variant_id: variant.id,
+    yield_units: 12,
+    packaging_cents: index === 2 ? 13 : 12,
+    labor_cents: 24,
+    overhead_cents: 36,
+    margin_bps: 5000,
+    components: [
+      { supply_id: supply.id, quantity_milli: 120000 * (index + 1) },
+    ],
+  };
+  const recipe = await call('p1/recipes', data);
+  return { supply: supply.id, recipe: recipe.id, data };
+}

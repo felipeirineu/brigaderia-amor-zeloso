@@ -45,3 +45,9 @@ Limites: sem aparelho físico, chave real ORS, foto pessoal, push ou prospecçã
 Protótipo atualizado aberto nos fluxos Sabores → Caixa mista e Revisar → Quando em 390×844. Capturas `r12-depois-*` desta rodada conferem os acabamentos R10: nome de sabor e contagens em duas linhas, ajuda pequena, rota resumida sem créditos no cabeçalho, crédito na folha, círculo de lembrete e atalhos de data/hora. Inspeção visual feita nas capturas; nome de demonstração longo provoca quebra intencional em comparação com os sabores cadastrados mais curtos.
 
 A montagem mista do protótipo **não foi implementada nesta base** e nenhuma captura é apresentada como prova dela. R11-1 é modelo/API desligado; R11-2…5 e R12 permanecem pendentes. O teste operacional foi atualizado para verificar o rótulo acessível completo e “4 un.” após a abreviação visual, mantendo a validação dos números.
+
+## Continuação sincronizada de 07/11 — relatórios e custos mistos
+
+Comparados o main 26af1d7 e as telas atuais antes das alterações; fluxo em etapas e montagem do Claude preservados. Capturas r12-depois-relatorios-mistos, custo-misto e compras-mistas em WebKit 390×844 com dados DEMONSTRAÇÃO. Conferidos ranking por unidades, indicação de rateio, discriminação de componentes, custo ausente e lotes de compras. Estimativa fica recolhida sob os itens e usa fichas atuais; não se apresenta como lucro ou preço real.
+
+Achado de regressão visual: no Chromium, última fileira de sabores terminava ~2 px sob o rodapé. Reproduzido na cópia limpa de 26af1d7, inclusive com Chromium oficial 156. CSS móvel reduz somente as fotos de 120 para 118 px; controles de 44 px, montagem e etapas ficam preservados. Mantida a asserção estrita de visibilidade. Após corrigir, 12 E2E relacionados e os 89 da suíte integral passaram (um offline WebKit já ignorado). Não houve ensaio físico nem captura de dados reais.

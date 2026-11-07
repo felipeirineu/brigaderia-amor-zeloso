@@ -57,8 +57,9 @@ export function Shopping() {
       </div>
       <p>
         Pedidos confirmados e em produção com prazo entre {civilDate(from)} e{' '}
-        {civilDate(to)}. Arredonda lotes inteiros por variante e embalagens de
-        compra para cima. Confira estoque manualmente antes de comprar.
+        {civilDate(to)}. Soma as unidades de cada sabor, inclusive das caixas
+        mistas. Arredonda lotes inteiros por variante e embalagens de compra
+        para cima. Confira estoque manualmente antes de comprar.
       </p>
       {view.data && (
         <>

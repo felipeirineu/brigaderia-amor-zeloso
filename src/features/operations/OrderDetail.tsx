@@ -1,3 +1,4 @@
+import { OrderCost } from '../p1/OrderCost';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { Transport } from '../field/Transport';
@@ -26,9 +27,11 @@ import {
 export function OrderDetail({
   financial = false,
   mobile = false,
+  p1 = false,
 }: {
   financial?: boolean;
   mobile?: boolean;
+  p1?: boolean;
 }) {
   const courierLabels = useCourierLabels(),
     field = useField(),
@@ -184,20 +187,38 @@ export function OrderDetail({
               <p>{order.notes}</p>
             </section>
           )}
-          <section className="panel">
+          <section className="panel order-detail-items">
             <h2>
               Itens <HelpTip topic="composition" />
             </h2>
             <ul>
-              {order.items.map((i) => (
-                <li key={i.variant_id}>
-                  {i.quantity} embalagens · {i.product_name} — {i.variant_label}{' '}
+              {order.items.map((i, index) => (
+                <li key={i.id ?? `${i.variant_id}:${index}`}>
+                  {i.components?.length ? (
+                    <>
+                      {i.quantity}{' '}
+                      {i.quantity === 1 ? 'caixa mista' : 'caixas mistas'} ·{' '}
+                      {i.components
+                        .map(
+                          (c) =>
+                            `${c.units} ${c.product_name}${c.variant_label ? ' — ' + c.variant_label : ''}`,
+                        )
+                        .join(' + ')}
+                    </>
+                  ) : (
+                    <>
+                      {i.quantity}{' '}
+                      {i.quantity === 1 ? 'embalagem' : 'embalagens'} ·{' '}
+                      {i.product_name} — {i.variant_label}
+                    </>
+                  )}{' '}
                   · {i.quantity * i.units_per_box} unidades ·{' '}
                   {money(i.unit_price_cents)} por embalagem
                 </li>
               ))}
             </ul>
           </section>
+          {p1 && <OrderCost id={order.id} version={order.version} />}
           <section className="panel">
             <h2>
               Entrega / retirada <HelpTip topic="courier" />
