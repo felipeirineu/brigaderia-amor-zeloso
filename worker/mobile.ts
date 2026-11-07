@@ -1,5 +1,10 @@
 import { itemInputSchema, uniqueItems } from './mixed-domain';
-import { attachComponents, prepareItems, writeComponents } from './mixed';
+import {
+  attachComponents,
+  mixedReady,
+  prepareItems,
+  writeComponents,
+} from './mixed';
 import type { ItemSnapshot } from '../shared/mixed';
 import { fieldReady } from './field-ready';
 import { snapshotPlaces } from './order-places';
@@ -132,6 +137,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
         ]),
       ),
       product_order: base.map((p) => p.id),
+      mixed: await mixedReady(env),
       plans: plans.map((p) => ({
         ...p,
         mutation_id: undefined,

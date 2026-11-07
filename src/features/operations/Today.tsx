@@ -546,19 +546,35 @@ export function Today({
                     </span>
                   </div>
                   <div className="delivery-flavors">
-                    {order.items.map((i) => (
-                      <span className="delivery-flavor" key={i.variant_id}>
-                        {i.photo_key && (
-                          <img
-                            src={photoURL(i.photo_key)}
-                            alt=""
-                            width={26}
-                            height={26}
-                          />
-                        )}
-                        {i.quantity}× {i.product_name}
-                      </span>
-                    ))}
+                    {order.items.map((i) =>
+                      i.components?.length ? (
+                        <span
+                          className="delivery-flavor delivery-mix"
+                          key={String(i.id ?? i.variant_id) + '-mix'}
+                        >
+                          {i.quantity}× Caixa mista (
+                          {i.components
+                            .map(
+                              (c, _, all) =>
+                                `${c.units} ${all.every((x) => x.product_name === c.product_name) && c.variant_label ? c.variant_label : c.product_name}`,
+                            )
+                            .join(' + ')}
+                          )
+                        </span>
+                      ) : (
+                        <span className="delivery-flavor" key={i.variant_id}>
+                          {i.photo_key && (
+                            <img
+                              src={photoURL(i.photo_key)}
+                              alt=""
+                              width={26}
+                              height={26}
+                            />
+                          )}
+                          {i.quantity}× {i.product_name}
+                        </span>
+                      ),
+                    )}
                   </div>
                   <div className="delivery-payment">
                     {financial && (order.paid_cents ?? 0) > 0 ? (

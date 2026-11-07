@@ -10,6 +10,13 @@ interface Item {
   quantity: number;
   product_name?: string;
   variant_label?: string;
+  id?: string;
+  components?: {
+    variant_id: string;
+    units: number;
+    product_name: string;
+    variant_label?: string;
+  }[];
   units_per_box: number;
   unit_price_cents: number;
 }

@@ -10,6 +10,7 @@
     "P1_TOOLS_ENABLED": "true",
     "MOBILE_ENABLED": "true",
     "FIELD_ENABLED": "true",
+    "MIXED_BOXES_ENABLED": "true",
     "OPERATIONS_ENABLED": "true",
     "ACCESS_TEAM_DOMAIN": "amorzeloso.cloudflareaccess.com",
     "ACCESS_AUD": "94aae0721b3546d008d3dfc8fd9fbc4c3688308832e269dd5692581c27e0187c",

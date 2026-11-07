@@ -24,9 +24,28 @@ interface Product {
     label: string;
     active: number;
     price_cents: number;
+    units_per_box?: number;
+    weight_grams?: number;
     photo_key: string | null;
   }[];
 }
+interface Mix {
+  key: string;
+  item_id?: string;
+  base: string;
+  comp: Record<string, number>;
+  qty: number;
+}
+const mixSig = (comp: Record<string, number>) =>
+  JSON.stringify(
+    Object.entries(comp)
+      .filter(([, u]) => u > 0)
+      .sort(([a], [b]) => a.localeCompare(b)),
+  );
+const mixBase = (comp: Record<string, number>) =>
+  Object.entries(comp)
+    .filter(([, u]) => u > 0)
+    .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))[0]?.[0] ?? '';
 interface Plan {
   id: string;
   name: string;
@@ -44,6 +63,7 @@ interface Plan {
 interface Defaults {
   ranking: Popularity;
   product_order: string[];
+  mixed?: boolean;
   profile: B2BProfile;
   plans: Plan[];
   last: {
@@ -71,6 +91,8 @@ interface EditOrder {
     product_name: string;
     variant_label: string;
     unit_price_cents: number;
+    id?: string;
+    components?: { variant_id: string; units: number }[];
   }[];
 }
 export function Totem({ financial = false }: { financial?: boolean }) {
@@ -84,6 +106,11 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     customers = useRemote<{ id: string; name: string; frequency: number }[]>(
       'mobile/customers?q=' + encodeURIComponent(query),
     );
+  const [mixes, setMixes] = useState<Mix[]>([]),
+    [mixDraft, setMixDraft] = useState<{
+      comp: Record<string, number>;
+      editing?: string;
+    } | null>(null);
   const [step, setStep] = useState(0),
     [customer, setCustomer] = useState<{ id: string; name: string } | null>(
       null,
@@ -151,7 +178,27 @@ export function Totem({ financial = false }: { financial?: boolean }) {
         setEditing(o);
         setCustomer({ id: o.customer_id, name: o.customer_name });
         setCounts(
-          Object.fromEntries(o.items.map((i) => [i.variant_id, i.quantity])),
+          Object.fromEntries(
+            o.items
+              .filter((i) => !i.components?.length)
+              .map((i) => [i.variant_id, i.quantity]),
+          ),
+        );
+        setMixes(
+          o.items
+            .filter((i) => i.components?.length)
+            .map((i) => {
+              const comp = Object.fromEntries(
+                i.components!.map((c) => [c.variant_id, c.units]),
+              );
+              return {
+                key: mixSig(comp),
+                item_id: i.id,
+                base: i.variant_id,
+                comp,
+                qty: i.quantity,
+              };
+            }),
         );
         setDue(
           new Date(Date.parse(o.due_at) - 10800000).toISOString().slice(0, 16),
@@ -200,6 +247,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     const serial = ++choice.current;
     setCustomer(c);
     setCounts({});
+    setMixes([]);
     setDefaults(null);
     setDue('');
     setPlanDue('');
@@ -255,7 +303,64 @@ export function Totem({ financial = false }: { financial?: boolean }) {
     price = (v: (typeof all)[number]) =>
       editing?.items.find((i) => i.variant_id === v.id)?.unit_price_cents ??
       v.price_cents,
-    total = selected.reduce((n, v) => n + counts[v.id] * price(v), 0);
+    mixPrice = (m: Mix) =>
+      editing?.items.find((i) => i.id === m.item_id)?.unit_price_cents ??
+      all.find((v) => v.id === m.base)?.price_cents ??
+      0,
+    // Caixa mista só junta sabores da mesma embalagem (unidades e peso).
+    mixOptions =
+      Object.values(
+        options.reduce<Record<string, typeof options>>((g, v) => {
+          if (!v.units_per_box || v.units_per_box < 2) return g;
+          const k = `${v.units_per_box}|${v.weight_grams ?? ''}`;
+          (g[k] ??= []).push(v);
+          return g;
+        }, {}),
+      ).sort((a, b) => b.length - a.length)[0] ?? [],
+    capacity = mixOptions[0]?.units_per_box ?? 12,
+    hasItems = selected.length > 0 || mixes.length > 0,
+    total =
+      selected.reduce((n, v) => n + counts[v.id] * price(v), 0) +
+      mixes.reduce((n, m) => n + m.qty * mixPrice(m), 0),
+    flavorName = (id: string) => {
+      const v = all.find((x) => x.id === id);
+      if (!v) return 'Sabor';
+      const siblings = options.filter((o) => o.product_name === v.product_name);
+      return siblings.length > 1 ? v.label : v.product_name;
+    },
+    mixText = (comp: Record<string, number>) =>
+      Object.entries(comp)
+        .filter(([, u]) => u > 0)
+        .sort(([, a], [, b]) => b - a)
+        .map(([id, u]) => `${u} ${flavorName(id)}`)
+        .join(' + ');
+  function saveMix() {
+    if (!mixDraft) return;
+    const comp = Object.fromEntries(
+      Object.entries(mixDraft.comp).filter(([, u]) => u > 0),
+    );
+    const key = mixSig(comp);
+    let next = mixes.filter((m) => m.key !== mixDraft.editing);
+    const old = mixes.find((m) => m.key === mixDraft.editing);
+    const same = next.find((m) => m.key === key);
+    if (same)
+      next = next.map((m) =>
+        m.key === key ? { ...m, qty: m.qty + (old?.qty ?? 1) } : m,
+      );
+    else
+      next = [
+        ...next,
+        {
+          key,
+          item_id: old?.item_id,
+          base: old?.item_id ? old.base : mixBase(comp),
+          comp,
+          qty: old?.qty ?? 1,
+        },
+      ];
+    setMixes(next);
+    setMixDraft(null);
+  }
   async function confirmOrder() {
     if (pending.current || !customer) return;
     pending.current = true;
@@ -274,10 +379,22 @@ export function Totem({ financial = false }: { financial?: boolean }) {
           ...(editing ? { version: editing.version } : {}),
           due_at: new Date(due + ':00-03:00').toISOString(),
           notes,
-          items: selected.map((v) => ({
-            variant_id: v.id,
-            quantity: counts[v.id],
-          })),
+          items: [
+            ...selected.map((v) => ({
+              variant_id: v.id,
+              quantity: counts[v.id],
+            })),
+            ...mixes.map((m) => ({
+              ...(m.item_id ? { item_id: m.item_id } : {}),
+              variant_id: m.base,
+              quantity: m.qty,
+              components: Object.entries(m.comp).map(([variant_id, units]) => ({
+                variant_id,
+                units,
+              })),
+            })),
+          ],
+          composition_version: 1 as const,
           delivery: {
             delivery_type: deliveryType,
             delivery_address: address,
@@ -469,6 +586,27 @@ export function Totem({ financial = false }: { financial?: boolean }) {
             </Button>
           )}
           <div className="flavor-grid">
+            {defaults?.mixed && mixOptions.length > 1 && (
+              <article className="flavor-card mix-card">
+                <Button
+                  className="flavor-add"
+                  disabled={busy}
+                  aria-label="Montar caixa mista com sabores variados"
+                  onClick={() => setMixDraft({ comp: {} })}
+                >
+                  <span className="mix-mosaic" aria-hidden="true">
+                    {mixOptions
+                      .filter((v) => v.photo_key)
+                      .slice(0, 4)
+                      .map((v) => (
+                        <img key={v.id} src={photoURL(v.photo_key!)} alt="" />
+                      ))}
+                  </span>
+                  <strong>Caixa mista</strong>
+                  <span>Escolha os {capacity} sabores</span>
+                </Button>
+              </article>
+            )}
             {sortFlavors(
               products.data ?? [],
               defaults?.ranking,
@@ -552,6 +690,200 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               });
             })}
           </div>
+          {mixes.map((m) => (
+            <article className="panel mix-line" key={m.key}>
+              <div>
+                <h3>Caixa mista</h3>
+                <p>{mixText(m.comp)}</p>
+              </div>
+              <div className="flavor-stepper">
+                <Button
+                  type="button"
+                  aria-label="Menos caixas mistas iguais"
+                  onClick={() =>
+                    setMixes(
+                      m.qty > 1
+                        ? mixes.map((x) =>
+                            x.key === m.key ? { ...x, qty: x.qty - 1 } : x,
+                          )
+                        : mixes.filter((x) => x.key !== m.key),
+                    )
+                  }
+                >
+                  −
+                </Button>
+                <b>{m.qty} cx</b>
+                <Button
+                  type="button"
+                  aria-label="Mais caixas mistas iguais"
+                  onClick={() =>
+                    setMixes(
+                      mixes.map((x) =>
+                        x.key === m.key ? { ...x, qty: x.qty + 1 } : x,
+                      ),
+                    )
+                  }
+                >
+                  +
+                </Button>
+              </div>
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  setMixDraft({ comp: { ...m.comp }, editing: m.key })
+                }
+              >
+                Editar sabores
+              </Button>
+            </article>
+          ))}
+          {mixDraft && (
+            <div
+              className="mix-sheet"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Montar caixa mista"
+            >
+              <div className="mix-sheet-body">
+                <p className="order-section-label">
+                  Caixa com {capacity} ·{' '}
+                  {money(mixOptions[0]?.price_cents ?? 0)}
+                </p>
+                <h2 className="wizard-question">Montar caixa mista</h2>
+                {(() => {
+                  const used = Object.values(mixDraft.comp).reduce(
+                      (a, b) => a + b,
+                      0,
+                    ),
+                    slots: (string | null)[] = [];
+                  for (const [id, u] of Object.entries(mixDraft.comp))
+                    for (let k = 0; k < u; k++) slots.push(id);
+                  while (slots.length < capacity) slots.push(null);
+                  const left = capacity - used;
+                  return (
+                    <>
+                      <div className="box-slots" aria-hidden="true">
+                        {slots.map((id, k) => {
+                          const key = id
+                            ? all.find((v) => v.id === id)?.photo_key
+                            : null;
+                          return id && key ? (
+                            <img key={k} src={photoURL(key)} alt="" />
+                          ) : (
+                            <i
+                              key={k}
+                              className={
+                                id
+                                  ? `filled tone-${mixOptions.findIndex((v) => v.id === id) % 5}`
+                                  : ''
+                              }
+                            />
+                          );
+                        })}
+                      </div>
+                      <p
+                        className={`mix-left${left ? '' : ' done'}`}
+                        role="status"
+                      >
+                        {left
+                          ? `Faltam ${left} de ${capacity}`
+                          : 'Caixa completa ✓'}
+                      </p>
+                      {mixOptions.map((v) => {
+                        const u = mixDraft.comp[v.id] ?? 0;
+                        return (
+                          <div className="mix-row" key={v.id}>
+                            {v.photo_key ? (
+                              <img src={photoURL(v.photo_key)} alt="" />
+                            ) : (
+                              <i
+                                className={`mix-dot tone-${mixOptions.indexOf(v) % 5}`}
+                              />
+                            )}
+                            <span>{flavorName(v.id)}</span>
+                            <div className="flavor-stepper">
+                              <Button
+                                type="button"
+                                aria-label={'Menos ' + flavorName(v.id)}
+                                disabled={!u}
+                                onClick={() =>
+                                  setMixDraft({
+                                    ...mixDraft,
+                                    comp: { ...mixDraft.comp, [v.id]: u - 1 },
+                                  })
+                                }
+                              >
+                                −
+                              </Button>
+                              <b>{u} un.</b>
+                              <Button
+                                type="button"
+                                aria-label={'Mais ' + flavorName(v.id)}
+                                disabled={!left}
+                                onClick={() =>
+                                  setMixDraft({
+                                    ...mixDraft,
+                                    comp: { ...mixDraft.comp, [v.id]: u + 1 },
+                                  })
+                                }
+                              >
+                                +
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div className="chips">
+                        <Button
+                          variant="chip"
+                          onClick={() => setMixDraft({ ...mixDraft, comp: {} })}
+                        >
+                          Limpar
+                        </Button>
+                        {used > 0 && left > 0 && (
+                          <Button
+                            variant="chip"
+                            onClick={() => {
+                              const first = Object.entries(mixDraft.comp).find(
+                                ([, x]) => x > 0,
+                              )![0];
+                              setMixDraft({
+                                ...mixDraft,
+                                comp: {
+                                  ...mixDraft.comp,
+                                  [first]: mixDraft.comp[first] + left,
+                                },
+                              });
+                            }}
+                          >
+                            Completar com{' '}
+                            {flavorName(
+                              Object.entries(mixDraft.comp).find(
+                                ([, x]) => x > 0,
+                              )![0],
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                      <Button
+                        variant="primary"
+                        className="primary-action"
+                        disabled={left !== 0}
+                        onClick={saveMix}
+                      >
+                        {mixDraft.editing
+                          ? 'Salvar caixa mista'
+                          : 'Adicionar caixa mista'}
+                      </Button>
+                      <Button variant="ghost" onClick={() => setMixDraft(null)}>
+                        Cancelar
+                      </Button>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          )}
           {historical
             .filter((v) => counts[v.id] > 0)
             .map((v) => (
@@ -877,6 +1209,16 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               </div>
             </article>
           ))}
+          {mixes.map((m) => (
+            <article className="review-line" key={m.key}>
+              <div>
+                <h3>
+                  {m.qty} cx Caixa mista · {money(m.qty * mixPrice(m))}
+                </h3>
+                <p>{mixText(m.comp)}</p>
+              </div>
+            </article>
+          ))}
           <ul className="order-summary" aria-label="Resumo do pedido">
             <li>
               <span>
@@ -947,20 +1289,20 @@ export function Totem({ financial = false }: { financial?: boolean }) {
       {step > 0 && (
         <div className="totem-bar">
           <strong>
-            {selected.length
+            {hasItems
               ? `Total ${money(total)}`
               : 'Toque nos sabores para montar o pedido'}
           </strong>
           {step < REVIEW ? (
             <Button
               className="primary-action"
-              disabled={busy || !selected.length || (step === WHEN && !due)}
+              disabled={busy || !hasItems || (step === WHEN && !due)}
               onClick={() => setStep(step + 1)}
               variant="primary"
               loading={busy}
             >
               Continuar
-              {step === 1 && selected.length ? ' · ' + money(total) : ''}
+              {step === 1 && hasItems ? ' · ' + money(total) : ''}
             </Button>
           ) : (
             <Button
@@ -969,7 +1311,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                 busy ||
                 (!!id &&
                   (editing?.id !== id || (financial && termsLoaded !== id))) ||
-                !selected.length ||
+                !hasItems ||
                 !due
               }
               onClick={() => void confirmOrder()}

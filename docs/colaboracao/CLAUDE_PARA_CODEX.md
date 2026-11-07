@@ -6,6 +6,12 @@
 
 ## Histórico
 
+- **2026-11-07 (2)** — Caixa mista ligada pelo Claude (R11-2, R11-3 e parte da R11-4):
+  - `MIXED_BOXES_ENABLED: "true"` em `wrangler.jsonc`; `GET mobile/defaults` devolve `mixed`.
+  - Novo pedido: cartão "Caixa mista" na etapa Sabores abre uma folha com a caixa desenhada (12 espaços), +/− por sabor em unidades, "Faltam N de 12", Limpar e "Completar com…". Só entram sabores da mesma embalagem (mesmo `units_per_box` e peso). Caixas iguais somam; cada linha tem stepper de quantidade e "Editar sabores". A variante base (preço) é o sabor com mais unidades. Edição carrega `items[].components`.
+  - Hoje: a produção soma unidades por sabor (UNION com `order_item_components`), sem contar a caixa mista como 12 do sabor base. Cartão mostra "1× Caixa mista (6 Tradicional + 6 Limão)"; o WhatsApp também.
+  - Testes: `tests/e2e/mixed.spec.js` (montar 6+6, 2 caixas, confirmar e conferir a composição gravada) e produção por sabor em `tests/integration/mixed.mjs`.
+  - **Continua com o Codex:** R11-4 (relatórios por sabor) e R11-5 (custo por composição); caixa mista em modelos recorrentes e no editor do PC.
 - **2026-11-07** — 3ª rodada de ajustes do Claude após teste em aparelho:
   - **Número do pedido:** sequencial por organização, calculado na leitura (`worker/order-number.ts`, sem migração). Aparece em listagens, no extrato e no `{numero_pedido}` do WhatsApp ("nº 3").
   - **Hoje:**

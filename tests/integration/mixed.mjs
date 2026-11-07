@@ -73,6 +73,22 @@ try {
       .n,
     3,
   );
+  // Produção do Hoje conta unidades por sabor: 2 caixas × (8+3+1).
+  const day = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Fortaleza',
+  }).format(new Date(input.due_at));
+  const today = await call('today?date=' + day, undefined, 'GET');
+  const units = Object.fromEntries(
+    today.production.map((l) => [l.name, l.units]),
+  );
+  assert.equal(units['Sabor 0 DEMONSTRAÇÃO mista'], 16);
+  assert.equal(units['Sabor 1 DEMONSTRAÇÃO mista'], 6);
+  assert.equal(units['Sabor 2 DEMONSTRAÇÃO mista'], 2);
+  assert.equal(
+    today.production.reduce((n, l) => n + l.units, 0),
+    24,
+    'caixa mista não conta 24 unidades extras do sabor base',
+  );
   assert.equal((await call('orders', undefined, 'GET', outside)).length, 0);
   assert.equal(
     (await t.request('orders/' + id, { cookie: outside })).status,

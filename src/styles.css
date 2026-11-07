@@ -2457,3 +2457,139 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   width: 18px;
   height: 18px;
 }
+/* Caixa mista: montar uma caixa com vários sabores. */
+.mix-mosaic {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2px;
+  width: 120px;
+  height: 120px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--cream);
+}
+.flavor-card .mix-mosaic img,
+.order-focus .flavor-card .mix-mosaic img {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  object-fit: cover;
+}
+.mix-card .flavor-add {
+  border: 2px dashed var(--gold);
+}
+.mix-line {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 12px;
+}
+.mix-line h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.mix-line p {
+  margin: 2px 0 0;
+  color: var(--muted);
+}
+.mix-line .flavor-stepper {
+  margin: 0;
+}
+.mix-line > .button {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+.mix-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgb(50 29 16 / 45%);
+}
+.mix-sheet-body {
+  display: grid;
+  gap: 10px;
+  width: min(560px, 100%);
+  max-height: 92dvh;
+  overflow-y: auto;
+  padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  background: #fbf8f3;
+}
+.mix-sheet-body .wizard-question {
+  margin: 0;
+}
+.box-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  padding: 10px;
+  border-radius: 16px;
+  background: var(--chocolate);
+}
+.box-slots > * {
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: 50%;
+}
+.box-slots img {
+  object-fit: cover;
+}
+.box-slots i {
+  border: 2px dashed rgb(249 236 215 / 45%);
+}
+.box-slots i.filled {
+  border: 0;
+  background: var(--gold);
+}
+.mix-left {
+  margin: 0;
+  font-weight: 650;
+  color: var(--gold-ink);
+}
+.mix-left.done {
+  color: #2f6b3a;
+}
+.mix-row {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  align-items: center;
+  gap: 10px;
+}
+.mix-row img,
+.mix-row .flavor-placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.mix-row .flavor-stepper {
+  margin: 0;
+}
+.delivery-mix {
+  white-space: normal;
+}
+.mix-row .mix-dot {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+.tone-0 {
+  background: #6b3e22 !important;
+}
+.tone-1 {
+  background: #f3e6c8 !important;
+}
+.tone-2 {
+  background: #b8915b !important;
+}
+.tone-3 {
+  background: #ad776b !important;
+}
+.tone-4 {
+  background: #a8c06a !important;
+}
