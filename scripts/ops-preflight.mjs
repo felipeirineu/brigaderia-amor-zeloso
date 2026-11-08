@@ -58,6 +58,7 @@ const tables = [
   'order_item_components',
   'recurring_mixed_items',
   'recurring_mixed_components',
+  'profile_photos',
 ];
 export function inspect(
   database,
@@ -155,6 +156,7 @@ export function inspect(
     schema_p1_ready: p1,
     schema_mobile_ready: mobile,
     schema_field_ready: field,
+    schema_profile_photos_ready: names.has('profile_photos'),
     schema_mixed_model_ready: names.has('order_item_components'),
     schema_recurring_mixed_ready:
       names.has('recurring_mixed_items') &&

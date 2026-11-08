@@ -1,3 +1,4 @@
+import { profilePhoto, profilePhotosReady, photoBody } from './profile-photos';
 import {
   routeSchema,
   routingConfigured,
@@ -22,6 +23,7 @@ export async function field(req: Request, env: Env, a: Actor) {
     resource = parts[3],
     id = parts[4],
     action = parts[5];
+  if (resource === 'profile-photos') return profilePhoto(req, db, a, id);
   if (resource === 'trips' || resource === 'travel-report')
     return travel(req, db, a, resource, id, action);
   if (resource === 'routes' && req.method === 'POST') {
@@ -72,10 +74,11 @@ export async function field(req: Request, env: Env, a: Actor) {
         .bind(org)
         .all<{ id: string; data: string; version: number; has_photo: number }>()
     ).results;
+    const photosReady = await profilePhotosReady(db);
     const staff = (
       await db
         .prepare(
-          "SELECT m.user_id AS id,m.role,COALESCE(p.display_name,CASE WHEN m.role='owner' THEN 'Administrador' ELSE 'Operador' END) AS display_name,COALESCE(p.version,0) AS version FROM memberships m LEFT JOIN display_profiles p ON p.organization_id=m.organization_id AND p.id=m.user_id WHERE m.organization_id=? ORDER BY m.role,m.user_id",
+          `SELECT m.user_id AS id,m.role,COALESCE(p.display_name,CASE WHEN m.role='owner' THEN 'Administrador' ELSE 'Operador' END) AS display_name,COALESCE(p.version,0) AS version,${photosReady ? 'f.photo IS NOT NULL AS has_photo,COALESCE(f.version,0) AS photo_version' : '0 AS has_photo,0 AS photo_version'} FROM memberships m LEFT JOIN display_profiles p ON p.organization_id=m.organization_id AND p.id=m.user_id ${photosReady ? 'LEFT JOIN profile_photos f ON f.organization_id=m.organization_id AND f.id=m.user_id' : ''} WHERE m.organization_id=? ORDER BY m.role,m.user_id`,
         )
         .bind(org)
         .all()
@@ -103,6 +106,7 @@ export async function field(req: Request, env: Env, a: Actor) {
     );
     return json({
       ...routing,
+      profile_photos_ready: photosReady,
       order_places: orderPlaces,
       sites: sites.map((s) => ({ ...s, data: JSON.parse(s.data) })),
       staff,
@@ -163,9 +167,9 @@ export async function field(req: Request, env: Env, a: Actor) {
             'SELECT photo FROM customer_sites WHERE organization_id=? AND id=?',
           )
           .bind(org, id)
-          .first<{ photo: ArrayBuffer | null }>();
+          .first<{ photo: ArrayBuffer | number[] | null }>();
         if (!row?.photo) throw new HttpError(404, 'Sem foto.');
-        return new Response(row.photo, {
+        return new Response(photoBody(row.photo), {
           headers: {
             'Content-Type': 'image/webp',
             'Cache-Control': 'no-store',

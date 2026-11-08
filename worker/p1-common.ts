@@ -42,13 +42,15 @@ export async function p1Mutation(
       | 'customer_sites'
       | 'company_places'
       | 'display_profiles'
+      | 'profile_photos'
       | 'displacements'
       | 'inventory_balances';
     id: string;
     action: string;
   }>,
+  maxBody = 32768,
 ) {
-  const raw = await body(req, z.unknown()),
+  const raw = await body(req, z.unknown(), maxBody),
     key = req.headers.get('Idempotency-Key');
   if (!z.uuid().safeParse(key).success)
     throw new HttpError(400, 'Chave de repetição inválida.');

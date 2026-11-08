@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-08 — R6-5 backend:** foto privada por membership, CAS/idempotência/auditoria, own PUT/DELETE e owner DELETE da equipe, validação WebP quadrado ≤256/40KB. 139 checks de segurança e integração de assinatura/tamanho/dimensões/corpo >32KB, papéis/tenant, concorrência e banco até 0016 aprovados. Leitura normaliza BLOB D1 para bytes HTTP (também na fachada); backup/restauração inclui foto. Migração 0017 somente local; UI/ensaio final na mesma branch.
+
 - **2026-11-08 — Dependabot concluído:** responsável ativou Dependency graph; reexecução dos checks bloqueados passou. #1 (Actions, 878b1c9) e #3 (npm sem TypeScript 7, a1f8aef) integrados no main pelos SHAs validados, sem merge vermelho. #2 fechado/substituído pelo bot. Aplicação rebaseada sobre as atualizações, sem conflitos, com npm ci limpo e regressão completa aprovada.
 
 - **2026-11-08 — R12:** calendário/contagem com passado bloqueado em Quando; atalhos/horário editável e sugestão identificada do modelo mais próximo ou janela explícita. Sucesso mostra data/hora e singular, link abre o dia escolhido em Hoje. Helpers com datas reais e fuso; sem rota, flag ou migração nova. 73 unitários, seis E2E específicos e regressão integral com 98 aprovados/um ignorado, após instalar as dependências atualizadas.

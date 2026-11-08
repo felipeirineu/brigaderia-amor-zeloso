@@ -41,6 +41,7 @@ export const databaseTables = [
   'place_cache',
   'product_variants',
   'products',
+  'profile_photos',
   'provider_limits',
   'recipe_components',
   'recipes',

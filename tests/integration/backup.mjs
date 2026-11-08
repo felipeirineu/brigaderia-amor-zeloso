@@ -96,6 +96,12 @@ try {
       .webp()
       .toBuffer()
   ).toString('base64');
+  const ownUser = (await call('session', undefined, 'GET')).user_id;
+  await call(
+    'field/profile-photos/' + ownUser,
+    { version: 0, base64: photo },
+    'PUT',
+  );
   await call(
     'field/customers/' + customer + '/photo',
     { version: 1, base64: photo },
@@ -150,7 +156,7 @@ try {
 c=sqlite3.connect(':memory:');c.execute('PRAGMA foreign_keys=ON');c.executescript(sys.stdin.read())
 tables=[r[0] for r in c.execute("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
 counts={t:c.execute('SELECT COUNT(*) FROM "'+t+'"').fetchone()[0] for t in tables}
-print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check')),'photo':base64.b64encode(c.execute('SELECT photo FROM customer_sites').fetchone()[0]).decode(),'organizations':c.execute('SELECT COUNT(*) FROM organizations').fetchone()[0],'notes':c.execute('SELECT notes FROM customers WHERE phone=?',('+5511900000001',)).fetchone()[0]}))`,
+print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check')),'photo':base64.b64encode(c.execute('SELECT photo FROM customer_sites').fetchone()[0]).decode(),'profile_photo':base64.b64encode(c.execute('SELECT photo FROM profile_photos').fetchone()[0]).decode(),'organizations':c.execute('SELECT COUNT(*) FROM organizations').fetchone()[0],'notes':c.execute('SELECT notes FROM customers WHERE phone=?',('+5511900000001',)).fetchone()[0]}))`,
       ],
       { input: sql, encoding: 'utf8' },
     ),
@@ -162,6 +168,7 @@ print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check'
   assert.equal(restored.counts.login_attempts, 0);
   assert.equal(restored.organizations, 1);
   assert.equal(restored.photo, photo);
+  assert.equal(restored.profile_photo, photo);
   assert.equal(restored.notes, 'DEMONSTRAÇÃO\u0000texto\ncom quebra');
   assert.equal(restored.fk.length, 0);
   assert.equal(restored.counts.inventory_events, 1);

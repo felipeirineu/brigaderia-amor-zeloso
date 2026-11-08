@@ -1,3 +1,4 @@
+import sharp from 'sharp';
 // Matriz de segurança da API. Fixtures fictícias em D1 efêmero; nada remoto.
 // Cobre: rotas sem sessão, sessão/JWT forjados, proteção de gravação,
 // isolamento entre organizações (IDOR), papéis e catálogo desligado.
@@ -22,6 +23,8 @@ try {
   const { call, owner, operator, outside, customer, makeOrder } =
     await demoProject(t);
   const order = await makeOrder();
+  const ownUser = (await call('session', undefined, 'GET')).user_id,
+    operatorUser = (await call('session', undefined, 'GET', operator)).user_id;
   const fake = crypto.randomUUID();
 
   // Todas as famílias de rotas protegidas (GET), incluindo IDs reais e inexistentes.
@@ -44,6 +47,7 @@ try {
     'finance/customers/' + customer,
     'mobile/defaults/' + customer,
     'field/context',
+    'field/profile-photos/' + ownUser,
     'field/company',
     'field/profile',
     'field/search?q=teste',
@@ -322,6 +326,95 @@ try {
       })
     ).status === 200,
     'operador pausa sem perder composição',
+  );
+  const photoRequest = (path, options = {}) =>
+    t.request(path, { ...options, key: crypto.randomUUID() });
+  const profileBytes = await sharp({
+    create: { width: 32, height: 32, channels: 3, background: '#321d10' },
+  })
+    .webp()
+    .toBuffer();
+  const photoPayload = { version: 0, base64: profileBytes.toString('base64') };
+  const photoPath = 'field/profile-photos/' + operatorUser;
+  ok(
+    (await photoRequest(photoPath, { method: 'PUT', data: photoPayload }))
+      .status === 401,
+    'foto PUT exige sessão',
+  );
+  ok(
+    (await photoRequest(photoPath, { method: 'DELETE', data: { version: 0 } }))
+      .status === 401,
+    'foto DELETE exige sessão',
+  );
+  ok(
+    (
+      await photoRequest(photoPath, {
+        cookie: operator,
+        method: 'PUT',
+        data: photoPayload,
+      })
+    ).status === 200,
+    'operadora altera sua foto',
+  );
+  ok(
+    (await photoRequest(photoPath, { cookie: outside })).status === 404,
+    'foto GET de outra organização',
+  );
+  ok(
+    (
+      await photoRequest(photoPath, {
+        cookie: outside,
+        method: 'PUT',
+        data: photoPayload,
+      })
+    ).status === 404,
+    'foto PUT de outra organização',
+  );
+  ok(
+    (
+      await photoRequest(photoPath, {
+        cookie: outside,
+        method: 'DELETE',
+        data: { version: 1 },
+      })
+    ).status === 404,
+    'foto DELETE de outra organização',
+  );
+  ok(
+    (
+      await photoRequest('field/profile-photos/' + ownUser, {
+        cookie: operator,
+        method: 'PUT',
+        data: photoPayload,
+      })
+    ).status === 403,
+    'operadora não altera outra foto',
+  );
+  ok(
+    (
+      await photoRequest('field/profile-photos/' + ownUser, {
+        cookie: operator,
+        method: 'DELETE',
+        data: { version: 0 },
+      })
+    ).status === 403,
+    'operadora não remove outra foto',
+  );
+  const profileResponse = await photoRequest(photoPath, { cookie: owner });
+  ok(
+    profileResponse.status === 200 &&
+      profileResponse.headers.get('cache-control') === 'no-store',
+    'equipe lê foto privada sem cache',
+  );
+  ok(
+    (
+      await photoRequest(photoPath, {
+        cookie: owner,
+        method: 'DELETE',
+        data: { version: 1 },
+      })
+    ).status === 200,
+    'administrador remove foto da equipe',
   );
   console.log(
     `OK segurança: ${checks} verificações (sessão, JWT, CSRF, IDOR, papéis, catálogo, cabeçalhos).`,
