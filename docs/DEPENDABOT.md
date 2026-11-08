@@ -21,3 +21,7 @@ Não é corrigido com alteração de YAML nem permissões mais amplas. O adminis
 5. Conferir a validação do SHA atual do PR e os demais checks. Atualização de Actions não é autorização para executar o workflow manual do D1.
 
 Sem `continue-on-error`, sem desativar a revisão de dependências e sem merge de checks vermelhos. As Actions propostas com runtime Node 24 serão integradas somente após essas validações. O agente não alterou configurações do GitHub ou do Cloudflare.
+
+## Resultado em 08/11/2026
+
+O responsável ativou Dependency graph. Os checks antes bloqueados foram reexecutados e passaram, sem alterar permissões ou tolerância a erros. O bot fechou #2 e abriu #3 sem TypeScript 7. #1 (Actions) e #3 (npm) foram integrados pelos SHAs validados em CI e Segurança. Instalação limpa e regressão combinada da aplicação passaram depois do rebase; TypeScript permanece em 6.0.3. Nenhuma execução do workflow manual de banco foi feita.

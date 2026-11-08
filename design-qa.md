@@ -51,3 +51,7 @@ A montagem mista do protótipo **não foi implementada nesta base** e nenhuma ca
 Comparados o main 26af1d7 e as telas atuais antes das alterações; fluxo em etapas e montagem do Claude preservados. Capturas r12-depois-relatorios-mistos, custo-misto e compras-mistas em WebKit 390×844 com dados DEMONSTRAÇÃO. Conferidos ranking por unidades, indicação de rateio, discriminação de componentes, custo ausente e lotes de compras. Estimativa fica recolhida sob os itens e usa fichas atuais; não se apresenta como lucro ou preço real.
 
 Achado de regressão visual: no Chromium, última fileira de sabores terminava ~2 px sob o rodapé. Reproduzido na cópia limpa de 26af1d7, inclusive com Chromium oficial 156. CSS móvel reduz somente as fotos de 120 para 118 px; controles de 44 px, montagem e etapas ficam preservados. Mantida a asserção estrita de visibilidade. Após corrigir, 12 E2E relacionados e os 89 da suíte integral passaram (um offline WebKit já ignorado). Não houve ensaio físico nem captura de dados reais.
+
+## R14 / R11 recorrentes / R12 — 08/11
+
+Capturas de fixtures inspecionadas: `r14-depois-editor-misto.png` mostra composição completa, base/preço correspondente e quantidade de caixas; `r12-depois-calendario-pedido.png` mostra mês, contagem somente onde há entrega, seleção e passado desabilitado. Campos/controles mantêm o estilo existente e toque mínimo. E2E integral com dependências atualizadas: 98 aprovados e um offline WebKit ignorado; não equivale a ensaio em aparelho físico.
