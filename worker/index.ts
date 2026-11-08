@@ -3,7 +3,7 @@ import { field } from './field';
 import { flavorImages } from './flavor-images';
 import { mobile } from './mobile';
 import { mobileReady } from './mobile-ready';
-import { flavorPhotos } from '../shared/flavors';
+import { flavorPhotos, type FlavorPhoto } from '../shared/flavors';
 import { p1 } from './p1';
 import { finance } from './finance';
 import { financeReady } from './finance-ready';
@@ -76,13 +76,16 @@ export default {
           !(await mobileReady(env))
         )
           return json({ error: 'Imagem indisponível.' }, 404);
-        return new Response(flavorImages[key] as unknown as BodyInit, {
-          headers: {
-            'Content-Type': 'image/webp',
-            'Cache-Control': 'no-store',
-            'X-Content-Type-Options': 'nosniff',
+        return new Response(
+          flavorImages[key as FlavorPhoto] as unknown as BodyInit,
+          {
+            headers: {
+              'Content-Type': 'image/webp',
+              'Cache-Control': 'no-store',
+              'X-Content-Type-Options': 'nosniff',
+            },
           },
-        });
+        );
       }
       if (pathname === '/api/capabilities' && req.method === 'GET')
         return json({

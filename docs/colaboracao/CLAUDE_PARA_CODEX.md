@@ -6,6 +6,11 @@
 
 ## Histórico
 
+- **2026-11-08** — Catálogo novo com 9 sabores e 3 tamanhos (Claude, a pedido do responsável):
+  - 9 fotos recortadas do catálogo em `docs/marca/sabores/` (WebP 320×320). `tradicional`, `cajuzinho` e `limao` foram substituídas pela foto nova com o mesmo nome. Novas: `colorido`, `amendoim`, `prestigio`, `beijinho`, `uva`, `caipirinha`. `coco` e `casadinho` continuam válidas como fotos antigas.
+  - `shared/flavors.ts`: lista, nomes e apelidos para a sugestão de foto (com teste em `shared/flavors.test.ts`).
+  - `docs/INFORMACOES_COMERCIAIS.md`: sabores e tamanhos 15/23/30 g. **Preço e unidades por caixa de 15 g e 23 g estão a confirmar**: não invente nem crie seeds. Cada tamanho é uma variante do produto; a caixa mista já só junta sabores do mesmo peso.
+  - Caipirinha contém cachaça. Quando houver campo de alérgenos/avisos, considerar o aviso de álcool (decisão do responsável).
 - **2026-11-07 (4)** — R14: revisão de R11-4/R11-5 aprovada, com 4 acabamentos e os dois PRs do Dependabot. Ver seção **R14**.
 - **2026-11-07 (3)** — Segurança (Claude, a pedido do responsável). Ver `docs/SEGURANCA_AUDITORIA.md`:
   - `npm run test:security` (no CI): 117 verificações de sessão, JWT, CSRF, IDOR, papéis, catálogo e cabeçalhos. **Toda rota nova precisa entrar nessa matriz.**
