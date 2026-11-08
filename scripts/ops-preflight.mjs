@@ -56,6 +56,8 @@ const tables = [
   'route_jobs',
   'route_budget',
   'order_item_components',
+  'recurring_mixed_items',
+  'recurring_mixed_components',
 ];
 export function inspect(
   database,
@@ -154,6 +156,9 @@ export function inspect(
     schema_mobile_ready: mobile,
     schema_field_ready: field,
     schema_mixed_model_ready: names.has('order_item_components'),
+    schema_recurring_mixed_ready:
+      names.has('recurring_mixed_items') &&
+      names.has('recurring_mixed_components'),
     schema_routes_ready:
       field && tables.slice(43, 46).every((t) => names.has(t)),
     schema_tools_ready: p1 && tables.slice(40, 43).every((t) => names.has(t)),

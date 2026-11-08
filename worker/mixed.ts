@@ -64,6 +64,27 @@ export async function prepareItems(
   const hasMixed = input.some((i) => i.components?.length);
   if (hasMixed && !(await mixedReady(env)))
     throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+  return prepareFromCatalog(
+    input,
+    old,
+    await catalogForItems(env.DB!, org, input),
+  );
+}
+export interface CatalogVariant {
+  id: string;
+  name: string;
+  label: string;
+  weight_grams: number;
+  units_per_box: number;
+  price_cents: number;
+  active: number;
+  product_active: number;
+}
+export async function catalogForItems(
+  db: D1Database,
+  org: string,
+  input: ItemInput[],
+) {
   const ids = [
     ...new Set(
       input.flatMap((i) => [
@@ -73,22 +94,21 @@ export async function prepareItems(
     ),
   ];
   const catalog = (
-    await env
-      .DB!.prepare(
+    await db
+      .prepare(
         'SELECT v.*,p.name,p.active AS product_active FROM product_variants v JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE v.organization_id=? AND v.id IN(SELECT value FROM json_each(?))',
       )
       .bind(org, JSON.stringify(ids))
-      .all<{
-        id: string;
-        name: string;
-        label: string;
-        weight_grams: number;
-        units_per_box: number;
-        price_cents: number;
-        active: number;
-        product_active: number;
-      }>()
+      .all<CatalogVariant>()
   ).results;
+  return catalog;
+}
+/** Validação pura reutilizada na geração em lote, sem consultas por modelo. */
+export function prepareFromCatalog(
+  input: ItemInput[],
+  old: ItemSnapshot[],
+  catalog: CatalogVariant[],
+): ItemSnapshot[] {
   const map = new Map(catalog.map((v) => [v.id, v]));
   return input.map((i) => {
     const previous = i.item_id

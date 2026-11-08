@@ -268,6 +268,61 @@ try {
     'sessão continua válida após sair',
   );
 
+  const ownOrder = await call('orders/' + order, undefined, 'GET');
+  const modelData = {
+    name: 'Modelo DEMONSTRAÇÃO segurança',
+    customer_id: customer,
+    weekday: 1,
+    time: '10:00',
+    composition_version: 1,
+    items: [
+      {
+        variant_id: ownOrder.items[0].variant_id,
+        quantity: 1,
+        components: [
+          {
+            variant_id: ownOrder.items[0].variant_id,
+            units: ownOrder.items[0].units_per_box,
+          },
+        ],
+      },
+    ],
+  };
+  const model = await call('recurring', modelData, 'POST', operator);
+  ok(
+    (await t.request('recurring/' + model.id)).status === 401,
+    'modelo misto exige sessão',
+  );
+  ok(
+    (await t.request('recurring/' + model.id, { cookie: outside })).status ===
+      404,
+    'modelo misto isolado GET',
+  );
+  ok(
+    (
+      await t.request('recurring/' + model.id, {
+        cookie: outside,
+        method: 'PUT',
+        data: { ...modelData, version: 1 },
+      })
+    ).status === 404,
+    'modelo misto isolado PUT',
+  );
+  ok(
+    (await t.request('recurring/' + model.id, { cookie: operator })).status ===
+      200,
+    'operador consulta composição do modelo',
+  );
+  ok(
+    (
+      await t.request('recurring/' + model.id, {
+        cookie: operator,
+        method: 'PUT',
+        data: { ...modelData, version: 1, active: false },
+      })
+    ).status === 200,
+    'operador pausa sem perder composição',
+  );
   console.log(
     `OK segurança: ${checks} verificações (sessão, JWT, CSRF, IDOR, papéis, catálogo, cabeçalhos).`,
   );

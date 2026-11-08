@@ -1,3 +1,4 @@
+import { recurringItems } from './recurring-mixed';
 import { attachComponents } from './mixed';
 /** Hidrata no máximo 200 pais em lotes abaixo do limite de 100 bindings do D1. */
 export async function childrenByParent(
@@ -19,6 +20,14 @@ export async function childrenByParent(
         ? 'order_id'
         : 'template_id';
   const grouped = new Map<string, Record<string, unknown>[]>();
+  if (kind === 'recurring') {
+    for (const row of await recurringItems(db, organization, ids)) {
+      const entries = grouped.get(row.template_id) ?? [];
+      entries.push({ ...row });
+      grouped.set(row.template_id, entries);
+    }
+    return grouped;
+  }
   // 90 IDs + organização: até 3 consultas para uma página de 200 pais.
   for (let offset = 0; offset < ids.length; offset += 90) {
     const chunk = ids.slice(offset, offset + 90);

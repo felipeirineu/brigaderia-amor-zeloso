@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-08 — R11 modelos/backend:** 0016 aditiva, componentes em lote, guarda de editor antigo, CAS/auditoria, geração idempotente e defaults com misturas. Integração com 66 modelos, componente/base inativos, dados incompatíveis, snapshots, disputa de versão e banco até 0015 aprovada; 127 checks de segurança, backup/restauração com FKs, financeiro, mobile, operações e listagens aprovados localmente. Editor/ensaio E2E em validação na mesma branch; nenhuma aplicação remota.
+
 - **2026-11-08 — R14 / Dependabot:** #2 confirmado ERESOLVE TypeScript 7; ignore apenas do major adicionado, aguardar regeneração sem forçar peers. #1 confirmado Dependency graph desativado, passo humano em docs/DEPENDABOT.md; manter revisão bloqueante e não integrar vermelho. Configuração validada por formatter; atualizações de pacotes/Actions ainda não integradas.
 
 - **2026-11-08 — R14-4:** ajuda contextual e tutorial confirmam estimativa, escopo e consulta da operadora; autorização preservada. Lint/tipos, 122 checks de segurança e seis E2E Chromium/WebKit aprovados. E2E agora seleciona o summary explicitamente (o título também existe no diálogo) e aguarda Hoje carregar antes de navegar; nenhuma asserção de erro foi removida.
@@ -401,3 +403,15 @@ R14 lida integralmente; main sincronizado em 085255c, sem alterações locais. A
 - **Dependabot #1:** log confirma “Dependency review is not supported on this repository. Please ensure that Dependency graph is enabled”. Nenhum continue-on-error nem enfraquecimento do workflow. Passo humano: GitHub → Settings → Code security → Dependency graph → Enable; depois reexecutar o check do PR. Não fazer merge vermelho. O restante da atualização das Actions será validado no PR após isso.
 
 Depois da R14: modelo aditivo de componentes recorrentes e editor do PC, com plano/aceite específico antes do código; R12; R6-5, R6-7, R6-8 e R7. Commits por item, CI + Segurança verdes no SHA antes do main; nenhuma flag ou configuração Cloudflare alterada.
+
+### Plano antes do código — misturas recorrentes e editor do PC
+
+- Migração **0016** aditiva: tabelas `recurring_mixed_items` e `recurring_mixed_components`, mantendo `recurring_items` para os itens simples e sem alterar modelos existentes. FKs por organização; várias combinações da mesma embalagem permitidas, combinação duplicada recusada. Somente aplicação local; ativação pelo workflow manual do responsável.
+- `worker/recurring-mixed.ts`, `mixed.ts`, `operations-domain.ts`, `operations.ts`, `listing.ts`: leitura de todos os itens/componentes em lote, validação do catálogo em lote, guarda composition_version para não apagar misturas por editor antigo; CAS e auditoria do modelo preservados. Geração semanal cria snapshots de composição no mesmo batch que o pedido, com chave semanal idempotente. Modelo inválido/inativo é ignorado com motivo, sem bloquear os válidos. Sem consulta por modelo/componente nem nova rota.
+- `mobile.ts`, `finance.ts`: padrões trazem as composições e só se declaram válidos quando os sabores estão ativos/compatíveis e o recurso disponível. Comparar com o fluxo atual do Claude; não substituir suas etapas. `Totem.tsx` só adapta a aplicação do modelo para carregar misturas, mantendo a montagem atual.
+- `Recurring.tsx`, `Management.tsx` e componente compartilhado de composição: adicionar/editar unidades por sabor, quantidade de caixas separada, validação da soma/capacidade, base pelo sabor predominante e empate estável; usar IDs de item para preservar snapshots em ajustes. Modelos simples, pausa/reativação e editor sem 0016 continuam funcionando.
+- Backup/preflight/lista de tabelas e guia R11 incluem 0016. Aceite em D1 efêmero: duas misturas da mesma base + simples, repetição/concorrência/CAS, inativo só ignora seu modelo, soma inválida/outro tenant/peso/embalagem/duplicata recusados, defaults, consulta com 65+ registros, produção/relatório/custo sem perder composição; restauração/FKs e compatibilidade com até 0015. E2E Chromium/WebKit para modelo, geração e edição no PC. Matriz de segurança existente cobre rotas reutilizadas; incluir novos casos de composição sem mudar papéis.
+
+### Retorno Dependabot após publicar R14
+
+R14-1…4 e ignore publicados no main em 7f80e49, depois de CI/Segurança verdes no SHA; ambos também passaram no main. Dependabot fechou #2 e criou **#3** sem TypeScript 7, mantendo TypeScript 6. A validação do #3 passou. #1 foi atualizado pelo bot, mas ambos continuam bloqueados por “Novas dependências no PR” (Dependency graph desligado). Passos enviados ao responsável e documentados em DEPENDABOT.md; não houve merge vermelho ou alteração de configuração. A varredura do bot também relatou unknown_error em @playwright/test, sem impedir a criação do #3; o PR gerado não muda esse pacote.
