@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-08 (3)** — Tabela de kits recebida e **R15** aberta (kits 12/25/50/100 em 15/23/30 g, limite de 3 ou 5 sabores, clientes de festa e brinde). Ver seção **R15**. Feito pelo Claude: aviso "Contém álcool" (`shared/alcohol.ts`), que reconhece a foto `caipirinha` ou as palavras cachaça/caipirinha/licor/álcool no nome ou na descrição. Aparece na grade do Novo pedido, na montagem da caixa, no Revisar e no WhatsApp ("(contém álcool)").
 - **2026-11-08 (2)** — Grafia corrigida pelo responsável: **Coco**, sem acento (antes escrito "Côco" por engano). Corrigido em todo o repositório. A sugestão de foto aceita as duas grafias.
 - **2026-11-08** — Catálogo novo com 9 sabores e 3 tamanhos (Claude, a pedido do responsável):
   - 9 fotos recortadas do catálogo em `docs/marca/sabores/` (WebP 320×320). `tradicional`, `cajuzinho` e `limao` foram substituídas pela foto nova com o mesmo nome. Novas: `colorido`, `amendoim`, `prestigio`, `beijinho`, `uva`, `caipirinha`. Casadinho → Prestígio e Coco → Beijinho foram **renomeados** (confirmado pelo responsável): as chaves `casadinho` e `coco` continuam válidas e servem a foto nova, mas só aparecem na escolha se o produto ainda estiver com elas (`photoChoices`).
@@ -76,6 +77,42 @@
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
 
 ---
+
+## R15 — Kits por tamanho e clientes de festa/brinde (2026-11-08, prioridade máxima)
+
+Fonte: tabela "Nossos Kits e Valores" enviada pelo responsável (`docs/marca/fotos/kits-e-valores.jpg`). As regras estão em `docs/INFORMACOES_COMERCIAIS.md`. **Não crie seed com esses preços**: o cadastro é feito pelo administrador na tela.
+
+### Problema
+
+Hoje o preço e a capacidade vêm de uma variante de um produto-sabor. Com 9 sabores × 3 tamanhos × 4 quantidades, isso exigiria 108 variantes, e a grade do Novo pedido mostraria 108 cartões. O kit precisa ser um cadastro próprio, separado do sabor.
+
+### Regras (aceite)
+
+1. **Kit** = tamanho (g) + quantidade (12/25/50/100) + preço + limite de sabores diferentes (3 no de 12, 5 nos demais) + ativo. Cadastro e edição só pelo owner. Rótulo gerado: "Kit 25 · 23 g".
+2. **Sabor** = produto com nome, descrição, foto e ativo. O peso médio do sabor vem do tamanho do kit, e não do sabor.
+3. **Item do pedido** = kit + quantidade de kits iguais + composição `{sabor, unidades}`. A soma é igual à quantidade do kit, o número de sabores fica dentro do limite e todos os sabores estão ativos. Kit de um sabor é um item com um componente. O preço vem do kit, como snapshot.
+4. **Compatibilidade:** pedidos, recorrências, relatórios, custos e backup antigos (variante + componentes de `0015`/`0016`) continuam legíveis e editáveis sem migração destrutiva. A migração é aditiva (`0018`). Os itens antigos de 12 × 30 g equivalem ao "Kit 12 · 30 g".
+5. **Limite de sabores na caixa mista:** o kit de 12 aceita até 3 sabores. A regra vale também para pedidos recorrentes novos. Pedidos e modelos antigos com mais sabores não são bloqueados ao serem lidos; só ao editar a composição o app pede para ajustar.
+6. **Novo pedido (Totem):**
+   - na etapa Sabores, o primeiro passo é escolher **tamanho** (15/23/30 g, com a indicação: festa infantil / festas e brindes / revenda e presentes) e **quantidade**, com o preço visível;
+   - em seguida vem a montagem com N espaços, reaproveitando a folha da caixa mista. Para 25/50/100, mostrar a contagem por sabor, e não 100 bolinhas;
+   - "Faltam N de 25" e "Até 5 sabores (3 escolhidos)";
+   - para estabelecimentos, o kit padrão do cliente (ex.: 12 · 30 g) já vem selecionado, mantendo o fluxo rápido atual.
+7. **Produção do Hoje, compras, custos e relatórios** agrupam por **sabor e tamanho** (30 g e 15 g de Brigadeiro são linhas diferentes) e somam unidades. Caixas equivalentes por kit, e não por 12 fixo.
+8. **Aviso de álcool** (feito pelo Claude em `shared/alcohol.ts`, ver Histórico): manter nos novos cartões e no WhatsApp.
+
+### Clientes de festa e brinde
+
+9. **Tipo de cliente:** `Estabelecimento` (atual, B2B, recorrente) ou `Pessoa` (festa, brinde, presente). Os textos "Dados do estabelecimento" valem só para o primeiro. Para pessoa: nome, telefone, endereço opcional (pode retirar) e observações.
+10. **Ocasião no pedido** (opcional): Festa infantil, Aniversário, Casamento, Brinde/empresa, Presente, Outra. Aparece no cartão do Hoje, no Revisar e no WhatsApp. Pedido de pessoa costuma ser único: não sugerir recorrência.
+11. **Pagamento:** pessoa usa adiantado/na entrega (sinal opcional fica para depois; não inventar regra de sinal). A prazo continua para estabelecimentos.
+12. Catálogo público continua **desligado**. A tabela de kits é só cadastro interno.
+
+### Entrega da fase
+
+- Primeiro, o plano em `CODEX_PARA_CLAUDE.md`: modelo (tabelas/colunas), compatibilidade com `0015`/`0016`, telas atingidas e critérios de aceite. Só então codificar.
+- Fixtures DEMONSTRAÇÃO; testes de limite (3/5 sabores, soma ≠ quantidade, tamanho misto, sabor inativo, outra organização, operadora não cadastra kit = 403); todas as rotas novas na matriz `test:security`; E2E de montar Kit 25 · 15 g com 5 sabores e Kit 12 · 30 g com 4 sabores (recusado).
+- Depois da R15: R14 pendente (se houver) → R6-7 → R6-8 → R7.
 
 ## R14 — Revisão de R11-4 e R11-5 (até `28e52d4`, 2026-11-07)
 

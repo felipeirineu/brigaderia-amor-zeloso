@@ -6,19 +6,34 @@
 
 Brigadeiro · Brigadeiro Colorido · Brigadeiro com Amendoim · Prestígio · Beijinho · Cajuzinho · Surpresa de Uva · Limão · Caipirinha (contém cachaça).
 
-**Tamanhos (peso médio por unidade, varia com o sabor e os confeitos):**
+**Kits e valores (tabela de 08/11/2026, [imagem](marca/fotos/kits-e-valores.jpg))**: o cliente escolhe o tamanho do brigadeiro e a quantidade do kit. O preço é do kit inteiro, igual para qualquer combinação de sabores dentro do limite.
 
-| Tamanho | Indicação do catálogo                | Unidades por caixa | Preço da caixa                                     |
-| ------- | ------------------------------------ | ------------------ | -------------------------------------------------- |
-| 15 g    | Festas infantis                      | **a confirmar**    | **a confirmar**                                    |
-| 23 g    | Brindes e festas de jovens e adultos | **a confirmar**    | **a confirmar**                                    |
-| 30 g    | Revendas ou brindes                  | 12                 | R$ 42,00 (confirmado para os 5 sabores anteriores) |
+| Kit       | Sabores no kit | 15 g      | 23 g      | 30 g      |
+| --------- | -------------- | --------- | --------- | --------- |
+| 12 doces  | até 3          | R$ 27,00  | R$ 33,00  | R$ 42,00  |
+| 25 doces  | até 5          | R$ 47,00  | R$ 63,00  | R$ 85,00  |
+| 50 doces  | até 5          | R$ 87,00  | R$ 119,00 | R$ 159,00 |
+| 100 doces | até 5          | R$ 157,00 | R$ 227,00 | R$ 289,00 |
 
-Confirmado antes do catálogo (07/11/2026): Tradicional, Casadinho, Cajuzinho, Coco e Limão em 30 g, 12 por caixa, R$ 42,00. **Renomeados (confirmado em 08/11/2026):** Casadinho → Prestígio e Coco → Beijinho. **A confirmar:** se R$ 42,00 vale para os 9 sabores em 30 g; preço e unidades por caixa de 15 g e 23 g.
+Indicação de cada tamanho (peso médio; varia com o sabor e os confeitos):
 
-O preço corresponde a uma caixa (4200 centavos), não a cada brigadeiro. Cada tamanho é uma variante do produto no cadastro privado (peso, unidades por caixa e preço). Alterações futuras preservam snapshots dos pedidos.
+- **15 g:** festas infantis.
+- **23 g:** brindes e festas de jovens e adultos.
+- **30 g:** revendas, brindes e presentes. É a caixa de 12 que os estabelecimentos já compram (R$ 42,00).
 
-**Caixa mista permitida:** mesmo preço da caixa (atualmente R$ 42,00), composição livre entre os sabores ativos, total igual às unidades por caixa (atualmente 12) e mesmo peso por unidade (a caixa mista só junta sabores do mesmo tamanho). Quantidade no pedido indica caixas iguais; a composição indica unidades de cada sabor dentro de uma caixa. Não há acréscimo de preço por misturar os sabores vigentes. Valores e capacidade vêm da embalagem cadastrada; alterações futuras preservam snapshots dos pedidos.
+Regras do kit:
+
+- A soma das unidades de cada sabor é exatamente a quantidade do kit (12, 25, 50 ou 100).
+- Os sabores do kit são todos do mesmo tamanho.
+- O número de sabores diferentes respeita o limite (3 no kit de 12, 5 nos demais). O limite fica no cadastro do kit, editável pelo administrador.
+- Kit de um sabor só é um kit com um sabor; o preço é o mesmo.
+- **Contém álcool:** Caipirinha (ampola de cachaça). O app mostra o aviso no pedido e no WhatsApp.
+
+**Clientes (a partir de 08/11/2026):** além dos estabelecimentos com pedidos recorrentes (revenda), a brigaderia passa a atender pessoas para festas infantis, festas de jovens e adultos, brindes e presentes, em geral com pedido único e data marcada.
+
+O preço corresponde ao kit inteiro (ex.: 4200 centavos no kit de 12 de 30 g), não a cada brigadeiro. Alterações futuras preservam snapshots dos pedidos.
+
+**Caixa mista = kit com mais de um sabor.** Mesmo preço do kit, mesmo tamanho para todos os sabores, total igual à quantidade do kit e **até 3 sabores no kit de 12** (até 5 nos maiores). Na tabela de 08/11/2026 esse limite substitui a "composição livre" registrada em 03/11/2026 (R11-6); a mudança passa a valer no app com a fase R15. Quantidade no pedido indica kits iguais; a composição indica unidades de cada sabor dentro de um kit.
 
 Esta é a regra comercial vigente. A montagem no app já está disponível conforme o histórico de 07/11/2026; veja [situação da R11](FASE_R11_CAIXA_MISTA.md).
 

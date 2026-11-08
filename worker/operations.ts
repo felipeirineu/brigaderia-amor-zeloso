@@ -1,3 +1,4 @@
+import { containsAlcohol } from '../shared/alcohol';
 import {
   recurringItems,
   recurringMixedSchema,
@@ -899,10 +900,20 @@ export async function operations(
           ? 'nº ' + String(order.number)
           : String(order.id).slice(0, 8),
         itens: items
-          .map((i) =>
-            i.components?.length
-              ? `${i.quantity} caixa(s) mista(s) (${i.components.map((c, _, all) => `${c.units} ${all.every((x) => x.product_name === c.product_name) && c.variant_label ? c.variant_label : c.product_name}`).join(' + ')})`
-              : `${i.quantity} embalagem(ns) de ${i.product_name} — ${i.variant_label}`,
+          .map(
+            (i) =>
+              (i.components?.length
+                ? `${i.quantity} caixa(s) mista(s) (${i.components.map((c, _, all) => `${c.units} ${all.every((x) => x.product_name === c.product_name) && c.variant_label ? c.variant_label : c.product_name}`).join(' + ')})`
+                : `${i.quantity} embalagem(ns) de ${i.product_name} — ${i.variant_label}`) +
+              ([i, ...(i.components ?? [])].some((x) =>
+                containsAlcohol(
+                  null,
+                  String(x.product_name),
+                  String(x.variant_label),
+                ),
+              )
+                ? ' (contém álcool)'
+                : ''),
           )
           .join('; '),
         total: new Intl.NumberFormat('pt-BR', {

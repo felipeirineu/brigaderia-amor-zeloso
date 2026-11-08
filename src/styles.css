@@ -2642,3 +2642,18 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .profile-photo-input[hidden] {
   display: none !important;
 }
+.alcohol-tag {
+  display: inline-block;
+  width: fit-content;
+  margin: 2px 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fbe9da;
+  color: #8a3f10;
+  font-size: 0.75rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+.mix-row > span .alcohol-tag {
+  display: block;
+}

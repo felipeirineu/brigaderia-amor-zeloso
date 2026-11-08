@@ -1,3 +1,4 @@
+import { alcoholNotice, containsAlcohol } from '../../../shared/alcohol';
 import { DayCalendar } from '../operations/DayCalendar';
 import {
   deliveryDayLabel,
@@ -29,6 +30,7 @@ import {
 interface Product {
   id: string;
   name: string;
+  description?: string;
   photo_key: string | null;
   variants: {
     id: string;
@@ -336,6 +338,12 @@ export function Totem({ financial = false }: { financial?: boolean }) {
           ...v,
           product_name: p.name,
           photo_key: v.photo_key || p.photo_key,
+          alcohol: containsAlcohol(
+            v.photo_key || p.photo_key,
+            p.name,
+            p.description,
+            v.label,
+          ),
         })),
     ) ?? [];
   const historical =
@@ -348,6 +356,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
         price_cents: i.unit_price_cents,
         product_name: i.product_name,
         photo_key: null,
+        alcohol: containsAlcohol(null, i.product_name, i.variant_label),
       })) ?? [];
   const all = [...options, ...historical],
     selected = all.filter((v) => counts[v.id] > 0),
@@ -707,9 +716,17 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                         </span>
                       )}
                       <strong>{title}</strong>
+                      {containsAlcohol(key, p.name, p.description, v.label) && (
+                        <small className="alcohol-tag">{alcoholNotice}</small>
+                      )}
                       <span>
                         {money(
-                          price({ ...v, product_name: p.name, photo_key: key }),
+                          price({
+                            ...v,
+                            product_name: p.name,
+                            photo_key: key,
+                            alcohol: false,
+                          }),
                         )}
                       </span>
                       {count > 0 && <b className="quantity-badge">{count}</b>}
@@ -860,7 +877,14 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                                 className={`mix-dot tone-${mixOptions.indexOf(v) % 5}`}
                               />
                             )}
-                            <span>{flavorName(v.id)}</span>
+                            <span>
+                              {flavorName(v.id)}
+                              {v.alcohol && (
+                                <small className="alcohol-tag">
+                                  {alcoholNotice}
+                                </small>
+                              )}
+                            </span>
                             <div className="flavor-stepper">
                               <Button
                                 type="button"
@@ -1318,6 +1342,9 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                 <h3>
                   {v.product_name} · {v.label}
                 </h3>
+                {v.alcohol && (
+                  <small className="alcohol-tag">{alcoholNotice}</small>
+                )}
                 <QuantityInput
                   aria-label={'Revisar quantidade de ' + v.product_name}
                   value={counts[v.id]}
@@ -1334,6 +1361,9 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                   {m.qty} cx Caixa mista · {money(m.qty * mixPrice(m))}
                 </h3>
                 <p>{mixText(m.comp)}</p>
+                {Object.keys(m.comp).some(
+                  (id) => all.find((v) => v.id === id)?.alcohol,
+                ) && <small className="alcohol-tag">{alcoholNotice}</small>}
               </div>
             </article>
           ))}
