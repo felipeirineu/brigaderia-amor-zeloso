@@ -205,9 +205,21 @@ export function Reports() {
                 <strong>
                   {p.units} {p.units === 1 ? 'unidade' : 'unidades'}
                 </strong>{' '}
-                · {p.boxes} {p.boxes === 1 ? 'caixa' : 'caixas'} de um sabor ·{' '}
-                {p.mixed_units} {p.mixed_units === 1 ? 'unidade' : 'unidades'}{' '}
-                em caixas mistas · vendas atribuídas: {money(p.total_cents)}
+                {p.boxes > 0 && (
+                  <>
+                    {' '}
+                    · {p.boxes} {p.boxes === 1 ? 'caixa' : 'caixas'} de um sabor
+                  </>
+                )}
+                {p.mixed_units > 0 && (
+                  <>
+                    {' '}
+                    · {p.mixed_units}{' '}
+                    {p.mixed_units === 1 ? 'unidade' : 'unidades'} em caixas
+                    mistas
+                  </>
+                )}{' '}
+                · vendas atribuídas: {money(p.total_cents)}
               </p>
             ))}
           </section>

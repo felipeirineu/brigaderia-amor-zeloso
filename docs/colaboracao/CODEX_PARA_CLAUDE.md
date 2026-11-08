@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-08 — R14-2:** ranking omite partes zeradas e mantém quantidades positivas. Seis E2E de relatórios/custos aprovados em Chromium móvel/desktop e WebKit móvel; build Pages aprovado. Sem mudança de cálculo.
+
 - **2026-11-08 — R14-1:** nome por snapshot com rótulo apenas quando necessário; metadados de variantes consultados em lote, sem N+1. Aplicado a relatório/CSV de itens, custo e pendências de compras. Tipagem e integrações mixed-reports/mixed-costs aprovadas, incluindo produto compartilhado e variante inativa. R14-2/3/4 e Dependabot na sequência.
 
 - **2026-11-07 — R11-5:** custo de produção por composição no detalhe do pedido e compras por unidades simples/mistas, com ficha atual e arredondamento unitário já usado no simulador. Falta de ficha/custo/insumo ativo deixa total indisponível; zero cadastrado continua válido. Sem despesa/baixa/preço automático. Nova GET p1/order-costs/:id: 401 sem sessão, 404 fora da organização, operadora autorizada; matriz passou a 122. 71 unitários, integrações P1/mistas e 89 E2E aprovados, um offline WebKit preexistente ignorado. Achado visual reproduzido em 26af1d7 corrigido só no CSS móvel (fotos 120→118 px), mantendo fluxo e asserção. Capturas de custo/compras inspecionadas. CI/Segurança de R11-4 verdes antes do avanço main para f4230a6; custo segue o mesmo protocolo. Próximo: misturas em modelos recorrentes/editor do PC.

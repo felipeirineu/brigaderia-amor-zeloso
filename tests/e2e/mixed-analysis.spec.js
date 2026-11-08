@@ -43,6 +43,9 @@ test('R11-4 relatório mostra sabores da composição e CSV privado', async ({
     await expect(
       ranking.locator('p').filter({ hasText: 'Alfa DEMONSTRAÇÃO:' }),
     ).toContainText('16 unidades');
+    await expect(ranking).not.toContainText('0 caixas de um sabor');
+    await expect(ranking).not.toContainText('0 unidades em caixas mistas');
+    await expect(ranking).not.toContainText('Caixa DEMONSTRAÇÃO');
     await ranking.scrollIntoViewIfNeeded();
     if (
       process.env.R11_CAPTURE === '1' &&
