@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Button } from '../../components/Button';
+import { HelpTip } from '../../components/HelpTip';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Failure, useRemote } from '../operations/common';
 import { money } from '../api';
@@ -95,6 +96,7 @@ export function OrderCost({ id, version }: { id: string; version: number }) {
       onToggle={(e) => setOpen(e.currentTarget.open)}
     >
       <DisclosureSummary>Custo estimado do pedido</DisclosureSummary>
+      <HelpTip topic="orderCost" />
       {open && <CostDetails id={id} version={version} />}
     </details>
   );

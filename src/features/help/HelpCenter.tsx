@@ -322,6 +322,12 @@ export function HelpCenter({
                 produção. Confira lotes, pendências e estoque manual antes de
                 comprar. Não há compra nem baixa automática.
               </li>
+              <li>
+                No detalhe do pedido, abra Custo estimado do pedido. A consulta
+                está disponível também ao operador. Usa fichas e custos atuais;
+                sem ficha ou preço, a estimativa fica indisponível. Não é lucro
+                apurado e não inclui entrega ou despesas fora da ficha.
+              </li>
             </ol>
             <Button to="/gestao/fichas" variant="ghost">
               Abrir fichas

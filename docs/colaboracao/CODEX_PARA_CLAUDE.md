@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-08 — R14-4:** ajuda contextual e tutorial confirmam estimativa, escopo e consulta da operadora; autorização preservada. Lint/tipos, 122 checks de segurança e seis E2E Chromium/WebKit aprovados. E2E agora seleciona o summary explicitamente (o título também existe no diálogo) e aguarda Hoje carregar antes de navegar; nenhuma asserção de erro foi removida.
+
 - **2026-11-08 — R14-3:** caixas equivalentes no CSV em duas casas quando fracionadas e inteiro quando exato. Integração mixed-reports valida 1.33/1.50 e inteiro, mantendo cabeçalhos e segurança CSV.
 
 - **2026-11-08 — R14-2:** ranking omite partes zeradas e mantém quantidades positivas. Seis E2E de relatórios/custos aprovados em Chromium móvel/desktop e WebKit móvel; build Pages aprovado. Sem mudança de cálculo.

@@ -25,6 +25,9 @@ test('R11-4 relatório mostra sabores da composição e CSV privado', async ({
       errors = [];
     p.on('pageerror', (e) => errors.push(e.message));
     await p.goto(t.url + '/api/access/start');
+    await expect(
+      p.getByRole('heading', { name: 'Entregas do dia', exact: true }),
+    ).toBeVisible();
     await p.goto(t.url + '/gestao/relatorios');
     await p.getByLabel('Vendas de', { exact: true }).fill(day);
     const ranking = p
@@ -91,6 +94,9 @@ test('R11-5 custo misto informa falta de ficha e compras usa unidades de cada sa
     for (let i = 0; i < 2; i++) await seedAnalysisRecipe(call, variants[i], i);
     const p = await c.newPage();
     await p.goto(t.url + '/api/access/start');
+    await expect(
+      p.getByRole('heading', { name: 'Entregas do dia', exact: true }),
+    ).toBeVisible();
     await p.goto(t.url + '/gestao/pedidos/' + order);
     await expect(p.locator('.order-detail-items')).toContainText(
       '2 caixas mistas',
@@ -98,8 +104,21 @@ test('R11-5 custo misto informa falta de ficha e compras usa unidades de cada sa
     await expect(p.locator('.order-detail-items')).toContainText(
       '8 Alfa DEMONSTRAÇÃO',
     );
-    await p.getByText('Custo estimado do pedido', { exact: true }).click();
+    await p.locator('.order-cost summary').click();
     const panel = p.locator('.order-cost');
+    await panel
+      .getByRole('button', {
+        name: 'Ajuda: Custo estimado do pedido',
+        exact: true,
+      })
+      .click();
+    await expect(p.getByRole('dialog')).toContainText(
+      'Administrador e operador',
+    );
+    await expect(p.getByRole('dialog')).toContainText(
+      'Não é custo histórico nem lucro apurado',
+    );
+    await p.getByRole('button', { name: 'Fechar ajuda', exact: true }).click();
     await expect(panel).toContainText('Custo indisponível');
     await expect(panel.getByRole('alert')).toContainText('Gama DEMONSTRAÇÃO');
     await seedAnalysisRecipe(call, variants[2], 2);

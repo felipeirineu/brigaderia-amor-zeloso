@@ -47,6 +47,10 @@ export const helpTexts = {
     title: 'Ficha técnica',
     text: 'Registra ingredientes e rendimento para estimar custos. Com P1 ativado, cadastre insumos e custos informados, sem inferir receitas a partir de fotos. Custo ausente deixa a estimativa pendente.',
   },
+  orderCost: {
+    title: 'Custo estimado do pedido',
+    text: 'Administrador e operador podem consultar esta estimativa. Usa fichas e preços de insumos atuais, com arredondamento por unidade e composição de cada caixa. Não é custo histórico nem lucro apurado; entrega e despesas fora da ficha não entram. Sem ficha ou custo conhecido, fica indisponível. Não cria despesas nem movimenta estoque.',
+  },
   stock: {
     title: 'Estoque mínimo',
     text: 'É o limite para avisar sobre reposição. Controle de estoque e movimentos auditáveis serão implementados em etapa própria.',
