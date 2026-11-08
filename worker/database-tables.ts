@@ -45,6 +45,8 @@ export const databaseTables = [
   'recipe_components',
   'recipes',
   'recurring_items',
+  'recurring_mixed_items',
+  'recurring_mixed_components',
   'recurring_templates',
   'reminders',
   'route_cache',

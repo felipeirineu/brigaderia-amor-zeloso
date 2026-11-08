@@ -1,3 +1,4 @@
+import { recurringDefaults, recurringMixedSchema } from './recurring-mixed';
 import { orderNumber } from './order-number';
 import { financeR2 } from './finance-r2';
 import { canReverse } from './reversal-policy';
@@ -507,27 +508,22 @@ export async function finance(
     const plans = (
       await db
         .prepare(
-          'SELECT id,name,weekday,time,notes,delivery_type,delivery_address,courier,courier_name,courier_fee_cents,(SELECT COUNT(*) FROM recurring_items i WHERE i.organization_id=recurring_templates.organization_id AND i.template_id=recurring_templates.id) AS item_count FROM recurring_templates WHERE organization_id=? AND customer_id=? AND active=1 ORDER BY weekday,name LIMIT 100',
+          'SELECT id,name,weekday,time,notes,delivery_type,delivery_address,courier,courier_name,courier_fee_cents FROM recurring_templates WHERE organization_id=? AND customer_id=? AND active=1 ORDER BY weekday,name LIMIT 100',
         )
         .bind(org, id)
         .all<Row>()
     ).results;
-    const items = (
-      await db
-        .prepare(
-          'SELECT i.template_id,i.variant_id,i.quantity FROM recurring_items i JOIN recurring_templates t ON t.organization_id=i.organization_id AND t.id=i.template_id JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE i.organization_id=? AND t.customer_id=? AND t.active=1 AND v.active=1 AND p.active=1',
-        )
-        .bind(org, id)
-        .all<Row>()
-    ).results;
+    const defaults = await recurringDefaults(
+      db,
+      org,
+      plans.map((p) => String(p.id)),
+      env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db)),
+    );
     return json({
       profile: p ? JSON.parse(p.data) : emptyProfile(),
       plans: plans.map((p) => ({
         ...p,
-        valid:
-          items.filter((i) => i.template_id === p.id).length === p.item_count &&
-          Number(p.item_count) > 0,
-        items: items.filter((i) => i.template_id === p.id),
+        ...defaults.find((d) => d.id === p.id),
       })),
     });
   }

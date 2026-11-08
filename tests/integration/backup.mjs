@@ -10,6 +10,7 @@ const t = await runtime({
   mobileEnabled: true,
   fieldEnabled: true,
   toolsEnabled: true,
+  mixedEnabled: true,
 });
 try {
   const { call, customer, owner, operator, outside, makeOrder, variant } =
@@ -21,6 +22,20 @@ try {
     )
     .bind(t.org, order)
     .run();
+  await call('recurring', {
+    name: 'Modelo DEMONSTRAÇÃO backup misto',
+    customer_id: customer,
+    weekday: 1,
+    time: '10:00',
+    composition_version: 1,
+    items: [
+      {
+        variant_id: variant,
+        quantity: 1,
+        components: [{ variant_id: variant, units: 2 }],
+      },
+    ],
+  });
   const day = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Fortaleza',
     year: 'numeric',
@@ -141,6 +156,8 @@ print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check'
     ),
   );
   assert.equal(restored.counts.order_item_components, 1);
+  assert.equal(restored.counts.recurring_mixed_items, 1);
+  assert.equal(restored.counts.recurring_mixed_components, 1);
   assert.equal(restored.counts.sessions, 0);
   assert.equal(restored.counts.login_attempts, 0);
   assert.equal(restored.organizations, 1);

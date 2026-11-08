@@ -1,3 +1,11 @@
+import {
+  recurringItems,
+  recurringMixedSchema,
+  prepareRecurring,
+  writeRecurringMixed,
+} from './recurring-mixed';
+import { catalogForItems, writeComponents } from './mixed';
+import type { ItemSnapshot } from '../shared/mixed';
 import { orderNumber } from './order-number';
 import type { ComponentSnapshot } from '../shared/mixed';
 import {
@@ -293,23 +301,6 @@ export async function operations(
       throw new HttpError(405, 'Método não permitido.');
     const data = await body(req, recurringSchema);
     const mutation = crypto.randomUUID();
-    const customer = await db
-      .prepare(
-        'SELECT id FROM customers WHERE organization_id=? AND id=? AND active=1',
-      )
-      .bind(org, data.customer_id)
-      .first();
-    if (!customer) throw new HttpError(400, 'Cliente ativo não encontrado.');
-    const variants = (
-      await db
-        .prepare(
-          `SELECT v.id FROM product_variants v JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE v.organization_id=? AND v.id IN (${data.items.map(() => '?').join(',')}) ${data.active ? 'AND v.active=1 AND p.active=1' : ''}`,
-        )
-        .bind(org, ...data.items.map((i) => i.variant_id))
-        .all<{ id: string }>()
-    ).results;
-    if (variants.length !== data.items.length)
-      throw new HttpError(400, 'Variante ativa não encontrada.');
     const previous = id
       ? await db
           .prepare(
@@ -321,6 +312,28 @@ export async function operations(
     if (id && !previous) throw new HttpError(404, 'Modelo não encontrado.');
     if (id && data.version !== previous?.version)
       throw new HttpError(409, 'Modelo alterado. Atualize.');
+    const customer = await db
+      .prepare(
+        'SELECT id FROM customers WHERE organization_id=? AND id=? AND active=1',
+      )
+      .bind(org, data.customer_id)
+      .first();
+    if (!customer) throw new HttpError(400, 'Cliente ativo não encontrado.');
+    const priorItems = id ? await recurringItems(db, org, [id]) : [];
+    if (priorItems.some((i) => i.components) && data.composition_version !== 1)
+      throw new HttpError(
+        409,
+        'Este modelo tem caixa mista. Atualize o editor antes de salvar.',
+      );
+    const schemaMixed = await recurringMixedSchema(db);
+    const catalog = await catalogForItems(db, org, data.items);
+    const prepared = prepareRecurring(
+      data.items,
+      data.active
+        ? catalog
+        : catalog.map((v) => ({ ...v, active: 1, product_active: 1 })),
+      schemaMixed && env.MIXED_BOXES_ENABLED === 'true',
+    );
     // UUID enviado pelo cliente torna a criação de modelo repetível sem duplicar.
     const createKey = id || keyFrom(req);
     const templateId = id || createKey;
@@ -383,12 +396,21 @@ export async function operations(
           org,
           templateId,
           JSON.stringify(
-            data.items.map((i) => ({ ...i, id: crypto.randomUUID() })),
+            prepared
+              .filter((i) => !i.components?.length)
+              .map((i) => ({ ...i, id: crypto.randomUUID() })),
           ),
           org,
           templateId,
           mutation,
         ),
+      ...(schemaMixed
+        ? writeRecurringMixed(db, org, templateId, prepared, guard, [
+            org,
+            templateId,
+            mutation,
+          ])
+        : []),
       db
         .prepare(
           `INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT ?,?,?,?,? WHERE ${guard}`,
@@ -425,40 +447,36 @@ export async function operations(
     ).results;
     if (plans.length > 100)
       throw new HttpError(400, 'Limite de 100 modelos por geração.');
-    const rows = (
-      await db
-        .prepare(
-          'SELECT i.*,v.label,v.weight_grams,v.units_per_box,v.price_cents,p.name,v.active AS variant_active,p.active AS product_active FROM recurring_items i JOIN recurring_templates t ON t.organization_id=i.organization_id AND t.id=i.template_id JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE i.organization_id=? AND t.active=1',
-        )
-        .bind(org)
-        .all<Row>()
-    ).results;
-    const itemCounts = (
-      await db
-        .prepare(
-          'SELECT template_id,COUNT(*) AS count FROM recurring_items WHERE organization_id=? GROUP BY template_id',
-        )
-        .bind(org)
-        .all<{ template_id: string; count: number }>()
-    ).results;
+    const rows = await recurringItems(
+      db,
+      org,
+      plans.map((p) => String(p.id)),
+    );
+    const catalog = await catalogForItems(db, org, rows);
+    const canMix =
+      env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db));
     const skipped: { id: string; name: string; reason: string }[] = [];
     const nonce = crypto.randomUUID();
     const planned: Record<string, unknown>[] = [],
       items: Record<string, unknown>[] = [];
     for (const plan of plans) {
       const contents = rows.filter((i) => i.template_id === plan.id);
-      const inactive = contents.find(
-        (i) => !i.variant_active || !i.product_active,
-      );
-      const reason = !plan.customer_active
+      let reason = !plan.customer_active
         ? 'Cliente inativo.'
-        : inactive
-          ? `Variante ${inactive.name} — ${inactive.label} inativa.`
-          : !contents.length ||
-              contents.length !==
-                itemCounts.find((c) => c.template_id === plan.id)?.count
-            ? 'Itens ausentes; revise o modelo.'
-            : '';
+        : !contents.length
+          ? 'Itens ausentes; revise o modelo.'
+          : '';
+      let snapshots: ItemSnapshot[] = [];
+      if (!reason) {
+        try {
+          snapshots = prepareRecurring(contents, catalog, canMix);
+        } catch (e) {
+          reason =
+            e instanceof HttpError
+              ? e.message
+              : 'Modelo inválido; revise os itens.';
+        }
+      }
       if (reason) {
         skipped.push({ id: String(plan.id), name: String(plan.name), reason });
         continue;
@@ -467,8 +485,8 @@ export async function operations(
         `${addDays(data.week, Number(plan.weekday) - 1)}T${plan.time}:00-03:00`,
       ).toISOString();
       const id = crypto.randomUUID();
-      const total = contents.reduce(
-        (n, i) => n + Number(i.quantity) * Number(i.price_cents),
+      const total = snapshots.reduce(
+        (n, i) => n + i.quantity * i.unit_price_cents,
         0,
       );
       if (!Number.isSafeInteger(total) || total > 1000000000) {
@@ -494,18 +512,7 @@ export async function operations(
         recurrence_key: `${plan.id}:${data.week}`,
         request_key: crypto.randomUUID(),
       });
-      for (const item of contents)
-        items.push({
-          id: crypto.randomUUID(),
-          order_id: id,
-          variant_id: item.variant_id,
-          product_name: item.name,
-          variant_label: item.label,
-          weight_grams: item.weight_grams,
-          units_per_box: item.units_per_box,
-          unit_price_cents: item.price_cents,
-          quantity: item.quantity,
-        });
+      for (const item of snapshots) items.push({ ...item, order_id: id });
     }
     const ordersJSON = JSON.stringify(planned),
       itemsJSON = JSON.stringify(items);
@@ -523,6 +530,13 @@ export async function operations(
           "INSERT INTO order_items(id,organization_id,order_id,variant_id,product_name,variant_label,weight_grams,units_per_box,unit_price_cents,quantity) SELECT json_extract(j.value,'$.id'),?,json_extract(j.value,'$.order_id'),json_extract(j.value,'$.variant_id'),json_extract(j.value,'$.product_name'),json_extract(j.value,'$.variant_label'),json_extract(j.value,'$.weight_grams'),json_extract(j.value,'$.units_per_box'),json_extract(j.value,'$.unit_price_cents'),json_extract(j.value,'$.quantity') FROM json_each(?) j JOIN orders o ON o.organization_id=? AND o.id=json_extract(j.value,'$.order_id') AND o.mutation_id=?",
         )
         .bind(org, itemsJSON, org, nonce),
+      ...writeComponents(
+        db,
+        org,
+        items as unknown as ItemSnapshot[],
+        `EXISTS(SELECT 1 FROM orders o JOIN order_items i ON i.organization_id=o.organization_id AND i.order_id=o.id WHERE o.organization_id=? AND o.mutation_id=? AND i.id=json_extract(value,'$.item_id'))`,
+        [org, nonce],
+      ),
       ...((await fieldReady(env)) ? snapshotPlaces(db, org, nonce) : []),
       ...(financial
         ? [

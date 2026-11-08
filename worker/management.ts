@@ -1,3 +1,5 @@
+import { recurringMixedSchema } from './recurring-mixed';
+import { mixedReady } from './mixed';
 import { attachComponents, prepareItems, writeComponents } from './mixed';
 import type { ItemSnapshot } from '../shared/mixed';
 import { toolsReady } from './tools-ready';
@@ -37,6 +39,9 @@ export async function management(req: Request, env: Env, a: Actor) {
   if (resource === 'session' && req.method === 'GET')
     return json({
       role: a.role,
+      mixed: await mixedReady(env),
+      recurring_mixed:
+        env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db)),
       operations: await operationalReady(env),
       finance: await financeReady(env),
       p1: await p1Ready(env),

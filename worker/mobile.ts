@@ -1,11 +1,17 @@
+import {
+  recurringDefaults,
+  recurringMixedSchema,
+  prepareRecurring,
+} from './recurring-mixed';
 import { itemInputSchema, uniqueItems } from './mixed-domain';
 import {
   attachComponents,
+  catalogForItems,
   mixedReady,
   prepareItems,
   writeComponents,
 } from './mixed';
-import type { ItemSnapshot } from '../shared/mixed';
+import type { ItemSnapshot, ComponentSnapshot } from '../shared/mixed';
 import { fieldReady } from './field-ready';
 import { snapshotPlaces } from './order-places';
 import { z } from 'zod';
@@ -76,14 +82,12 @@ export async function mobile(req: Request, env: Env, a: Actor) {
         .bind(org, id)
         .all<Row>()
     ).results;
-    const items = (
-      await db
-        .prepare(
-          'SELECT i.template_id,i.variant_id,i.quantity,v.active AS variant_active,p.active AS product_active FROM recurring_items i JOIN recurring_templates t ON t.organization_id=i.organization_id AND t.id=i.template_id JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE i.organization_id=? AND t.customer_id=? AND t.active=1',
-        )
-        .bind(org, id)
-        .all<Row>()
-    ).results;
+    const defaults = await recurringDefaults(
+      db,
+      org,
+      plans.map((p) => String(p.id)),
+      env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db)),
+    );
     const last = await db
       .prepare(
         "SELECT id,due_at,notes FROM orders WHERE organization_id=? AND customer_id=? AND active=1 AND status<>'cancelled' ORDER BY created_at DESC,id DESC LIMIT 1",
@@ -94,12 +98,35 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       ? (
           await db
             .prepare(
-              'SELECT i.variant_id,i.quantity,v.active AS variant_active,p.active AS product_active FROM order_items i JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE i.organization_id=? AND i.order_id=?',
+              'SELECT i.id,i.variant_id,i.quantity,v.active AS variant_active,p.active AS product_active FROM order_items i JOIN product_variants v ON v.organization_id=i.organization_id AND v.id=i.variant_id JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id WHERE i.organization_id=? AND i.order_id=?',
             )
             .bind(org, last.id)
-            .all<Row>()
+            .all<Row & { components?: ComponentSnapshot[] }>()
         ).results
       : [];
+    await attachComponents(db, org, lastItems);
+    const lastInput = lastItems.map((i) => ({
+      variant_id: String(i.variant_id),
+      quantity: Number(i.quantity),
+      ...(i.components?.length
+        ? {
+            components: i.components.map((c) => ({
+              variant_id: c.variant_id,
+              units: c.units,
+            })),
+          }
+        : {}),
+    }));
+    let lastValid = lastInput.length > 0;
+    try {
+      prepareRecurring(
+        lastInput,
+        await catalogForItems(db, org, lastInput),
+        await mixedReady(env),
+      );
+    } catch {
+      lastValid = false;
+    }
     const financial = await financeReady(env),
       profile = financial
         ? await db
@@ -141,25 +168,13 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       plans: plans.map((p) => ({
         ...p,
         mutation_id: undefined,
-        items: items
-          .filter((i) => i.template_id === p.id)
-          .map((i) => ({ variant_id: i.variant_id, quantity: i.quantity })),
-        valid:
-          items.some((i) => i.template_id === p.id) &&
-          items
-            .filter((i) => i.template_id === p.id)
-            .every((i) => i.variant_active && i.product_active),
+        ...defaults.find((d) => d.id === p.id),
       })),
       last: last
         ? {
             ...last,
-            items: lastItems.map((i) => ({
-              variant_id: i.variant_id,
-              quantity: i.quantity,
-            })),
-            valid:
-              lastItems.length > 0 &&
-              lastItems.every((i) => i.variant_active && i.product_active),
+            items: lastInput,
+            valid: lastValid,
           }
         : null,
       profile: profile ? JSON.parse(profile.data) : emptyProfile(),

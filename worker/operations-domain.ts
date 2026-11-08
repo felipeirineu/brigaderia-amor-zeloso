@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { itemInputSchema, uniqueItems } from './mixed-domain';
 import { statuses } from '../shared/order-state';
 export { nextStatuses, statusLabels, type Status } from '../shared/order-state';
 export const transitionSchema = z
@@ -38,23 +39,14 @@ export const recurringSchema = z
     courier_fee_cents: z.number().int().min(0).max(100000000).default(0),
     active: z.boolean().default(true),
     version: z.number().int().positive().optional(),
+    composition_version: z.literal(1).optional(),
     items: z
-      .array(
-        z
-          .object({
-            variant_id: z.uuid(),
-            quantity: z.number().int().min(1).max(10000),
-          })
-          .strict(),
-      )
+      .array(itemInputSchema.omit({ item_id: true }))
       .min(1)
       .max(30),
   })
   .strict()
-  .refine(
-    (v) => new Set(v.items.map((i) => i.variant_id)).size === v.items.length,
-    'Variante duplicada.',
-  )
+  .refine((v) => uniqueItems(v.items), 'Variante duplicada.')
   .refine(
     (v) => v.courier !== 'courier' || !!v.courier_name,
     'Informe o nome do motoboy.',
