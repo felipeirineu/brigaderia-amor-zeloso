@@ -58,7 +58,11 @@ interface Plan {
   courier_name: string;
   courier_fee_cents: number;
   valid: boolean;
-  items: { variant_id: string; quantity: number }[];
+  items: {
+    variant_id: string;
+    quantity: number;
+    components?: { variant_id: string; units: number }[];
+  }[];
 }
 interface Defaults {
   ranking: Popularity;
@@ -68,7 +72,11 @@ interface Defaults {
   plans: Plan[];
   last: {
     valid: boolean;
-    items: { variant_id: string; quantity: number }[];
+    items: {
+      variant_id: string;
+      quantity: number;
+      components?: { variant_id: string; units: number }[];
+    }[];
     notes: string;
   } | null;
 }
@@ -229,10 +237,32 @@ export function Totem({ financial = false }: { financial?: boolean }) {
       current = false;
     };
   }, [id, financial]);
-  function plan(p: Plan) {
+  function applyPlanItems(items: Plan['items']) {
     setCounts(
-      Object.fromEntries(p.items.map((i) => [i.variant_id, i.quantity])),
+      Object.fromEntries(
+        items
+          .filter((i) => !i.components?.length)
+          .map((i) => [i.variant_id, i.quantity]),
+      ),
     );
+    setMixes(
+      items
+        .filter((i) => i.components?.length)
+        .map((i) => {
+          const comp = Object.fromEntries(
+            i.components!.map((c) => [c.variant_id, c.units]),
+          );
+          return {
+            key: mixSig(comp),
+            base: i.variant_id,
+            comp,
+            qty: i.quantity,
+          };
+        }),
+    );
+  }
+  function plan(p: Plan) {
+    applyPlanItems(p.items);
     const planned = nextWeeklyTime(p.weekday, p.time);
     setDue(planned);
     setPlanDue(planned);
@@ -574,11 +604,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               className="repeat-order"
               variant="ghost"
               onClick={() => {
-                setCounts(
-                  Object.fromEntries(
-                    defaults.last!.items.map((i) => [i.variant_id, i.quantity]),
-                  ),
-                );
+                applyPlanItems(defaults.last!.items);
                 setNotes(defaults.last!.notes);
               }}
             >

@@ -1,3 +1,6 @@
+import { compositionValid } from '../components/composition';
+import { CompositionEditor } from '../components/CompositionEditor';
+import type { ComponentInput } from '../../shared/mixed';
 import { RouteInfo } from './field/RouteInfo';
 import { DisclosureSummary } from '../components/DisclosureSummary';
 import { FlavorOrder } from './mobile/FlavorOrder';
@@ -63,6 +66,8 @@ interface Session {
   mobile?: boolean;
   field?: boolean;
   tools?: boolean;
+  mixed?: boolean;
+  recurring_mixed?: boolean;
 }
 interface Customer {
   id: string;
@@ -92,6 +97,12 @@ interface Product {
   variants: Variant[];
 }
 interface Item {
+  id?: string;
+  item_id?: string;
+  components?: (ComponentInput & {
+    product_name?: string;
+    variant_label?: string;
+  })[];
   variant_id: string;
   quantity: number;
   product_name?: string;
@@ -887,6 +898,7 @@ function Orders({
   role?: string;
   operational?: boolean;
   financial?: boolean;
+  mixed?: boolean;
 }) {
   const [search] = useSearchParams(),
     mode = useOrderMode(role);
@@ -920,9 +932,11 @@ function FullOrders({
   simple = false,
   operational = false,
   financial = false,
+  mixed = false,
 }: {
   operational?: boolean;
   financial?: boolean;
+  mixed?: boolean;
   simple?: boolean;
 }) {
   const navigate = useNavigate();
@@ -974,6 +988,7 @@ function FullOrders({
       plan.items.map((i) => ({
         variant_id: i.variant_id,
         quantity: i.quantity,
+        components: i.components,
       })),
     );
     setNotes(plan.notes);
@@ -990,6 +1005,9 @@ function FullOrders({
         id: v.id!,
         label: `${p.name} — ${v.label} (${money(v.price_cents)})`,
         price: v.price_cents,
+        name: p.name + ' — ' + v.label,
+        units_per_box: v.units_per_box,
+        weight_grams: v.weight_grams,
       })),
   );
   function reset() {
@@ -1005,6 +1023,7 @@ function FullOrders({
   }
   function submit(e: FormEvent) {
     e.preventDefault();
+    if (items.some((i) => !compositionValid(i, options))) return;
     void save.save(
       () =>
         api(
@@ -1015,7 +1034,17 @@ function FullOrders({
             ...(!editing && template ? { template_id: template } : {}),
             due_at: new Date(`${due}:00-03:00`).toISOString(),
             notes,
+            composition_version: 1,
             items: items.map((i) => ({
+              item_id: i.id ?? i.item_id,
+              ...(i.components
+                ? {
+                    components: i.components.map(({ variant_id, units }) => ({
+                      variant_id,
+                      units,
+                    })),
+                  }
+                : {}),
               variant_id: i.variant_id,
               quantity: i.quantity,
             })),
@@ -1030,8 +1059,13 @@ function FullOrders({
     (sum, i) =>
       sum +
       i.quantity *
-        (editing?.items.find((o) => o.variant_id === i.variant_id)
-          ?.unit_price_cents ??
+        (editing?.items.find((o) =>
+          i.id || i.item_id
+            ? o.id === (i.id ?? i.item_id)
+            : o.variant_id === i.variant_id &&
+              !o.components?.length &&
+              !i.components?.length,
+        )?.unit_price_cents ??
           options.find((o) => o.id === i.variant_id)?.price ??
           0),
     0,
@@ -1131,10 +1165,13 @@ function FullOrders({
                 <select
                   required
                   value={i.variant_id}
+                  disabled={!!i.components}
                   onChange={(e) =>
                     setItems(
                       items.map((v, j) =>
-                        j === index ? { ...v, variant_id: e.target.value } : v,
+                        j === index
+                          ? { variant_id: e.target.value, quantity: v.quantity }
+                          : v,
                       ),
                     )
                   }
@@ -1154,6 +1191,14 @@ function FullOrders({
                     ))}
                 </select>
               </label>
+              <CompositionEditor
+                item={i}
+                options={options}
+                enabled={mixed}
+                onChange={(value) =>
+                  setItems(items.map((v, j) => (j === index ? value : v)))
+                }
+              />
               <QuantityField
                 label="Quantidade de embalagens"
                 required
@@ -1168,10 +1213,16 @@ function FullOrders({
                   )
                 }
               />
-              {items.length > 1 && (
+              {(items.length > 1 || i.components) && (
                 <Button
                   type="button"
-                  onClick={() => setItems(items.filter((_, j) => j !== index))}
+                  onClick={() =>
+                    setItems(
+                      items.length === 1
+                        ? [{ variant_id: '', quantity: 1 }]
+                        : items.filter((_, j) => j !== index),
+                    )
+                  }
                 >
                   Remover item {index + 1}
                 </Button>
@@ -1199,7 +1250,13 @@ function FullOrders({
             Prévia: {money(estimate)}. O servidor confere o total ao salvar.
           </p>
           <div className="actions">
-            <Button disabled={save.busy} variant="primary" loading={save.busy}>
+            <Button
+              disabled={
+                save.busy || items.some((i) => !compositionValid(i, options))
+              }
+              variant="primary"
+              loading={save.busy}
+            >
               Salvar pedido
             </Button>
             <Button type="button" onClick={reset}>
@@ -1231,10 +1288,13 @@ function FullOrders({
                 {money(o.total_cents)}
               </p>
               <ul>
-                {o.items.map((i) => (
-                  <li key={i.variant_id}>
-                    {i.quantity} × {i.product_name} — {i.variant_label} ·{' '}
-                    {money(i.unit_price_cents!)}
+                {o.items.map((i, index) => (
+                  <li key={i.id ?? index}>
+                    {i.quantity} ×{' '}
+                    {i.components?.length
+                      ? `Caixa mista (${i.components.map((c) => `${c.units} ${c.product_name ?? options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
+                      : `${i.product_name} — ${i.variant_label}`}{' '}
+                    · {money(i.unit_price_cents!)}
                   </li>
                 ))}
               </ul>
@@ -1578,6 +1638,7 @@ export function Management() {
               path="pedidos"
               element={
                 <Orders
+                  mixed={session.mixed}
                   operational={session.operations}
                   financial={session.finance}
                   mobile={session.mobile}
@@ -1649,7 +1710,10 @@ export function Management() {
                     />
                   }
                 />
-                <Route path="recorrentes" element={<Recurring />} />
+                <Route
+                  path="recorrentes"
+                  element={<Recurring mixed={session.recurring_mixed} />}
+                />
                 <Route path="mensagens" element={<MessageTemplates />} />
                 <Route
                   path="ajuda"

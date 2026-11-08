@@ -164,3 +164,7 @@ Recomendação: tornar privado antes de transferir o repositório ao Tiago. A se
 R11-5 acrescenta `GET /api/p1/order-costs/:id`, somente leitura. Segue `actor()`, P1 ativo e organização do pedido; sem sessão recebe 401, pedido de outra organização/inexistente recebe 404. Operadora pode consultar, assim como fichas; não é uma rota exclusiva de owner. Não aceita gravação nem cria evento financeiro/estoque. Resposta privada usa `no-store` e cabeçalhos do JSON da API.
 
 A matriz `test:security` passou de 117 para **122 verificações**, incluindo essa rota, a consulta autorizada pela operadora e ID inexistente. Integrações de custos também conferem 405 para POST e nenhum efeito em despesas/estoque. Os demais itens e as tarefas humanas desta auditoria continuam válidos; isto não afirma ensaio em dados reais, configuração de rulesets ou execução manual do ZAP.
+
+### Continuação de 08/11 — modelos mistos
+
+Rotas existentes de modelos/defaults/geração reutilizadas, sem nova API ou ampliação de papéis. Matriz ampliada para **127 verificações**: modelo misto exige sessão, outra organização recebe 404 em GET/PUT e operadora consulta/pausa preservando composição. Migração aditiva 0016, FKs por organização, CAS e auditoria mantidos. Backup/restauração local inclui as novas tabelas. PRs de dependências continuam bloqueados pelo Dependency graph; ver DEPENDABOT.md, sem contornar o check.
