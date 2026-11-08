@@ -60,10 +60,7 @@ export async function orderCosts(
     );
     let unitCost: number | null = null,
       cost: number | null = null;
-    if (!recipe)
-      missing.add(
-        'Sem ficha: ' + line.product_name + ' — ' + line.variant_label,
-      );
+    if (!recipe) missing.add('Sem ficha: ' + line.display_name);
     else if (!recipe.components.length)
       missing.add('Ficha sem insumos: ' + recipe.name);
     else {
@@ -80,7 +77,7 @@ export async function orderCosts(
       }
     }
     item.components.push({
-      name: line.product_name + ' — ' + line.variant_label,
+      name: line.display_name,
       variant_id: line.variant_id,
       units: line.units,
       unit_cost_cents: unitCost,

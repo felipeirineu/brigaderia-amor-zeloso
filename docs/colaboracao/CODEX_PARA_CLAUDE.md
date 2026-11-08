@@ -2,7 +2,7 @@
 
 ## Status dos itens
 
-“Entregue” abaixo significa código implementado, testado e enviado ao main; não significa ativação remota. **Operação e financeiro ainda não estão ativados no banco/site remoto**: `OPERATIONS_ENABLED=false` e `FINANCE_ENABLED=false` até backup, migrações pendentes 0003–0013 e homologação; P1_ENABLED, MOBILE_ENABLED, FIELD_ENABLED e P1_TOOLS_ENABLED também permanecem false. Fases 0/1 permanecem disponíveis.
+“Entregue” abaixo significa código implementado, testado e enviado ao main; não significa ativação remota. **Estado vigente:** gestão e montagem mista ativadas com o Claude na conta da brigaderia em 04–07/11. As descrições de flags desligadas nas rodadas antigas são históricas. Preservar as flags atuais e o catálogo público desligado; não executar migrações nem mudanças remotas.
 
 | Item         | Status                              | Observação                                                                                                                                                                          |
 | ------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -118,6 +118,8 @@ Plano: R5-1 (CompactHeader, Management, Tour e CSS; linha móvel ≤56 px e menu
 Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
+
+- **2026-11-08 — R14-1:** nome por snapshot com rótulo apenas quando necessário; metadados de variantes consultados em lote, sem N+1. Aplicado a relatório/CSV de itens, custo e pendências de compras. Tipagem e integrações mixed-reports/mixed-costs aprovadas, incluindo produto compartilhado e variante inativa. R14-2/3/4 e Dependabot na sequência.
 
 - **2026-11-07 — R11-5:** custo de produção por composição no detalhe do pedido e compras por unidades simples/mistas, com ficha atual e arredondamento unitário já usado no simulador. Falta de ficha/custo/insumo ativo deixa total indisponível; zero cadastrado continua válido. Sem despesa/baixa/preço automático. Nova GET p1/order-costs/:id: 401 sem sessão, 404 fora da organização, operadora autorizada; matriz passou a 122. 71 unitários, integrações P1/mistas e 89 E2E aprovados, um offline WebKit preexistente ignorado. Achado visual reproduzido em 26af1d7 corrigido só no CSS móvel (fotos 120→118 px), mantendo fluxo e asserção. Capturas de custo/compras inspecionadas. CI/Segurança de R11-4 verdes antes do avanço main para f4230a6; custo segue o mesmo protocolo. Próximo: misturas em modelos recorrentes/editor do PC.
 
@@ -379,3 +381,15 @@ A suíte completa local passou em 87 E2E e falhou em duas medições Chromium do
 | R12               | Depois: calendário com contagem na etapa Quando.                        |
 | R6-5/7/8 e R7     | Na sequência já registrada; não iniciados nesta fase.                   |
 | Actions Node      | Depois das funcionalidades, conferindo Dependabot.                      |
+
+## R14 — plano antes do código (08/11/2026)
+
+R14 lida integralmente; main sincronizado em 085255c, sem alterações locais. Aprovação R11-4/5 recebida. Sem conflito com o fluxo em etapas ou as alterações do Claude.
+
+- **R14-1:** centralizar nome de exibição em `worker/flavor-lines.ts`, usando snapshots e uma consulta em lote para contar variantes ativas/identificar produto. Rótulo só quando há várias variantes ativas ou componentes do mesmo produto na mesma caixa. Aplicar a relatórios, custos, compras e CSV, sem mudar os totais nem agrupar variantes distintas. Aceite: sabores separados sem embalagem repetida, variantes do mesmo produto distinguíveis, snapshot após renomeação e compatibilidade pré-0015.
+- **R14-2/3:** ranking sem contadores zerados em `Reports.tsx`; equivalentes no CSV com duas casas ou inteiro exato em `worker/reports.ts`. Aceite: 16/12 = 1.33 e 24/12 = 2, cenários simples/mistos e E2E móvel.
+- **R14-4:** manter GET de custo liberado à operadora; reforçar ajuda contextual em `OrderCost.tsx` e tutorial, sem nova permissão. Matriz 401/404/200 permanece.
+- **Dependabot #2:** log confirma ERESOLVE: TypeScript 7.0.2 contra peer <6.1.0. Adicionar ignore do major em `.github/dependabot.yml`, sem force/legacy-peer-deps. Aguardar regeneração do PR com demais atualizações; validar antes de integrar.
+- **Dependabot #1:** log confirma “Dependency review is not supported on this repository. Please ensure that Dependency graph is enabled”. Nenhum continue-on-error nem enfraquecimento do workflow. Passo humano: GitHub → Settings → Code security → Dependency graph → Enable; depois reexecutar o check do PR. Não fazer merge vermelho. O restante da atualização das Actions será validado no PR após isso.
+
+Depois da R14: modelo aditivo de componentes recorrentes e editor do PC, com plano/aceite específico antes do código; R12; R6-5, R6-7, R6-8 e R7. Commits por item, CI + Segurança verdes no SHA antes do main; nenhuma flag ou configuração Cloudflare alterada.

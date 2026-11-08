@@ -14,8 +14,13 @@ export interface FlavorLine {
   boxes: number;
   mixed: boolean;
   allocated_cents: number;
+  display_name: string;
+  show_variant: boolean;
 }
-interface RawLine extends Omit<FlavorLine, 'allocated_cents' | 'mixed'> {
+interface RawLine extends Omit<
+  FlavorLine,
+  'allocated_cents' | 'mixed' | 'display_name' | 'show_variant'
+> {
   mixed: number;
   item_total_cents: number;
   box_capacity: number;
@@ -55,7 +60,7 @@ export function allocateFlavorRevenue(
   }
   return new Map(rows.map((r) => [r.id, Number(r.cents)]));
 }
-/** Uma consulta de linhas e uma checagem de schema, sem N+1 nem catálogo atual. */
+/** Snapshots históricos; catálogo atual só determina se o rótulo é necessário. */
 export async function flavorLines(
   db: D1Database,
   org: string,
@@ -80,6 +85,15 @@ export async function flavorLines(
       409,
       'Mais de 10000 linhas de sabores; reduza o período.',
     );
+  const variants = (
+    await db
+      .prepare(
+        `SELECT v.id,v.product_id,COUNT(a.id) active_count FROM product_variants v LEFT JOIN product_variants a ON a.organization_id=v.organization_id AND a.product_id=v.product_id AND a.active=1 WHERE v.organization_id=? AND v.id IN(SELECT value FROM json_each(?)) GROUP BY v.id,v.product_id`,
+      )
+      .bind(org, JSON.stringify([...new Set(rows.map((r) => r.variant_id))]))
+      .all<{ id: string; product_id: string; active_count: number }>()
+  ).results;
+  const catalog = new Map(variants.map((v) => [v.id, v]));
   const grouped = new Map<string, RawLine[]>();
   for (const row of rows) {
     const group = grouped.get(row.item_id) ?? [];
@@ -102,10 +116,24 @@ export async function flavorLines(
       group.map((r) => ({ id: r.variant_id, units: r.per_box_units })),
     );
     for (const r of group) {
+      const variant = catalog.get(r.variant_id);
+      const sameProduct =
+        !!r.mixed &&
+        group.some(
+          (other) =>
+            other.variant_id !== r.variant_id &&
+            variant &&
+            catalog.get(other.variant_id)?.product_id === variant.product_id,
+        );
+      const showVariant = sameProduct || (variant?.active_count ?? 0) > 1;
       output.push({
         ...r,
         mixed: !!r.mixed,
         allocated_cents: amounts.get(r.variant_id)!,
+        show_variant: showVariant,
+        display_name:
+          r.product_name +
+          (showVariant && r.variant_label ? ' — ' + r.variant_label : ''),
       });
     }
   }
@@ -120,7 +148,7 @@ export function flavorItemTexts(lines: FlavorLine[]) {
   }
   return [...groups.values()].map((group) =>
     group[0].mixed
-      ? `${group[0].item_quantity}× Mista: ${group.map((c) => `${c.per_box_units} ${c.product_name} — ${c.variant_label}`).join(' + ')}`
-      : `${group[0].item_quantity}× ${group[0].product_name} — ${group[0].variant_label}`,
+      ? `${group[0].item_quantity}× Mista: ${group.map((c) => `${c.per_box_units} ${c.display_name}`).join(' + ')}`
+      : `${group[0].item_quantity}× ${group[0].display_name}`,
   );
 }

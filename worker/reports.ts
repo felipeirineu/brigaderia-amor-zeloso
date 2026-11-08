@@ -57,6 +57,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
       {
         name: string;
         variant: string;
+        display_name: string;
         weight_grams: number;
         units_per_box: number;
         boxes: number;
@@ -91,6 +92,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
       p = products.get(key) || {
         name: i.product_name,
         variant: i.variant_label,
+        display_name: i.display_name,
         weight_grams: i.weight_grams,
         units_per_box: i.units_per_box,
         boxes: 0,
@@ -98,6 +100,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         units: 0,
         total_cents: 0,
       };
+    if (i.show_variant) p.display_name = i.display_name;
     p.boxes += i.boxes;
     p.units += i.units;
     p.mixed_units += i.mixed ? i.units : 0;

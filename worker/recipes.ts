@@ -108,7 +108,7 @@ export async function recipes(
     for (const line of lines) {
       const d = byVariant.get(line.variant_id) ?? {
         variant_id: line.variant_id,
-        name: line.product_name + ' — ' + line.variant_label,
+        name: line.display_name,
         units: 0,
         orders: new Set<string>(),
       };

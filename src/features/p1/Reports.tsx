@@ -28,6 +28,7 @@ interface Report {
   products: {
     name: string;
     variant: string;
+    display_name: string;
     boxes: number;
     mixed_units: number;
     units: number;
@@ -200,7 +201,7 @@ export function Reports() {
             </p>
             {view.data.products.map((p, i) => (
               <p key={i}>
-                {p.name} — {p.variant}:{' '}
+                {p.display_name}:{' '}
                 <strong>
                   {p.units} {p.units === 1 ? 'unidade' : 'unidades'}
                 </strong>{' '}

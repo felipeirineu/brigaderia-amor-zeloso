@@ -38,6 +38,44 @@ try {
     r.sales_cents,
   );
   assert.equal(names['Beta DEMONSTRAÇÃO'].total_cents, 2503);
+  assert.equal(names['Alfa DEMONSTRAÇÃO'].display_name, 'Alfa DEMONSTRAÇÃO');
+  assert.ok(!r.orders[0].items_text.includes('Caixa DEMONSTRAÇÃO'));
+  // Mesmo produto: preservar distinção entre variantes até com uma desativada.
+  await t.db
+    .prepare(
+      'UPDATE product_variants SET product_id=?,active=0 WHERE organization_id=? AND id=?',
+    )
+    .bind(variants[0].product_id, t.org, variants[1].id)
+    .run();
+  const sameProduct = await call('p1/reports' + query, undefined, 'GET');
+  assert.match(
+    sameProduct.products.find((p) => p.name === 'Alfa DEMONSTRAÇÃO')
+      .display_name,
+    / — Caixa DEMONSTRAÇÃO$/,
+  );
+  assert.match(
+    sameProduct.orders[0].items_text,
+    /8 Alfa DEMONSTRAÇÃO — Caixa DEMONSTRAÇÃO/,
+  );
+  await t.db
+    .prepare(
+      'UPDATE product_variants SET active=1 WHERE organization_id=? AND id=?',
+    )
+    .bind(t.org, variants[1].id)
+    .run();
+  const multipleActive = await call('p1/reports' + query, undefined, 'GET');
+  assert.match(
+    multipleActive.products.find((p) => p.name === 'Beta DEMONSTRAÇÃO')
+      .display_name,
+    / — Caixa DEMONSTRAÇÃO$/,
+  );
+  await t.db
+    .prepare(
+      'UPDATE product_variants SET product_id=? WHERE organization_id=? AND id=?',
+    )
+    .bind(variants[1].product_id, t.org, variants[1].id)
+    .run();
+
   assert.match(r.orders[0].items_text, /2× Mista: .*8 Alfa DEMONSTRAÇÃO/);
   assert.equal(
     (
