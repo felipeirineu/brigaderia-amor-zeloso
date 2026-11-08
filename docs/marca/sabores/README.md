@@ -18,7 +18,7 @@ A foto fica ligada ao produto ou à variante no cadastro, e o humano pode alter�
 | `limao.webp`       | Limão                   | Limão                             | Brigadeiro de limão finalizado com raspas.                    |
 | `caipirinha.webp`  | Caipirinha              | Caipirinha                        | Brigadeiro de limão com ampola de cachaça. **Contém álcool.** |
 
-**Renomeados (confirmado em 08/11/2026):** Casadinho passou a se chamar Prestígio e Côco passou a se chamar Beijinho. As chaves antigas `casadinho` e `coco` continuam aceitas e mostram a foto nova, mas não aparecem mais na escolha.
+**Renomeados (confirmado em 08/11/2026):** Casadinho passou a se chamar Prestígio e Coco passou a se chamar Beijinho. As chaves antigas `casadinho` e `coco` continuam aceitas e mostram a foto nova, mas não aparecem mais na escolha.
 
 Brigadeiro, Cajuzinho e Limão já existiam: o arquivo foi trocado pela foto nova com o mesmo nome, então os produtos que já usam essas fotos passam a mostrar a nova sem nenhuma ação.
 

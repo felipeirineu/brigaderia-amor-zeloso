@@ -6,8 +6,9 @@
 
 ## Histórico
 
+- **2026-11-08 (2)** — Grafia corrigida pelo responsável: **Coco**, sem acento (antes escrito "Côco" por engano). Corrigido em todo o repositório. A sugestão de foto aceita as duas grafias.
 - **2026-11-08** — Catálogo novo com 9 sabores e 3 tamanhos (Claude, a pedido do responsável):
-  - 9 fotos recortadas do catálogo em `docs/marca/sabores/` (WebP 320×320). `tradicional`, `cajuzinho` e `limao` foram substituídas pela foto nova com o mesmo nome. Novas: `colorido`, `amendoim`, `prestigio`, `beijinho`, `uva`, `caipirinha`. Casadinho → Prestígio e Côco → Beijinho foram **renomeados** (confirmado pelo responsável): as chaves `casadinho` e `coco` continuam válidas e servem a foto nova, mas só aparecem na escolha se o produto ainda estiver com elas (`photoChoices`).
+  - 9 fotos recortadas do catálogo em `docs/marca/sabores/` (WebP 320×320). `tradicional`, `cajuzinho` e `limao` foram substituídas pela foto nova com o mesmo nome. Novas: `colorido`, `amendoim`, `prestigio`, `beijinho`, `uva`, `caipirinha`. Casadinho → Prestígio e Coco → Beijinho foram **renomeados** (confirmado pelo responsável): as chaves `casadinho` e `coco` continuam válidas e servem a foto nova, mas só aparecem na escolha se o produto ainda estiver com elas (`photoChoices`).
   - `shared/flavors.ts`: lista, nomes e apelidos para a sugestão de foto (com teste em `shared/flavors.test.ts`).
   - `docs/INFORMACOES_COMERCIAIS.md`: sabores e tamanhos 15/23/30 g. **Preço e unidades por caixa de 15 g e 23 g estão a confirmar**: não invente nem crie seeds. Cada tamanho é uma variante do produto; a caixa mista já só junta sabores do mesmo peso.
   - Caipirinha contém cachaça. Quando houver campo de alérgenos/avisos, considerar o aviso de álcool (decisão do responsável).
@@ -145,10 +146,10 @@ Depois, a caixa aparece na grade como linha própria, com a composição ("8 Tra
   - Snapshot da composição no pedido, como já é feito com nome e preço.
   - Migração **aditiva** (ex.: `order_item_components`), sem alterar itens existentes.
   - Itens de sabor único continuam como estão.
-- **R11-2 — Pedido padrão e "Gerar semana"** aceitam caixas mistas (ex.: Café: 2 cx Tradicional + 1 cx mista 4 Côco/4 Limão/4 Cajuzinho). A geração copia a composição e a edição do rascunho permite "Editar sabores".
+- **R11-2 — Pedido padrão e "Gerar semana"** aceitam caixas mistas (ex.: Café: 2 cx Tradicional + 1 cx mista 4 Coco/4 Limão/4 Cajuzinho). A geração copia a composição e a edição do rascunho permite "Editar sabores".
 - **R11-3 — Produção ("Produzir hoje e amanhã")** passa a somar **unidades por sabor**: caixas de sabor único × 12 + unidades das mistas, mostrando "76 un." e, abaixo, "6 cx + 4 un.". O total do card fica em unidades e caixas.
 - **R11-4 — Textos e mensagens:**
-  - cartões de entrega, revisar, pedidos, WhatsApp, CSV e relatórios mostram "1× Mista: 4 Côco + 4 Limão + 4 Cajuzinho";
+  - cartões de entrega, revisar, pedidos, WhatsApp, CSV e relatórios mostram "1× Mista: 4 Coco + 4 Limão + 4 Cajuzinho";
   - relatórios por sabor contam as unidades das mistas no sabor certo; o ranking de sabores usa unidades.
 - **R11-5 — Custo e compras:** ficha técnica e lista de compras (P1-4/P1-5) consideram as unidades por sabor das mistas.
 - **R11-6 — Documentação:** atualizar `docs/INFORMACOES_COMERCIAIS.md` com "caixa mista permitida, mesmo preço da caixa, composição livre entre os sabores ativos, total igual às unidades por caixa". Tirar "caixa mista" das pendências.
@@ -733,7 +734,7 @@ Hoje a maioria das entregas é feita indo e voltando de Uber/99. Registrar o cus
   - Sem histórico, começa vazio. **Nunca pré-preencher 1 em todos os sabores.**
 - **R3-4 — Fotos.**
   - Usar as imagens de [`docs/marca/sabores/`](../marca/sabores/README.md), com uso autorizado.
-  - **Correspondência foto ↔ sabor definida**: os cinco sabores (Tradicional, Côco, Casadinho, Cajuzinho e Limão) têm foto. Ver a tabela do README.
+  - **Correspondência foto ↔ sabor definida**: os cinco sabores (Tradicional, Coco, Casadinho, Cajuzinho e Limão) têm foto. Ver a tabela do README.
   - A ligação imagem ↔ variante fica no cadastro de produto (PC). Sugerir automaticamente quando o nome do produto coincidir com o sabor da tabela, mas sempre editável. Nada de seed ou migração com produtos ou preços.
   - Campo opcional de imagem no produto/variante, com só as imagens do repositório nesta etapa. Upload próprio (R2/limites/custos) fica para avaliação posterior.
   - **Ícone de reserva:** círculo na cor do sabor, com a inicial e o nome, para quem não tem foto (ex.: sabores novos cadastrados no futuro).
@@ -953,13 +954,13 @@ Aposentar as planilhas de Excel e deixar a brigaderia inteira na palma da mão. 
 | Tradicional (carro-chefe) | 30 g             | 12                 | R$ 42,00 (4200 centavos) |
 | Casadinho                 | 30 g             | 12                 | R$ 42,00                 |
 | Cajuzinho                 | 30 g             | 12                 | R$ 42,00                 |
-| Côco                      | 30 g             | 12                 | R$ 42,00                 |
+| Coco                      | 30 g             | 12                 | R$ 42,00                 |
 | Limão | 30 g | 12 | R$ 42,00 |
 
 - Atualizar `docs/INFORMACOES_COMERCIAIS.md` com os três novos sabores. Cadastrar só no ambiente privado, nunca em seed, bundle público ou service worker.
 - As fotos do Instagram mostram outras coberturas. **Não cadastrar sabores a partir de fotos.** Novos sabores serão cadastrados pelo PC.
 - **Caixa mista: confirmada** (ver R11). **A confirmar:** unidade avulsa, outros tamanhos de caixa, preço diferenciado para revenda.
-- **Sugestão de modelagem:** um produto "Caixa 12 un." com preço único e **composição por sabor** nos itens do pedido (ex.: 2 caixas = 12 Tradicional + 6 Cajuzinho + 6 Côco). A validação garante que a soma das unidades seja múltiplo de 12. Se a caixa mista não for permitida, isso vira regra configurável ("um sabor por caixa"). A produção sempre soma **unidades por sabor**.
+- **Sugestão de modelagem:** um produto "Caixa 12 un." com preço único e **composição por sabor** nos itens do pedido (ex.: 2 caixas = 12 Tradicional + 6 Cajuzinho + 6 Coco). A validação garante que a soma das unidades seja múltiplo de 12. Se a caixa mista não for permitida, isso vira regra configurável ("um sabor por caixa"). A produção sempre soma **unidades por sabor**.
 
 ## 5. Identidade visual
 

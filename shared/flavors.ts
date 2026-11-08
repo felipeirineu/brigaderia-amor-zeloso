@@ -25,7 +25,7 @@ export const flavorNames: Record<FlavorPhoto, string> = {
   uva: 'Surpresa de Uva',
   limao: 'Limão',
   caipirinha: 'Caipirinha',
-  coco: 'Beijinho (antigo Côco)',
+  coco: 'Beijinho (antigo Coco)',
   casadinho: 'Prestígio (antigo Casadinho)',
 };
 /** Fotos oferecidas na escolha: o catálogo atual, sem as chaves antigas. */

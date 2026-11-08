@@ -271,7 +271,7 @@ const brl=c=>(c/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const esc=s=>String(s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
 const PRICE=4200;
 const FLAVORS=[
- {k:'tradicional',n:'Tradicional'},{k:'cajuzinho',n:'Cajuzinho'},{k:'coco',n:'Côco'},{k:'casadinho',n:'Casadinho'},{k:'limao',n:'Limão'}];
+ {k:'tradicional',n:'Tradicional'},{k:'cajuzinho',n:'Cajuzinho'},{k:'coco',n:'Coco'},{k:'casadinho',n:'Casadinho'},{k:'limao',n:'Limão'}];
 const F=k=>FLAVORS.find(f=>f.k===k);
 const img=k=>`img/${k}.webp`;
 const MIXES={mixA:{coco:4,limao:4,cajuzinho:4}};let mixSeq=0;
@@ -341,7 +341,7 @@ const units=it=>Object.values(it||{}).reduce((a,b)=>a+b,0);
 function prospectTemplates(p){const sig=`\n\n${firstName()} · Brigaderia Amor Zeloso`;
  return {'Obrigada pela visita':`Olá, ${p.contact.split(' (')[0]}! Muito obrigada por nos receber hoje na ${p.n}. Deixamos algumas amostras dos nossos brigadeiros tradicionais para vocês provarem.`+sig,
   'O que achou?':`Olá, ${p.contact.split(' (')[0]}! Tudo bem? Passando para saber o que vocês acharam das amostras da Brigaderia Amor Zeloso. Qual sabor fez mais sucesso?`+sig,
-  'Tabela de preços':`Olá, ${p.contact.split(' (')[0]}! Segue nossa tabela:\n• Caixa com 12 brigadeiros de 30 g: R$ 42,00\n• Sabores: Tradicional, Cajuzinho, Côco, Casadinho e Limão\nEntregamos toda semana no dia combinado. Posso montar um pedido de teste?`+sig}}
+  'Tabela de preços':`Olá, ${p.contact.split(' (')[0]}! Segue nossa tabela:\n• Caixa com 12 brigadeiros de 30 g: R$ 42,00\n• Sabores: Tradicional, Cajuzinho, Coco, Casadinho e Limão\nEntregamos toda semana no dia combinado. Posso montar um pedido de teste?`+sig}}
 function visitCards(){const list=PROSPECTS.filter(p=>(p.status==='A visitar'&&p.day===S.day)||(p.status==='Retornar'&&p.next===S.day));if(!list.length)return'';
  return `<p class="eyebrow" style="margin-top:4px">Visitas de apresentação</p>`+list.map(p=>{const ret=p.status==='Retornar';return `<article class="card visit">
   <div class="row" style="flex-wrap:nowrap"><span class="initials pros">${p.ini}</span><div style="min-width:0;flex:1"><h3>${esc(p.n)}</h3><div class="small muted">${svg('clock').replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px"')} ${ret?'Retornar contato':p.time} · ${esc(p.contact)}</div><div class="small" style="color:var(--gold-ink);font-weight:600;margin-top:2px">${svg('car').replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px"')} ${p.km} km · ${p.min} min de carro</div></div></div>

@@ -21,7 +21,7 @@ export async function reviewProject(t) {
   for (const [key, name] of [
     ['cajuzinho', 'Cajuzinho'],
     ['casadinho', 'Casadinho'],
-    ['coco', 'Côco'],
+    ['coco', 'Coco'],
     ['limao', 'Limão'],
     ['tradicional', 'Tradicional'],
   ]) {

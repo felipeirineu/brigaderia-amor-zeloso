@@ -19,6 +19,7 @@ describe('suggestPhoto', () => {
     expect(suggestPhoto('Caipirinha')).toBe('caipirinha');
   });
   it('trata os nomes antigos como renomeados e não inventa correspondência', () => {
+    expect(suggestPhoto('Coco')).toBe('beijinho');
     expect(suggestPhoto('Côco')).toBe('beijinho');
     expect(suggestPhoto('Casadinho')).toBe('prestigio');
     expect(catalogPhotos).toHaveLength(9);

@@ -14,7 +14,7 @@ Brigadeiro · Brigadeiro Colorido · Brigadeiro com Amendoim · Prestígio · Be
 | 23 g    | Brindes e festas de jovens e adultos | **a confirmar**    | **a confirmar**                                    |
 | 30 g    | Revendas ou brindes                  | 12                 | R$ 42,00 (confirmado para os 5 sabores anteriores) |
 
-Confirmado antes do catálogo (07/11/2026): Tradicional, Casadinho, Cajuzinho, Côco e Limão em 30 g, 12 por caixa, R$ 42,00. **Renomeados (confirmado em 08/11/2026):** Casadinho → Prestígio e Côco → Beijinho. **A confirmar:** se R$ 42,00 vale para os 9 sabores em 30 g; preço e unidades por caixa de 15 g e 23 g.
+Confirmado antes do catálogo (07/11/2026): Tradicional, Casadinho, Cajuzinho, Coco e Limão em 30 g, 12 por caixa, R$ 42,00. **Renomeados (confirmado em 08/11/2026):** Casadinho → Prestígio e Coco → Beijinho. **A confirmar:** se R$ 42,00 vale para os 9 sabores em 30 g; preço e unidades por caixa de 15 g e 23 g.
 
 O preço corresponde a uma caixa (4200 centavos), não a cada brigadeiro. Cada tamanho é uma variante do produto no cadastro privado (peso, unidades por caixa e preço). Alterações futuras preservam snapshots dos pedidos.
 
