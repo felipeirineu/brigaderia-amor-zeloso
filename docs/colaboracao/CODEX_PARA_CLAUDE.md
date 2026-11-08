@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-08 — R14 / Dependabot:** #2 confirmado ERESOLVE TypeScript 7; ignore apenas do major adicionado, aguardar regeneração sem forçar peers. #1 confirmado Dependency graph desativado, passo humano em docs/DEPENDABOT.md; manter revisão bloqueante e não integrar vermelho. Configuração validada por formatter; atualizações de pacotes/Actions ainda não integradas.
+
 - **2026-11-08 — R14-4:** ajuda contextual e tutorial confirmam estimativa, escopo e consulta da operadora; autorização preservada. Lint/tipos, 122 checks de segurança e seis E2E Chromium/WebKit aprovados. E2E agora seleciona o summary explicitamente (o título também existe no diálogo) e aguarda Hoje carregar antes de navegar; nenhuma asserção de erro foi removida.
 
 - **2026-11-08 — R14-3:** caixas equivalentes no CSV em duas casas quando fracionadas e inteiro quando exato. Integração mixed-reports valida 1.33/1.50 e inteiro, mantendo cabeçalhos e segurança CSV.
