@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-08 — R11 modelos/editor completo:** montagem/edição no pedido padrão e PC, soma/embalagem/predominante validados, quantidade de caixas separada, preview e preservação de item/preço histórico em ajuste só de quantidade. Totem aplica misturas do modelo/último pedido mantendo as seis etapas do Claude. E2E integral: 92 aprovados e um offline WebKit ignorado. Captura r14-depois-editor-misto inspecionada. Sem flags ou migração remota. Próximo R12 após checks no GitHub.
+
 - **2026-11-08 — R11 modelos/backend:** 0016 aditiva, componentes em lote, guarda de editor antigo, CAS/auditoria, geração idempotente e defaults com misturas. Integração com 66 modelos, componente/base inativos, dados incompatíveis, snapshots, disputa de versão e banco até 0015 aprovada; 127 checks de segurança, backup/restauração com FKs, financeiro, mobile, operações e listagens aprovados localmente. Editor/ensaio E2E em validação na mesma branch; nenhuma aplicação remota.
 
 - **2026-11-08 — R14 / Dependabot:** #2 confirmado ERESOLVE TypeScript 7; ignore apenas do major adicionado, aguardar regeneração sem forçar peers. #1 confirmado Dependency graph desativado, passo humano em docs/DEPENDABOT.md; manter revisão bloqueante e não integrar vermelho. Configuração validada por formatter; atualizações de pacotes/Actions ainda não integradas.
@@ -415,3 +417,10 @@ Depois da R14: modelo aditivo de componentes recorrentes e editor do PC, com pla
 ### Retorno Dependabot após publicar R14
 
 R14-1…4 e ignore publicados no main em 7f80e49, depois de CI/Segurança verdes no SHA; ambos também passaram no main. Dependabot fechou #2 e criou **#3** sem TypeScript 7, mantendo TypeScript 6. A validação do #3 passou. #1 foi atualizado pelo bot, mas ambos continuam bloqueados por “Novas dependências no PR” (Dependency graph desligado). Passos enviados ao responsável e documentados em DEPENDABOT.md; não houve merge vermelho ou alteração de configuração. A varredura do bot também relatou unknown_error em @playwright/test, sem impedir a criação do #3; o PR gerado não muda esse pacote.
+
+## Relatório — R14 e misturas recorrentes/PC (08/11)
+
+- **Produzido:** quatro acabamentos R14 em commits separados; ignore do major TypeScript, diagnóstico/guia do Dependency graph e PR #2 substituído automaticamente pelo #3. Misturas em modelos, defaults, geração semanal, editor completo e repetição no Modo simples; migração aditiva 0016 e guia de ativação humano. Editor antigo não apaga misturas; quantidade mantém identidade/preço, troca de base usa preço atual. Nenhuma alteração das flags atuais.
+- **Testes executados:** lint, formatação, tipagem, build Pages; 71 unitários; integrações de composições/modelos (66 válidos), banco até 0015, financeiro, mobile, operações, listagens; 127 checks de segurança; backup/restauração com FKs e seis testes SQL. E2E integral: 92 aprovados e um offline WebKit ignorado. Primeiro E2E novo encontrou seletor de combobox ambíguo e serialização indevida dos campos de snapshot; corrigidos com seleção pelo papel acessível e payload só com variant_id/units, mantendo testes de preservação e erro.
+- **Limitações:** 0016 não aplicada remotamente; sem ensaio físico. Models têm os limites existentes de 100 por geração e 30 linhas, JSON da geração limitado para não exceder o orçamento; nenhuma consulta por modelo/componente. Composição do modelo usa catálogo atual na geração, enquanto pedidos gerados mantêm snapshots. PRs #1/#3 sem merge até Dependency graph e todos os checks verdes; o erro externo de Workers Builds não foi tratado alterando Cloudflare.
+- **Pendências/ordem:** concluir validação/envio desta etapa → R12 → R6-5 → R6-7 → R6-8 → R7. O próximo plano detalhado será registrado antes de editar. Não há deploy manual, secret, migração remota ou mudança de Access/D1 nesta rodada.

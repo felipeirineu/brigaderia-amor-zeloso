@@ -1,3 +1,6 @@
+import { compositionValid } from '../../components/composition';
+import { CompositionEditor } from '../../components/CompositionEditor';
+import type { ItemInput } from '../../../shared/mixed';
 import { Button } from '../../components/Button';
 import { useCourierLabels } from '../field/FieldContext';
 import { MoneyField, QuantityField } from '../../components/NumericInputs';
@@ -22,12 +25,18 @@ interface Plan {
   courier_fee_cents: number;
   active: number;
   version: number;
-  items: { variant_id: string; quantity: number }[];
+  items: ItemInput[];
 }
 interface ProductOption {
   id: string;
   name: string;
-  variants: { id: string; label: string; active: number }[];
+  variants: {
+    id: string;
+    label: string;
+    active: number;
+    units_per_box: number;
+    weight_grams: number;
+  }[];
 }
 const weekDayNames = [
   'Segunda',
@@ -43,7 +52,7 @@ function monday() {
   date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
   return date.toISOString().slice(0, 10);
 }
-export function Recurring() {
+export function Recurring({ mixed = false }: { mixed?: boolean }) {
   const courierLabels = useCourierLabels();
   const plans = useRemote<Plan[]>('recurring'),
     customers = useRemote<{ id: string; name: string }[]>('customers'),
@@ -67,7 +76,9 @@ export function Recurring() {
     [courier, setCourier] = useState<Plan['courier']>('unassigned'),
     [courierName, setCourierName] = useState(''),
     [courierFee, setCourierFee] = useState('0,00'),
-    [items, setItems] = useState([{ variant_id: '', quantity: 1 }]),
+    [items, setItems] = useState<ItemInput[]>([
+      { variant_id: '', quantity: 1 },
+    ]),
     [week, setWeek] = useState(monday),
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
@@ -77,7 +88,12 @@ export function Recurring() {
     products.data?.flatMap((p) =>
       p.variants
         .filter((v) => v.active)
-        .map((v) => ({ id: v.id, name: `${p.name} — ${v.label}` })),
+        .map((v) => ({
+          id: v.id,
+          name: `${p.name} — ${v.label}`,
+          units_per_box: v.units_per_box,
+          weight_grams: v.weight_grams,
+        })),
     ) ?? [];
   function reset() {
     setEditing(null);
@@ -107,6 +123,10 @@ export function Recurring() {
   }
   function save(e: FormEvent) {
     e.preventDefault();
+    if (items.some((i) => !compositionValid(i, options))) {
+      setError('Revise a soma das unidades da caixa mista.');
+      return;
+    }
     void run(async () => {
       await api(
         `recurring${editing ? `/${editing.id}` : ''}`,
@@ -122,7 +142,12 @@ export function Recurring() {
           courier_name: courierName,
           courier_fee_cents: parsePrice(courierFee),
           notes: editing?.notes ?? '',
-          items,
+          composition_version: 1,
+          items: items.map(({ variant_id, quantity, components }) => ({
+            variant_id,
+            quantity,
+            ...(components ? { components } : {}),
+          })),
           ...(editing
             ? { version: editing.version, active: !!editing.active }
             : {}),
@@ -202,9 +227,12 @@ export function Recurring() {
                 {o.customer_name} · {dateTime(o.due_at)}
               </h3>
               <ul>
-                {o.items.map((i) => (
-                  <li key={i.variant_id}>
-                    {i.quantity} × {i.product_name} — {i.variant_label}
+                {o.items.map((i, index) => (
+                  <li key={i.id ?? index}>
+                    {i.quantity} ×{' '}
+                    {i.components?.length
+                      ? `Caixa mista (${i.components.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
+                      : `${i.product_name} — ${i.variant_label}`}
                   </li>
                 ))}
               </ul>
@@ -397,10 +425,13 @@ export function Recurring() {
               <select
                 required
                 value={item.variant_id}
+                disabled={!!item.components}
                 onChange={(e) =>
                   setItems(
                     items.map((v, j) =>
-                      j === i ? { ...v, variant_id: e.target.value } : v,
+                      j === i
+                        ? { variant_id: e.target.value, quantity: v.quantity }
+                        : v,
                     ),
                   )
                 }
@@ -413,6 +444,14 @@ export function Recurring() {
                 ))}
               </select>
             </label>
+            <CompositionEditor
+              item={item}
+              options={options}
+              enabled={mixed}
+              onChange={(value) =>
+                setItems(items.map((v, j) => (j === i ? value : v)))
+              }
+            />
             <div className="stepper">
               <Button
                 type="button"
@@ -459,10 +498,16 @@ export function Recurring() {
                 <Plus size={20} />
               </Button>
             </div>
-            {items.length > 1 && (
+            {(items.length > 1 || item.components) && (
               <Button
                 type="button"
-                onClick={() => setItems(items.filter((_, j) => j !== i))}
+                onClick={() =>
+                  setItems(
+                    items.length === 1
+                      ? [{ variant_id: '', quantity: 1 }]
+                      : items.filter((_, j) => j !== i),
+                  )
+                }
               >
                 Remover item {i + 1}
               </Button>
@@ -494,6 +539,17 @@ export function Recurring() {
             {p.customer_name} · {weekDayNames[p.weekday - 1]} · {p.time} ·{' '}
             {p.active ? 'Ativo' : 'Pausado'}
           </p>
+          <ul>
+            {p.items.map((i, index) => (
+              <li key={index}>
+                {i.quantity} ×{' '}
+                {i.components
+                  ? `Caixa mista (${i.components.map((c) => `${c.units} ${options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
+                  : (options.find((v) => v.id === i.variant_id)?.name ??
+                    'Variante indisponível')}
+              </li>
+            ))}
+          </ul>
           <div className="actions">
             <Button
               onClick={() => {
@@ -513,6 +569,7 @@ export function Recurring() {
                   p.items.map((i) => ({
                     variant_id: i.variant_id,
                     quantity: i.quantity,
+                    components: i.components,
                   })),
                 );
               }}
@@ -537,7 +594,9 @@ export function Recurring() {
                     items: p.items.map((i) => ({
                       variant_id: i.variant_id,
                       quantity: i.quantity,
+                      ...(i.components ? { components: i.components } : {}),
                     })),
+                    composition_version: 1,
                     active: !p.active,
                     version: p.version,
                   });
