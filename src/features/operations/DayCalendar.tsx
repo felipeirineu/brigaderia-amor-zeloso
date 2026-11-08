@@ -1,3 +1,4 @@
+import { scheduleDay } from '../../../shared/order-schedule';
 import { useEffect, useRef, useState } from 'react';
 import {
   CalendarDays,
@@ -17,10 +18,12 @@ function CalendarSheet({
   day,
   onSelect,
   onClose,
+  minimum = '1900-01-01',
 }: {
   day: string;
   onSelect: (day: string) => void;
   onClose: () => void;
+  minimum?: string;
 }) {
   const dialog = useRef<HTMLDialogElement>(null),
     [month, setMonth] = useState(day.slice(0, 7)),
@@ -47,7 +50,7 @@ function CalendarSheet({
         <div className="calendar-month">
           <Button
             aria-label="Mês anterior"
-            disabled={month === '1900-01'}
+            disabled={month <= minimum.slice(0, 7)}
             onClick={() => setMonth(shiftMonth(month, -1))}
           >
             <ChevronLeft aria-hidden="true" />
@@ -84,6 +87,7 @@ function CalendarSheet({
                 variant="chip"
                 aria-label={`${date}${view.data ? `, ${count ?? 0} entregas` : ', contagem indisponível'}`}
                 aria-pressed={day === date}
+                disabled={date < minimum}
                 onClick={() => onSelect(date)}
               >
                 <span>
@@ -95,11 +99,16 @@ function CalendarSheet({
           })}
         </div>
         <div className="chips">
-          <Button variant="chip" onClick={() => onSelect(localDay())}>
+          <Button
+            variant="chip"
+            disabled={localDay() < minimum}
+            onClick={() => onSelect(localDay())}
+          >
             Hoje
           </Button>
           <Button
             variant="chip"
+            disabled={shiftDay(localDay(), 1) < minimum}
             onClick={() => onSelect(shiftDay(localDay(), 1))}
           >
             Amanhã
@@ -109,7 +118,7 @@ function CalendarSheet({
           Ir para data
           <input
             type="date"
-            min="1900-01-01"
+            min={minimum}
             max="2199-12-31"
             value={manual}
             onChange={(e) => setManual(e.target.value)}
@@ -117,9 +126,7 @@ function CalendarSheet({
         </label>
         <Button
           disabled={
-            !/^\d{4}-\d{2}-\d{2}$/.test(manual) ||
-            manual < '1900-01-01' ||
-            manual > '2199-12-31'
+            !scheduleDay(manual) || manual < minimum || manual > '2199-12-31'
           }
           onClick={() => onSelect(manual)}
         >
@@ -135,9 +142,15 @@ function CalendarSheet({
 export function DayCalendar({
   day,
   onSelect,
+  minimum,
+  label,
+  pressed,
 }: {
   day: string;
   onSelect: (d: string) => void;
+  minimum?: string;
+  label?: string;
+  pressed?: boolean;
 }) {
   const [open, setOpen] = useState(false),
     trigger = useRef<HTMLButtonElement>(null);
@@ -149,20 +162,23 @@ export function DayCalendar({
     <>
       <Button
         ref={trigger}
-        variant="tonal"
+        variant={label ? 'chip' : 'tonal'}
         className="workday-calendar-trigger"
-        aria-label="Escolher dia"
+        aria-label={label ? 'Escolher data' : 'Escolher dia'}
+        aria-pressed={pressed}
         onClick={() => setOpen(true)}
       >
         <CalendarDays size={16} aria-hidden="true" />
-        {dayChip(day)}
+        {label ?? dayChip(day)}
         <ChevronDown size={16} aria-hidden="true" />
       </Button>
       {open && (
         <CalendarSheet
           day={day}
+          minimum={minimum}
           onClose={close}
           onSelect={(d) => {
+            if (!scheduleDay(d) || (minimum && d < minimum)) return;
             onSelect(d);
             close();
           }}

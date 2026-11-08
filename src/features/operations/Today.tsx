@@ -1,3 +1,5 @@
+import { useSearchParams } from 'react-router-dom';
+import { scheduleDay } from '../../../shared/order-schedule';
 import { RouteInfo } from '../field/RouteInfo';
 import { PendingConfirmations } from './PendingConfirmations';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
@@ -12,7 +14,7 @@ import { useCourierLabels, useField, SiteAvatar } from '../field/FieldContext';
 import { TodayReminders } from '../p1/Reminders';
 import { QuickReceipt, type ReceiptResult } from '../finance/QuickReceipt';
 import { FinanceSummary } from '../finance/Finance';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import {
   Clock3,
@@ -85,14 +87,35 @@ export function Today({
     const timer = setTimeout(() => setCombinedUndo(null), UNDO_SECONDS * 1000);
     return () => clearTimeout(timer);
   }, [combinedUndo]);
-  const [day, setDay] = useState(localDay),
+  const [search, setSearch] = useSearchParams();
+  const requestedDay = scheduleDay(search.get('day'));
+  const [dayValue, setDayValue] = useState(localDay),
     [now, setNow] = useState(() => new Date());
+  const day = requestedDay ?? dayValue;
+  const setDay = useCallback(
+    (nextDay: string) => {
+      setDayValue(nextDay);
+      if (requestedDay) {
+        const next = new URLSearchParams(search);
+        next.set('day', nextDay);
+        setSearch(next, { replace: true });
+      }
+    },
+    [requestedDay, search, setSearch],
+  );
   useEffect(() => {
-    const reset = () => setDay(localDay());
+    const reset = () => {
+      setDayValue(localDay());
+      if (search.has('day')) {
+        const next = new URLSearchParams(search);
+        next.delete('day');
+        setSearch(next, { replace: true });
+      }
+    };
     const wake = () => {
       if (document.visibilityState === 'visible') {
         setNow(new Date());
-        reset();
+        setDay(requestedDay ?? localDay());
       }
     };
     window.addEventListener('reset-workday', reset);
@@ -104,7 +127,7 @@ export function Today({
         new CustomEvent('workday-change', { detail: localDay() }),
       );
     };
-  }, []);
+  }, [requestedDay, search, setSearch, setDay]);
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('workday-change', { detail: day }));
   }, [day]);

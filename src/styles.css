@@ -2598,3 +2598,18 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .tone-4 {
   background: #a8c06a !important;
 }
+
+.custom-time-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.management .custom-time-chip input {
+  width: 7.5rem;
+  min-height: 44px;
+}

@@ -1,3 +1,9 @@
+import { DayCalendar } from '../operations/DayCalendar';
+import {
+  deliveryDayLabel,
+  scheduleDay,
+  windowStart,
+} from '../../../shared/order-schedule';
 import { fortalezaDay, shiftDay } from '../../../shared/workday';
 import { createPortal } from 'react-dom';
 import { sortFlavors, readFlavorOrder, type Popularity } from './flavorOrder';
@@ -300,7 +306,17 @@ export function Totem({ financial = false }: { financial?: boolean }) {
       setFee(d.profile.courier_fee_cents);
       setTerms(d.profile.terms);
       const valid = d.plans.filter((p) => p.valid);
-      if (valid.length === 1) plan(valid[0]);
+      const nearest = [...valid].sort(
+        (a, b) =>
+          nextWeeklyTime(a.weekday, a.time).localeCompare(
+            nextWeeklyTime(b.weekday, b.time),
+          ) || a.id.localeCompare(b.id),
+      )[0];
+      if (nearest) plan(nearest);
+      else {
+        const hour = windowStart(d.profile.delivery_window);
+        if (hour) setDue(fortalezaDay() + 'T' + hour);
+      }
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -349,6 +365,13 @@ export function Totem({ financial = false }: { financial?: boolean }) {
       ).sort((a, b) => b.length - a.length)[0] ?? [],
     capacity = mixOptions[0]?.units_per_box ?? 12,
     hasItems = selected.length > 0 || mixes.length > 0,
+    boxCount =
+      selected.reduce((n, v) => n + counts[v.id], 0) +
+      mixes.reduce((n, m) => n + m.qty, 0),
+    validDue =
+      !!scheduleDay(due.slice(0, 10)) &&
+      due.slice(0, 10) >= fortalezaDay() &&
+      /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(due.slice(11, 16)),
     total =
       selected.reduce((n, v) => n + counts[v.id] * price(v), 0) +
       mixes.reduce((n, m) => n + m.qty * mixPrice(m), 0),
@@ -403,7 +426,8 @@ export function Totem({ financial = false }: { financial?: boolean }) {
         invalid.reportValidity();
         throw Error('Confira o campo indicado antes de confirmar.');
       }
-      if (!due) throw Error('Escolha data e hora para confirmar.');
+      if (!validDue)
+        throw Error('Escolha uma data a partir de hoje e um horário válido.');
       const data = {
           customer_id: customer.id,
           ...(editing ? { version: editing.version } : {}),
@@ -489,6 +513,10 @@ export function Totem({ financial = false }: { financial?: boolean }) {
         <p>
           {customer?.name} · {money(total)}
         </p>
+        <p>
+          {deliveryDayLabel(due.slice(0, 10))} · {due.slice(11, 16)} ·{' '}
+          {boxCount} {boxCount === 1 ? 'caixa' : 'caixas'}
+        </p>
         {addressNotice && <p role="status">{addressNotice}</p>}
         <div className="stacked-actions">
           <Button
@@ -498,8 +526,9 @@ export function Totem({ financial = false }: { financial?: boolean }) {
           >
             Avisar no WhatsApp
           </Button>
-          <Button className="button" to="/gestao">
-            Ver no Hoje
+          <Button className="button" to={`/gestao?day=${due.slice(0, 10)}`}>
+            Ver na agenda de{' '}
+            {deliveryDayLabel(due.slice(0, 10)).toLocaleLowerCase('pt-BR')}
           </Button>
           <Button
             className="button"
@@ -652,7 +681,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                     <Button
                       className="flavor-add"
                       disabled={busy || count >= 10000}
-                      aria-label={`${title}, ${count ? count + ' embalagens, ' : ''}adicionar`}
+                      aria-label={`${title}, ${count ? count + (count === 1 ? ' embalagem, ' : ' embalagens, ') : ''}adicionar`}
                       onClick={() =>
                         setCounts({
                           ...counts,
@@ -948,9 +977,6 @@ export function Totem({ financial = false }: { financial?: boolean }) {
             {[
               ['Hoje', fortalezaDay()],
               ['Amanhã', shiftDay(fortalezaDay(), 1)],
-              ...(planDue
-                ? [['Dia do pedido padrão', planDue.slice(0, 10)]]
-                : []),
             ].map(([label, day]) => (
               <Button
                 key={label}
@@ -960,19 +986,63 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                   setDue(
                     day +
                       'T' +
-                      (label === 'Dia do pedido padrão'
-                        ? planDue.slice(11, 16)
-                        : due.slice(11, 16) ||
-                          new Date(Date.now() - 10800000)
-                            .toISOString()
-                            .slice(11, 16)),
+                      (due.slice(11, 16) ||
+                        new Date(Date.now() - 10800000)
+                          .toISOString()
+                          .slice(11, 16)),
                   )
                 }
               >
                 {label}
               </Button>
             ))}
+            <DayCalendar
+              day={
+                due.slice(0, 10) >= fortalezaDay()
+                  ? due.slice(0, 10)
+                  : fortalezaDay()
+              }
+              minimum={fortalezaDay()}
+              label={
+                due &&
+                ![fortalezaDay(), shiftDay(fortalezaDay(), 1)].includes(
+                  due.slice(0, 10),
+                )
+                  ? deliveryDayLabel(due.slice(0, 10))
+                  : 'Escolher data'
+              }
+              pressed={
+                !!due &&
+                ![fortalezaDay(), shiftDay(fortalezaDay(), 1)].includes(
+                  due.slice(0, 10),
+                )
+              }
+              onSelect={(day) =>
+                setDue(
+                  day +
+                    'T' +
+                    (due.slice(11, 16) ||
+                      new Date(Date.now() - 10800000)
+                        .toISOString()
+                        .slice(11, 16)),
+                )
+              }
+            />
           </div>
+          {planDue && (
+            <p className="muted">
+              Sugestão do pedido padrão:{' '}
+              {deliveryDayLabel(planDue.slice(0, 10))} · {planDue.slice(11, 16)}
+              . Você pode alterar.
+            </p>
+          )}
+          {!planDue &&
+            defaults &&
+            windowStart(defaults.profile.delivery_window) && (
+              <p className="muted">
+                Horário sugerido pela janela do cliente. Você pode alterar.
+              </p>
+            )}
           <h3 className="order-section-label">Horário</h3>
           <div className="chips" role="group" aria-label="Atalhos de horário">
             {['09:00', '14:00', '18:00'].map((h) => (
@@ -988,15 +1058,36 @@ export function Totem({ financial = false }: { financial?: boolean }) {
               </Button>
             ))}
           </div>
-          <label>
-            Outro dia ou horário
+          <label className="custom-time-chip">
+            Outro horário
             <input
-              type="datetime-local"
-              value={due}
+              type="time"
+              value={due.slice(11, 16)}
               required
-              onChange={(e) => setDue(e.target.value)}
+              onChange={(e) =>
+                setDue(
+                  (due.slice(0, 10) || fortalezaDay()) + 'T' + e.target.value,
+                )
+              }
             />
           </label>
+          <details>
+            <summary>Digitar data e horário</summary>
+            <label>
+              Outro dia ou horário
+              <input
+                type="datetime-local"
+                min={fortalezaDay() + 'T00:00'}
+                value={due}
+                onChange={(e) => setDue(e.target.value)}
+              />
+            </label>
+          </details>
+          {due && !validDue && (
+            <p role="alert">
+              Escolha uma data a partir de hoje e um horário válido.
+            </p>
+          )}
         </>
       )}
       {step === DELIVERY && (
@@ -1322,7 +1413,7 @@ export function Totem({ financial = false }: { financial?: boolean }) {
           {step < REVIEW ? (
             <Button
               className="primary-action"
-              disabled={busy || !hasItems || (step === WHEN && !due)}
+              disabled={busy || !hasItems || (step === WHEN && !validDue)}
               onClick={() => setStep(step + 1)}
               variant="primary"
               loading={busy}
