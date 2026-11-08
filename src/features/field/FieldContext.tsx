@@ -1,6 +1,6 @@
 import type { RouteEstimate } from '../../../shared/routing';
 /* eslint-disable react-refresh/only-export-components -- Contexto privado compartilhado. */
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import { useRemote, Failure } from '../operations/common';
 import type { Place } from '../../../shared/field';
 export interface FieldData {
@@ -12,7 +12,15 @@ export interface FieldData {
   role: string;
   sites: { id: string; data: Place; version: number; has_photo: number }[];
   company: { data: Place; version: number };
-  staff: { id: string; role: string; display_name: string; version: number }[];
+  profile_photos_ready?: boolean;
+  staff: {
+    id: string;
+    role: string;
+    display_name: string;
+    version: number;
+    has_photo?: number;
+    photo_version?: number;
+  }[];
 }
 const Context = createContext<{
   data: FieldData | null;
@@ -56,6 +64,74 @@ export function SiteAvatar({ id, name }: { id: string; name: string }) {
         .slice(0, 2)
         .map((w) => w[0])
         .join('')}
+    </span>
+  );
+}
+export function StaffAvatar({
+  id,
+  name,
+  className = '',
+}: {
+  id: string;
+  name?: string;
+  className?: string;
+}) {
+  const field = useField(),
+    staff = field?.data?.staff.find((s) => s.id === id);
+  const [failed, setFailed] = useState('');
+  const src = `/api/field/profile-photos/${id}?v=${staff?.photo_version ?? 0}`;
+  const label = name ?? staff?.display_name ?? 'Equipe';
+  return staff?.has_photo && failed !== src ? (
+    <img
+      className={'staff-avatar ' + className}
+      src={src}
+      onError={() => setFailed(src)}
+      width={32}
+      height={32}
+      alt=""
+    />
+  ) : (
+    <span
+      className={'initial-avatar staff-avatar ' + className}
+      aria-hidden="true"
+    >
+      {label
+        .trim()
+        .split(/\s+/)
+        .slice(0, 2)
+        .map((w) => w[0])
+        .join('')
+        .toLocaleUpperCase('pt-BR')}
+    </span>
+  );
+}
+export function CourierAvatars({ courier }: { courier: string }) {
+  const field = useField();
+  const staff =
+    field?.data?.staff.filter(
+      (s) =>
+        s.role ===
+        (courier === 'owner'
+          ? 'owner'
+          : courier === 'partner'
+            ? 'operator'
+            : ''),
+    ) ?? [];
+  return (
+    <span className="courier-avatars" aria-hidden="true">
+      {staff.map((s) => (
+        <StaffAvatar key={s.id} id={s.id} />
+      ))}
+    </span>
+  );
+}
+export function StaffIdentity({ id }: { id: string }) {
+  const field = useField(),
+    staff = field?.data?.staff.find((s) => s.id === id);
+  return (
+    <span className="staff-identity">
+      <StaffAvatar id={id} />
+      {staff?.display_name ?? 'Pessoa da equipe'}
     </span>
   );
 }

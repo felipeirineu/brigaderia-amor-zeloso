@@ -100,3 +100,7 @@ Após os módulos anteriores, siga [R6 — Rotas](FASE_R6_ROTAS.md). A migraçã
 ## Caixa mista em desenvolvimento
 
 A restrição temporária da entrega inicial foi superada pela ativação registrada em 07/11. Não desligar `MIXED_BOXES_ENABLED` sem aprovação. `schema_mixed_model_ready` indica presença do modelo, não a conclusão de todos os consumidores. Veja [situação da R11](FASE_R11_CAIXA_MISTA.md). O runner continua aplicando somente as pendentes.
+
+## Continuação de 08/11
+
+Gestão e montagem mista já estão ativadas; não reverter flags. Modelos mistos usam a migração aditiva 0016 ([guia R11](FASE_R11_CAIXA_MISTA.md)); fotos de perfil usam 0017 ([guia R6-5](FASE_R6_FOTOS.md)). R12 não exige migração ([agendamento](FASE_R12_AGENDAMENTO.md)). O workflow manual aplica somente pendências após backup/restauração e pré-checagem; nenhuma aplicação remota foi executada pelo agente.

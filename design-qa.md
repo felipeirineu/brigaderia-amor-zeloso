@@ -55,3 +55,7 @@ Achado de regressão visual: no Chromium, última fileira de sabores terminava ~
 ## R14 / R11 recorrentes / R12 — 08/11
 
 Capturas de fixtures inspecionadas: `r14-depois-editor-misto.png` mostra composição completa, base/preço correspondente e quantidade de caixas; `r12-depois-calendario-pedido.png` mostra mês, contagem somente onde há entrega, seleção e passado desabilitado. Campos/controles mantêm o estilo existente e toque mínimo. E2E integral com dependências atualizadas: 98 aprovados e um offline WebKit ignorado; não equivale a ensaio em aparelho físico.
+
+## R6-5 — 08/11
+
+Captura r6-depois-foto-perfil com imagem sintética de cor uniforme: prévia circular, controles em português com Button, estado de salvamento e remoção. Menu reutiliza estilo e disclosure compartilhados; iniciais permanecem como alternativa. E2E integral: 101 aprovados e um offline WebKit ignorado. Arquivo sintético valida câmera/galeria e recorte; câmera física e permissão do aparelho não foram ensaiadas.

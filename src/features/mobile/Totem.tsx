@@ -8,7 +8,12 @@ import { fortalezaDay, shiftDay } from '../../../shared/workday';
 import { createPortal } from 'react-dom';
 import { sortFlavors, readFlavorOrder, type Popularity } from './flavorOrder';
 import { Button } from '../../components/Button';
-import { useField, useCourierLabels, SiteAvatar } from '../field/FieldContext';
+import {
+  useField,
+  useCourierLabels,
+  SiteAvatar,
+  CourierAvatars,
+} from '../field/FieldContext';
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, money, nextWeeklyTime } from '../api';
@@ -1167,17 +1172,13 @@ export function Totem({ financial = false }: { financial?: boolean }) {
                   aria-pressed={courier === c}
                   onClick={() => setCourier(c)}
                 >
-                  {c !== 'unassigned' && (
+                  {c === 'owner' || c === 'partner' ? (
+                    <CourierAvatars courier={c} />
+                  ) : c === 'courier' ? (
                     <span className="courier-initials" aria-hidden="true">
-                      {courierLabels[c]
-                        .trim()
-                        .split(/\s+/)
-                        .slice(0, 2)
-                        .map((w) => w[0])
-                        .join('')
-                        .toLocaleUpperCase('pt-BR')}
+                      M
                     </span>
-                  )}
+                  ) : null}
                   {courierLabels[c]}
                 </Button>
               ),

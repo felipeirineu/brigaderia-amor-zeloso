@@ -2,7 +2,7 @@ import { compositionValid } from '../../components/composition';
 import { CompositionEditor } from '../../components/CompositionEditor';
 import type { ItemInput } from '../../../shared/mixed';
 import { Button } from '../../components/Button';
-import { useCourierLabels } from '../field/FieldContext';
+import { CourierAvatars, useCourierLabels } from '../field/FieldContext';
 import { MoneyField, QuantityField } from '../../components/NumericInputs';
 import { useRef, useState, type FormEvent } from 'react';
 
@@ -400,6 +400,7 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
             <option value="courier">Motoboy</option>
           </select>
         </label>
+        <CourierAvatars courier={courier} />
         {courier === 'courier' && (
           <label>
             Nome do motoboy

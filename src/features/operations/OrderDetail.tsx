@@ -3,7 +3,12 @@ import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { Transport } from '../field/Transport';
 import { TravelSheet } from '../field/TravelSheet';
-import { useCourierLabels, useField } from '../field/FieldContext';
+import {
+  StaffIdentity,
+  CourierAvatars,
+  useCourierLabels,
+  useField,
+} from '../field/FieldContext';
 import { MoneyField } from '../../components/NumericInputs';
 import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -283,6 +288,7 @@ export function OrderDetail({
                         aria-pressed={delivery.courier === v}
                         onClick={() => setDelivery({ ...delivery, courier: v })}
                       >
+                        <CourierAvatars courier={v} />
                         {v === 'unassigned'
                           ? 'A definir'
                           : v === 'owner'
@@ -463,7 +469,7 @@ export function OrderDetail({
                     {statusLabels[event.from_status]} →{' '}
                     {statusLabels[event.to_status]} ·{' '}
                     {dateTime(new Date(event.created_at * 1000).toISOString())}·
-                    Usuário {event.user_id.slice(0, 8)}
+                    <StaffIdentity id={event.user_id} />
                     {event.reason && ` · ${event.reason}`}
                     {event.undo_of && ' · Compensação registrada'}
                   </li>

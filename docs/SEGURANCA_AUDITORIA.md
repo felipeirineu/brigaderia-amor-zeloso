@@ -168,3 +168,7 @@ A matriz `test:security` passou de 117 para **122 verificações**, incluindo es
 ### Continuação de 08/11 — modelos mistos
 
 Rotas existentes de modelos/defaults/geração reutilizadas, sem nova API ou ampliação de papéis. Matriz ampliada para **127 verificações**: modelo misto exige sessão, outra organização recebe 404 em GET/PUT e operadora consulta/pausa preservando composição. Migração aditiva 0016, FKs por organização, CAS e auditoria mantidos. Backup/restauração local inclui as novas tabelas. PRs de dependências continuam bloqueados pelo Dependency graph; ver DEPENDABOT.md, sem contornar o check.
+
+### R6-5 — fotos de perfil (08/11)
+
+Matriz ampliada para **139 verificações**, com GET/PUT/DELETE das fotos: 401 sem sessão, 404 entre organizações, 403 para alteração de outra pessoa/remoção por operadora e 200 para remoção administrativa. No-store/nosniff, CAS/idempotência e validação WebP/dimensões/tamanho; fotos não entram no contexto JSON, logs ou assets. Migração aditiva 0017 e restauração de BLOB com FK testadas localmente. Sem alteração de flags ou configuração remota; guia FASE_R6_FOTOS.md.

@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-08 — R6-5 UI:** câmera/galeria com prévia circular e confirmação, recorte central WebP, avatar no cabeçalho/entregadores/históricos, iniciais quando ausente/erro e remoção administrativa. 75 unitários, 139 checks de segurança, integração/backup e E2E integral: **101 aprovados, um ignorado**. Captura r6-depois-foto-perfil inspecionada; guia FASE_R6_FOTOS. Sem ensaio físico nem 0017 remota. Envio por branch/checks antes de main; próximo R6-7.
+
 - **2026-11-08 — R6-5 backend:** foto privada por membership, CAS/idempotência/auditoria, own PUT/DELETE e owner DELETE da equipe, validação WebP quadrado ≤256/40KB. 139 checks de segurança e integração de assinatura/tamanho/dimensões/corpo >32KB, papéis/tenant, concorrência e banco até 0016 aprovados. Leitura normaliza BLOB D1 para bytes HTTP (também na fachada); backup/restauração inclui foto. Migração 0017 somente local; UI/ensaio final na mesma branch.
 
 - **2026-11-08 — Dependabot concluído:** responsável ativou Dependency graph; reexecução dos checks bloqueados passou. #1 (Actions, 878b1c9) e #3 (npm sem TypeScript 7, a1f8aef) integrados no main pelos SHAs validados, sem merge vermelho. #2 fechado/substituído pelo bot. Aplicação rebaseada sobre as atualizações, sem conflitos, com npm ci limpo e regressão completa aprovada.
@@ -449,3 +451,10 @@ Migração aditiva 0017 cria `profile_photos` (BLOB ≤40 KB, versão, vínculo 
 - **Testes executados:** npm ci, lint/formato/tipos/build, **73 unitários**, P1, composições/modelos, **127 verificações de segurança**, backup/restauração e **98 E2E aprovados / um ignorado** (offline WebKit preexistente). Calendário com contagem, passado bloqueado, janela explícita, data inválida, confirmação e agenda corretas em Chromium móvel/desktop e WebKit. Captura inspecionada. Validação remota acompanha o SHA da branch antes de avançar main.
 - **Limitações:** nenhum ensaio físico, migração/deploy manual ou alteração Cloudflare. Modelos mistos dependem de 0016 aplicada pelo responsável; R12 não exige migração nova. Updater do bot relatou unknown_error de @playwright/test, mas não atualizou esse pacote nem impediu #3/CI; sem bypass.
 - **Pendências:** R6-5 (plano acima) → R6-7 → R6-8 → R7. Fotos, Web Push e visitas ainda não são declarados entregues. Não ativar recursos pendentes por mudança de flags.
+
+## Relatório — R6-5
+
+- **Produzido:** fotos privadas por usuário/organização, preview/cancelar antes de enviar, ≤256 px/40 KB, avatar do cabeçalho, escolhas de entregador e históricos de status/recebimento. Usuário altera só sua foto, administrador remove outra; CAS, idempotência, auditoria, no-store/nosniff e fallback às iniciais. D1 BLOB convertido explicitamente para bytes HTTP, corrigindo também leitura da fachada. Migração 0017 aditiva e guia humano.
+- **Testes executados:** lint/formato/tipos/build, **75 unitários**, campo/fotos (corpo >32 KB, formato/dimensões/tamanho/metadados, corrida de versão, repetição, own/owner/tenant, banco até0016), **139 checks de segurança**, backup/restauração com as fotos/FKs. E2E integral: **101 aprovados / um ignorado**, Chromium móvel/desktop e WebKit. Prévia PNG retangular convertida a WebP quadrado, cancelar sem gravar, salvar/ler, remoção administrativa e retorno às iniciais. Captura sintética inspecionada.
+- **Limitações:** recorte central automático com prévia, sem editor livre de enquadramento. Não houve ensaio de câmera física ou publicação/migração remota. A opção aparece só após 0017; flags atuais permanecem preservadas. Nenhuma foto real em testes, logs ou Git.
+- **Pendências:** R6-7 (Web Push/ICS com alarme, setup e validação física) → R6-8 → R7. Modelos/R12 já no main em fbbdb45, depois de CI/Segurança verdes; validação no main também acompanhada.

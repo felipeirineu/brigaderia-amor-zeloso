@@ -1,3 +1,4 @@
+import { StaffIdentity } from '../field/FieldContext';
 import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
 import { CreditTools } from './CreditTools';
@@ -505,7 +506,7 @@ export function Account() {
                 </h3>
                 <p>
                   {civilDate(e.paid_on)} · {paymentMethods[e.method]} · registro{' '}
-                  {dateTime(e.created_at)} · usuário {e.user_id.slice(0, 8)}
+                  {dateTime(e.created_at)} · <StaffIdentity id={e.user_id} />
                 </p>
                 {e.reason && <p>{e.reason}</p>}
                 {e.can_reverse &&

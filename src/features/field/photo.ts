@@ -1,5 +1,5 @@
 /** Canvas remove metadados/EXIF; nenhuma foto original é enviada. */
-export async function compressPhoto(file: File) {
+export async function compressPhoto(file: File, square = false) {
   if (!file.type.startsWith('image/') || file.size > 20 * 1024 * 1024)
     throw Error('Escolha uma imagem de até 20 MB.');
   const url = URL.createObjectURL(file),
@@ -10,13 +10,25 @@ export async function compressPhoto(file: File) {
       image.onerror = () => reject(Error('Não foi possível ler a imagem.'));
       image.src = url;
     });
-    const scale = Math.min(1, 256 / Math.max(image.width, image.height)),
-      canvas = document.createElement('canvas');
-    canvas.width = Math.max(1, Math.round(image.width * scale));
-    canvas.height = Math.max(1, Math.round(image.height * scale));
+    const width = square ? Math.min(image.width, image.height) : image.width;
+    const height = square ? width : image.height;
+    const scale = Math.min(1, 256 / Math.max(width, height));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(width * scale));
+    canvas.height = Math.max(1, Math.round(height * scale));
     canvas
       .getContext('2d')!
-      .drawImage(image, 0, 0, canvas.width, canvas.height);
+      .drawImage(
+        image,
+        square ? (image.width - width) / 2 : 0,
+        square ? (image.height - height) / 2 : 0,
+        width,
+        height,
+        0,
+        0,
+        canvas.width,
+        canvas.height,
+      );
     let blob: Blob | null = null;
     for (const quality of [0.8, 0.6, 0.4]) {
       blob = await new Promise((r) => canvas.toBlob(r, 'image/webp', quality));

@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   CircleUserRound,
+  Camera,
   CircleHelp,
   Compass,
   LogOut,
@@ -10,7 +11,7 @@ import {
   Settings,
 } from 'lucide-react';
 import { fortalezaDay } from '../../../shared/workday';
-import { useField } from '../field/FieldContext';
+import { StaffAvatar, useField } from '../field/FieldContext';
 const titles: Record<string, string> = {
   '': 'Hoje',
   pedidos: 'Pedidos',
@@ -99,7 +100,9 @@ export function CompactHeader({
           aria-label={'Abrir menu de ' + name}
           onClick={() => menu.current?.showModal()}
         >
-          {initials ? (
+          {own?.has_photo ? (
+            <StaffAvatar id={own.id} />
+          ) : initials ? (
             <span className="profile-initials" aria-hidden="true">
               {initials}
             </span>
@@ -135,6 +138,17 @@ export function CompactHeader({
           >
             Nome de exibição e preferências
           </Button>
+          {field?.data?.profile_photos_ready && (
+            <Button
+              to="/gestao/preferencias#foto-perfil"
+              className="profile-menu-item"
+              icon={<Camera size={20} aria-hidden="true" />}
+              variant="ghost"
+              onClick={() => menu.current?.close()}
+            >
+              Trocar foto
+            </Button>
+          )}
           {operations && online && (
             <Button
               className="profile-menu-item"

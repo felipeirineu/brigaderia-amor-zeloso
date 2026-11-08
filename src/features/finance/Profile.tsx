@@ -1,5 +1,5 @@
 import { Button } from '../../components/Button';
-import { useCourierLabels } from '../field/FieldContext';
+import { CourierAvatars, useCourierLabels } from '../field/FieldContext';
 import { MoneyField } from '../../components/NumericInputs';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -139,6 +139,7 @@ export function CustomerProfile() {
                 <option value="courier">Motoboy</option>
               </select>
             </label>
+            <CourierAvatars courier={value.courier} />
             {value.courier === 'courier' && (
               <label>
                 Nome do motoboy
