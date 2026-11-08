@@ -19,7 +19,7 @@ import { Preferences } from './mobile/Preferences';
 import { Totem } from './mobile/Totem';
 import { useOrderMode } from './mobile/useOrderMode';
 import {
-  flavorPhotos,
+  photoChoices,
   flavorNames,
   suggestPhoto,
   photoURL,
@@ -706,7 +706,7 @@ function Products({ mobile = false }: { mobile?: boolean }) {
               >
                 Sem foto
               </Button>
-              {flavorPhotos.map((key) => (
+              {photoChoices(photo).map((key) => (
                 <Button
                   type="button"
                   key={key}
@@ -763,7 +763,7 @@ function Products({ mobile = false }: { mobile?: boolean }) {
                   }
                 >
                   <option value="">Usar foto do produto</option>
-                  {flavorPhotos.map((k) => (
+                  {photoChoices(v.photo_key).map((k) => (
                     <option key={k} value={k}>
                       {flavorNames[k]}
                     </option>

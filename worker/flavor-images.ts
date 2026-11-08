@@ -7,8 +7,6 @@ import cajuzinho from '../docs/marca/sabores/cajuzinho.webp';
 import uva from '../docs/marca/sabores/uva.webp';
 import limao from '../docs/marca/sabores/limao.webp';
 import caipirinha from '../docs/marca/sabores/caipirinha.webp';
-import coco from '../docs/marca/sabores/coco.webp';
-import casadinho from '../docs/marca/sabores/casadinho.webp';
 import type { FlavorPhoto } from '../shared/flavors';
 export const flavorImages: Record<FlavorPhoto, Uint8Array> = {
   tradicional,
@@ -20,6 +18,7 @@ export const flavorImages: Record<FlavorPhoto, Uint8Array> = {
   uva,
   limao,
   caipirinha,
-  coco,
-  casadinho,
+  // Sabores renomeados: a chave antiga serve a foto nova.
+  coco: beijinho,
+  casadinho: prestigio,
 };

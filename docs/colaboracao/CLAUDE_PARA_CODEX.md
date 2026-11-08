@@ -7,7 +7,7 @@
 ## Histórico
 
 - **2026-11-08** — Catálogo novo com 9 sabores e 3 tamanhos (Claude, a pedido do responsável):
-  - 9 fotos recortadas do catálogo em `docs/marca/sabores/` (WebP 320×320). `tradicional`, `cajuzinho` e `limao` foram substituídas pela foto nova com o mesmo nome. Novas: `colorido`, `amendoim`, `prestigio`, `beijinho`, `uva`, `caipirinha`. `coco` e `casadinho` continuam válidas como fotos antigas.
+  - 9 fotos recortadas do catálogo em `docs/marca/sabores/` (WebP 320×320). `tradicional`, `cajuzinho` e `limao` foram substituídas pela foto nova com o mesmo nome. Novas: `colorido`, `amendoim`, `prestigio`, `beijinho`, `uva`, `caipirinha`. Casadinho → Prestígio e Côco → Beijinho foram **renomeados** (confirmado pelo responsável): as chaves `casadinho` e `coco` continuam válidas e servem a foto nova, mas só aparecem na escolha se o produto ainda estiver com elas (`photoChoices`).
   - `shared/flavors.ts`: lista, nomes e apelidos para a sugestão de foto (com teste em `shared/flavors.test.ts`).
   - `docs/INFORMACOES_COMERCIAIS.md`: sabores e tamanhos 15/23/30 g. **Preço e unidades por caixa de 15 g e 23 g estão a confirmar**: não invente nem crie seeds. Cada tamanho é uma variante do produto; a caixa mista já só junta sabores do mesmo peso.
   - Caipirinha contém cachaça. Quando houver campo de alérgenos/avisos, considerar o aviso de álcool (decisão do responsável).

@@ -17,8 +17,8 @@ A foto fica ligada ao produto ou à variante no cadastro, e o humano pode alter�
 | `uva.webp`         | Surpresa de Uva         | Surpresa de Uva, Uva              | Brigadeiro branco com uma uva fresca no centro.               |
 | `limao.webp`       | Limão                   | Limão                             | Brigadeiro de limão finalizado com raspas.                    |
 | `caipirinha.webp`  | Caipirinha              | Caipirinha                        | Brigadeiro de limão com ampola de cachaça. **Contém álcool.** |
-| `coco.webp`        | Côco (foto antiga)      | Côco                              | Foto anterior, mantida para produtos já cadastrados.          |
-| `casadinho.webp`   | Casadinho (foto antiga) | Casadinho                         | Foto anterior, mantida para produtos já cadastrados.          |
+
+**Renomeados (confirmado em 08/11/2026):** Casadinho passou a se chamar Prestígio e Côco passou a se chamar Beijinho. As chaves antigas `casadinho` e `coco` continuam aceitas e mostram a foto nova, mas não aparecem mais na escolha.
 
 Brigadeiro, Cajuzinho e Limão já existiam: o arquivo foi trocado pela foto nova com o mesmo nome, então os produtos que já usam essas fotos passam a mostrar a nova sem nenhuma ação.
 

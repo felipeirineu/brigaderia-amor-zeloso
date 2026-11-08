@@ -1,5 +1,6 @@
-// Fotos privadas dos sabores (catálogo de 08/11/2026). `coco` e `casadinho`
-// são fotos antigas, mantidas porque produtos já cadastrados podem usá-las.
+// Fotos privadas dos sabores (catálogo de 08/11/2026). `coco` e `casadinho` são
+// as chaves antigas de Beijinho e Prestígio (sabores renomeados): continuam
+// válidas para produtos já cadastrados e mostram a foto nova.
 export const flavorPhotos = [
   'tradicional',
   'colorido',
@@ -24,9 +25,18 @@ export const flavorNames: Record<FlavorPhoto, string> = {
   uva: 'Surpresa de Uva',
   limao: 'Limão',
   caipirinha: 'Caipirinha',
-  coco: 'Côco (foto antiga)',
-  casadinho: 'Casadinho (foto antiga)',
+  coco: 'Beijinho (antigo Côco)',
+  casadinho: 'Prestígio (antigo Casadinho)',
 };
+/** Fotos oferecidas na escolha: o catálogo atual, sem as chaves antigas. */
+export const catalogPhotos: FlavorPhoto[] = flavorPhotos.filter(
+  (k) => k !== 'coco' && k !== 'casadinho',
+);
+/** Mostra a chave antiga só se o produto ainda estiver com ela. */
+export const photoChoices = (current?: string | null): FlavorPhoto[] =>
+  current === 'coco' || current === 'casadinho'
+    ? [...catalogPhotos, current]
+    : catalogPhotos;
 const aliases: Record<string, FlavorPhoto> = {
   brigadeiro: 'tradicional',
   tradicional: 'tradicional',
@@ -43,8 +53,8 @@ const aliases: Record<string, FlavorPhoto> = {
   'surpresa de uva': 'uva',
   limao: 'limao',
   caipirinha: 'caipirinha',
-  coco: 'coco',
-  casadinho: 'casadinho',
+  coco: 'beijinho',
+  casadinho: 'prestigio',
 };
 export function suggestPhoto(name: string): FlavorPhoto | null {
   const plain = name
