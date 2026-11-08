@@ -119,6 +119,8 @@ Limitação: validação em navegador simulado, aparelho físico pendente.
 
 ## Histórico
 
+- **2026-11-08 — R14-3:** caixas equivalentes no CSV em duas casas quando fracionadas e inteiro quando exato. Integração mixed-reports valida 1.33/1.50 e inteiro, mantendo cabeçalhos e segurança CSV.
+
 - **2026-11-08 — R14-2:** ranking omite partes zeradas e mantém quantidades positivas. Seis E2E de relatórios/custos aprovados em Chromium móvel/desktop e WebKit móvel; build Pages aprovado. Sem mudança de cálculo.
 
 - **2026-11-08 — R14-1:** nome por snapshot com rótulo apenas quando necessário; metadados de variantes consultados em lote, sem N+1. Aplicado a relatório/CSV de itens, custo e pendências de compras. Tipagem e integrações mixed-reports/mixed-costs aprovadas, incluindo produto compartilhado e variante inativa. R14-2/3/4 e Dependabot na sequência.

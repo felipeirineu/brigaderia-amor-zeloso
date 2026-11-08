@@ -94,6 +94,9 @@ try {
   ).text();
   assert.match(csv, /Unidades em caixas mistas/);
   assert.match(csv, /Vendas atribuídas/);
+  assert.ok(csv.includes(';"1.33";'));
+  assert.ok(csv.includes(';"1.50";'));
+  assert.ok(!csv.includes('1.333333'));
   const orderCSV = await (
     await t.request('p1/reports.csv' + query + '&kind=orders', {
       cookie: owner,
@@ -174,7 +177,7 @@ const old = await runtime({
   p1Enabled: true,
 });
 try {
-  const { call, makeOrder } = await (
+  const { call, makeOrder, owner } = await (
     await import('../helpers/demo-project.mjs')
   ).demoProject(old);
   const id = await makeOrder(new Date().toISOString(), 1);
@@ -184,6 +187,11 @@ try {
   }
   const report = await call('p1/reports', undefined, 'GET');
   assert.equal(report.products[0].units, 2);
+  const wholeCSV = await (
+    await old.request('p1/reports.csv?kind=products', { cookie: owner })
+  ).text();
+  assert.ok(wholeCSV.includes(';"1";'));
+  assert.ok(!wholeCSV.includes(';"1.00";'));
 } finally {
   await old.dispose();
 }

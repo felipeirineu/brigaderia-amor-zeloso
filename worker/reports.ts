@@ -292,7 +292,9 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         p.boxes,
         p.units,
         p.mixed_units,
-        p.units / p.units_per_box,
+        p.units % p.units_per_box === 0
+          ? p.units / p.units_per_box
+          : (p.units / p.units_per_box).toFixed(2),
         p.total_cents,
       ]),
     },
