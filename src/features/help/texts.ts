@@ -47,6 +47,10 @@ export const helpTexts = {
     title: 'Ficha técnica',
     text: 'Registra ingredientes e rendimento para estimar custos. Com P1 ativado, cadastre insumos e custos informados, sem inferir receitas a partir de fotos. Custo ausente deixa a estimativa pendente.',
   },
+  push: {
+    title: 'Avisos no celular',
+    text: 'Ative somente se quiser receber lembretes neste aparelho. No iPhone, é preciso iOS 16.4 ou mais recente e o app instalado na Tela de Início; no Android/Chrome pode funcionar no navegador. A permissão só é pedida ao ativar ou escolher um aviso. O título e horário aparecem na notificação, que pode atrasar alguns minutos. Se não funcionar, use Adicionar ao calendário do celular e confira o alarme na importação. Sair da conta revoga os avisos desta sessão; um aviso já despachado pode chegar.',
+  },
   orderCost: {
     title: 'Custo estimado do pedido',
     text: 'Administrador e operador podem consultar esta estimativa. Usa fichas e preços de insumos atuais, com arredondamento por unidade e composição de cada caixa. Não é custo histórico nem lucro apurado; entrega e despesas fora da ficha não entram. Sem ficha ou custo conhecido, fica indisponível. Não cria despesas nem movimenta estoque.',

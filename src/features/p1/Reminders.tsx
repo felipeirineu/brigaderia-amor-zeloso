@@ -1,3 +1,5 @@
+import { ReminderAlerts, ReminderDelivery } from './ReminderAlerts';
+import { emptyAlert, editAlert, alertPayload } from './reminder-form';
 import { Circle, Plus } from 'lucide-react';
 import { Toast } from '../../components/Toast';
 import { relativeDateTime } from '../../../shared/workday';
@@ -16,6 +18,8 @@ interface Reminder {
   done: number;
   active: number;
   version: number;
+  alert_at?: string | null;
+  recipient_ids?: string[];
 }
 const payload = (r: Reminder, done: boolean, active = true) => ({
   title: r.title,
@@ -87,6 +91,7 @@ export function TodayReminders({ day }: { day: string }) {
             <h3>{r.title}</h3>
             <p>{relativeDateTime(r.due_at)}</p>
             {r.notes && <p>{r.notes}</p>}
+            <ReminderDelivery reminder={r} />
           </div>
         </article>
       ))}
@@ -102,6 +107,7 @@ export function Reminders() {
     [editing, setEditing] = useState<Reminder | null>(null),
     [title, setTitle] = useState(''),
     [notes, setNotes] = useState(''),
+    [alert, setAlert] = useState(emptyAlert),
     [due, setDue] = useState(''),
     [customer, setCustomer] = useState(''),
     [error, setError] = useState(''),
@@ -113,6 +119,7 @@ export function Reminders() {
     setEditing(null);
     setTitle('');
     setNotes('');
+    setAlert(emptyAlert());
     setDue('');
     setCustomer('');
   }
@@ -157,6 +164,7 @@ export function Reminders() {
               notes,
               due_at: new Date(due + ':00-03:00').toISOString(),
               customer_id: customer || null,
+              ...alertPayload(alert, new Date(due + ':00-03:00').toISOString()),
               ...(editing
                 ? { version: editing.version, done: !!editing.done }
                 : {}),
@@ -185,6 +193,7 @@ export function Reminders() {
             onChange={(e) => setDue(e.target.value)}
           />
         </label>
+        <ReminderAlerts value={alert} onChange={setAlert} />
         <label>
           Cliente do lembrete (opcional)
           <select
@@ -215,8 +224,8 @@ export function Reminders() {
         </Button>
       </form>
       <p>
-        São lembretes da gestão e da agenda. Nenhum push ou mensagem é enviado
-        automaticamente.
+        Avisos são enviados apenas aos responsáveis que ativaram este aparelho.
+        Nenhuma mensagem é enviada a clientes.
       </p>
       {view.data?.map((r) => (
         <article className="panel" key={r.id}>
@@ -226,10 +235,12 @@ export function Reminders() {
           <p>
             {dateTime(r.due_at)} · {r.notes}
           </p>
+          <ReminderDelivery reminder={r} />
           <div className="actions">
             <Button
               onClick={() => {
                 setEditing(r);
+                setAlert(editAlert(r.due_at, r.alert_at, r.recipient_ids));
                 setTitle(r.title);
                 setNotes(r.notes);
                 setDue(

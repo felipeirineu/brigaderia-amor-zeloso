@@ -279,12 +279,19 @@ export function HelpCenter({
               </li>
               <li>
                 Para calendário do aparelho, exporte ICS e importe somente no
-                calendário autorizado. Não há push do aplicativo.
+                calendário autorizado. Confira e salve o alarme no aparelho.
               </li>
               <li>
-                Em Lembretes, registre título/prazo e cliente opcional.
-                Pendentes vencidos e do dia aparecem no Hoje; conclua quando
-                realizado.
+                Em Lembretes, registre título/prazo e cliente opcional. Escolha
+                o aviso e os responsáveis pelos nomes de perfil. Pendentes
+                vencidos e do dia aparecem no Hoje; conclua quando realizado.
+              </li>
+              <li>
+                Ative avisos em Perfil → Preferências e envie um aviso de teste.
+                No iPhone, use iOS 16.4+ e o app instalado na Tela de Início. Se
+                não receber, use Adicionar ao calendário do celular no lembrete.
+                Avisos podem atrasar; após editar, substitua também o evento
+                importado.
               </li>
             </ol>
             <Button to="/gestao/agenda" variant="ghost">

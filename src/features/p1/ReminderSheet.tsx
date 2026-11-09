@@ -1,3 +1,5 @@
+import { ReminderAlerts } from './ReminderAlerts';
+import { emptyAlert, alertPayload } from './reminder-form';
 import {
   DayShortcuts,
   TimeShortcuts,
@@ -21,6 +23,7 @@ export function ReminderSheet({
     request = useRef({ body: '', key: crypto.randomUUID() });
   const [title, setTitle] = useState(''),
     [notes, setNotes] = useState(''),
+    [alert, setAlert] = useState(emptyAlert),
     [due, setDue] = useState(
       () =>
         day + 'T' + new Date(Date.now() - 10800000).toISOString().slice(11, 16),
@@ -44,6 +47,7 @@ export function ReminderSheet({
         notes,
         due_at: new Date(due + ':00-03:00').toISOString(),
         customer_id: null,
+        ...alertPayload(alert, new Date(due + ':00-03:00').toISOString()),
       };
       const body = JSON.stringify(data);
       if (request.current.body !== body)
@@ -105,6 +109,7 @@ export function ReminderSheet({
                 onChange={(e) => setDue(e.target.value)}
               />
             </label>
+            <ReminderAlerts value={alert} onChange={setAlert} />
             <label>
               Notas do lembrete
               <textarea

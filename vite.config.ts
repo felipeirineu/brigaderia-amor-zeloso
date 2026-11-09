@@ -44,6 +44,7 @@ export default defineConfig({
       },
       workbox: {
         cleanupOutdatedCaches: true,
+        importScripts: ['/push-worker.js'],
         globPatterns: ['**/*.{js,css,html,png,webp,ico,woff2}'],
         navigateFallback: '/index.html',
         // Rotas reservadas da Cloudflare, incluindo callback/logout do Access,

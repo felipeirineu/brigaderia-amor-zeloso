@@ -1,3 +1,4 @@
+import { reconcilePushSession, unsubscribeLocalPush } from './p1/push-device';
 import { compositionValid } from '../components/composition';
 import { CompositionEditor } from '../components/CompositionEditor';
 import type { ComponentInput } from '../../shared/mixed';
@@ -1472,7 +1473,10 @@ export function Management() {
     const check = () => {
       api<Session>('session')
         .then((s) => {
-          if (active) setSession(s);
+          if (active) {
+            setSession(s);
+            if (s.p1) void reconcilePushSession().catch(() => {});
+          }
         })
         .catch((e) => {
           if (active) {
@@ -1510,6 +1514,10 @@ export function Management() {
   async function logout() {
     try {
       await api('auth/logout', 'POST', {});
+      await Promise.race([
+        unsubscribeLocalPush(),
+        new Promise((resolve) => setTimeout(resolve, 1000)),
+      ]);
       setSession(null);
       navigate('/login');
       window.location.assign('/cdn-cgi/access/logout');
@@ -1649,7 +1657,7 @@ export function Management() {
             {session.mobile && (
               <Route
                 path="preferencias"
-                element={<Preferences role={session.role} />}
+                element={<Preferences role={session.role} p1={session.p1} />}
               />
             )}
             {session.mobile && (
