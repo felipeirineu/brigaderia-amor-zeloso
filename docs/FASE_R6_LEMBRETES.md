@@ -10,7 +10,7 @@ No iPhone é necessário **iOS 16.4+ e app instalado na Tela de Início**. Andro
 
 ## Ativação manual, em passos curtos
 
-Este código não ativou push, cron, migração ou secrets na Cloudflare. Não é preciso mudar as flags existentes; o catálogo continua desligado. Pages não executa Cron Trigger: usa-se um Worker agendador separado, no mesmo plano Free/conta/banco, sem domínio público ou serviço pago. Só prossiga se CI e Segurança do main estiverem verdes.
+Este código não ativou push, cron, migração ou secrets na Cloudflare. Não é preciso mudar as flags existentes; o catálogo continua desligado. Pages não executa Cron Trigger: usa-se um Worker agendador separado, no mesmo plano Free/conta/banco, sem rota pública de API ou serviço pago. Só prossiga se CI e Segurança do main estiverem verdes.
 
 1. **Backup e pré-checagem.** Siga [ATIVACAO.md](ATIVACAO.md) para guardar e conferir a restauração do backup privado. GitHub → Actions → **Homologação D1 (manual)** → **Run workflow** → main → **PRE_CHECAGEM**. Esperado: pendências até `0018_reminder_push.sql`, nenhuma violação de FK. Se houver erro, parar; não executar SQL avulso ou mudar flags.
 2. **Migrações.** Nesse workflow, após conferir o backup e a confirmação exigida, escolher **APLICAR_PENDENTES**. Ele aplica a sequência pendente, incluindo 0016/0017 antes de 0018 quando necessário. Esperado: nenhuma pendência, `foreign_key_violations: 0` e `schema_push_ready: true`. Se falhar, voltar a PRE_CHECAGEM, preservar backup e interromper a ativação. Não reaplicar arquivos antigos manualmente.

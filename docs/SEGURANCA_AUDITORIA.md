@@ -172,3 +172,9 @@ Rotas existentes de modelos/defaults/geração reutilizadas, sem nova API ou amp
 ### R6-5 — fotos de perfil (08/11)
 
 Matriz ampliada para **139 verificações**, com GET/PUT/DELETE das fotos: 401 sem sessão, 404 entre organizações, 403 para alteração de outra pessoa/remoção por operadora e 200 para remoção administrativa. No-store/nosniff, CAS/idempotência e validação WebP/dimensões/tamanho; fotos não entram no contexto JSON, logs ou assets. Migração aditiva 0017 e restauração de BLOB com FK testadas localmente. Sem alteração de flags ou configuração remota; guia FASE_R6_FOTOS.md.
+
+### R6-7 — Lembretes e Web Push
+
+Matriz ampliada para **153 verificações**, incluindo estado/inscrição/revogação/teste de aparelhos e `.ics` privado por lembrete. Sem sessão 401, IDs de aparelho/lembrete de outra organização 404; aparelhos também isolados por usuário, inclusive para administrador. Não há função nova exclusiva de owner na API push. Endpoint capturado por outra pessoa/organização recebe conflito genérico, sem revelar dono ou assinatura. Respostas privadas no-store; nenhuma chave privada no bundle, backup ou JSON de estado.
+
+Criptografia AES128GCM/VAPID testada com receptor independente; somente provedores HTTPS explícitos e redirecionamento manual sem seguir Location. Claim atômico/idempotência evita repetição em cron concorrente/repetido; erros de rede/5xx e claims abandonados são incertos, sem retry automático. Logout revoga a sessão e suas assinaturas. Banco até 0017 e ausência de VAPID mantêm lembretes/calendário disponíveis e envio desligado. Backup restaura metadados com FKs, exclui assinaturas/fila/ledger e sessões. Ativação e ensaios físicos são manuais, conforme FASE_R6_LEMBRETES.md; sem alteração remota nesta entrega.

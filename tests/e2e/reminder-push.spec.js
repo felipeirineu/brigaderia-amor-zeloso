@@ -116,10 +116,17 @@ test('R6-7 aviso só por escolha humana, calendário privado, teste e revogaçã
     if (
       process.env.R6_PUSH_CAPTURE === '1' &&
       info.project.name === 'webkit-mobile'
-    )
+    ) {
+      await sheet.screenshot({
+        path: 'docs/colaboracao/capturas/r6-depois-lembrete-destinatarios.png',
+      });
+      await sheet.evaluate((el) => {
+        el.scrollTop = 0;
+      });
       await sheet.screenshot({
         path: 'docs/colaboracao/capturas/r6-depois-lembrete-aviso.png',
       });
+    }
     await sheet
       .getByRole('button', { name: 'Salvar lembrete', exact: true })
       .click();
@@ -167,6 +174,21 @@ test('R6-7 aviso só por escolha humana, calendário privado, teste e revogaçã
     expect(
       (await call('p1/push', undefined, 'GET')).subscriptions,
     ).toHaveLength(0); // Sessão de fixture e navegador são do mesmo usuário.
+    await p.evaluate(() =>
+      Object.defineProperty(window.Notification, 'permission', {
+        value: 'denied',
+      }),
+    );
+    await settings
+      .getByRole('button', {
+        name: 'Ativar avisos neste aparelho',
+        exact: true,
+      })
+      .click();
+    await expect(settings.getByRole('alert')).toContainText(
+      'Permissão de avisos não concedida',
+    );
+    expect(await p.evaluate(() => window.__pushRequests)).toBe(1);
   } finally {
     await c.close();
     await t.dispose();

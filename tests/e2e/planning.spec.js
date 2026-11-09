@@ -31,7 +31,11 @@ test('agenda privada, ICS e lembrete visível/concluído no Hoje', async ({
     await page
       .getByRole('button', { name: 'Salvar lembrete', exact: true })
       .click();
-    await expect(page.getByRole('status')).toContainText('Lembrete salvo');
+    await expect(
+      page
+        .getByRole('status')
+        .filter({ hasText: 'Lembrete salvo com histórico.' }),
+    ).toBeVisible();
     await page.goto(t.url + '/gestao/agenda');
     await page.getByLabel('Data de referência').fill('2030-01-07');
     await expect(
