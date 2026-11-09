@@ -1,0 +1,15 @@
+// EXEMPLO: copiar para .local/, preencher a conta/banco e revisar antes de publicar manualmente.
+// Não é usado pelo build Pages. Nenhum segredo deve ser escrito neste arquivo.
+{
+  "name": "amor-zeloso-lembretes",
+  "main": "../worker/push-scheduler.ts",
+  "compatibility_date": "2026-10-30",
+  "triggers": { "crons": ["*/5 * * * *"] },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "PREENCHER_BANCO",
+      "database_id": "PREENCHER_ID",
+    },
+  ],
+}

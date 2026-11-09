@@ -16,6 +16,13 @@ try {
   const { call, customer, owner, operator, outside, makeOrder, variant } =
     await demoProject(t);
   const order = await makeOrder();
+  const reminderUser = (await call('session', undefined, 'GET')).user_id;
+  await call('p1/reminders', {
+    title: 'Lembrete DEMONSTRAÇÃO backup',
+    due_at: '2030-01-07T13:00:00Z',
+    alert_at: '2030-01-07T12:45:00Z',
+    recipient_ids: [reminderUser],
+  });
   await t.db
     .prepare(
       'INSERT INTO order_item_components(organization_id,item_id,variant_id,units,product_name,variant_label,weight_grams,units_per_box) SELECT organization_id,id,variant_id,units_per_box,product_name,variant_label,weight_grams,units_per_box FROM order_items WHERE organization_id=? AND order_id=?',
@@ -165,6 +172,10 @@ print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check'
   assert.equal(restored.counts.recurring_mixed_items, 1);
   assert.equal(restored.counts.recurring_mixed_components, 1);
   assert.equal(restored.counts.sessions, 0);
+  assert.equal(restored.counts.reminder_alerts, 1);
+  assert.equal(restored.counts.reminder_recipients, 1);
+  for (const table of ['push_subscriptions', 'push_jobs', 'push_requests'])
+    assert.equal(restored.counts[table], 0);
   assert.equal(restored.counts.login_attempts, 0);
   assert.equal(restored.organizations, 1);
   assert.equal(restored.photo, photo);

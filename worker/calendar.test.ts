@@ -32,3 +32,25 @@ it('folding limita bytes sem partir acentos UTF-8 e mantém UID estável', () =>
   expect(toICS([e])).toContain('UID:demo-id@amor-zeloso.local');
   expect(toICS([e])).toContain('DTSTART:20300101T130000Z');
 });
+
+it('lembrete exporta instante UTC e alarme absoluto, sem alarme quando concluído', async () => {
+  const { reminderICS } = await import('./calendar');
+  const reminder = {
+    id: 'DEMONSTRACAO',
+    title: 'Ação;\\\r\nEND:VEVENT',
+    due_at: '2030-01-01T10:00:00-03:00',
+    version: 3,
+    done: 0,
+  };
+  const file = reminderICS(reminder, '2030-01-01T09:45:00-03:00');
+  expect(file).toContain('DTSTART:20300101T130000Z');
+  expect(file).toContain('TRIGGER;VALUE=DATE-TIME:20300101T124500Z');
+  expect(file).toContain('SEQUENCE:3');
+  expect(file.match(/\r\nEND:VEVENT/g)).toHaveLength(1);
+  const cancelled = reminderICS(
+    { ...reminder, done: 1 },
+    '2030-01-01T09:45:00-03:00',
+  );
+  expect(cancelled).toContain('STATUS:CANCELLED');
+  expect(cancelled).not.toContain('VALARM');
+});

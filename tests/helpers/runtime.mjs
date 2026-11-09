@@ -8,6 +8,9 @@ import { resolve, extname } from 'node:path';
 
 export async function runtime({
   browserHTTP = false,
+  entryPoint = 'worker/pages.ts',
+  vapid,
+  pushProvider,
   migrationLimit = Infinity,
   operationsEnabled = true,
   financeEnabled = false,
@@ -29,7 +32,7 @@ export async function runtime({
     use: 'sig',
   };
   const result = await build({
-    entryPoints: ['worker/pages.ts'],
+    entryPoints: [entryPoint],
     bundle: true,
     loader: { '.webp': 'binary' },
     format: 'esm',
@@ -55,6 +58,13 @@ export async function runtime({
         MOBILE_ENABLED: mobileEnabled ? 'true' : 'false',
         MIXED_BOXES_ENABLED: mixedEnabled ? 'true' : 'false',
         FIELD_ENABLED: fieldEnabled ? 'true' : 'false',
+        ...(vapid
+          ? {
+              VAPID_PUBLIC_KEY: vapid.publicKey,
+              VAPID_PRIVATE_KEY: vapid.privateKey,
+              VAPID_SUBJECT: vapid.subject,
+            }
+          : {}),
         ...(routingProvider
           ? { ROUTING_PROVIDER: 'ors', ORS_API_KEY: 'demonstracao-route-key' }
           : {}),
@@ -62,23 +72,31 @@ export async function runtime({
       outboundService: async (req) =>
         new URL(req.url).href === `${issuer}/cdn-cgi/access/certs`
           ? Response.json({ keys: [jwk] })
-          : routingProvider &&
-              new URL(req.url).hostname === 'api.openrouteservice.org'
-            ? routingProvider(req)
-            : placesProvider && new URL(req.url).hostname === 'photon.komoot.io'
-              ? Response.json({
-                  features: [
-                    {
-                      geometry: { coordinates: [0, 0] },
-                      properties: {
-                        name: 'Local DEMONSTRAÇÃO',
-                        street: 'Endereço DEMONSTRAÇÃO',
-                        district: 'Bairro DEMONSTRAÇÃO',
+          : pushProvider &&
+              [
+                'fcm.googleapis.com',
+                'web.push.apple.com',
+                'updates.push.services.mozilla.com',
+              ].includes(new URL(req.url).hostname)
+            ? pushProvider(req)
+            : routingProvider &&
+                new URL(req.url).hostname === 'api.openrouteservice.org'
+              ? routingProvider(req)
+              : placesProvider &&
+                  new URL(req.url).hostname === 'photon.komoot.io'
+                ? Response.json({
+                    features: [
+                      {
+                        geometry: { coordinates: [0, 0] },
+                        properties: {
+                          name: 'Local DEMONSTRAÇÃO',
+                          street: 'Endereço DEMONSTRAÇÃO',
+                          district: 'Bairro DEMONSTRAÇÃO',
+                        },
                       },
-                    },
-                  ],
-                })
-              : new Response('Network forbidden in tests', { status: 403 }),
+                    ],
+                  })
+                : new Response('Network forbidden in tests', { status: 403 }),
       serviceBindings: {
         ASSETS: async (req) => {
           const path = decodeURIComponent(new URL(req.url).pathname);
@@ -255,6 +273,12 @@ export async function runtime({
     return response.headers.get('Set-Cookie').split(';')[0];
   }
   return {
+    scheduled: async (options = {}) =>
+      (await mf.getWorker()).scheduled({
+        scheduledTime: Date.now(),
+        cron: '*/5 * * * *',
+        ...options,
+      }),
     mf,
     db,
     org,

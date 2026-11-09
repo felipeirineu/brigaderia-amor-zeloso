@@ -174,7 +174,15 @@ export async function backup(db: D1Database, a: Actor) {
         columns.some(
           (c) => c.table_name === n && c.name === 'organization_id',
         ) &&
-        !['sessions', 'place_cache', 'route_cache', 'route_jobs'].includes(n),
+        ![
+          'sessions',
+          'place_cache',
+          'route_cache',
+          'route_jobs',
+          'push_subscriptions',
+          'push_jobs',
+          'push_requests',
+        ].includes(n),
     ),
     userRefs = foreign
       .filter((f) => business.includes(f.table_name) && f.parent === 'users')

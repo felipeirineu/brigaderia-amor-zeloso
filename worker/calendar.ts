@@ -12,7 +12,7 @@ export interface CalendarEvent {
   kind: 'delivery' | 'production' | 'closing' | 'due' | 'reminder';
   href: string;
 }
-const escapeICS = (s: string) =>
+export const escapeICS = (s: string) =>
   s
     .replace(/\\/g, '\\\\')
     .replace(/\r\n|\r|\n/g, '\\n')
@@ -30,6 +30,49 @@ export function foldICS(line: string) {
   }
   lines.push(current);
   return lines.join('\r\n');
+}
+export function reminderICS(
+  reminder: {
+    id: string;
+    title: string;
+    due_at: string;
+    version: number;
+    done: number;
+  },
+  alertAt: string | null,
+) {
+  const stamp = (s: string) =>
+    new Date(s)
+      .toISOString()
+      .replace(/[-:]/g, '')
+      .replace(/\.\d{3}Z$/, 'Z');
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Amor Zeloso//Gestao//PT-BR',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'BEGIN:VEVENT',
+    'UID:' + escapeICS(reminder.id + '@amor-zeloso.local'),
+    'DTSTAMP:' + stamp(new Date().toISOString()),
+    'SEQUENCE:' + reminder.version,
+    'DTSTART:' + stamp(reminder.due_at),
+    'SUMMARY:' + escapeICS(reminder.title),
+    'TRANSP:TRANSPARENT',
+    ...(reminder.done ? ['STATUS:CANCELLED'] : []),
+    ...(!reminder.done && alertAt
+      ? [
+          'BEGIN:VALARM',
+          'ACTION:DISPLAY',
+          'DESCRIPTION:' + escapeICS(reminder.title),
+          'TRIGGER;VALUE=DATE-TIME:' + stamp(alertAt),
+          'END:VALARM',
+        ]
+      : []),
+    'END:VEVENT',
+    'END:VCALENDAR',
+  ];
+  return lines.map(foldICS).join('\r\n') + '\r\n';
 }
 export function toICS(events: CalendarEvent[]) {
   const lines = [

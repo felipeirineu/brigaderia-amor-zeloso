@@ -43,12 +43,15 @@ export async function p1Mutation(
       | 'company_places'
       | 'display_profiles'
       | 'profile_photos'
+      | 'push_subscriptions'
+      | 'push_jobs'
       | 'displacements'
       | 'inventory_balances';
     id: string;
     action: string;
   }>,
   maxBody = 32768,
+  requestsTable: 'p1_requests' | 'push_requests' = 'p1_requests',
 ) {
   const raw = await body(req, z.unknown(), maxBody),
     key = req.headers.get('Idempotency-Key');
@@ -65,7 +68,7 @@ export async function p1Mutation(
     ),
     repeated = await db
       .prepare(
-        'SELECT request_hash,response FROM p1_requests WHERE organization_id=? AND request_key=?',
+        `SELECT request_hash,response FROM ${requestsTable} WHERE organization_id=? AND request_key=?`,
       )
       .bind(org, key)
       .first<{ request_hash: string; response: string }>();
@@ -84,7 +87,7 @@ export async function p1Mutation(
     ...plan.rest(guard, args),
     db
       .prepare(
-        `INSERT INTO p1_requests(organization_id,request_key,request_hash,response) SELECT ?,?,?,? WHERE ${guard}`,
+        `INSERT INTO ${requestsTable}(organization_id,request_key,request_hash,response) SELECT ?,?,?,? WHERE ${guard}`,
       )
       .bind(org, key, fingerprint, JSON.stringify(plan.response), ...args),
     db

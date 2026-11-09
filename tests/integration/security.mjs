@@ -1,4 +1,5 @@
 import sharp from 'sharp';
+import { pushKeys, receiver } from '../helpers/push-project.mjs';
 // Matriz de segurança da API. Fixtures fictícias em D1 efêmero; nada remoto.
 // Cobre: rotas sem sessão, sessão/JWT forjados, proteção de gravação,
 // isolamento entre organizações (IDOR), papéis e catálogo desligado.
@@ -7,6 +8,7 @@ import { runtime } from '../helpers/runtime.mjs';
 import { demoProject } from '../helpers/demo-project.mjs';
 
 const t = await runtime({
+  vapid: await pushKeys(),
   financeEnabled: true,
   p1Enabled: true,
   toolsEnabled: true,
@@ -62,6 +64,7 @@ try {
     'p1/recipes',
     'p1/order-costs/' + order,
     'p1/reminders',
+    'p1/push',
     'p1/reports',
     'p1/reports.csv',
     'p1/shopping',
@@ -415,6 +418,61 @@ try {
       })
     ).status === 200,
     'administrador remove foto da equipe',
+  );
+  const reminder = await call('p1/reminders', {
+    title: 'Lembrete DEMONSTRAÇÃO segurança',
+    due_at: '2030-01-07T13:00:00Z',
+  });
+  const subscription = (await receiver()).subscription;
+  const subscriptionPath = 'p1/push/subscriptions';
+  const subscribed = await call(subscriptionPath, { subscription });
+  for (const [path, method, data] of [
+    [subscriptionPath, 'POST', { subscription }],
+    [subscriptionPath + '/' + subscribed.id, 'DELETE', { version: 1 }],
+    [subscriptionPath + '/' + subscribed.id + '/test', 'POST', {}],
+    ['p1/reminders/' + reminder.id + '/calendar.ics', 'GET'],
+  ]) {
+    const r = await t.request(path, { method, data });
+    ok(r.status === 401, `${method} ${path} exige sessão: ${r.status}`);
+    if (path !== subscriptionPath) {
+      for (const cookie of [
+        outside,
+        ...(path.startsWith(subscriptionPath) ? [operator] : []),
+      ]) {
+        const r = await t.request(path, {
+          method,
+          data,
+          cookie,
+          key: crypto.randomUUID(),
+        });
+        ok(r.status === 404, `${method} ${path} isolado: ${r.status}`);
+      }
+    }
+  }
+  ok(
+    (
+      await t.request(subscriptionPath, {
+        method: 'POST',
+        data: { subscription },
+        cookie: outside,
+        key: crypto.randomUUID(),
+      })
+    ).status === 409,
+    'outra organização não captura aparelho',
+  );
+  ok(
+    (await t.request('p1/push', { cookie: outside })).status === 200 &&
+      (await (await t.request('p1/push', { cookie: outside })).json())
+        .subscriptions.length === 0,
+    'estado de aparelhos isolado',
+  );
+  ok(
+    (
+      await t.request('p1/reminders/' + reminder.id + '/calendar.ics', {
+        cookie: operator,
+      })
+    ).status === 200,
+    'equipe autorizada exporta calendário privado',
   );
   console.log(
     `OK segurança: ${checks} verificações (sessão, JWT, CSRF, IDOR, papéis, catálogo, cabeçalhos).`,

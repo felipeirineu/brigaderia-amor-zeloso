@@ -3,6 +3,9 @@ import { z } from 'zod';
 
 export interface Env {
   DB?: D1Database;
+  VAPID_SUBJECT?: string;
+  VAPID_PUBLIC_KEY?: string;
+  VAPID_PRIVATE_KEY?: string;
   OPERATIONS_ENABLED?: string;
   FINANCE_ENABLED?: string;
   P1_ENABLED?: string;

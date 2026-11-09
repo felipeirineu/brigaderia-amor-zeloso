@@ -1,3 +1,4 @@
+import { pushSchema } from './push-config';
 import { afterPlaceWrite } from './routing';
 import { field } from './field';
 import { flavorImages } from './flavor-images';
@@ -94,10 +95,31 @@ export default {
         });
       if (req.method !== 'GET') writeGuard(req);
       if (pathname === '/api/auth/logout' && req.method === 'POST') {
-        await env
-          .DB!.prepare('DELETE FROM sessions WHERE token_hash=?')
-          .bind(user.token_hash)
-          .run();
+        const db = env.DB!;
+        await db.batch([
+          ...((await pushSchema(db))
+            ? [
+                db
+                  .prepare(
+                    "UPDATE push_subscriptions SET active=0,subscription='{}',version=version+1 WHERE organization_id=? AND user_id=? AND session_hash=?",
+                  )
+                  .bind(user.organization_id, user.user_id, user.token_hash),
+                db
+                  .prepare(
+                    "UPDATE push_jobs SET state='cancelled' WHERE organization_id=? AND state='pending' AND subscription_id IN(SELECT id FROM push_subscriptions WHERE organization_id=? AND user_id=? AND session_hash=?)",
+                  )
+                  .bind(
+                    user.organization_id,
+                    user.organization_id,
+                    user.user_id,
+                    user.token_hash,
+                  ),
+              ]
+            : []),
+          db
+            .prepare('DELETE FROM sessions WHERE token_hash=?')
+            .bind(user.token_hash),
+        ]);
         return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie('', 0) });
       }
       if (pathname.startsWith('/api/field/'))

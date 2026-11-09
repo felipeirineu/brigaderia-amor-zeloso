@@ -59,6 +59,11 @@ const tables = [
   'recurring_mixed_items',
   'recurring_mixed_components',
   'profile_photos',
+  'reminder_alerts',
+  'reminder_recipients',
+  'push_subscriptions',
+  'push_jobs',
+  'push_requests',
 ];
 export function inspect(
   database,
@@ -156,6 +161,13 @@ export function inspect(
     schema_p1_ready: p1,
     schema_mobile_ready: mobile,
     schema_field_ready: field,
+    schema_push_ready: [
+      'reminder_alerts',
+      'reminder_recipients',
+      'push_subscriptions',
+      'push_jobs',
+      'push_requests',
+    ].every((n) => names.has(n)),
     schema_profile_photos_ready: names.has('profile_photos'),
     schema_mixed_model_ready: names.has('order_item_components'),
     schema_recurring_mixed_ready:
