@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-09** — R15 ganhou 5a (interruptor do owner "Limitar sabores por kit") e 5b (embalagem do kit como insumo no custo), a partir de pedido do responsável e da planilha do Tiago. Os dados reais da planilha (clientes e custos) **não** vão para o repositório: o responsável importa pelo app. A planilha lista embalagens de 1, 4, 5 e 6 doces; possíveis kits de lembrancinha estão **a confirmar** e não devem ser modelados por suposição.
 - **2026-11-08 (3)** — Tabela de kits recebida e **R15** aberta (kits 12/25/50/100 em 15/23/30 g, limite de 3 ou 5 sabores, clientes de festa e brinde). Ver seção **R15**. Feito pelo Claude: aviso "Contém álcool" (`shared/alcohol.ts`), que reconhece a foto `caipirinha` ou as palavras cachaça/caipirinha/licor/álcool no nome ou na descrição. Aparece na grade do Novo pedido, na montagem da caixa, no Revisar e no WhatsApp ("(contém álcool)").
 - **2026-11-08 (2)** — Grafia corrigida pelo responsável: **Coco**, sem acento (antes escrito "Côco" por engano). Corrigido em todo o repositório. A sugestão de foto aceita as duas grafias.
 - **2026-11-08** — Catálogo novo com 9 sabores e 3 tamanhos (Claude, a pedido do responsável):
@@ -92,6 +93,8 @@ Hoje o preço e a capacidade vêm de uma variante de um produto-sabor. Com 9 sab
 2. **Sabor** = produto com nome, descrição, foto e ativo. O peso médio do sabor vem do tamanho do kit, e não do sabor.
 3. **Item do pedido** = kit + quantidade de kits iguais + composição `{sabor, unidades}`. A soma é igual à quantidade do kit, o número de sabores fica dentro do limite e todos os sabores estão ativos. Kit de um sabor é um item com um componente. O preço vem do kit, como snapshot.
 4. **Compatibilidade:** pedidos, recorrências, relatórios, custos e backup antigos (variante + componentes de `0015`/`0016`) continuam legíveis e editáveis sem migração destrutiva. A migração é aditiva (`0018`). Os itens antigos de 12 × 30 g equivalem ao "Kit 12 · 30 g".
+5a. **Liberar o limite (pedido do responsável):** em Configurações, só o owner vê o interruptor **"Limitar sabores por kit"** (ligado por padrão). Desligado, qualquer kit aceita até tantos sabores quanto a quantidade do kit. O limite de cada kit continua editável no cadastro do kit. O servidor lê a configuração a cada gravação; a interface só reflete. Mudança auditada (quem e quando). A operadora recebe 403 ao tentar alterar, e isso entra na matriz de segurança.
+5b. **Embalagem do kit no custo:** cada kit pode apontar para um insumo de embalagem (ex.: "Caixa plástico 12 doces", "Caixa papel 25 doces"). O custo do pedido soma 1 embalagem por kit, sem contar de novo em "Embalagens por lote" da ficha. Sem embalagem vinculada, o custo mostra o aviso "embalagem não informada", e não zero.
 5. **Limite de sabores na caixa mista:** o kit de 12 aceita até 3 sabores. A regra vale também para pedidos recorrentes novos. Pedidos e modelos antigos com mais sabores não são bloqueados ao serem lidos; só ao editar a composição o app pede para ajustar.
 6. **Novo pedido (Totem):**
    - na etapa Sabores, o primeiro passo é escolher **tamanho** (15/23/30 g, com a indicação: festa infantil / festas e brindes / revenda e presentes) e **quantidade**, com o preço visível;
