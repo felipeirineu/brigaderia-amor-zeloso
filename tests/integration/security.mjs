@@ -474,6 +474,37 @@ try {
     ).status === 200,
     'equipe autorizada exporta calendário privado',
   );
+  for (const [path, data] of [
+    ['orders/' + order + '/message', { kind: 'arriving' }],
+    ['orders/' + order + '/contact', { kind: 'charge' }],
+    ['finance/customers/' + customer + '/charge', {}],
+  ]) {
+    ok(
+      (await t.request(path, { method: 'POST', data })).status === 401,
+      path + ' exige sessão',
+    );
+    ok(
+      (
+        await t.request(path, {
+          method: 'POST',
+          data,
+          cookie: outside,
+          key: crypto.randomUUID(),
+        })
+      ).status === 404,
+      path + ' isolado por organização',
+    );
+  }
+  ok(
+    (
+      await t.request('orders/' + order + '/message', {
+        method: 'POST',
+        data: { kind: 'arriving' },
+        cookie: operator,
+      })
+    ).status === 200,
+    'operadora prepara Chegando sem envio',
+  );
   console.log(
     `OK segurança: ${checks} verificações (sessão, JWT, CSRF, IDOR, papéis, catálogo, cabeçalhos).`,
   );

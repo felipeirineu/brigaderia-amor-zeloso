@@ -40,7 +40,12 @@ export function nextStatuses(status: Status, type: string): Status[] {
 }
 
 export type MessageKind =
-  'confirmation' | 'on_the_way' | 'delivered' | 'pickup' | 'after_sale';
+  | 'confirmation'
+  | 'on_the_way'
+  | 'arriving'
+  | 'delivered'
+  | 'pickup'
+  | 'after_sale';
 
 // Mesma janela na UI e servidor; timestamps epoch evitam parsing na comparação.
 export const UNDO_SECONDS = 30;

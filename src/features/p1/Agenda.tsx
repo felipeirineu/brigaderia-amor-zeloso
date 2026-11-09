@@ -1,6 +1,6 @@
 import { ChoiceChips } from '../../components/ChoiceChips';
 import { Button } from '../../components/Button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useRemote, Failure, localDay } from '../operations/common';
 import { civilDate, dateTime } from '../api';
@@ -11,6 +11,9 @@ export function Agenda() {
     [mode, setMode] = useState<'week' | 'month'>('week'),
     [kind, setKind] = useState(''),
     [error, setError] = useState('');
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [day]);
   const date = new Date(day + 'T12:00:00Z'),
     from =
       mode === 'month'
@@ -87,7 +90,8 @@ export function Agenda() {
       </Button>
       <p>
         O arquivo contém dados privados. Importe somente no calendário
-        autorizado; o app não publica um calendário nem envia notificações.
+        autorizado. Esta exportação não sincroniza alterações nem inclui os
+        avisos individuais dos lembretes.
       </p>
       {view.data?.events.length === 0 && <p>Nenhum evento neste período.</p>}
       {view.data?.events.map((e) => (

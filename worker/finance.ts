@@ -552,7 +552,16 @@ export async function finance(
   if (action === 'charge' && req.method === 'POST') {
     const d = await body(
       req,
-      z.object({ closing_id: z.uuid().optional() }).strict(),
+      z
+        .object({
+          closing_id: z.uuid().optional(),
+          order_id: z.uuid().optional(),
+        })
+        .strict()
+        .refine(
+          (d) => !(d.closing_id && d.order_id),
+          'Escolha pedido ou fechamento.',
+        ),
     );
     const closing = d.closing_id
       ? view.closings.find((c) => c.id === d.closing_id)
@@ -561,9 +570,16 @@ export async function finance(
       throw new HttpError(409, 'Fechamento anulado não pode ser cobrado.');
     if (d.closing_id && !closing)
       throw new HttpError(404, 'Fechamento não encontrado.');
-    const balance = closing
-      ? Number(closing.balance_cents)
-      : view.receivable_cents;
+    const selectedOrder = d.order_id
+      ? view.orders.find((o) => o.id === d.order_id)
+      : null;
+    if (d.order_id && !selectedOrder)
+      throw new HttpError(404, 'Pedido não encontrado nesta conta.');
+    const balance = selectedOrder
+      ? selectedOrder.receivable_cents
+      : closing
+        ? Number(closing.balance_cents)
+        : view.receivable_cents;
     if (balance <= 0) throw new HttpError(400, 'Não há saldo para cobrar.');
     const settings = await db
       .prepare('SELECT data FROM payment_settings WHERE organization_id=?')
@@ -579,9 +595,11 @@ export async function finance(
       }).format(c / 100);
     const lines = view.orders.filter(
       (o) =>
-        o.receivable_cents > 0 && (!closing || o.closing_id === closing.id),
+        o.receivable_cents > 0 &&
+        (!closing || o.closing_id === closing.id) &&
+        (!selectedOrder || o.id === selectedOrder.id),
     );
-    const message = `Olá, ${customer.name}! Segue o resumo ${closing ? `do fechamento ${closing.period_start} a ${closing.period_end}` : 'da sua conta'}: ${lines.map((o) => `pedido ${String(o.id).slice(0, 8)} (${o.business_date}): ${brl(o.receivable_cents)}`).join('; ')}. Saldo: ${brl(balance)}.${closing ? ` Vencimento: ${closing.due_on}.` : ''}${pix ? ` Pix copia e cola: ${pix}` : ''}`;
+    const message = `Olá, ${customer.name}! Segue o resumo ${selectedOrder ? 'do pedido selecionado' : closing ? `do fechamento ${closing.period_start} a ${closing.period_end}` : 'da sua conta'}: ${lines.map((o) => `pedido ${'number' in o && o.number ? 'nº ' + String(o.number) : String(o.id).slice(0, 8)} (${o.business_date}): ${brl(o.receivable_cents)}`).join('; ')}. Saldo: ${brl(balance)}.${closing ? ` Vencimento: ${closing.due_on}.` : ''}${pix ? ` Pix copia e cola: ${pix}` : ''}`;
     if (!/^\+[1-9]\d{7,14}$/.test(String(customer.phone)))
       throw new HttpError(400, 'Telefone inválido.');
     if (message.length > 7500)

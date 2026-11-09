@@ -395,6 +395,7 @@ export function OrderDetail({
               >
                 <option value="confirmation">Confirmação</option>
                 <option value="on_the_way">A caminho</option>
+                <option value="arriving">Chegando</option>
                 <option value="delivered">Entregue</option>
                 <option value="pickup">Pronto para retirada</option>
                 <option value="after_sale">Pós-venda</option>

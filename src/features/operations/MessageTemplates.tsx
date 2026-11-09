@@ -7,6 +7,7 @@ import { useRemote, Failure } from './common';
 const messageLabels: Record<MessageKind, string> = {
   confirmation: 'Confirmação',
   on_the_way: 'A caminho',
+  arriving: 'Chegando',
   delivered: 'Entregue',
   pickup: 'Retirada',
   after_sale: 'Pós-venda',
@@ -33,17 +34,7 @@ export function MessageTemplates() {
       </p>
       {view.data?.map((t) => (
         <section className="panel" key={t.kind}>
-          <h2>
-            {t.kind === 'confirmation'
-              ? 'Confirmação'
-              : t.kind === 'on_the_way'
-                ? 'A caminho'
-                : t.kind === 'delivered'
-                  ? 'Entregue'
-                  : t.kind === 'pickup'
-                    ? 'Retirada'
-                    : 'Pós-venda'}
-          </h2>
+          <h2>{messageLabels[t.kind]}</h2>
           <p>{t.content}</p>
           <Button
             onClick={() => {

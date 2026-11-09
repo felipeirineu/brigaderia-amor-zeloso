@@ -943,9 +943,7 @@ export async function operations(
       req,
       z
         .object({
-          kind: z.enum(
-            Object.keys(templates) as [MessageKind, ...MessageKind[]],
-          ),
+          kind: z.enum(['charge', ...Object.keys(templates)]),
         })
         .strict(),
     );

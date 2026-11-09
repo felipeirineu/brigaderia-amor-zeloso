@@ -73,6 +73,8 @@ export const templates = {
     'Olá, {cliente}! Pedido {numero_pedido}: {itens}. Total: {total}. Combinado para {data} às {hora}. Pode confirmar?',
   on_the_way:
     'Olá, {cliente}! O pedido {numero_pedido} saiu para entrega. Destino: {endereco}.',
+  arriving:
+    'Olá, {cliente}! Estamos chegando com o pedido {numero_pedido}. Destino: {endereco}.',
   delivered:
     'Olá, {cliente}! Registramos a entrega do pedido {numero_pedido}. Obrigado!',
   pickup:

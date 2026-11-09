@@ -1,3 +1,4 @@
+import { NavigationScroll } from './mobile/NavigationScroll';
 import { reconcilePushSession, unsubscribeLocalPush } from './p1/push-device';
 import { compositionValid } from '../components/composition';
 import { CompositionEditor } from '../components/CompositionEditor';
@@ -1544,6 +1545,7 @@ export function Management() {
       enabled={!!session.field && online}
       key={session.organization_id + session.user_id + online}
     >
+      <NavigationScroll />
       <section
         className={`management ${session.operations ? 'operations-active' : ''}`}
       >

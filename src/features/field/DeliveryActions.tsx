@@ -1,3 +1,4 @@
+import { DeliveryMessageSheet } from './DeliveryMessageSheet';
 import { useRef, useState } from 'react';
 import { RouteInfo } from './RouteInfo';
 import {
@@ -16,6 +17,7 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
     trigger = useRef<HTMLElement | null>(null),
     sheet = useRef<HTMLDialogElement>(null);
   const [notice, setNotice] = useState(''),
+    [messageOpen, setMessageOpen] = useState(false),
     [preferred, setPreferred] = useState<MapApp | null>(null);
   const user = field?.data?.user_id ?? '';
   function choose(app: MapApp) {
@@ -36,6 +38,12 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
   const available = order.delivery_type === 'delivery' && !!place.address;
   return (
     <>
+      {messageOpen && (
+        <DeliveryMessageSheet
+          order={order}
+          onClose={() => setMessageOpen(false)}
+        />
+      )}
       <div className="delivery-icon-row">
         <Button
           disabled={!available}
@@ -48,7 +56,11 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
           <MapPin size={22} aria-hidden="true" />
           Mapa
         </Button>
-        <Button to={`/gestao/pedidos/${order.id}#whatsapp`}>
+        <Button
+          {...(field
+            ? { onClick: () => setMessageOpen(true) }
+            : { to: `/gestao/pedidos/${order.id}#whatsapp` })}
+        >
           <MessageCircle size={22} aria-hidden="true" />
           WhatsApp
         </Button>
