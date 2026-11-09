@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-09 (2)** — Respostas do Tiago: pétala R$ 3,50/50; gás R$ 0,74 por receita (1 lata de leite condensado); por enquanto só kits de doces. Massa de 13/20/26 g para os doces de 15/23/30 g. Aberta a **R16** (calculadora de preço por peso nas fichas), para depois da R15.
 - **2026-11-09** — R15 ganhou 5a (interruptor do owner "Limitar sabores por kit") e 5b (embalagem do kit como insumo no custo), a partir de pedido do responsável e da planilha do Tiago. Os dados reais da planilha (clientes e custos) **não** vão para o repositório: o responsável importa pelo app. A planilha lista embalagens de 1, 4, 5 e 6 doces; possíveis kits de lembrancinha estão **a confirmar** e não devem ser modelados por suposição.
 - **2026-11-08 (3)** — Tabela de kits recebida e **R15** aberta (kits 12/25/50/100 em 15/23/30 g, limite de 3 ou 5 sabores, clientes de festa e brinde). Ver seção **R15**. Feito pelo Claude: aviso "Contém álcool" (`shared/alcohol.ts`), que reconhece a foto `caipirinha` ou as palavras cachaça/caipirinha/licor/álcool no nome ou na descrição. Aparece na grade do Novo pedido, na montagem da caixa, no Revisar e no WhatsApp ("(contém álcool)").
 - **2026-11-08 (2)** — Grafia corrigida pelo responsável: **Coco**, sem acento (antes escrito "Côco" por engano). Corrigido em todo o repositório. A sugestão de foto aceita as duas grafias.
@@ -78,6 +79,24 @@
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
 
 ---
+
+## R16 — Calculadora de preço por peso nas fichas (2026-11-09, depois da R15)
+
+Pedido do Tiago, a partir da planilha dele (os dados reais ficam fora do repositório; o responsável cadastra pelo app). As fichas atuais já puxam o custo dos insumos cadastrados e devem continuar assim. Falta calcular **por peso do doce**.
+
+1. **Ficha = 1 receita** (1 lata de leite condensado). Os insumos da ficha se dividem em três grupos:
+   - **massa**, por receita (leite condensado, creme de leite, chocolate, margarina, coco, limão…);
+   - **acabamento**, por doce (granulado, coco para enrolar, amendoim inteiro, ampola, cachaça, forminha);
+   - **custos por receita** (gás, R$ 0,74).
+2. **Rendimento por peso:** a ficha guarda o **peso total da massa da receita (g)**, ou o rendimento medido num peso de referência (ex.: 16 doces de 26 g). O app calcula o rendimento para 13/20/26 g (= doce de 15/23/30 g). O peso de massa de cada tamanho fica no cadastro do tamanho/kit da R15 (13/20/26), editável.
+3. **Acabamento por tamanho:** quantidade por doce, editável **para cada tamanho**. Se o Tiago informar só um tamanho, sugerir os demais pela proporção da superfície (peso^(2/3)), marcados como "estimativa", sem gravar sem confirmação.
+4. **Saída da calculadora**, por sabor × tamanho: custo por doce e custo por kit (12/25/50/100, com a embalagem do kit da R15 5b e as forminhas). Ao lado, o **preço da tabela** e a **margem**, mais o preço sugerido pela margem desejada. Somente consulta: não altera preços nem cria despesa.
+5. **Arredondamento:** centavos inteiros, critério explícito (o atual arredonda o custo unitário para cima). Ficha incompleta (insumo sem preço) mostra "indisponível", nunca zero.
+6. **Testes:**
+   - unitários de rendimento por peso e de escala do acabamento;
+   - conferência com um caso conhecido: ficha "Brigadeiro" fictícia com os mesmos números dá R$ 15,45 por receita e R$ 0,97 por doce com 16 doces;
+   - E2E da tela;
+   - permissões: operadora só lê (como fichas), owner edita.
 
 ## R15 — Kits por tamanho e clientes de festa/brinde (2026-11-08, prioridade máxima)
 

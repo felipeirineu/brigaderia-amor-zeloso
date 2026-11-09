@@ -21,6 +21,10 @@ Indicação de cada tamanho (peso médio; varia com o sabor e os confeitos):
 - **23 g:** brindes e festas de jovens e adultos.
 - **30 g:** revendas, brindes e presentes. É a caixa de 12 que os estabelecimentos já compram (R$ 42,00).
 
+**Peso da massa (informado pelo Tiago em 08/11/2026):** os pesos do catálogo são do doce já confeitado. A massa padrão pesa **13 g** (doce de 15 g), **20 g** (23 g) e **26 g** (30 g).
+
+**Receita e custos:** uma receita (lote) corresponde a **1 lata de leite condensado**. O gás custa em média **R$ 0,74 por receita**. Pétala: R$ 3,50 o pacote com 50. Por enquanto só existem kits de doces; kits de lembrancinha ficam para o futuro.
+
 Regras do kit:
 
 - A soma das unidades de cada sabor é exatamente a quantidade do kit (12, 25, 50 ou 100).
