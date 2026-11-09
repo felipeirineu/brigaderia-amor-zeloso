@@ -2,6 +2,8 @@
 
 A folha **Novo lembrete**, no Hoje, permite escolher quando lembrar, o horário do aviso e os responsáveis pelos nomes/fotos do perfil. **Na hora**, **15 min**, **1 h**, **1 dia** e **Outro horário** definem o mesmo instante usado no push e no arquivo do calendário. **Não avisar** salva apenas o compromisso. Editar, concluir, reabrir e arquivar preserva as preferências quando não são alteradas.
 
+No Hoje, o círculo conclui e a confirmação oferece reabrir o último lembrete concluído sem sair da tela; a lista completa permite reabrir os demais. Alterações concorrentes são recusadas em vez de sobrescritas.
+
 Cada responsável ativa os próprios aparelhos em **Perfil → Preferências → Avisos neste aparelho**. A permissão só é solicitada por uma escolha explícita de aviso para si ou pelo botão de ativação. **Enviar aviso de teste** confirma a aceitação pelo serviço; conferir o recebimento na tela do aparelho. Pode-se desativar este ou outro aparelho da própria conta. Sair da conta revoga as assinaturas daquela sessão; um aviso que já foi despachado pode chegar depois da saída.
 
 No iPhone é necessário **iOS 16.4+ e app instalado na Tela de Início**. Android/Chrome permite navegador ou app instalado. Economia de bateria, permissões e rede podem atrasar/bloquear avisos. O cron verifica a cada cinco minutos, não garante um segundo exato. O título e o horário aparecem na notificação, inclusive na tela bloqueada; evite dados sensíveis no título. Notas e contatos não vão no payload. Nenhuma mensagem é enviada a clientes.

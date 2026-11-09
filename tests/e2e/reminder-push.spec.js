@@ -146,6 +146,20 @@ test('R6-7 aviso só por escolha humana, calendário privado, teste e revogaçã
     const file = await download;
     const { readFile } = await import('node:fs/promises');
     expect(await readFile(await file.path(), 'utf8')).toContain('BEGIN:VALARM');
+    await row
+      .getByRole('button', {
+        name: 'Concluir lembrete Lembrete DEMONSTRAÇÃO aviso',
+        exact: true,
+      })
+      .click();
+    await p
+      .getByRole('button', {
+        name: 'Reabrir lembrete Lembrete DEMONSTRAÇÃO aviso',
+        exact: true,
+      })
+      .click();
+    await expect(row).toContainText('Aviso:');
+    await expect(row).toContainText('Operadora DEMONSTRAÇÃO');
     await p
       .getByRole('button', {
         name: 'Abrir menu de Equipe DEMONSTRAÇÃO',

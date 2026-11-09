@@ -1,6 +1,6 @@
 import { ReminderAlerts, ReminderDelivery } from './ReminderAlerts';
 import { emptyAlert, editAlert, alertPayload } from './reminder-form';
-import { Circle, Plus } from 'lucide-react';
+import { Circle, CircleCheck, Plus } from 'lucide-react';
 import { Toast } from '../../components/Toast';
 import { relativeDateTime } from '../../../shared/workday';
 import { ReminderSheet } from './ReminderSheet';
@@ -33,6 +33,10 @@ const payload = (r: Reminder, done: boolean, active = true) => ({
 export function TodayReminders({ day }: { day: string }) {
   const view = useRemote<Reminder[]>('p1/reminders?through=' + day),
     [show, setShow] = useState(false),
+    [completed, setCompleted] = useState<{
+      reminder: Reminder;
+      day: string;
+    } | null>(null),
     [notice, setNotice] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
@@ -77,6 +81,10 @@ export function TodayReminders({ day }: { day: string }) {
                 crypto.randomUUID(),
               )
                 .then(() => {
+                  setCompleted({
+                    reminder: { ...r, version: r.version + 1, done: 1 },
+                    day,
+                  });
                   setNotice('Lembrete concluído.');
                   return view.refresh();
                 })
@@ -95,6 +103,42 @@ export function TodayReminders({ day }: { day: string }) {
           </div>
         </article>
       ))}
+      {completed?.day === day && (
+        <div className="today-reminder-row">
+          <Button
+            variant="ghost"
+            disabled={busy}
+            aria-label={'Reabrir lembrete ' + completed.reminder.title}
+            onClick={() => {
+              setBusy(true);
+              setError('');
+              void api(
+                'p1/reminders/' + completed.reminder.id,
+                'PUT',
+                payload(completed.reminder, false),
+                crypto.randomUUID(),
+              )
+                .then(() => {
+                  setCompleted(null);
+                  setNotice('Lembrete reaberto.');
+                  return view.refresh();
+                })
+                .catch((e) => setError(e.message))
+                .finally(() => setBusy(false));
+            }}
+          >
+            <CircleCheck size={24} aria-hidden="true" />
+            Reabrir {completed.reminder.title}
+          </Button>
+          <Button
+            variant="ghost"
+            aria-label="Fechar confirmação do lembrete"
+            onClick={() => setCompleted(null)}
+          >
+            Fechar
+          </Button>
+        </div>
+      )}
       <Button to="/gestao/lembretes" variant="ghost">
         Ver todos os lembretes
       </Button>
@@ -260,6 +304,11 @@ export function Reminders() {
               }
               loading={busy}
             >
+              {r.done ? (
+                <CircleCheck size={24} aria-hidden="true" />
+              ) : (
+                <Circle size={24} aria-hidden="true" />
+              )}
               {r.done ? 'Reabrir' : 'Concluir'} lembrete {r.title}
             </Button>
             <Button
