@@ -45,7 +45,7 @@ export function Tour({ role }: { role: string }) {
       {
         target: 'customers',
         title: 'Seus clientes',
-        text: 'Nome e telefone bastam para começar. Use o cadastro privado para conferir os contatos.',
+        text: 'O nome basta para começar; o telefone pode vir depois. Use o cadastro privado para conferir os contatos.',
       },
       {
         target: 'more',
@@ -246,11 +246,11 @@ export function HelpCenter({
               Importar clientes (administrador)
             </DisclosureSummary>
             <p>
-              Prepare CSV UTF-8 ou XLSX com nome e telefone, até 50 clientes.
-              Não use fórmulas nem macros. Em Mais → Importar clientes, escolha
-              o arquivo, Veja prévia e confira os telefones normalizados.
-              Selecione as linhas e confirme. Telefones existentes não são
-              sobrescritos; nenhuma mensagem é enviada.
+              Prepare CSV UTF-8 ou XLSX com nome (telefone opcional), até 50
+              clientes. Não use fórmulas nem macros. Em Mais → Importar
+              clientes, escolha o arquivo, Veja prévia e confira os telefones
+              normalizados. Selecione as linhas e confirme. Telefones existentes
+              não são sobrescritos; nenhuma mensagem é enviada.
             </p>
           </details>
           <details>

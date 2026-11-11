@@ -262,7 +262,7 @@ export function App() {
         <RuntimeStatus />
         <main id="conteudo" ref={main} tabIndex={-1}>
           <Routes>
-            <Route path="/" element={<Navigate to="/app" replace />} />
+            <Route path="/" element={<Navigate to="/gestao" replace />} />
             <Route path="/app" element={<Dashboard />} />
             {modules.map((m) => (
               <Route

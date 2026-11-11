@@ -38,7 +38,9 @@ test('gestão privada: login, cadastros, duas sessões, snapshots e logout', asy
     await page
       .getByLabel('Nome', { exact: true })
       .fill('Cliente DEMONSTRAÇÃO E2E');
-    await page.getByLabel('Telefone', { exact: true }).fill('(11) 90000-0000');
+    await page
+      .getByLabel('Telefone (opcional)', { exact: true })
+      .fill('(11) 90000-0000');
     await page
       .getByRole('button', { name: 'Salvar cliente', exact: true })
       .click();

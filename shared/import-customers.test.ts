@@ -9,10 +9,17 @@ it('CSV trata aspas, vírgula, linhas internas, BOM e delimitador brasileiro', (
   expect(rows[0].name).toBe('Cliente DEMONSTRAÇÃO; teste');
   expect(rows[0].notes).toBe('Duas\nlinhas e "aspas"');
   expect(() => parseCSV('nome,telefone\n"sem fechar,1')).toThrow();
-  expect(() =>
+  // Telefone é opcional: a coluna pode faltar; o nome continua obrigatório.
+  expect(
     customerRows([
       ['nome', 'email'],
       ['DEMONSTRAÇÃO', 'a@example.test'],
+    ])[0],
+  ).toMatchObject({ name: 'DEMONSTRAÇÃO', phone: '' });
+  expect(() =>
+    customerRows([
+      ['telefone', 'email'],
+      ['11900000001', 'a@example.test'],
     ]),
   ).toThrow();
 });

@@ -1,3 +1,4 @@
+import { noPhone, visiblePhone } from '../shared/phone';
 import { recurringMixedSchema } from './recurring-mixed';
 import { mixedReady } from './mixed';
 import { attachComponents, prepareItems, writeComponents } from './mixed';
@@ -113,7 +114,7 @@ export async function management(req: Request, env: Env, a: Actor) {
     const rows = (
       await db
         .prepare(
-          `SELECT *${resource === 'orders' ? ',' + orderNumber('orders') : ''} FROM ${resource} WHERE organization_id=?${id ? ' AND id=?' : ''}${status} AND ${resource === 'customers' ? '(name LIKE ? OR phone LIKE ?)' : `${field} LIKE ?`} ORDER BY ${resource === 'orders' ? 'due_at' : 'name'} LIMIT 200`,
+          `SELECT *${resource === 'orders' ? ',' + orderNumber('orders') : ''} FROM ${resource} WHERE organization_id=?${id ? ' AND id=?' : ''}${status} AND ${resource === 'customers' ? "(name LIKE ? OR (phone LIKE '+%' AND phone LIKE ?))" : `${field} LIKE ?`} ORDER BY ${resource === 'orders' ? 'due_at DESC' : 'name'} LIMIT 200`,
         )
         .bind(
           org,
@@ -123,7 +124,10 @@ export async function management(req: Request, env: Env, a: Actor) {
         )
         .all<Row>()
     ).results;
+    // Os 200 pedidos mais recentes, devolvidos em ordem crescente de data.
+    if (resource === 'orders') rows.reverse();
     for (const row of rows) {
+      if (resource === 'customers') row.phone = visiblePhone(row.phone);
       delete row.mutation_id;
       delete row.request_hash;
       delete row.request_key;
@@ -247,7 +251,7 @@ export async function management(req: Request, env: Env, a: Actor) {
             )
             .bind(
               d.name,
-              d.phone,
+              d.phone || noPhone(entityId),
               d.email,
               d.notes,
               +d.active,
@@ -265,7 +269,7 @@ export async function management(req: Request, env: Env, a: Actor) {
               entityId,
               org,
               d.name,
-              d.phone,
+              d.phone || noPhone(entityId),
               d.email,
               d.notes,
               +d.active,

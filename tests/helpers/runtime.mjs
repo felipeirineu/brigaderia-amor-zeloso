@@ -118,8 +118,26 @@ export async function runtime({
             '.png': 'image/png',
             '.webmanifest': 'application/manifest+json',
           };
+          // Mesmos cabeçalhos de segurança que o Pages aplica em produção
+          // (bloco "/*" de public/_headers), para CSP e Permissions-Policy
+          // valerem também nos testes de tela e no ZAP.
+          const security = {};
+          const rules = (
+            await readFile(resolve(root, '_headers'), 'utf8').catch(() => '')
+          ).split('\n');
+          for (
+            let i = rules.indexOf('/*') + 1;
+            i > 0 && /^\s+\S/.test(rules[i] ?? '');
+            i++
+          ) {
+            const at = rules[i].indexOf(':');
+            security[rules[i].slice(0, at).trim()] = rules[i]
+              .slice(at + 1)
+              .trim();
+          }
           return new Response(contents, {
             headers: {
+              ...security,
               'Content-Type':
                 types[extname(file)] || 'application/octet-stream',
             },

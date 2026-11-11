@@ -182,3 +182,28 @@ Criptografia AES128GCM/VAPID testada com receptor independente; somente provedor
 ### R6-8 — Prévia de WhatsApp por pedido
 
 **160 verificações** na matriz, incluindo as rotas existentes de prévia/contato/cobrança: sem sessão 401, outra organização 404 e operadora autorizada prepara Chegando. `order_id` opcional na prévia financeira só seleciona pedido da mesma conta já autorizada; inexistente/externo é 404, combinação com fechamento é recusada e saldo usa o mesmo cálculo do extrato. Prévia não grava evento financeiro; contato é opt-in/idempotente. Nome de exibição vem do perfil autenticado, URL wa.me é codificada e só aberta por ação humana. Nenhum envio automatizado, migração, flag ou mudança de Cloudflare nesta etapa.
+
+## Revisão de 11/11/2026
+
+Análise geral do app (segurança, defeitos e melhorias), com correções feitas pelo Claude e aprovadas pelo responsável.
+
+### Defeitos corrigidos
+
+- **Fotos e localização não funcionavam em produção.** `public/_headers` bloqueava `blob:` em `img-src` (leitura da foto escolhida) e desligava `geolocation`. Agora `img-src 'self' data: blob:` e `geolocation=(self)`. `blob:` só referencia dados criados pela própria página; scripts continuam restritos a `'self'`.
+- **Causa raiz:** o ambiente de teste não aplicava os cabeçalhos de produção. `tests/helpers/runtime.mjs` passou a servir o bloco `/*` de `_headers`, então todos os testes de tela e o ZAP rodam sob a mesma CSP. Novo `tests/e2e/prod-headers.spec.js` trava foto, localização e ausência de violações.
+- **Lista de Pedidos** trazia os 200 mais antigos; agora traz os 200 mais recentes.
+- **Raiz do site e app instalado** abriam a demonstração da Fase 0; agora abrem `/gestao`.
+
+### Decisões
+
+- **Sessão de 30 dias** (era de 8 horas), aprovada pelo responsável. Motivos: o envio de avisos de lembrete exige sessão válida, e o login a cada 8 horas derrubava telas em uso. Compensações: o Cloudflare Access continua na frente; "Sair" apaga a sessão no servidor; remover o e-mail de `authorized_emails` bloqueia na requisição seguinte. Em aparelho perdido: remover o e-mail no app **e** revogar a sessão no Zero Trust.
+- **Telefone do cliente opcional.** O banco exige telefone único e não nulo; sem telefone, grava-se um marcador interno (`sem:<id>`, `shared/phone.ts`) que nunca sai pela API nem é pesquisável. Mensagens sem telefone abrem o WhatsApp para escolher o contato.
+
+### Scanners
+
+- **ZAP (primeira execução, 09/11):** 0 falhas, 9 avisos. Eram quase todos cabeçalhos ausentes no alvo local, resolvidos com o harness acima.
+- **gitleaks:** a execução semanal (histórico completo) acusou `ACCESS_AUD` em dois commits. Falso positivo, registrado em `.gitleaksignore`. **Correção a este documento:** no push o gitleaks examina apenas os commits novos; o histórico completo só é varrido no agendamento semanal e na execução manual.
+
+### Continua com o responsável
+
+Aplicar as migrações 0016 a 0018; tornar o repositório privado; regra de proteção do `main`; roteiro do painel (item 1); ensaio de backup (item 3).

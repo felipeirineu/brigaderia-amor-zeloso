@@ -69,11 +69,10 @@ export function customerRows(cells: unknown[][]) {
   if (
     headers.some((h) => !keys[h]) ||
     new Set(headers).size !== headers.length ||
-    !headers.includes('nome') ||
-    !headers.includes('telefone')
+    !headers.includes('nome')
   )
     throw Error(
-      'Use cabeçalhos nome, telefone e, opcionalmente, email e notas.',
+      'Use o cabeçalho nome e, opcionalmente, telefone, email e notas.',
     );
   return cells
     .slice(1)

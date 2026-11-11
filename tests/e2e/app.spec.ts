@@ -9,7 +9,10 @@ const routes = [
   ['configuracoes', 'Configurações'],
 ];
 test('navegação, demonstração explícita e foco acessível', async ({ page }) => {
+  // A raiz e o app instalado abrem a gestão; a demonstração fica em /app.
   await page.goto('/');
+  await expect(page).toHaveURL('/gestao');
+  await page.goto('/app');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Um cuidado em cada detalhe.',
   );
@@ -70,7 +73,7 @@ test('manifesto e ícones são servidos', async ({ request }) => {
   expect(response.ok()).toBe(true);
   const manifest = await response.json();
   expect(manifest.display).toBe('standalone');
-  expect(manifest.start_url).toBe('/app');
+  expect(manifest.start_url).toBe('/gestao');
   expect(manifest.icons).toHaveLength(3);
   for (const icon of manifest.icons)
     expect((await request.get(icon.src)).ok()).toBe(true);

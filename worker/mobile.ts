@@ -56,7 +56,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       (
         await db
           .prepare(
-            "SELECT c.id,c.name,c.phone,COUNT(o.id) AS frequency FROM customers c LEFT JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id AND o.active=1 AND o.status<>'cancelled' WHERE c.organization_id=? AND c.active=1 AND (c.name LIKE ? OR c.phone LIKE ?) GROUP BY c.id ORDER BY frequency DESC,c.name LIMIT 200",
+            "SELECT c.id,c.name,CASE WHEN c.phone LIKE '+%' THEN c.phone ELSE '' END AS phone,COUNT(o.id) AS frequency FROM customers c LEFT JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id AND o.active=1 AND o.status<>'cancelled' WHERE c.organization_id=? AND c.active=1 AND (c.name LIKE ? OR (c.phone LIKE '+%' AND c.phone LIKE ?)) GROUP BY c.id ORDER BY frequency DESC,c.name LIMIT 200",
           )
           .bind(org, '%' + q + '%', '%' + q + '%')
           .all()

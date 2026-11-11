@@ -1,3 +1,4 @@
+import { noPhone } from '../shared/phone';
 import { z } from 'zod';
 import { body, hash, HttpError, json, type Actor } from './security';
 import { ownerOnly } from './p1-common';
@@ -9,6 +10,12 @@ const input = z
   })
   .strict();
 type Contact = { name: string; phone: string; email: string; notes: string };
+const plain = (s: string) =>
+  s
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .trim()
+    .toLowerCase();
 async function preview(db: D1Database, org: string, raw: unknown[]) {
   const checked = raw.map((v) =>
       customerSchema
@@ -16,7 +23,13 @@ async function preview(db: D1Database, org: string, raw: unknown[]) {
         .strict()
         .safeParse(v),
     ),
-    phones = checked.filter((v) => v.success).map((v) => v.data!.phone),
+    phones = checked
+      .filter((v) => v.success && v.data!.phone)
+      .map((v) => v.data!.phone),
+    // Sem telefone, a repetição é reconhecida pelo nome (sem acento/caixa).
+    names = checked
+      .filter((v) => v.success && !v.data!.phone)
+      .map((v) => plain(v.data!.name)),
     existing = (
       await db
         .prepare(
@@ -24,27 +37,49 @@ async function preview(db: D1Database, org: string, raw: unknown[]) {
         )
         .bind(org, JSON.stringify(phones))
         .all<{ id: string; phone: string }>()
-    ).results;
+    ).results,
+    existingNames = names.length
+      ? new Set(
+          (
+            await db
+              .prepare(
+                'SELECT name FROM customers WHERE organization_id=? LIMIT 5000',
+              )
+              .bind(org)
+              .all<{ name: string }>()
+          ).results.map((c) => plain(c.name)),
+        )
+      : new Set<string>();
   const seen = new Set<string>();
   return checked.map((v, index) => {
     if (!v.success)
       return {
         index,
         status: 'invalid',
-        message: 'Confira nome, telefone com DDD e e-mail.',
+        message:
+          'Confira o nome, o telefone (com DDD, ou em branco) e o e-mail.',
         data: null as Contact | null,
       };
-    const duplicate = seen.has(v.data.phone);
-    seen.add(v.data.phone);
-    const prior = existing.find((e) => e.phone === v.data.phone);
+    const key = v.data.phone || 'nome:' + plain(v.data.name);
+    const duplicate = seen.has(key);
+    seen.add(key);
+    const prior = v.data.phone
+      ? existing.some((e) => e.phone === v.data.phone)
+      : existingNames.has(plain(v.data.name));
     return {
       index,
       status: prior ? 'existing' : duplicate ? 'duplicate' : 'ready',
       message: prior
-        ? 'Telefone já cadastrado; nenhum dado será atualizado.'
+        ? v.data.phone
+          ? 'Telefone já cadastrado; nenhum dado será atualizado.'
+          : 'Já existe cliente com este nome; nenhum dado será atualizado.'
         : duplicate
-          ? 'Telefone repetido no arquivo.'
-          : 'Pronto para importar.',
+          ? v.data.phone
+            ? 'Telefone repetido no arquivo.'
+            : 'Nome repetido no arquivo.'
+          : v.data.phone
+            ? 'Pronto para importar.'
+            : 'Pronto para importar (sem telefone).',
       data: v.data,
     };
   });
@@ -91,12 +126,19 @@ export async function customerImport(
       400,
       'A seleção contém linhas inválidas ou repetidas. Refaça a prévia.',
     );
-  const rows = d.selected.map((i) => ({
-      index: i,
-      id: crypto.randomUUID(),
-      ...checked[i].data!,
-      create_key: 'import:' + key + ':' + i,
-    })),
+  const rows = d.selected
+      // Sem telefone não há UNIQUE no banco para barrar o nome já existente.
+      .filter((i) => checked[i].data!.phone || checked[i].status === 'ready')
+      .map((i) => {
+        const id = crypto.randomUUID();
+        return {
+          index: i,
+          id,
+          ...checked[i].data!,
+          phone: checked[i].data!.phone || noPhone(id),
+          create_key: 'import:' + key + ':' + i,
+        };
+      }),
     job = crypto.randomUUID(),
     nonce = crypto.randomUUID(),
     data = JSON.stringify(rows),

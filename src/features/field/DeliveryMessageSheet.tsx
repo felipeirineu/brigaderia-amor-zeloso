@@ -139,19 +139,21 @@ export function DeliveryMessageSheet({
             : 'Sem nome de exibição cadastrado.'}{' '}
           O envio será feito por você no WhatsApp.
         </p>
-        {hasName && phone && message.trim() && !/[{}]/.test(message) && (
+        {hasName && message.trim() && !/[{}]/.test(message) && (
           <Button
             variant="primary"
             href={`https://wa.me/${phone.replace(/^\+/, '')}?text=${encodeURIComponent(message)}`}
             target="_blank"
             rel="noreferrer"
           >
-            Abrir no WhatsApp
+            {phone
+              ? 'Abrir no WhatsApp'
+              : 'Abrir no WhatsApp e escolher o contato'}
           </Button>
         )}
         <Button
           variant="ghost"
-          disabled={busy || !phone || !message.trim()}
+          disabled={busy || !message.trim()}
           onClick={() => {
             setBusy(true);
             setError('');

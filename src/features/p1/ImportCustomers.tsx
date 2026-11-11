@@ -87,9 +87,9 @@ export function ImportCustomers() {
       <h1 className="mobile-context-title">Importar clientes</h1>
       <p>
         Somente contatos autorizados. CSV UTF-8 ou XLSX, até 50 clientes e 1 MB.
-        Cabeçalho: nome, telefone, email e notas (os dois últimos opcionais).
-        Telefone com DDD, preferencialmente texto na planilha. Não use
-        fórmulas/macros. XLSX usa a primeira aba.
+        Cabeçalho: nome e, opcionalmente, telefone, email e notas. Telefone com
+        DDD, preferencialmente texto na planilha. Não use fórmulas/macros. XLSX
+        usa a primeira aba.
       </p>
       <p>
         O arquivo original fica neste navegador, em memória. Ver prévia envia

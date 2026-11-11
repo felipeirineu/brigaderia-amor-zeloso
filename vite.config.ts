@@ -13,10 +13,9 @@ export default defineConfig({
         id: '/',
         name: 'Brigaderia Amor Zeloso | Gestão',
         short_name: 'Amor Zeloso',
-        description:
-          'Base de demonstração do sistema de gestão. Sem dados reais.',
+        description: 'Gestão de pedidos, entregas e finanças da brigaderia.',
         lang: 'pt-BR',
-        start_url: '/app',
+        start_url: '/gestao',
         scope: '/',
         display: 'standalone',
         background_color: '#F9ECD7',

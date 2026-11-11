@@ -6,6 +6,12 @@
 
 ## Histórico
 
+- **2026-11-11** — Revisão geral do Claude (R6-7/R6-8 aprovadas) e correções. Ver "Revisão de 11/11/2026" em `docs/SEGURANCA_AUDITORIA.md` e a seção **R17**:
+  - `_headers`: `img-src … blob:` e `geolocation=(self)` (foto e GPS estavam bloqueados em produção). **O harness agora aplica `_headers`**: todo teste de tela roda sob a CSP real. Não use estilo inline, `eval`, nem recursos externos; teste novo que precise injetar estilo usa `bypassCSP` só nele, com comentário.
+  - Lista de pedidos: 200 mais recentes. Raiz e `start_url` → `/gestao`.
+  - Sessão de 30 dias (`SESSION_SECONDS` em `worker/security.ts`).
+  - Telefone opcional (`shared/phone.ts`: `noPhone`, `hasPhone`, `visiblePhone`). **Toda leitura de `customers.phone` que vá para a API ou para um link passa por `visiblePhone`**; nunca exponha `sem:<id>`. Importação sem telefone deduplica pelo nome.
+  - `.gitleaksignore` com os dois falsos positivos de `ACCESS_AUD`.
 - **2026-11-09 (2)** — Respostas do Tiago: pétala R$ 3,50/50; gás R$ 0,74 por receita (1 lata de leite condensado); por enquanto só kits de doces. Massa de 13/20/26 g para os doces de 15/23/30 g. Aberta a **R16** (calculadora de preço por peso nas fichas), para depois da R15.
 - **2026-11-09** — R15 ganhou 5a (interruptor do owner "Limitar sabores por kit") e 5b (embalagem do kit como insumo no custo), a partir de pedido do responsável e da planilha do Tiago. Os dados reais da planilha (clientes e custos) **não** vão para o repositório: o responsável importa pelo app. A planilha lista embalagens de 1, 4, 5 e 6 doces; possíveis kits de lembrancinha estão **a confirmar** e não devem ser modelados por suposição.
 - **2026-11-08 (3)** — Tabela de kits recebida e **R15** aberta (kits 12/25/50/100 em 15/23/30 g, limite de 3 ou 5 sabores, clientes de festa e brinde). Ver seção **R15**. Feito pelo Claude: aviso "Contém álcool" (`shared/alcohol.ts`), que reconhece a foto `caipirinha` ou as palavras cachaça/caipirinha/licor/álcool no nome ou na descrição. Aparece na grade do Novo pedido, na montagem da caixa, no Revisar e no WhatsApp ("(contém álcool)").
@@ -79,6 +85,18 @@
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
 
 ---
+
+## R17 — Achados da revisão de 11/11/2026 (para o Codex)
+
+Ordem geral: **R15 → R16 → R17 → R7**. Itens pequenos da R17 podem entrar junto com a R15 quando tocarem os mesmos arquivos.
+
+1. **Importar insumos por planilha** (owner): mesma experiência de Importar clientes (CSV/XLSX, prévia, confirmação humana, sem fórmulas, limite de linhas, idempotência). Colunas: nome, unidade (g/mL/unidade), quantidade por embalagem, preço da embalagem (vazio = desconhecido). Repetição pelo nome; nunca atualizar preço existente sem confirmação explícita por linha. Rota nova na matriz de segurança (operadora = 403).
+2. **Sessão expirada no meio de um pedido:** hoje `session-expired` desmonta a tela e o pedido em montagem se perde. Preservar o rascunho do Totem em memória (ou `sessionStorage`, sem dados além dos IDs e quantidades) e restaurar após o novo login. Com a sessão de 30 dias isso fica raro, mas ainda ocorre ao remover/reautorizar acesso.
+3. **Página de demonstração da Fase 0** (`/app`, `modules.ts`, textos "Fase 0 · Estrutura inicial"): a raiz já aponta para `/gestao`. Remover a demonstração e os testes que só a exercitam, mantendo o teste do manifesto e o de `/` → `/gestao`.
+4. **Sessão deslizante (opcional, só se simples):** renovar `expires_at` quando faltar menos de 7 dias, na leitura de `session`, sem trocar o token. Não é necessário para o aceite.
+5. **Avisos de lembrete:** com a sessão de 30 dias o vínculo com a sessão passa a funcionar na prática. Documentar em `FASE_R6` que o aviso para de chegar quando a sessão do aparelho vence ou a pessoa sai, e mostrar isso na tela de avisos ("avisos ativos neste aparelho até DD/MM").
+6. **`orderNumber`** é uma subconsulta `COUNT` por linha: aceitável hoje. Se a R15 criar migração, avaliar gravar o número no pedido (coluna aditiva preenchida na criação), mantendo a leitura atual como reserva para pedidos antigos.
+7. **ZAP:** depois de uma execução limpa com o harness novo, mudar `fail_action` para `true` e manter `.zap/rules.tsv` com justificativa por regra ignorada.
 
 ## R16 — Calculadora de preço por peso nas fichas (2026-11-09, depois da R15)
 

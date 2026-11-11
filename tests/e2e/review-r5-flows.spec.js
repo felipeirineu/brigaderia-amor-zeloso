@@ -14,6 +14,9 @@ test('R5 telas móveis com ações compartilhadas', async ({
     }),
     c = await browser.newContext({
       viewport: { width: 390, height: 844 },
+      // Só este teste injeta um estilo próprio (fonte de reserva); a CSP do
+      // app, que bloqueia estilo inline, é exercida pelos demais testes.
+      bypassCSP: true,
       extraHTTPHeaders: {
         'Cf-Access-Jwt-Assertion': await t.token('operator@example.test'),
       },

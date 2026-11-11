@@ -69,7 +69,9 @@ test('R4 localização por toque, foto privada, perfil e despesa após entrega',
     await p.goto(t.url + '/gestao/clientes');
     await p.getByRole('button', { name: 'Novo cliente', exact: true }).click();
     await p.getByLabel('Nome', { exact: true }).fill('Novo local DEMONSTRAÇÃO');
-    await p.getByLabel('Telefone', { exact: true }).fill('11900000001');
+    await p
+      .getByLabel('Telefone (opcional)', { exact: true })
+      .fill('11900000001');
     await p.getByText('Endereço e Instagram', { exact: true }).click();
     await p
       .getByLabel('Endereço do estabelecimento', { exact: true })

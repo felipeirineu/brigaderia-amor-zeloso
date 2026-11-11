@@ -1,3 +1,4 @@
+import { hasPhone, visiblePhone } from '../shared/phone';
 import { containsAlcohol } from '../shared/alcohol';
 import {
   recurringItems,
@@ -873,7 +874,11 @@ export async function operations(
       .prepare('SELECT phone FROM customers WHERE organization_id=? AND id=?')
       .bind(org, order.customer_id)
       .first<{ phone: string }>();
-    if (!customer || !/^\+[1-9]\d{7,14}$/.test(customer.phone))
+    // Sem telefone cadastrado: a mensagem sai e o contato é escolhido no WhatsApp.
+    if (
+      !customer ||
+      (hasPhone(customer.phone) && !/^\+[1-9]\d{7,14}$/.test(customer.phone))
+    )
       throw new HttpError(400, 'Telefone do cliente inválido.');
     const items = (
       await db
@@ -936,7 +941,7 @@ export async function operations(
     } catch (e) {
       throw new HttpError(400, (e as Error).message);
     }
-    return json({ message, phone: customer.phone });
+    return json({ message, phone: visiblePhone(customer.phone) });
   }
   if (action === 'contact' && req.method === 'POST') {
     const data = await body(

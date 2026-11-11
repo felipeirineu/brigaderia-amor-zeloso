@@ -165,6 +165,12 @@ export async function actor(req: Request, env: Env): Promise<Actor> {
   if (!result) throw new HttpError(401, 'AUTHENTICATION_REQUIRED');
   return result;
 }
+/**
+ * Sessão de 30 dias: o celular não pede login a cada 8 horas e os avisos de
+ * lembrete continuam chegando. O Cloudflare Access segue como primeira
+ * barreira; "Sair" e a remoção do e-mail autorizado encerram na hora.
+ */
+export const SESSION_SECONDS = 30 * 24 * 60 * 60;
 export const sessionCookie = (token: string, maxAge: number) =>
   `__Host-session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;
 export async function login(req: Request, env: Env) {
@@ -231,11 +237,13 @@ export async function login(req: Request, env: Env) {
         await hash(token),
         invitation.organization_id,
         user.id,
-        now + 28800,
+        now + SESSION_SECONDS,
       ),
     db
       .prepare('DELETE FROM login_attempts WHERE window_start<?')
       .bind(now - 86400),
   ]);
-  return json({ ok: true }, 200, { 'Set-Cookie': sessionCookie(token, 28800) });
+  return json({ ok: true }, 200, {
+    'Set-Cookie': sessionCookie(token, SESSION_SECONDS),
+  });
 }

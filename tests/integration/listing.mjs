@@ -71,6 +71,43 @@ try {
     assert.deepEqual(await outside.json(), []);
     console.log(`OK ${path}: 65 pais com filhos, filtro e isolamento.`);
   }
+  // Mais de 200 pedidos: a lista traz os 200 mais recentes, em ordem crescente.
+  const insert = t.db.prepare(
+    'INSERT INTO orders(id,organization_id,customer_id,customer_name,due_at,total_cents,request_key,request_hash) VALUES(?,?,?,?,?,?,?,?)',
+  );
+  const newest = crypto.randomUUID();
+  await t.db.batch([
+    ...Array.from({ length: 150 }, (_, i) =>
+      insert.bind(
+        crypto.randomUUID(),
+        t.org,
+        client,
+        'Cliente DEMONSTRAÇÃO volume',
+        new Date(Date.UTC(2020, 0, 1 + i)).toISOString(),
+        100,
+        crypto.randomUUID(),
+        'x',
+      ),
+    ),
+    insert.bind(
+      newest,
+      t.org,
+      client,
+      'Cliente DEMONSTRAÇÃO volume',
+      '2099-01-01T12:00:00.000Z',
+      100,
+      crypto.randomUUID(),
+      'x',
+    ),
+  ]);
+  const many = await (await t.request('orders', { cookie: owner })).json();
+  assert.equal(many.length, 200);
+  assert.equal(many.at(-1).id, newest, 'o pedido mais novo aparece na lista');
+  assert.ok(
+    many.every((o, i) => i === 0 || many[i - 1].due_at <= o.due_at),
+    'ordem crescente de data preservada',
+  );
+  console.log('OK orders: 216 pedidos, lista com os 200 mais recentes.');
 } finally {
   await t.mf.dispose();
 }

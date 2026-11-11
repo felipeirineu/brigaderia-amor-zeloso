@@ -1,0 +1,5 @@
+# Falsos positivos confirmados em 11/11/2026: ACCESS_AUD do Cloudflare Access.
+# É um identificador público da aplicação (audience), não uma senha: sem o
+# token da Cloudflare ele não dá acesso a nada. Ver docs/SEGURANCA_AUDITORIA.md.
+dd2990e7f0ff7a2ee4de2eaa9231cb40becfb963:wrangler.jsonc:generic-api-key:15
+d1d2bd1bece588c1e6a7c903319422c1cbba2c9d:wrangler.jsonc:generic-api-key:9

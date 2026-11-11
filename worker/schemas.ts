@@ -3,8 +3,10 @@ import { placeSchema } from './field-domain';
 import { flavorPhotos } from '../shared/flavors';
 import { z } from 'zod';
 const text = (max: number) => z.string().trim().max(max);
+/** Telefone opcional: vazio é aceito; preenchido precisa ser válido. */
 export const phone = z
   .string()
+  .default('')
   .transform((s) => s.replace(/[\s().-]/g, ''))
   .transform((s) =>
     /^\d{10,11}$/.test(s) ? `+55${s}` : s.startsWith('55') ? `+${s}` : s,
@@ -13,8 +15,8 @@ export const phone = z
     z
       .string()
       .regex(
-        /^\+[1-9]\d{7,14}$/,
-        'Telefone inválido; informe DDD e número ou E.164.',
+        /^(\+[1-9]\d{7,14})?$/,
+        'Telefone inválido; informe DDD e número ou deixe em branco.',
       ),
   );
 export const customerSchema = z

@@ -4,7 +4,7 @@
 
 - Área `/gestao` separada da demonstração pública `/app`.
 - Login sem senha local: identidade validada por Cloudflare Access com JWT RS256, assinatura por JWKS, emissor, audiência, expiração e claims obrigatórias. Não basta confiar no e-mail ou num header sem validar a assinatura.
-- Sessão aleatória de 256 bits, somente SHA-256 do token no D1, cookie `__Host-session` HttpOnly/Secure/SameSite=Lax, expiração em 8 horas, rotação no login e revogação no logout.
+- Sessão aleatória de 256 bits, somente SHA-256 do token no D1, cookie `__Host-session` HttpOnly/Secure/SameSite=Lax, expiração em 30 dias (era 8 horas até 11/11/2026), rotação no login e revogação no logout.
 - Allowlist no D1 e papéis administrador/operador. Somente administrador pode autorizar novos e-mails. Sem cadastro público. Consulta de sessão verifica autorização e organização a cada requisição.
 - Clientes: nome, telefone normalizado E.164, e-mail/notas opcionais, busca por nome/telefone, edição e arquivamento. Unicidade de telefone por organização.
 - Produtos com múltiplas variantes, gramas por unidade, unidades por embalagem, preço em centavos, ativo/inativo e arquivamento.

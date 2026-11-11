@@ -223,7 +223,8 @@ export function Login() {
           </Button>
           <p>
             Após verificar sua identidade no Cloudflare Access, você entra
-            diretamente na gestão. A sessão expira em até 8 horas.
+            diretamente na gestão. A sessão dura até 30 dias neste aparelho; use
+            Sair em aparelho compartilhado.
           </p>
         </>
       ) : (
@@ -401,9 +402,8 @@ function Customers({ financial = false }: { financial?: boolean }) {
               />
             </label>
             <label>
-              Telefone
+              Telefone (opcional)
               <input
-                required
                 type="tel"
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -529,7 +529,8 @@ function Customers({ financial = false }: { financial?: boolean }) {
                     {c.name}
                   </span>
                   <small>
-                    {c.phone} · {c.active ? 'Ativo' : 'Arquivado'}
+                    {c.phone || 'Sem telefone'} ·{' '}
+                    {c.active ? 'Ativo' : 'Arquivado'}
                   </small>
                 </span>
               </Button>
@@ -567,7 +568,8 @@ function Customers({ financial = false }: { financial?: boolean }) {
                   </>
                 )}
                 <p>
-                  {c.phone} · {c.active ? 'Ativo' : 'Arquivado'}
+                  {c.phone || 'Sem telefone'} ·{' '}
+                  {c.active ? 'Ativo' : 'Arquivado'}
                 </p>
                 {!!c.active && (
                   <Button

@@ -29,6 +29,30 @@ try {
     operatorUser = (await call('session', undefined, 'GET', operator)).user_id;
   const fake = crypto.randomUUID();
 
+  // 0. Sessão de 30 dias: cookie e banco concordam; flags do cookie mantidas.
+  const fresh = await t.request('access/login', {
+    method: 'POST',
+    data: {},
+    jwt: await t.token('operator@example.test'),
+  });
+  const setCookie = fresh.headers.get('Set-Cookie') ?? '';
+  ok(/Max-Age=2592000/.test(setCookie), 'cookie não dura 30 dias');
+  ok(
+    /^__Host-session=[0-9a-f]{64}; Path=\/; HttpOnly; Secure; SameSite=Lax/.test(
+      setCookie,
+    ),
+    'flags do cookie de sessão mudaram',
+  );
+  const longest = await t.db
+    .prepare('SELECT MAX(expires_at)-unixepoch() AS left FROM sessions')
+    .first();
+  ok(
+    longest.left > 2592000 - 120 && longest.left <= 2592000,
+    'validade da sessão no banco não é de 30 dias',
+  );
+  // Este login extra não deve consumir o limite de tentativas dos demais.
+  await t.db.prepare('DELETE FROM login_attempts').run();
+
   // Todas as famílias de rotas protegidas (GET), incluindo IDs reais e inexistentes.
   const protectedGets = [
     'session',

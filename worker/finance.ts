@@ -1,3 +1,4 @@
+import { hasPhone, visiblePhone } from '../shared/phone';
 import { recurringDefaults, recurringMixedSchema } from './recurring-mixed';
 import { orderNumber } from './order-number';
 import { financeR2 } from './finance-r2';
@@ -600,7 +601,11 @@ export async function finance(
         (!selectedOrder || o.id === selectedOrder.id),
     );
     const message = `Olá, ${customer.name}! Segue o resumo ${selectedOrder ? 'do pedido selecionado' : closing ? `do fechamento ${closing.period_start} a ${closing.period_end}` : 'da sua conta'}: ${lines.map((o) => `pedido ${'number' in o && o.number ? 'nº ' + String(o.number) : String(o.id).slice(0, 8)} (${o.business_date}): ${brl(o.receivable_cents)}`).join('; ')}. Saldo: ${brl(balance)}.${closing ? ` Vencimento: ${closing.due_on}.` : ''}${pix ? ` Pix copia e cola: ${pix}` : ''}`;
-    if (!/^\+[1-9]\d{7,14}$/.test(String(customer.phone)))
+    // Sem telefone cadastrado: a mensagem sai e o contato é escolhido no WhatsApp.
+    if (
+      hasPhone(customer.phone) &&
+      !/^\+[1-9]\d{7,14}$/.test(String(customer.phone))
+    )
       throw new HttpError(400, 'Telefone inválido.');
     if (message.length > 7500)
       throw new HttpError(
@@ -609,7 +614,7 @@ export async function finance(
       );
     return json({
       message,
-      phone: customer.phone,
+      phone: visiblePhone(customer.phone),
       pix_code: pix,
       balance_cents: balance,
     });
