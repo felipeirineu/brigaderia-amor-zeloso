@@ -63,4 +63,6 @@ export const databaseTables = [
   'users',
   'kits',
   'kit_settings',
+  'kit_order_items',
+  'kit_order_components',
 ] as const;

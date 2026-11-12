@@ -66,6 +66,8 @@ const tables = [
   'push_requests',
   'kits',
   'kit_settings',
+  'kit_order_items',
+  'kit_order_components',
 ];
 export function inspect(
   database,
@@ -163,6 +165,8 @@ export function inspect(
     schema_p1_ready: p1,
     schema_mobile_ready: mobile,
     schema_field_ready: field,
+    schema_kit_orders_ready:
+      names.has('kit_order_items') && names.has('kit_order_components'),
     schema_kits_ready: names.has('kits') && names.has('kit_settings'),
     schema_push_ready: [
       'reminder_alerts',
@@ -172,6 +176,8 @@ export function inspect(
       'push_requests',
       'kits',
       'kit_settings',
+      'kit_order_items',
+      'kit_order_components',
     ].every((n) => names.has(n)),
     schema_profile_photos_ready: names.has('profile_photos'),
     schema_mixed_model_ready: names.has('order_item_components'),
