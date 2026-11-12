@@ -429,21 +429,15 @@ export function Today({
                             </small>
                           )}
                         </strong>
-                        <div className="production-bar" aria-hidden="true">
-                          <span
-                            style={{
-                              width:
-                                (100 * line.units) /
-                                  Math.max(
-                                    1,
-                                    ...view.data!.production.map(
-                                      (p) => p.units,
-                                    ),
-                                  ) +
-                                '%',
-                            }}
-                          />
-                        </div>
+                        <progress
+                          className="production-bar"
+                          aria-hidden="true"
+                          value={line.units}
+                          max={Math.max(
+                            1,
+                            ...view.data!.production.map((p) => p.units),
+                          )}
+                        />
                       </div>
                       <div
                         className="production-counts"

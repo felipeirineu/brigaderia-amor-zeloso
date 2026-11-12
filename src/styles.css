@@ -2147,15 +2147,25 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   grid-column: 1/-1;
 }
 .production-bar {
+  display: block;
+  width: 100%;
+  border: 0;
+  appearance: none;
   height: 8px;
   background: #f1e2cc;
   border-radius: 999px;
   margin-top: 6px;
   overflow: hidden;
 }
-.production-bar > span {
-  display: block;
-  height: 100%;
+.production-bar::-webkit-progress-bar {
+  background: #f1e2cc;
+  border-radius: 999px;
+}
+.production-bar::-webkit-progress-value {
+  background: #b8915b;
+  border-radius: 999px;
+}
+.production-bar::-moz-progress-bar {
   background: #b8915b;
   border-radius: 999px;
 }

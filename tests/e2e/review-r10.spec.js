@@ -56,6 +56,17 @@ test('R10-1 produção compacta preserva variantes e quantidades', async ({
     await p.goto(t.url + '/api/access/start');
     const list = p.locator('.production-list');
     await expect(list.locator('li')).toHaveCount(3);
+    const bars = list.locator('progress.production-bar');
+    await expect(bars).toHaveCount(3);
+    expect(
+      await bars.evaluateAll((nodes) =>
+        nodes.map((n) => n.value).sort((a, b) => a - b),
+      ),
+    ).toEqual([2, 3, 4]);
+    expect(
+      await bars.evaluateAll((nodes) => nodes.every((n) => n.max === 4)),
+    ).toBe(true);
+
     const simple = list
       .locator('li')
       .filter({ hasText: 'Produto DEMONSTRAÇÃO P1' });
