@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-12** — R18: R15-A revisada e aprovada, com 4 ajustes para a R15-B (o principal: tamanhos e quantidades de kit não podem ficar fixos em `CHECK`). Ver seção **R18**.
 - **2026-11-11** — Revisão geral do Claude (R6-7/R6-8 aprovadas) e correções. Ver "Revisão de 11/11/2026" em `docs/SEGURANCA_AUDITORIA.md` e a seção **R17**:
   - `_headers`: `img-src … blob:` e `geolocation=(self)` (foto e GPS estavam bloqueados em produção). **O harness agora aplica `_headers`**: todo teste de tela roda sob a CSP real. Não use estilo inline, `eval`, nem recursos externos; teste novo que precise injetar estilo usa `bypassCSP` só nele, com comentário.
   - Lista de pedidos: 200 mais recentes. Raiz e `start_url` → `/gestao`.
@@ -85,6 +86,22 @@
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
 
 ---
+
+## R18 — Revisão da R15-A (até `e722867`, 2026-11-12)
+
+### Aprovado
+
+- Migração 0019 aditiva, kit separado de sabor, sem seed. API com CAS, idempotência, auditoria, owner grava e operadora lê. Rotas na matriz (178 verificações). Backup inclui kits. CI e Segurança verdes no main.
+- Interruptor "Limitar sabores por kit" só para o owner, como pedido pelo responsável.
+- Correção das barras de produção (sem estilo inline) e chips no lugar de selects: bom achado sob a CSP real.
+- Relatório honesto: a R15 **não** está completa; kits ainda não entram em pedidos.
+
+### Ajustes pedidos (fazer na R15-B, antes de qualquer tabela referenciar `kits`)
+
+1. **Tamanhos e quantidades fixos no banco.** `CHECK(weight_grams IN(15,23,30))` e `CHECK(units_per_kit IN(12,25,50,100))` obrigam a reconstruir a tabela quando o negócio mudar, e o Tiago já avisou que pode criar kits de lembrancinha (a planilha tem caixas de 4, 5 e 6). Na próxima migração, trocar por faixas (`weight_grams BETWEEN 1 AND 500`, `units_per_kit BETWEEN 1 AND 500`) e fazer o mesmo no Zod. A tela continua oferecendo os chips atuais como atalhos, mais um campo "Outro" só para o owner. A 0019 ainda não foi aplicada no banco real (última execução do workflow: 02/11), mas **não edite a 0019**: use a 0020.
+2. **Peso da massa:** ao escolher o tamanho, sugerir 13/20/26 g (valores confirmados pelo Tiago em 08/11), identificados como sugestão e editáveis. Vazio continua significando "não informado".
+3. **Cadastro inicial mais rápido:** são 12 kits para digitar. Depois de salvar um, manter o tamanho selecionado e avançar para a próxima quantidade ainda não cadastrada. Sem preencher preços automaticamente.
+4. **Estado vazio:** quando não houver kit, mostrar a ordem de cadastro (embalagens em Insumos → kits) e o atalho para Insumos.
 
 ## R17 — Achados da revisão de 11/11/2026 (para o Codex)
 
