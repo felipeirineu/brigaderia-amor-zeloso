@@ -88,6 +88,8 @@ try {
     'p1/recipes',
     'p1/order-costs/' + order,
     'p1/reminders',
+    'p1/kits',
+    'p1/kit-settings',
     'p1/push',
     'p1/reports',
     'p1/reports.csv',
@@ -528,6 +530,63 @@ try {
       })
     ).status === 200,
     'operadora prepara Chegando sem envio',
+  );
+  const kitData = {
+    weight_grams: 15,
+    units_per_kit: 25,
+    price_cents: 12345,
+    max_flavors: 5,
+  };
+  const kit = await call('p1/kits', kitData);
+  for (const [path, method, data] of [
+    ['p1/kits', 'POST', kitData],
+    ['p1/kits/' + kit.id, 'GET'],
+    ['p1/kits/' + kit.id, 'PUT', { ...kitData, version: 1 }],
+    ['p1/kit-settings', 'PUT', { limit_flavors: false, version: 0 }],
+  ]) {
+    ok(
+      (await t.request(path, { method, data })).status === 401,
+      path + ' sem sessão',
+    );
+    if (method !== 'GET')
+      ok(
+        (
+          await t.request(path, {
+            method,
+            data,
+            cookie: operator,
+            key: crypto.randomUUID(),
+          })
+        ).status === 403,
+        path + ' escrita só owner',
+      );
+    if (path.endsWith(kit.id))
+      ok(
+        (
+          await t.request(path, {
+            method,
+            data,
+            cookie: outside,
+            key: crypto.randomUUID(),
+          })
+        ).status === 404,
+        path + ' isolado',
+      );
+  }
+  ok(
+    (await t.request('p1/kits/' + kit.id, { cookie: operator })).status === 200,
+    'operadora lê kit',
+  );
+  await call('p1/kit-settings', { limit_flavors: false, version: 0 }, 'PUT');
+  const otherSettings = await call(
+    'p1/kit-settings',
+    undefined,
+    'GET',
+    outside,
+  );
+  ok(
+    otherSettings.limit_flavors === true && otherSettings.version === 0,
+    'configuração isolada por organização',
   );
   console.log(
     `OK segurança: ${checks} verificações (sessão, JWT, CSRF, IDOR, papéis, catálogo, cabeçalhos).`,

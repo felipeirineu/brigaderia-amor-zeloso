@@ -1,3 +1,4 @@
+import { kits } from './kits';
 import { push } from './push';
 import { orderCosts } from './order-costs';
 import { backup } from './backup';
@@ -15,6 +16,8 @@ export async function p1(req: Request, env: Env, a: Actor) {
   if (!(await p1Ready(env)))
     throw new HttpError(503, 'Módulos P1 ainda não ativados.');
   const [, , , resource, id] = new URL(req.url).pathname.split('/');
+  if (['kits', 'kit-settings'].includes(resource))
+    return kits(req, env.DB!, a, resource, id);
   if (resource === 'push') return push(req, env, a);
   if (resource === 'backup' && req.method === 'GET') {
     if (!(await toolsReady(env)))

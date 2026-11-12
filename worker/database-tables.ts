@@ -61,4 +61,6 @@ export const databaseTables = [
   'sessions',
   'supplies',
   'users',
+  'kits',
+  'kit_settings',
 ] as const;

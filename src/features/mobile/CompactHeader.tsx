@@ -22,6 +22,7 @@ const titles: Record<string, string> = {
   agenda: 'Agenda',
   ajuda: 'Ajuda',
   preferencias: 'Preferências',
+  kits: 'Kits',
   recorrentes: 'Pedidos padrão',
   deslocamentos: 'Corridas',
   despesas: 'Despesas e fluxo',

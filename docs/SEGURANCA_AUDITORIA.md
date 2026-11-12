@@ -207,3 +207,9 @@ Análise geral do app (segurança, defeitos e melhorias), com correções feitas
 ### Continua com o responsável
 
 Aplicar as migrações 0016 a 0018; tornar o repositório privado; regra de proteção do `main`; roteiro do painel (item 1); ensaio de backup (item 3).
+
+## Continuação de 12/11 — cadastro de kits (R15-A)
+
+Matriz ampliada para **178 verificações**, incluindo todas as rotas do cadastro/configuração de kits. Escrita só por owner (operadora403), leituras autorizadas pela equipe, kit externo404 e anônimo401. CAS/idempotência, FK da embalagem e auditoria de alterações; nenhum telefone de cliente é lido ou exposto nessas rotas novas. Kits sem 0019 ficam indisponíveis e gestão legada permanece operacional. Backup/restauração inclui kit/configuração e vínculo com insumo, com FK verificada.
+
+Cabeçalhos de produção preservados. A barra do Hoje usa progress/value/max e CSS externo, em lugar de width inline. Nova tela usa chips para evitar violações internas de select no WebKit. Teste funcional e observador de securitypolicyviolation rodam sem bypass; só o contexto de fotografia tem exceção comentada, necessária à injeção de estilo do próprio Playwright. Sem eval ou recursos externos no produto. Nenhuma configuração Cloudflare, migração remota ou catálogo foi ativado.

@@ -1,3 +1,4 @@
+import { Kits } from './p1/Kits';
 import { NavigationScroll } from './mobile/NavigationScroll';
 import { reconcilePushSession, unsubscribeLocalPush } from './p1/push-device';
 import { compositionValid } from '../components/composition';
@@ -1693,6 +1694,7 @@ export function Management() {
                 <Route path="despesas" element={<Expenses />} />
                 <Route path="fichas" element={<Recipes />} />
                 <Route path="insumos" element={<Supplies />} />
+                <Route path="kits" element={<Kits role={session.role} />} />
                 <Route path="compras" element={<Shopping />} />
                 <Route path="lembretes" element={<Reminders />} />
               </>
@@ -1884,6 +1886,7 @@ function More({
                 ['despesas', 'Despesas e fluxo', 'financeiro'],
                 ['fichas', 'Fichas e preço sugerido', 'producao'],
                 ['insumos', 'Insumos e embalagens', 'produtos'],
+                ['kits', 'Kits', 'produtos'],
                 ['compras', 'Lista de compras', 'produtos'],
               ]
             : []),

@@ -15,6 +15,20 @@ const t = await runtime({
 try {
   const { call, customer, owner, operator, outside, makeOrder, variant } =
     await demoProject(t);
+  const kitPackaging = await call('p1/supplies', {
+    name: 'Caixa DEMONSTRAÇÃO backup',
+    unit: 'unit',
+    pack_quantity_milli: 50000,
+    pack_cost_cents: null,
+  });
+  await call('p1/kits', {
+    weight_grams: 15,
+    units_per_kit: 25,
+    price_cents: 12345,
+    max_flavors: 5,
+    packaging_supply_id: kitPackaging.id,
+  });
+  await call('p1/kit-settings', { limit_flavors: false, version: 0 }, 'PUT');
   const order = await makeOrder();
   const reminderUser = (await call('session', undefined, 'GET')).user_id;
   await call('p1/reminders', {
@@ -172,6 +186,8 @@ print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check'
   assert.equal(restored.counts.recurring_mixed_items, 1);
   assert.equal(restored.counts.recurring_mixed_components, 1);
   assert.equal(restored.counts.sessions, 0);
+  assert.equal(restored.counts.kits, 1);
+  assert.equal(restored.counts.kit_settings, 1);
   assert.equal(restored.counts.reminder_alerts, 1);
   assert.equal(restored.counts.reminder_recipients, 1);
   for (const table of ['push_subscriptions', 'push_jobs', 'push_requests'])
