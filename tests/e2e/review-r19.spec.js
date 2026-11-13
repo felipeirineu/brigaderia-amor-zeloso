@@ -27,7 +27,7 @@ test('R19 kit padrão salvo no cliente permite adicionar um kit com um toque', a
     },
   });
   try {
-    const { call, customer } = await demoProject(t);
+    const { call, customer, variant } = await demoProject(t);
     const kit = (
       await call('p1/kits', {
         weight_grams: 15,
@@ -202,6 +202,44 @@ test('R19 kit padrão salvo no cliente permite adicionar um kit com um toque', a
         await capture.close();
       }
     }
+    // Modelo antigo mantém seu preço e sua grade visível, sem adição dupla de kit.
+    const legacyCustomer = (
+      await call('customers', {
+        name: 'Estabelecimento legado DEMONSTRAÇÃO',
+        phone: '+5511900000001',
+      })
+    ).id;
+    await call('recurring', {
+      name: 'Modelo legado DEMONSTRAÇÃO',
+      customer_id: legacyCustomer,
+      weekday: 1,
+      time: '10:00',
+      delivery_type: 'pickup',
+      items: [{ variant_id: variant, quantity: 1 }],
+    });
+    const legacyPage = await op.newPage();
+    await legacyPage.goto(t.url + '/gestao/pedidos?novo=1');
+    await legacyPage
+      .getByRole('button', {
+        name: 'Estabelecimento legado DEMONSTRAÇÃO',
+        exact: true,
+      })
+      .click();
+    const legacySection = legacyPage
+      .locator('details')
+      .filter({
+        has: legacyPage.getByText('Embalagens anteriores', { exact: true }),
+      });
+    await expect(legacySection).toHaveAttribute('open', '');
+    await expect(
+      legacyPage.getByRole('button', { name: /^Continuar/ }),
+    ).toContainText('R$ 10,00');
+    await expect(
+      legacyPage.getByRole('button', {
+        name: 'Adicionar kit de Produto DEMONSTRAÇÃO P1',
+        exact: true,
+      }),
+    ).toHaveCount(0);
   } finally {
     await owner.close();
     await op.close();

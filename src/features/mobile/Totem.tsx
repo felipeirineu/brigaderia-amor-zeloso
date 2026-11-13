@@ -713,7 +713,7 @@ export function Totem({
               )}
               limit={kitCatalog.limit}
               mixed={defaults?.mixed ?? mixed}
-              quickMode
+              quickMode={selected.length === 0 && mixes.length === 0}
               defaultKitId={defaults?.profile.default_kit_id}
               disabled={busy}
               onEditingChange={setKitEditing}
@@ -721,6 +721,7 @@ export function Totem({
           )}
           {kitCatalog.error && <Failure message={kitCatalog.error} />}
           <LegacyItemsSection
+            expanded={selected.length > 0 || mixes.length > 0}
             folded={
               kitCatalog.kits.some((k) => !!k.active) || kitItems.length > 0
             }

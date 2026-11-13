@@ -518,13 +518,15 @@ export function KitItemsEditor({
 
 export function LegacyItemsSection({
   folded,
+  expanded = false,
   children,
 }: {
   folded: boolean;
+  expanded?: boolean;
   children: ReactNode;
 }) {
   return folded ? (
-    <details className="panel">
+    <details className="panel" open={expanded || undefined}>
       <DisclosureSummary>Embalagens anteriores</DisclosureSummary>
       {children}
     </details>
