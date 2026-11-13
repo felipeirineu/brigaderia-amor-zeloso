@@ -45,3 +45,11 @@ Esta etapa ainda não abre criação de kits nos pedidos. O editor anterior recu
 Os endpoints privados de pedido clássico e móvel recebem `kit_items` separadamente de `items` legados. Total, snapshots e composição são gravados juntos e protegidos pela versão do pedido. Uma edição de pedido com kits precisa enviar explicitamente a lista de kits; um editor antigo que a omita recebe 409. A confirmação revalida atividade e soma da composição. O comando `test:kits` inclui o ensaio completo das APIs.
 
 A montagem nas telas e a recorrência de kits ainda estão em integração. A repetição de último pedido que contenha kits fica indisponível no fluxo antigo, para não omitir parte do pedido. A etapa não libera uma experiência completa de venda por kit nem deve ser ativada no Cloudflare separadamente.
+
+## Montagem de pedidos R15-B (branch de desenvolvimento)
+
+Novo pedido permite escolher kit por tamanho/capacidade e montar sabores em unidades. Kits pequenos mostram espaços; capacidades maiores usam contagem por sabor. A montagem deve estar completa antes de continuar. Os seis passos do Totem e as embalagens antigas continuam disponíveis. O editor do PC preserva os dois tipos de item.
+
+Ao ajustar somente quantidade, o preço histórico é mantido. Outra composição usa o preço atual do kit; a prévia acompanha a mesma regra do servidor. Abrir montagem bloqueia a continuação até salvar/cancelar. Pedidos confirmados precisam ser reabertos antes da produção, pelo fluxo auditado existente.
+
+Modelos/geração recorrente de kits, defaults/repetição completa, cliente pessoa e ocasião ainda não foram integrados. Não considerar a R15 inteira concluída nem aplicar a branch diretamente no Cloudflare. A mudança documental `a7a1c64` foi incorporada: a R16 futura considerará uma sacola de envio por pedido iFood, com exemplo R$ 59,34.

@@ -84,8 +84,8 @@ export function Kits({ role }: { role: string }) {
     <>
       <h1 className="mobile-context-title">Kits</h1>
       <p>
-        Cadastre o preço do kit inteiro e sua embalagem. A seleção de kits nos
-        pedidos será disponibilizada na próxima etapa.
+        Cadastre o preço do kit inteiro e sua embalagem. No Novo pedido, escolha
+        tamanho e quantidade antes de montar os sabores.
       </p>
       <Failure
         message={error || view.error || settings.error || supplies.error}

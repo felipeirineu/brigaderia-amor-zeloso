@@ -1,3 +1,11 @@
+import { KitItemsEditor } from '../components/KitItemsEditor';
+import { useKitCatalog } from './p1/useKitCatalog';
+import {
+  kitItemPrice,
+  kitSnapshotInput,
+  type KitItemInput,
+  type KitItemSnapshot,
+} from '../../shared/kit-orders';
 import { Kits } from './p1/Kits';
 import { NavigationScroll } from './mobile/NavigationScroll';
 import { reconcilePushSession, unsubscribeLocalPush } from './p1/push-device';
@@ -100,6 +108,7 @@ interface Product {
   variants: Variant[];
 }
 interface Item {
+  kit_id?: string;
   id?: string;
   item_id?: string;
   components?: (ComponentInput & {
@@ -908,7 +917,7 @@ function Orders({
   const [search] = useSearchParams(),
     mode = useOrderMode(role);
   if (mobile && search.get('novo') && mode.simple)
-    return <Totem financial={props.financial} />;
+    return <Totem financial={props.financial} mixed={props.mixed} />;
   return (
     <>
       <div className="chips">
@@ -947,6 +956,11 @@ function FullOrders({
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const orders = useList<Order>(`orders?q=${encodeURIComponent(query)}`);
+  const kitCatalog = useKitCatalog(financial);
+  const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
+    [kitSnapshots, setKitSnapshots] = useState<KitItemSnapshot[]>([]),
+    [kitEditing, setKitEditing] = useState(false),
+    [kitEditorEpoch, setKitEditorEpoch] = useState(0);
   const customers = useList<Customer>('customers');
   const products = useList<Product>('products');
   const save = useSave(orders.reload);
@@ -971,6 +985,11 @@ function FullOrders({
     setCustomer(id);
     setDefaults(null);
     setTemplate('');
+    setKitEditing(false);
+    if (!editing) {
+      setKitItems([]);
+      setKitSnapshots([]);
+    }
     if (!financial || !id || editing) return;
     setItems([{ variant_id: '', quantity: 1 }]);
     setDue('');
@@ -988,6 +1007,8 @@ function FullOrders({
     }
   }
   function applyTemplate(plan: NonNullable<typeof defaults>['plans'][number]) {
+    setKitItems([]);
+    setKitSnapshots([]);
     setTemplate(plan.id);
     setItems(
       plan.items.map((i) => ({
@@ -1017,6 +1038,10 @@ function FullOrders({
   );
   function reset() {
     setEditing(null);
+    setKitItems([]);
+    setKitSnapshots([]);
+    setKitEditing(false);
+    setKitEditorEpoch((n) => n + 1);
     setCustomer('');
     setDefaults(null);
     setTemplate('');
@@ -1028,7 +1053,12 @@ function FullOrders({
   }
   function submit(e: FormEvent) {
     e.preventDefault();
-    if (items.some((i) => !compositionValid(i, options))) return;
+    if (
+      kitEditing ||
+      (!items.length && !kitItems.length) ||
+      items.some((i) => !compositionValid(i, options))
+    )
+      return;
     void save.save(
       () =>
         api(
@@ -1039,6 +1069,7 @@ function FullOrders({
             ...(!editing && template ? { template_id: template } : {}),
             due_at: new Date(`${due}:00-03:00`).toISOString(),
             notes,
+            kit_items: kitItems,
             composition_version: 1,
             items: items.map((i) => ({
               item_id: i.id ?? i.item_id,
@@ -1084,7 +1115,11 @@ function FullOrders({
       </p>
       <ErrorMessage
         message={
-          orders.error || customers.error || products.error || save.error
+          orders.error ||
+          customers.error ||
+          products.error ||
+          kitCatalog.error ||
+          save.error
         }
       />
       <p role="status">{save.notice}</p>
@@ -1162,6 +1197,23 @@ function FullOrders({
               onChange={(e) => setDue(e.target.value)}
             />
           </label>
+          {(kitCatalog.kits.length > 0 || kitItems.length > 0) && (
+            <KitItemsEditor
+              key={`${kitEditorEpoch}-${editing?.id ?? 'novo'}-${customer}`}
+              value={kitItems}
+              onChange={(value) => {
+                setKitItems(value);
+                if (value.length && items.every((i) => !i.variant_id))
+                  setItems([]);
+              }}
+              kits={kitCatalog.kits}
+              snapshots={kitSnapshots}
+              products={products.data}
+              limit={kitCatalog.limit}
+              mixed={mixed}
+              onEditingChange={setKitEditing}
+            />
+          )}
           {items.map((i, index) => (
             <fieldset key={index}>
               <legend>Item {index + 1}</legend>
@@ -1218,7 +1270,7 @@ function FullOrders({
                   )
                 }
               />
-              {(items.length > 1 || i.components) && (
+              {(items.length > 1 || i.components || kitItems.length > 0) && (
                 <Button
                   type="button"
                   onClick={() =>
@@ -1252,12 +1304,26 @@ function FullOrders({
             />
           </label>
           <p>
-            Prévia: {money(estimate)}. O servidor confere o total ao salvar.
+            Prévia:{' '}
+            {money(
+              estimate +
+                kitItems.reduce(
+                  (n, i) =>
+                    n +
+                    i.quantity *
+                      (kitItemPrice(i, kitCatalog.kits, kitSnapshots) ?? 0),
+                  0,
+                ),
+            )}
+            . O servidor confere o total ao salvar.
           </p>
           <div className="actions">
             <Button
               disabled={
-                save.busy || items.some((i) => !compositionValid(i, options))
+                save.busy ||
+                kitEditing ||
+                (!items.length && !kitItems.length) ||
+                items.some((i) => !compositionValid(i, options))
               }
               variant="primary"
               loading={save.busy}
@@ -1296,9 +1362,11 @@ function FullOrders({
                 {o.items.map((i, index) => (
                   <li key={i.id ?? index}>
                     {i.quantity} ×{' '}
-                    {i.components?.length
-                      ? `Caixa mista (${i.components.map((c) => `${c.units} ${c.product_name ?? options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
-                      : `${i.product_name} — ${i.variant_label}`}{' '}
+                    {i.kit_id
+                      ? `${i.product_name} (${i.components?.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
+                      : i.components?.length
+                        ? `Caixa mista (${i.components.map((c) => `${c.units} ${c.product_name ?? options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
+                        : `${i.product_name} — ${i.variant_label}`}{' '}
                     · {money(i.unit_price_cents!)}
                   </li>
                 ))}
@@ -1331,7 +1399,13 @@ function FullOrders({
                           .slice(0, 16),
                       );
                       setNotes(o.notes);
-                      setItems(o.items);
+                      setKitEditing(false);
+                      const savedKits = o.items.filter(
+                        (i) => i.kit_id,
+                      ) as unknown as KitItemSnapshot[];
+                      setKitSnapshots(savedKits);
+                      setKitItems(savedKits.map(kitSnapshotInput));
+                      setItems(o.items.filter((i) => !i.kit_id));
                     }}
                   >
                     Editar pedido de {o.customer_name}
@@ -1668,7 +1742,9 @@ export function Management() {
             {session.mobile && (
               <Route
                 path="pedidos/:id/editar-simples"
-                element={<Totem financial={session.finance} />}
+                element={
+                  <Totem financial={session.finance} mixed={session.mixed} />
+                }
               />
             )}
             {session.tools && session.role === 'owner' && (
