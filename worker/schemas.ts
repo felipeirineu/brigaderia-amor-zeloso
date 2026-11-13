@@ -1,3 +1,4 @@
+import { kitItemSchema } from './kit-order-domain';
 import { itemInputSchema, uniqueItems } from './mixed-domain';
 import { placeSchema } from './field-domain';
 import { flavorPhotos } from '../shared/flavors';
@@ -68,7 +69,8 @@ export const orderSchema = z
       .datetime({ offset: true })
       .transform((s) => new Date(s).toISOString()),
     notes: text(2000).default(''),
-    items: z.array(itemInputSchema).min(1).max(50),
+    items: z.array(itemInputSchema).max(50).default([]),
+    kit_items: z.array(kitItemSchema).max(50).optional(),
     composition_version: z.literal(1).optional(),
     version: z.number().int().positive().optional(),
   })
@@ -76,6 +78,12 @@ export const orderSchema = z
   .refine(
     (v) => uniqueItems(v.items),
     'Combine as quantidades da mesma variante.',
+  )
+  .refine(
+    (v) =>
+      v.items.length + (v.kit_items?.length ?? 0) >= 1 &&
+      v.items.length + (v.kit_items?.length ?? 0) <= 50,
+    'Informe de 1 a 50 itens.',
   );
 export const memberSchema = z
   .object({

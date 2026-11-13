@@ -39,3 +39,9 @@ Validação R18: sete testes SQL incluindo preservação do catálogo na migraç
 Snapshots de kit passam a ser lidos em lote no detalhe, lista, Hoje e WhatsApp. Produção e relatórios incluem composição e tamanho, sem repetir receita financeira. O custo usa ficha do produto no mesmo peso; se faltar ou houver ambiguidade, permanece indisponível. Embalagem do snapshot é contada uma vez por kit, sem reutilizar o valor de embalagens por lote da ficha. Compras inclui as embalagens e mantém avisos de insumos desconhecidos/inativos.
 
 Esta etapa ainda não abre criação de kits nos pedidos. O editor anterior recusa modificar um pedido que contenha snapshots de kit, evitando perder itens enquanto a montagem/edição não estiver integrada. Recorrência, Totem/editor completo, cliente pessoa e ocasião seguem pendentes. O teste com 66 pedidos usa somente D1 efêmero e snapshots DEMONSTRAÇÃO; não são pedidos reais nem uma API alternativa de produção.
+
+## Escrita autenticada R15-B (branch de desenvolvimento)
+
+Os endpoints privados de pedido clássico e móvel recebem `kit_items` separadamente de `items` legados. Total, snapshots e composição são gravados juntos e protegidos pela versão do pedido. Uma edição de pedido com kits precisa enviar explicitamente a lista de kits; um editor antigo que a omita recebe 409. A confirmação revalida atividade e soma da composição. O comando `test:kits` inclui o ensaio completo das APIs.
+
+A montagem nas telas e a recorrência de kits ainda estão em integração. A repetição de último pedido que contenha kits fica indisponível no fluxo antigo, para não omitir parte do pedido. A etapa não libera uma experiência completa de venda por kit nem deve ser ativada no Cloudflare separadamente.

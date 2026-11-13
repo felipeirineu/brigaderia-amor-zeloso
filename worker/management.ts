@@ -1,4 +1,8 @@
-import { readKitItems } from './kit-order-items';
+import {
+  readKitItems,
+  prepareOrderKits,
+  writeKitItems,
+} from './kit-order-items';
 import { noPhone, visiblePhone } from '../shared/phone';
 import { recurringMixedSchema } from './recurring-mixed';
 import { mixedReady } from './mixed';
@@ -453,11 +457,25 @@ export async function management(req: Request, env: Env, a: Actor) {
             .all<Snapshot>()
         ).results
       : [];
-    if (id && (await readKitItems(db, org, [id])).length)
+    const oldKits = id ? await readKitItems(db, org, [id]) : [];
+    if (oldKits.length && d.kit_items === undefined)
       throw new HttpError(
         409,
-        'Este pedido contém kits. A edição de kits ainda não está disponível neste editor.',
+        'Este pedido contém kits. Abra um editor com suporte a kits.',
       );
+    if (
+      d.kit_items?.some((i) => i.components.length > 1) &&
+      env.MIXED_BOXES_ENABLED !== 'true'
+    )
+      throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+    if (d.kit_items?.length && !(await p1Ready(env)))
+      throw new HttpError(503, 'Kits ainda não ativados.');
+    const kitItems = await prepareOrderKits(
+      db,
+      org,
+      d.kit_items ?? [],
+      oldKits,
+    );
     await attachComponents(db, org, old);
     const items = await prepareItems(
       env,
@@ -466,7 +484,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       old,
       d.composition_version,
     );
-    const total = items.reduce(
+    const total = [...items, ...kitItems].reduce(
       (sum, i) => sum + i.quantity * i.unit_price_cents,
       0,
     );
@@ -552,6 +570,9 @@ export async function management(req: Request, env: Env, a: Actor) {
         )
         .bind(org, entityId, JSON.stringify(items), ...guardArgs),
       ...writeComponents(db, org, items, guard, guardArgs),
+      ...(kitItems.length || oldKits.length
+        ? writeKitItems(db, org, entityId, kitItems, guard, guardArgs)
+        : []),
     );
   }
   if (

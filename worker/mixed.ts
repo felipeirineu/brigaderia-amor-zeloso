@@ -1,3 +1,4 @@
+import { validateKitConfirmation } from './kit-order-items';
 import { HttpError, type Env } from './security';
 import {
   compositionKey,
@@ -201,6 +202,12 @@ export async function validateMixedConfirmation(
   order: string,
 ) {
   const db = env.DB!;
+  await validateKitConfirmation(
+    db,
+    org,
+    order,
+    env.MIXED_BOXES_ENABLED === 'true',
+  );
   if (!(await compositionSchema(db))) return;
   const rows = (
     await db

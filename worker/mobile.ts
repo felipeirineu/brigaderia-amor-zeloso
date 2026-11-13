@@ -1,4 +1,10 @@
-import { readKitItems } from './kit-order-items';
+import { p1Ready } from './p1-ready';
+import {
+  readKitItems,
+  prepareOrderKits,
+  writeKitItems,
+} from './kit-order-items';
+import { kitItemSchema } from './kit-order-domain';
 import {
   recurringDefaults,
   recurringMixedSchema,
@@ -31,7 +37,8 @@ const schema = z
       .datetime({ offset: true })
       .transform((v) => new Date(v).toISOString()),
     notes: z.string().trim().max(2000).default(''),
-    items: z.array(itemInputSchema).min(1).max(50),
+    items: z.array(itemInputSchema).max(50).default([]),
+    kit_items: z.array(kitItemSchema).max(50).optional(),
     composition_version: z.literal(1).optional(),
     delivery: z
       .object({ ...deliverySchema.shape, version: z.number().optional() })
@@ -43,7 +50,13 @@ const schema = z
     terms: termsSchema.nullable().default(null),
   })
   .strict()
-  .refine((v) => uniqueItems(v.items), 'Variante repetida.');
+  .refine((v) => uniqueItems(v.items), 'Variante repetida.')
+  .refine(
+    (v) =>
+      v.items.length + (v.kit_items?.length ?? 0) >= 1 &&
+      v.items.length + (v.kit_items?.length ?? 0) <= 50,
+    'Informe de 1 a 50 itens.',
+  );
 type Row = Record<string, string | number | null>;
 export async function mobile(req: Request, env: Env, a: Actor) {
   if (!(await mobileReady(env)))
@@ -118,7 +131,8 @@ export async function mobile(req: Request, env: Env, a: Actor) {
           }
         : {}),
     }));
-    let lastValid = lastInput.length > 0;
+    const lastKits = last ? await readKitItems(db, org, [String(last.id)]) : [];
+    let lastValid = lastInput.length > 0 && lastKits.length === 0;
     try {
       prepareRecurring(
         lastInput,
@@ -175,6 +189,14 @@ export async function mobile(req: Request, env: Env, a: Actor) {
         ? {
             ...last,
             items: lastInput,
+            kit_items: lastKits.map((i) => ({
+              kit_id: i.kit_id,
+              quantity: i.quantity,
+              components: i.components.map((c) => ({
+                product_id: c.product_id,
+                units: c.units,
+              })),
+            })),
             valid: lastValid,
           }
         : null,
@@ -241,11 +263,25 @@ export async function mobile(req: Request, env: Env, a: Actor) {
             .all<Row>()
         ).results
       : [];
-    if (id && (await readKitItems(db, org, [id])).length)
+    const oldKits = id ? await readKitItems(db, org, [id]) : [];
+    if (oldKits.length && d.kit_items === undefined)
       throw new HttpError(
         409,
-        'Este pedido contém kits. A edição de kits ainda não está disponível neste editor.',
+        'Este pedido contém kits. Abra um editor com suporte a kits.',
       );
+    if (
+      d.kit_items?.some((i) => i.components.length > 1) &&
+      env.MIXED_BOXES_ENABLED !== 'true'
+    )
+      throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+    if (d.kit_items?.length && !(await p1Ready(env)))
+      throw new HttpError(503, 'Kits ainda não ativados.');
+    const kitItems = await prepareOrderKits(
+      db,
+      org,
+      d.kit_items ?? [],
+      oldKits,
+    );
     await attachComponents(db, org, old);
     const items = await prepareItems(
       env,
@@ -254,7 +290,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       old as unknown as ItemSnapshot[],
       d.composition_version,
     );
-    const total = items.reduce(
+    const total = [...items, ...kitItems].reduce(
       (n, i) => n + i.quantity * Number(i.unit_price_cents),
       0,
     );
@@ -338,6 +374,9 @@ export async function mobile(req: Request, env: Env, a: Actor) {
           )
           .bind(org, order, JSON.stringify(items), ...args),
         ...writeComponents(db, org, items, g, args),
+        ...(kitItems.length || oldKits.length
+          ? writeKitItems(db, org, order, kitItems, g, args)
+          : []),
         ...(financial
           ? [
               db

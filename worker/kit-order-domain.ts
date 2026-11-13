@@ -75,12 +75,21 @@ export function prepareKitItems(
     }
     // Quantidade isolada preserva preço/composição e não reaplica o limite histórico.
 
-    if (prior && kitCompositionKey(prior) === kitCompositionKey(item))
+    if (prior && kitCompositionKey(prior) === kitCompositionKey(item)) {
+      if (
+        prior.components.reduce((n, c) => n + c.units, 0) !==
+        prior.units_per_kit
+      )
+        throw new HttpError(
+          409,
+          'Composição histórica inconsistente. Revise o kit.',
+        );
       return {
         ...prior,
         quantity: item.quantity,
         components: prior.components.map((c) => ({ ...c })),
       };
+    }
 
     if (item.components.reduce((n, c) => n + c.units, 0) !== kit.units_per_kit)
       throw new HttpError(400, 'A soma dos sabores precisa completar o kit.');

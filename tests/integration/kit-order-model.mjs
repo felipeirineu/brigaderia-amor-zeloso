@@ -374,7 +374,7 @@ print(json.dumps({'parents':c.execute('SELECT COUNT(*) FROM kit_order_items').fe
     '65 kits confirmados; pedido retirado fica fora da produção',
   );
   console.log(
-    'OK R15-B leitores: 66 pedidos com kits, detalhe/lista/Hoje, produção por peso, relatórios/WhatsApp, custos/embalagens/compras, guardas e backup; escrita pública ainda não ligada.',
+    'OK R15-B leitores: 66 pedidos com kits, detalhe/lista/Hoje, produção por peso, relatórios/WhatsApp, custos/embalagens/compras, guardas e backup; criação e ajuste cobertos em kit-orders.mjs.',
   );
 } finally {
   await t.dispose();

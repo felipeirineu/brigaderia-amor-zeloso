@@ -154,3 +154,32 @@ export function kitDisplayItem(
     })),
   };
 }
+
+export async function validateKitConfirmation(
+  db: D1Database,
+  org: string,
+  order: string,
+  mixed: boolean,
+) {
+  if (!(await kitOrdersReady(db))) return;
+  const rows = (
+    await db
+      .prepare(
+        `SELECT i.units_per_kit,COALESCE(SUM(c.units),0) units,COUNT(c.product_id) flavors,MAX(CASE WHEN k.active<>1 OR p.active<>1 OR p.id IS NULL OR k.id IS NULL THEN 1 ELSE 0 END) invalid FROM kit_order_items i LEFT JOIN kit_order_components c ON c.organization_id=i.organization_id AND c.item_id=i.id LEFT JOIN kits k ON k.organization_id=i.organization_id AND k.id=i.kit_id LEFT JOIN products p ON p.organization_id=c.organization_id AND p.id=c.product_id WHERE i.organization_id=? AND i.order_id=? GROUP BY i.id,i.units_per_kit`,
+      )
+      .bind(org, order)
+      .all<{
+        units_per_kit: number;
+        units: number;
+        flavors: number;
+        invalid: number;
+      }>()
+  ).results;
+  if (rows.some((r) => r.invalid || r.units !== r.units_per_kit))
+    throw new HttpError(
+      400,
+      'Revise os kits: composição completa e sabores ativos são obrigatórios.',
+    );
+  if (!mixed && rows.some((r) => r.flavors > 1))
+    throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+}
