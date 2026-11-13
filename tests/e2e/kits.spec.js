@@ -128,7 +128,7 @@ test('R15-A administrador cadastra/edita kit sob CSP real e operadora só consul
           photo.getByRole('heading', { name: 'Kit 25 · 15 g', exact: true }),
         ).toBeVisible();
         await photo.screenshot({
-          path: 'docs/colaboracao/capturas/r15-depois-cadastro-kits.png',
+          path: 'docs/colaboracao/capturas/r18-depois-cadastro-kits.png',
           fullPage: true,
         });
       } finally {

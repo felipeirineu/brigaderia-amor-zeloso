@@ -93,6 +93,131 @@ try {
   assert.equal(flavors[0].weight_grams, 15);
   assert.equal(flavors[0].units, 25);
   assert.equal(flavors[0].product_id, product.id);
+  const detail = await call('orders/' + order, undefined, 'GET');
+  assert.equal(detail.items.length, 2, 'detalhe inclui legado e kit');
+  const visible = detail.items.find((i) => i.kit_id === kit);
+  assert.equal(visible.variant_id, null, 'kit não é anunciado como variante');
+  assert.equal(visible.components[0].product_id, product.id);
+  const list = await call('orders', undefined, 'GET');
+  assert.equal(list.find((o) => o.id === order).items.length, 2);
+  const blockedEdit = await t.request('orders/' + order, {
+    cookie: owner,
+    method: 'PUT',
+    key: crypto.randomUUID(),
+    data: {
+      customer_id: customer,
+      due_at: '2030-01-07T13:00:00Z',
+      items: [{ variant_id: variant, quantity: 1 }],
+      version: 2,
+    },
+  });
+  assert.equal(blockedEdit.status, 409, 'editor antigo não perde os kits');
+  await t.db
+    .prepare(
+      "UPDATE orders SET status='confirmed' WHERE organization_id=? AND id=?",
+    )
+    .bind(t.org, order)
+    .run();
+  const today = await call('today?date=2030-01-07', undefined, 'GET');
+  assert.equal(today.orders[0].items.length, 2);
+  assert.equal(today.production.find((r) => r.weight_grams === 15).units, 50);
+  assert.equal(today.production.find((r) => r.weight_grams === 10).units, 2);
+  await t.db
+    .prepare(
+      "UPDATE orders SET status='picked_up' WHERE organization_id=? AND id=?",
+    )
+    .bind(t.org, order)
+    .run();
+  const report = await call(
+    'p1/reports?from=2030-01-07&to=2030-01-07',
+    undefined,
+    'GET',
+  );
+  assert.equal(
+    report.products.reduce((n, p) => n + p.total_cents, 0),
+    25690,
+  );
+  assert.equal(report.products.find((p) => p.weight_grams === 15).units, 50);
+  assert.equal(report.products.find((p) => p.weight_grams === 15).boxes, 2);
+  const absentCost = await call('p1/order-costs/' + order, undefined, 'GET');
+  assert.equal(absentCost.estimated_cost_cents, null);
+  assert.ok(absentCost.missing.some((m) => /Embalagem não informada/.test(m)));
+  const ingredient = (
+    await call('p1/supplies', {
+      name: 'Insumo DEMONSTRAÇÃO cálculo',
+      unit: 'unit',
+      pack_quantity_milli: 1000,
+      pack_cost_cents: 100,
+    })
+  ).id;
+  const packaging = (
+    await call('p1/supplies', {
+      name: 'Caixa DEMONSTRAÇÃO cálculo',
+      unit: 'unit',
+      pack_quantity_milli: 1000,
+      pack_cost_cents: 300,
+    })
+  ).id;
+  await call('p1/recipes', {
+    name: 'Ficha DEMONSTRAÇÃO cálculo',
+    variant_id: variant,
+    yield_units: 10,
+    packaging_cents: 999,
+    labor_cents: 0,
+    overhead_cents: 0,
+    margin_bps: 0,
+    components: [{ supply_id: ingredient, quantity_milli: 1000 }],
+  });
+  // Alteração de snapshot só nesta fixture: simula pedido criado com embalagem vinculada.
+  await t.db.batch([
+    t.db
+      .prepare(
+        'UPDATE product_variants SET weight_grams=15 WHERE organization_id=? AND id=?',
+      )
+      .bind(t.org, variant),
+    t.db
+      .prepare(
+        'UPDATE kit_order_items SET packaging_supply_id=? WHERE organization_id=? AND id=?',
+      )
+      .bind(packaging, t.org, items[0].id),
+    t.db
+      .prepare(
+        "UPDATE orders SET status='confirmed' WHERE organization_id=? AND id=?",
+      )
+      .bind(t.org, order),
+  ]);
+  const cost = await call('p1/order-costs/' + order, undefined, 'GET');
+  assert.deepEqual(cost.missing, []);
+  assert.equal(
+    cost.items.find((i) => i.item_id === items[0].id).estimated_cost_cents,
+    1100,
+    '500 ingredientes + 600 embalagens, sem os 999 da ficha',
+  );
+  assert.equal(
+    cost.estimated_cost_cents,
+    1320,
+    'item legado mantém a fórmula anterior',
+  );
+  const shopping = await call(
+    'p1/shopping?from=2030-01-07&to=2030-01-07',
+    undefined,
+    'GET',
+  );
+  assert.equal(
+    shopping.items.find((s) => s.supply_id === packaging).required_milli,
+    2000,
+    'uma embalagem por kit',
+  );
+  await t.db
+    .prepare(
+      "UPDATE orders SET status='picked_up' WHERE organization_id=? AND id=?",
+    )
+    .bind(t.org, order)
+    .run();
+  const message = await call('orders/' + order + '/message', {
+    kind: 'confirmation',
+  });
+  assert.match(JSON.stringify(message), /Kit 25/);
   await call(
     'p1/kits/' + kit,
     {
@@ -178,8 +303,44 @@ print(json.dumps({'parents':c.execute('SELECT COUNT(*) FROM kit_order_items').fe
     legacy: 1,
     fk: [],
   });
+  // Mais de 60 pais: hidratação em lote inclui kits sem uma consulta por pedido.
+  for (let n = 0; n < 65; n++) {
+    const parent = crypto.randomUUID(),
+      child = crypto.randomUUID();
+    await t.db.batch([
+      t.db
+        .prepare(
+          "INSERT INTO orders(id,organization_id,customer_id,customer_name,due_at,total_cents,request_key,request_hash,status) VALUES(?,?,?,'Cliente DEMONSTRAÇÃO volume','2030-01-07T13:00:00Z',12345,?,'DEMONSTRAÇÃO','confirmed')",
+        )
+        .bind(parent, t.org, customer, crypto.randomUUID()),
+      t.db
+        .prepare(
+          'INSERT INTO kit_order_items SELECT organization_id,?,?,kit_id,1,weight_grams,dough_weight_grams,units_per_kit,unit_price_cents,packaging_supply_id FROM kit_order_items WHERE organization_id=? AND id=?',
+        )
+        .bind(child, parent, t.org, items[0].id),
+      t.db
+        .prepare(
+          'INSERT INTO kit_order_components SELECT organization_id,?,product_id,units,product_name,photo_key,contains_alcohol FROM kit_order_components WHERE organization_id=? AND item_id=?',
+        )
+        .bind(child, t.org, items[0].id),
+    ]);
+  }
+  const many = await call('orders', undefined, 'GET');
+  assert.equal(many.length, 66);
+  assert.ok(many.every((o) => o.items.some((i) => i.kit_id === kit)));
+  assert.deepEqual(
+    await call('orders', undefined, 'GET', await t.login('other@example.test')),
+    [],
+  );
+  const volume = await call('today?date=2030-01-07', undefined, 'GET');
+  assert.equal(volume.orders.length, 66);
+  assert.equal(
+    volume.production.find((r) => r.weight_grams === 15).units,
+    1625,
+    '65 kits confirmados; pedido retirado fica fora da produção',
+  );
   console.log(
-    'OK R15-B helpers: D1 real, snapshots, guard, projeção legada+kit, organização e preço histórico; API de pedidos ainda não ligada.',
+    'OK R15-B leitores: 66 pedidos com kits, detalhe/lista/Hoje, produção por peso, relatórios/WhatsApp, custos/embalagens/compras, guardas e backup; escrita pública ainda não ligada.',
   );
 } finally {
   await t.dispose();

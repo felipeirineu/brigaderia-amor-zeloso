@@ -1,3 +1,4 @@
+import { readKitItems } from './kit-order-items';
 import { flavorLines } from './flavor-lines';
 import { z } from 'zod';
 import { HttpError, json, type Actor } from './security';
@@ -15,6 +16,8 @@ interface Recipe {
   id: string;
   name: string;
   variant_id: string | null;
+  product_id: string | null;
+  weight_grams: number | null;
   yield_units: number;
   packaging_cents: number;
   labor_cents: number;
@@ -29,7 +32,7 @@ export async function readRecipes(db: D1Database, org: string) {
   const rows = (
     await db
       .prepare(
-        'SELECT r.id,r.name,r.variant_id,r.yield_units,r.packaging_cents,r.labor_cents,r.overhead_cents,r.margin_bps,r.active,r.version,v.units_per_box FROM recipes r LEFT JOIN product_variants v ON v.organization_id=r.organization_id AND v.id=r.variant_id WHERE r.organization_id=? ORDER BY r.active DESC,r.name LIMIT 201',
+        'SELECT r.id,r.name,r.variant_id,r.yield_units,r.packaging_cents,r.labor_cents,r.overhead_cents,r.margin_bps,r.active,r.version,v.units_per_box,v.product_id,v.weight_grams FROM recipes r LEFT JOIN product_variants v ON v.organization_id=r.organization_id AND v.id=r.variant_id WHERE r.organization_id=? ORDER BY r.active DESC,r.name LIMIT 201',
       )
       .bind(org)
       .all<Omit<Recipe, 'components'>>()
@@ -103,10 +106,22 @@ export async function recipes(
     );
     const byVariant = new Map<
       string,
-      { variant_id: string; name: string; units: number; orders: Set<string> }
+      {
+        variant_id: string;
+        product_id: string | null;
+        weight_grams: number;
+        kit: boolean;
+        name: string;
+        units: number;
+        orders: Set<string>;
+      }
     >();
     for (const line of lines) {
-      const d = byVariant.get(line.variant_id) ?? {
+      const key = JSON.stringify([line.variant_id, line.weight_grams]);
+      const d = byVariant.get(key) ?? {
+        product_id: line.product_id,
+        weight_grams: line.weight_grams,
+        kit: !!line.kit_id,
         variant_id: line.variant_id,
         name: line.display_name,
         units: 0,
@@ -114,7 +129,7 @@ export async function recipes(
       };
       d.units = safeQuantity(BigInt(d.units) + BigInt(line.units));
       d.orders.add(line.order_id);
-      byVariant.set(line.variant_id, d);
+      byVariant.set(key, d);
     }
     const demand = [...byVariant.values()];
     const missing: string[] = [],
@@ -138,9 +153,14 @@ export async function recipes(
         }
       >();
     for (const d of demand) {
-      const recipe = rows.find(
-        (r) => r.variant_id === d.variant_id && r.active,
+      const candidates = rows.filter(
+        (r) =>
+          r.active &&
+          (d.kit
+            ? r.product_id === d.product_id && r.weight_grams === d.weight_grams
+            : r.variant_id === d.variant_id),
       );
+      const recipe = candidates.length === 1 ? candidates[0] : undefined;
       if (!recipe) {
         missing.push('Sem ficha: ' + d.name);
         continue;
@@ -174,6 +194,57 @@ export async function recipes(
         );
         totals.set(c.supply_id, previous);
       }
+    }
+    const kitItems = await readKitItems(
+      db,
+      org,
+      orders.map((o) => o.id),
+    );
+    const packaging = kitItems.length
+      ? (
+          await db
+            .prepare(
+              'SELECT id,name,unit,pack_quantity_milli,pack_cost_cents,active FROM supplies WHERE organization_id=? AND id IN(SELECT value FROM json_each(?))',
+            )
+            .bind(
+              org,
+              JSON.stringify(kitItems.map((i) => i.packaging_supply_id)),
+            )
+            .all<{
+              id: string;
+              name: string;
+              unit: string;
+              pack_quantity_milli: number;
+              pack_cost_cents: number | null;
+              active: number;
+            }>()
+        ).results
+      : [];
+    for (const kit of kitItems) {
+      const supply = packaging.find((s) => s.id === kit.packaging_supply_id);
+      if (!supply || supply.unit !== 'unit') {
+        missing.push(
+          'Embalagem não informada: kit ' +
+            kit.units_per_kit +
+            ' · ' +
+            kit.weight_grams +
+            ' g',
+        );
+        continue;
+      }
+      if (!supply.active) missing.push('Insumo inativo: ' + supply.name);
+      const previous = totals.get(supply.id);
+      totals.set(supply.id, {
+        supply_id: supply.id,
+        name: supply.name,
+        unit: supply.unit,
+        pack_quantity_milli: supply.pack_quantity_milli,
+        pack_cost_cents: supply.pack_cost_cents,
+        active: supply.active,
+        required_milli: safeQuantity(
+          BigInt(previous?.required_milli ?? 0) + BigInt(kit.quantity) * 1000n,
+        ),
+      });
     }
     const items = [...totals.values()].map((s) => {
       const packs = safeQuantity(

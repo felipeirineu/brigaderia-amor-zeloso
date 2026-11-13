@@ -569,7 +569,8 @@ export function Today({
                           className="delivery-flavor delivery-mix"
                           key={String(i.id ?? i.variant_id) + '-mix'}
                         >
-                          {i.quantity}× Caixa mista (
+                          {i.quantity}×{' '}
+                          {i.kit_id ? i.product_name : 'Caixa mista'} (
                           {i.components
                             .map(
                               (c, _, all) =>

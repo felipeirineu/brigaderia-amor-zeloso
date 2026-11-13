@@ -1,3 +1,4 @@
+import { readKitItems, kitDisplayItem } from './kit-order-items';
 import { recurringItems } from './recurring-mixed';
 import { attachComponents } from './mixed';
 /** Hidrata no máximo 200 pais em lotes abaixo do limite de 100 bindings do D1. */
@@ -44,7 +45,13 @@ export async function childrenByParent(
       grouped.set(parent, entries);
     }
   }
-  if (kind === 'orders')
+  if (kind === 'orders') {
     await attachComponents(db, organization, [...grouped.values()].flat());
+    for (const item of await readKitItems(db, organization, ids)) {
+      const entries = grouped.get(item.order_id) ?? [];
+      entries.push(kitDisplayItem(item));
+      grouped.set(item.order_id, entries);
+    }
+  }
   return grouped;
 }

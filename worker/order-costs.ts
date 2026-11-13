@@ -1,3 +1,4 @@
+import { readKitItems } from './kit-order-items';
 import { z } from 'zod';
 import { HttpError, json, type Actor } from './security';
 import { readRecipes } from './recipes';
@@ -55,9 +56,15 @@ export async function orderCosts(
       estimated_cost_cents: 0,
       components: [],
     };
-    const recipe = recipes.find(
-      (r) => r.variant_id === line.variant_id && r.active,
+    const candidates = recipes.filter(
+      (r) =>
+        r.active &&
+        (line.kit_id
+          ? r.product_id === line.product_id &&
+            r.weight_grams === line.weight_grams
+          : r.variant_id === line.variant_id),
     );
+    const recipe = candidates.length === 1 ? candidates[0] : undefined;
     let unitCost: number | null = null,
       cost: number | null = null;
     if (!recipe) missing.add('Sem ficha: ' + line.display_name);
@@ -65,7 +72,10 @@ export async function orderCosts(
       missing.add('Ficha sem insumos: ' + recipe.name);
     else {
       try {
-        const estimate = estimateRecipe(recipe, recipe.components);
+        const estimate = estimateRecipe(
+          line.kit_id ? { ...recipe, packaging_cents: 0 } : recipe,
+          recipe.components,
+        );
         unitCost = estimate.unit_cost_cents;
         for (const name of estimate.missing)
           missing.add(recipe.name + ': insumo sem custo ou inativo — ' + name);
@@ -88,6 +98,52 @@ export async function orderCosts(
         ? null
         : sum([item.estimated_cost_cents, cost], 'item do pedido');
     items.set(line.item_id, item);
+  }
+  const kits = await readKitItems(db, org, [order.id]);
+  const supplies = kits.length
+    ? (
+        await db
+          .prepare(
+            'SELECT id,name,unit,pack_cost_cents,pack_quantity_milli,active FROM supplies WHERE organization_id=? AND id IN(SELECT value FROM json_each(?))',
+          )
+          .bind(org, JSON.stringify(kits.map((k) => k.packaging_supply_id)))
+          .all<{
+            id: string;
+            name: string;
+            unit: string;
+            pack_cost_cents: number | null;
+            pack_quantity_milli: number;
+            active: number;
+          }>()
+      ).results
+    : [];
+  for (const kit of kits) {
+    const item = items.get(kit.id);
+    const supply = supplies.find((s) => s.id === kit.packaging_supply_id);
+    if (!supply || supply.unit !== 'unit') {
+      missing.add(
+        'Embalagem não informada: kit ' +
+          kit.units_per_kit +
+          ' · ' +
+          kit.weight_grams +
+          ' g',
+      );
+      if (item) item.estimated_cost_cents = null;
+    } else if (supply.pack_cost_cents === null || !supply.active) {
+      missing.add('Embalagem sem custo ou inativa: ' + supply.name);
+      if (item) item.estimated_cost_cents = null;
+    } else if (item && item.estimated_cost_cents !== null) {
+      const cost = safeQuantity(
+        (BigInt(kit.quantity) * 1000n * BigInt(supply.pack_cost_cents) +
+          BigInt(supply.pack_quantity_milli) -
+          1n) /
+          BigInt(supply.pack_quantity_milli),
+      );
+      item.estimated_cost_cents = sum(
+        [item.estimated_cost_cents, cost],
+        'embalagem do kit',
+      );
+    }
   }
   const output = [...items.values()];
   if (!output.length) missing.add('Pedido sem itens calculáveis.');

@@ -1,9 +1,16 @@
+import {
+  kitOrdersReady,
+  saleItemSource,
+  saleComponentSource,
+} from './kit-order-items';
 import { compositionSchema } from './mixed';
 import { HttpError } from './security';
 export interface FlavorLine {
   item_id: string;
   order_id: string;
   variant_id: string;
+  kit_id: string | null;
+  product_id: string | null;
   product_name: string;
   variant_label: string;
   weight_grams: number;
@@ -68,14 +75,17 @@ export async function flavorLines(
 ): Promise<FlavorLine[]> {
   if (!orderIds.length) return [];
   const mixed = await compositionSchema(db);
-  const simple = `SELECT i.id item_id,i.order_id,i.variant_id,i.product_name,i.variant_label,i.weight_grams,i.units_per_box,i.quantity item_quantity,i.units_per_box per_box_units,i.quantity*i.units_per_box units,i.quantity boxes,0 mixed,i.quantity*i.unit_price_cents item_total_cents,i.units_per_box box_capacity FROM selected i${mixed ? ' WHERE NOT EXISTS(SELECT 1 FROM order_item_components c WHERE c.organization_id=i.organization_id AND c.item_id=i.id)' : ''}`;
+  const kits = await kitOrdersReady(db),
+    source = await saleItemSource(db),
+    componentSource = await saleComponentSource(db);
+  const simple = `SELECT i.id item_id,i.order_id,i.variant_id,i.product_name,i.variant_label,i.weight_grams,i.units_per_box,i.quantity item_quantity,i.units_per_box per_box_units,i.quantity*i.units_per_box units,i.quantity boxes,0 mixed,i.quantity*i.unit_price_cents item_total_cents,i.units_per_box box_capacity,${kits ? 'i.kit_id' : 'NULL'} kit_id,NULL product_id FROM selected i${mixed ? ` WHERE NOT EXISTS(SELECT 1 FROM ${componentSource} c WHERE c.organization_id=i.organization_id AND c.item_id=i.id)` : ''}`;
   const components = mixed
-    ? ` UNION ALL SELECT i.id,i.order_id,c.variant_id,c.product_name,c.variant_label,c.weight_grams,c.units_per_box,i.quantity,c.units,i.quantity*c.units,0,1,i.quantity*i.unit_price_cents,i.units_per_box FROM selected i JOIN order_item_components c ON c.organization_id=i.organization_id AND c.item_id=i.id`
+    ? ` UNION ALL SELECT i.id,i.order_id,c.variant_id,c.product_name,c.variant_label,c.weight_grams,c.units_per_box,i.quantity,c.units,i.quantity*c.units,0,1,i.quantity*i.unit_price_cents,i.units_per_box,${kits ? 'i.kit_id,c.product_id' : 'NULL,NULL'} FROM selected i JOIN ${componentSource} c ON c.organization_id=i.organization_id AND c.item_id=i.id`
     : '';
   const rows = (
     await db
       .prepare(
-        `WITH selected AS (SELECT i.* FROM order_items i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE i.organization_id=? AND i.order_id IN(SELECT value FROM json_each(?))) ${simple}${components} ORDER BY item_id,variant_id LIMIT 10001`,
+        `WITH selected AS (SELECT i.* FROM ${source} i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE i.organization_id=? AND i.order_id IN(SELECT value FROM json_each(?))) ${simple}${components} ORDER BY item_id,variant_id LIMIT 10001`,
       )
       .bind(org, JSON.stringify(orderIds))
       .all<RawLine>()
@@ -128,7 +138,8 @@ export async function flavorLines(
       const showVariant = sameProduct || (variant?.active_count ?? 0) > 1;
       output.push({
         ...r,
-        mixed: !!r.mixed,
+        mixed: !!r.mixed && (!r.kit_id || group.length > 1),
+        boxes: r.kit_id && group.length === 1 ? r.item_quantity : r.boxes,
         allocated_cents: amounts.get(r.variant_id)!,
         show_variant: showVariant,
         display_name:
@@ -147,8 +158,10 @@ export function flavorItemTexts(lines: FlavorLine[]) {
     groups.set(line.item_id, g);
   }
   return [...groups.values()].map((group) =>
-    group[0].mixed
-      ? `${group[0].item_quantity}× Mista: ${group.map((c) => `${c.per_box_units} ${c.display_name}`).join(' + ')}`
-      : `${group[0].item_quantity}× ${group[0].display_name}`,
+    group[0].kit_id
+      ? `${group[0].item_quantity}× Kit ${group[0].units_per_box} · ${group[0].weight_grams} g (${group.map((c) => `${c.per_box_units} ${c.display_name}`).join(' + ')})`
+      : group[0].mixed
+        ? `${group[0].item_quantity}× Mista: ${group.map((c) => `${c.per_box_units} ${c.display_name}`).join(' + ')}`
+        : `${group[0].item_quantity}× ${group[0].display_name}`,
   );
 }

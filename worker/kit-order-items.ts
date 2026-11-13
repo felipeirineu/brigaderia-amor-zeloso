@@ -133,3 +133,24 @@ export function writeKitItems(
       .bind(org, JSON.stringify(components), ...args),
   ];
 }
+
+/** Representação de leitura explícita: kit_id distingue o kit das variantes legadas. */
+export function kitDisplayItem(
+  item: KitItemSnapshot & { order_id: string },
+): Record<string, unknown> {
+  return {
+    ...item,
+    variant_id: null,
+    product_name: `Kit ${item.units_per_kit} · ${item.weight_grams} g`,
+    variant_label: '',
+    units_per_box: item.units_per_kit,
+    photo_key: item.components[0]?.photo_key ?? null,
+    components: item.components.map((c) => ({
+      ...c,
+      variant_id: null,
+      variant_label: '',
+      weight_grams: item.weight_grams,
+      units_per_box: item.units_per_kit,
+    })),
+  };
+}

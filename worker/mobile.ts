@@ -1,3 +1,4 @@
+import { readKitItems } from './kit-order-items';
 import {
   recurringDefaults,
   recurringMixedSchema,
@@ -240,6 +241,11 @@ export async function mobile(req: Request, env: Env, a: Actor) {
             .all<Row>()
         ).results
       : [];
+    if (id && (await readKitItems(db, org, [id])).length)
+      throw new HttpError(
+        409,
+        'Este pedido contém kits. A edição de kits ainda não está disponível neste editor.',
+      );
     await attachComponents(db, org, old);
     const items = await prepareItems(
       env,

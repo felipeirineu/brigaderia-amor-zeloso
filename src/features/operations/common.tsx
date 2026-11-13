@@ -5,6 +5,7 @@ import { MapPin } from 'lucide-react';
 import { api } from '../api';
 import type { Status } from '../../../shared/order-state';
 interface Item {
+  kit_id?: string;
   photo_key?: string | null;
   variant_id: string;
   quantity: number;

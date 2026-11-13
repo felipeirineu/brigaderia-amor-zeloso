@@ -33,3 +33,9 @@ A 0019 permanece intacta. A 0020 amplia peso e capacidade para inteiros de 1 a 5
 Ao escolher 15/23/30 g, o cadastro sugere massa de 13/20/26 g, identificada como sugestão editável. É possível limpar. Depois de salvar, o tamanho é mantido e a próxima capacidade ainda não cadastrada é selecionada; o preço sempre começa vazio. Sem kits, a tela explica a sequência embalagens em Insumos → kits e oferece o atalho.
 
 Validação R18: sete testes SQL incluindo preservação do catálogo na migração, integração D1 de tamanho/capacidade personalizados e limites 1–500, lint/tipos/build, 85 unitários e três E2E (Chromium móvel/PC e WebKit móvel) com zero violações de CSP. Integração dos kits aos pedidos permanece pendente.
+
+## Integração de leitura R15-B (branch de desenvolvimento)
+
+Snapshots de kit passam a ser lidos em lote no detalhe, lista, Hoje e WhatsApp. Produção e relatórios incluem composição e tamanho, sem repetir receita financeira. O custo usa ficha do produto no mesmo peso; se faltar ou houver ambiguidade, permanece indisponível. Embalagem do snapshot é contada uma vez por kit, sem reutilizar o valor de embalagens por lote da ficha. Compras inclui as embalagens e mantém avisos de insumos desconhecidos/inativos.
+
+Esta etapa ainda não abre criação de kits nos pedidos. O editor anterior recusa modificar um pedido que contenha snapshots de kit, evitando perder itens enquanto a montagem/edição não estiver integrada. Recorrência, Totem/editor completo, cliente pessoa e ocasião seguem pendentes. O teste com 66 pedidos usa somente D1 efêmero e snapshots DEMONSTRAÇÃO; não são pedidos reais nem uma API alternativa de produção.

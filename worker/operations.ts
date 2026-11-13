@@ -1,3 +1,4 @@
+import { saleItemSource, saleComponentSource } from './kit-order-items';
 import { hasPhone, visiblePhone } from '../shared/phone';
 import { containsAlcohol } from '../shared/alcohol';
 import {
@@ -10,11 +11,7 @@ import { catalogForItems, writeComponents } from './mixed';
 import type { ItemSnapshot } from '../shared/mixed';
 import { orderNumber } from './order-number';
 import type { ComponentSnapshot } from '../shared/mixed';
-import {
-  compositionSchema,
-  validateMixedConfirmation,
-  attachComponents,
-} from './mixed';
+import { compositionSchema, validateMixedConfirmation } from './mixed';
 import { shiftMonth } from '../shared/workday';
 import { mobileReady } from './mobile-ready';
 import { fieldReady } from './field-ready';
@@ -152,30 +149,32 @@ export async function operations(
       mutation_id: undefined,
       items: (children.get(String(o.id)) ?? []).map((i) => ({
         ...i,
-        photo_key: photos.get(String(i.variant_id)) ?? null,
+        photo_key: i.photo_key ?? photos.get(String(i.variant_id)) ?? null,
       })),
     });
     const orders = selected.map(serialize),
       pending_orders = pendingSelected.map(serialize);
     // A lista de cartões é limitada; a produção agrega TODOS os pedidos do período.
     const hasComponents = await compositionSchema(db);
+    const saleSource = await saleItemSource(db),
+      componentSource = await saleComponentSource(db);
     const productionFilter =
       "o.organization_id=? AND o.active=1 AND o.status IN ('confirmed','in_production') AND o.due_at>=? AND o.due_at<?";
     // Caixa mista conta as unidades de cada sabor; caixa de sabor único conta a caixa inteira.
     const productionSource = hasComponents
-      ? `SELECT o.due_at,i.variant_id AS vid,i.product_name AS name,i.variant_label AS label,i.weight_grams,i.units_per_box,i.quantity*i.units_per_box AS units FROM order_items i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter} AND NOT EXISTS(SELECT 1 FROM order_item_components c WHERE c.organization_id=i.organization_id AND c.item_id=i.id) UNION ALL SELECT o.due_at,c.variant_id,c.product_name,c.variant_label,c.weight_grams,c.units_per_box,c.units*i.quantity FROM order_item_components c JOIN order_items i ON i.organization_id=c.organization_id AND i.id=c.item_id JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter}`
-      : `SELECT o.due_at,i.variant_id AS vid,i.product_name AS name,i.variant_label AS label,i.weight_grams,i.units_per_box,i.quantity*i.units_per_box AS units FROM order_items i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter}`;
+      ? `SELECT o.due_at,i.variant_id AS vid,i.product_name AS name,i.variant_label AS label,i.weight_grams,i.units_per_box,i.quantity*i.units_per_box AS units FROM ${saleSource} i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter} AND NOT EXISTS(SELECT 1 FROM ${componentSource} c WHERE c.organization_id=i.organization_id AND c.item_id=i.id) UNION ALL SELECT o.due_at,c.variant_id,c.product_name,c.variant_label,c.weight_grams,c.units_per_box,c.units*i.quantity FROM ${componentSource} c JOIN ${saleSource} i ON i.organization_id=c.organization_id AND i.id=c.item_id JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter}`
+      : `SELECT o.due_at,i.variant_id AS vid,i.product_name AS name,i.variant_label AS label,i.weight_grams,i.units_per_box,i.quantity*i.units_per_box AS units FROM ${saleSource} i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter}`;
     const productionArgs = [org, utcStart(day), utcStart(addDays(day, 2))];
     const production = (
       await db
         .prepare(
-          `SELECT date(x.due_at,'-3 hours') AS day,x.name,x.label,x.weight_grams,x.units_per_box,SUM(x.units)/x.units_per_box AS boxes,SUM(x.units) AS units${mobile ? ',MIN(COALESCE(v.photo_key,p.photo_key)) AS photo_key' : ',NULL AS photo_key'} FROM (${productionSource}) x ${mobile ? 'LEFT JOIN product_variants v ON v.organization_id=? AND v.id=x.vid LEFT JOIN products p ON p.organization_id=v.organization_id AND p.id=v.product_id' : ''} GROUP BY day,x.name,x.label,x.weight_grams,x.units_per_box ORDER BY day,x.name,x.label,x.weight_grams`,
+          `SELECT date(x.due_at,'-3 hours') AS day,x.name,x.label,x.weight_grams,x.units_per_box,SUM(x.units)/x.units_per_box AS boxes,SUM(x.units) AS units${mobile ? ',MIN(COALESCE(v.photo_key,p.photo_key)) AS photo_key' : ',NULL AS photo_key'} FROM (${productionSource}) x ${mobile ? 'LEFT JOIN product_variants v ON v.organization_id=? AND v.id=x.vid LEFT JOIN products p ON p.organization_id=? AND p.id=COALESCE(v.product_id,x.vid)' : ''} GROUP BY day,x.name,x.label,x.weight_grams,x.units_per_box ORDER BY day,x.name,x.label,x.weight_grams`,
         )
         .bind(
           ...(hasComponents
             ? [...productionArgs, ...productionArgs]
             : productionArgs),
-          ...(mobile ? [org] : []),
+          ...(mobile ? [org, org] : []),
         )
         .all()
     ).results;
@@ -880,15 +879,8 @@ export async function operations(
       (hasPhone(customer.phone) && !/^\+[1-9]\d{7,14}$/.test(customer.phone))
     )
       throw new HttpError(400, 'Telefone do cliente inválido.');
-    const items = (
-      await db
-        .prepare(
-          'SELECT * FROM order_items WHERE organization_id=? AND order_id=?',
-        )
-        .bind(org, id)
-        .all<Row>()
-    ).results as (Row & { components?: ComponentSnapshot[] })[];
-    await attachComponents(db, org, items);
+    const items = ((await childrenByParent(db, org, 'orders', [id])).get(id) ??
+      []) as (Row & { components?: ComponentSnapshot[]; kit_id?: string })[];
     const custom = await db
       .prepare(
         'SELECT content FROM message_templates WHERE organization_id=? AND kind=?',
@@ -907,15 +899,19 @@ export async function operations(
         itens: items
           .map(
             (i) =>
-              (i.components?.length
-                ? `${i.quantity} caixa(s) mista(s) (${i.components.map((c, _, all) => `${c.units} ${all.every((x) => x.product_name === c.product_name) && c.variant_label ? c.variant_label : c.product_name}`).join(' + ')})`
-                : `${i.quantity} embalagem(ns) de ${i.product_name} — ${i.variant_label}`) +
-              ([i, ...(i.components ?? [])].some((x) =>
-                containsAlcohol(
-                  null,
-                  String(x.product_name),
-                  String(x.variant_label),
-                ),
+              (i.kit_id
+                ? `${i.quantity} ${i.product_name} (${i.components?.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
+                : i.components?.length
+                  ? `${i.quantity} caixa(s) mista(s) (${i.components.map((c, _, all) => `${c.units} ${all.every((x) => x.product_name === c.product_name) && c.variant_label ? c.variant_label : c.product_name}`).join(' + ')})`
+                  : `${i.quantity} embalagem(ns) de ${i.product_name} — ${i.variant_label}`) +
+              ([i, ...(i.components ?? [])].some(
+                (x) =>
+                  ('contains_alcohol' in x && x.contains_alcohol === 1) ||
+                  containsAlcohol(
+                    null,
+                    String(x.product_name),
+                    String(x.variant_label),
+                  ),
               )
                 ? ' (contém álcool)'
                 : ''),
