@@ -63,6 +63,10 @@ class KitExpansionTests(unittest.TestCase):
             with self.assertRaises(sqlite3.IntegrityError):
                 db.execute("INSERT INTO kits(organization_id,id,weight_grams,units_per_kit,price_cents,max_flavors,mutation_id) VALUES('demo-org','demo-bad',?,?,500,1,'demo')", (weight, capacity))
         self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(), [])
+        plan = db.execute("EXPLAIN QUERY PLAN SELECT * FROM kit_order_items WHERE organization_id=? AND order_id=?", ('demo-org', 'demo-order')).fetchall()
+        self.assertTrue(any('kit_order_items_order' in row[-1] for row in plan))
+        deletion = db.execute("EXPLAIN QUERY PLAN DELETE FROM kit_order_items WHERE organization_id=? AND order_id=?", ('demo-org', 'demo-order')).fetchall()
+        self.assertTrue(any('kit_order_items_order' in row[-1] for row in deletion))
         db.close()
 
 

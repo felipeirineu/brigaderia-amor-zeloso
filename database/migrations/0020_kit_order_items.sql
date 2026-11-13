@@ -32,6 +32,7 @@ CREATE TABLE kit_order_items (
  FOREIGN KEY(organization_id,kit_id) REFERENCES kits(organization_id,id),
  FOREIGN KEY(organization_id,packaging_supply_id) REFERENCES supplies(organization_id,id)
 );
+CREATE INDEX kit_order_items_order ON kit_order_items(organization_id,order_id);
 CREATE TABLE kit_order_components (
  organization_id TEXT NOT NULL,item_id TEXT NOT NULL,product_id TEXT NOT NULL,
  units INTEGER NOT NULL CHECK(units BETWEEN 1 AND 500),
