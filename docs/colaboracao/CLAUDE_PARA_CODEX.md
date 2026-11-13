@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-13 (2)** — R16-11: o iFood inclui a **sacola de envio** (1 por pedido). Etiquetas e embalagens do iFood serão cadastradas pelo Tiago como insumos. Caipirinha: 15 doces por receita, provisório.
 - **2026-11-13** — Respostas do Tiago incorporadas à **R16** (itens 7 a 12): rendimento editável por ficha (16 por padrão, Beijinho 17), forminha nº 4 para 30 g e nº 5 para 15/23 g, fundo rendado e pétala opcionais por uso, +20% de custos incalculáveis e preço iFood `(preço + embalagem + etiqueta) ÷ 0,74`. Leite condensado R$ 6,89.
 - **2026-11-12** — R18: R15-A revisada e aprovada, com 4 ajustes para a R15-B (o principal: tamanhos e quantidades de kit não podem ficar fixos em `CHECK`). Ver seção **R18**.
 - **2026-11-11** — Revisão geral do Claude (R6-7/R6-8 aprovadas) e correções. Ver "Revisão de 11/11/2026" em `docs/SEGURANCA_AUDITORIA.md` e a seção **R17**:
@@ -133,12 +134,14 @@ Pedido do Tiago, a partir da planilha dele (os dados reais ficam fora do reposit
 9. **Itens opcionais (fundo rendado, pétala e outros):** não entram na ficha nem no custo padrão. No cálculo (e depois no pedido/kit) o Tiago marca "usar fundo rendado" / "usar pétala"; só então somam 1 unidade por doce. Lista configurável pelo owner (qualquer insumo em unidades pode ser marcado como "opcional por doce").
 10. **Custos incalculáveis: +20% sobre o custo total** (ingredientes, acabamento, gás, embalagem), antes da margem. Percentual configurável pelo owner, 20% por padrão, sempre visível no detalhamento ("Custo calculado R$ X + 20% = R$ Y").
 11. **Preço no iFood** (canal separado; não altera o preço de tabela nem pedidos):
-    - `preço iFood = (preço do produto + embalagem iFood + etiqueta) ÷ 0,74`;
+    - `preço iFood = (preço do produto + embalagem iFood + etiqueta + sacola de envio) ÷ 0,74`;
+    - a embalagem iFood, por padrão, é a mesma do kit; o owner pode escolher outra. A **sacola de envio** (sacola kraft, ~R$ 0,71) é 1 por pedido: no cálculo por kit, considerar 1 kit por pedido e deixar isso escrito na tela;
+    - etiquetas e embalagens novas são cadastradas pelo Tiago como insumos comuns, quando ele definir; a configuração do canal só aponta para elas;
     - "preço do produto" = o preço da tabela do kit; mostrar também a versão com o preço sugerido pela margem;
     - embalagem iFood e etiqueta são insumos escolhidos na configuração do canal (podem ficar sem preço: então o resultado é "indisponível", nunca zero);
     - o divisor 0,74 é configurável pelo owner (mostrar como "o iFood fica com 26%");
     - arredondamento do preço iFood para cima ao centavo; exibir o cálculo passo a passo.
-12. **Exemplo de aceite (fictício, mesmos números da planilha):** Brigadeiro com forminha nº 4: R$ 16,02 por receita, 16 doces → R$ 1,00 por doce. Kit 12 · 30 g com caixa de R$ 1,75: R$ 13,77; com +20%: R$ 16,52. iFood com preço R$ 42,00, embalagem R$ 1,00 e etiqueta R$ 0,20 (valores fictícios): (42,00 + 1,00 + 0,20) ÷ 0,74 = R$ 58,38.
+12. **Exemplo de aceite (fictício, mesmos números da planilha):** Brigadeiro com forminha nº 4: R$ 16,02 por receita, 16 doces → R$ 1,00 por doce. Kit 12 · 30 g com caixa de R$ 1,75: R$ 13,77; com +20%: R$ 16,52. iFood com preço R$ 42,00, embalagem R$ 1,00, etiqueta R$ 0,20 e sacola R$ 0,71 (valores fictícios): (42,00 + 1,00 + 0,20 + 0,71) ÷ 0,74 = R$ 59,34.
 6. **Testes:**
    - unitários de rendimento por peso e de escala do acabamento;
    - unitários dos itens 7 a 12, incluindo o exemplo de aceite;

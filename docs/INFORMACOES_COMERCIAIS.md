@@ -25,7 +25,7 @@ Indicação de cada tamanho (peso médio; varia com o sabor e os confeitos):
 
 **Receita e custos:** uma receita (lote) corresponde a **1 lata de leite condensado**. O gás custa em média **R$ 0,74 por receita**. Pétala: R$ 3,50 o pacote com 50. Por enquanto só existem kits de doces; kits de lembrancinha ficam para o futuro.
 
-**Precificação (Tiago, 13/11/2026):** rendimento padrão de 16 doces por receita com massa de 26 g, variando por sabor (Beijinho: 17). Forminha nº 4 nos doces de 30 g e nº 5 nos de 15 g e 23 g. Fundo rendado e pétala só quando o pedido usar. Sobre o custo soma-se **20% de custos incalculáveis**. **iFood:** (preço do produto + embalagem + etiqueta) ÷ 0,74.
+**Precificação (Tiago, 13/11/2026):** rendimento padrão de 16 doces por receita com massa de 26 g, variando por sabor (Beijinho: 17). Forminha nº 4 nos doces de 30 g e nº 5 nos de 15 g e 23 g. Fundo rendado e pétala só quando o pedido usar. Sobre o custo soma-se **20% de custos incalculáveis**. **iFood:** (preço do produto + embalagem + etiqueta + sacola de envio) ÷ 0,74; a sacola kraft custa cerca de R$ 0,71, uma por pedido. Caipirinha: 15 doces por receita, provisório.
 
 Regras do kit:
 
