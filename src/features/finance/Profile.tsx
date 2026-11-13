@@ -1,3 +1,6 @@
+import { useKitCatalog } from '../p1/useKitCatalog';
+import { ChoiceChips } from '../../components/ChoiceChips';
+import { kitLabel } from '../../../shared/kits';
 import { Button } from '../../components/Button';
 import { CourierAvatars, useCourierLabels } from '../field/FieldContext';
 import { MoneyField } from '../../components/NumericInputs';
@@ -9,6 +12,7 @@ import { emptyProfile, type B2BProfile } from '../../../shared/finance';
 import { TermsEditor } from './TermsEditor';
 export function CustomerProfile() {
   const courierLabels = useCourierLabels();
+  const kits = useKitCatalog();
   const { id } = useParams(),
     view = useRemote<{ data: B2BProfile; version: number }>(
       `finance/customers/${id}/profile`,
@@ -104,6 +108,28 @@ export function CustomerProfile() {
                 />
               </label>
             ))}
+            {kits.kits.length > 0 && (
+              <ChoiceChips
+                label="Kit padrão do cliente"
+                value={value.default_kit_id ?? ''}
+                options={[
+                  ['', 'Padrão do catálogo (12 · 30 g, se cadastrado)'],
+                  ...kits.kits
+                    .filter((k) => k.active || k.id === value.default_kit_id)
+                    .map(
+                      (k) =>
+                        [
+                          k.id,
+                          kitLabel(k) + (k.active ? '' : ' · Inativo'),
+                        ] as [string, string],
+                    ),
+                ]}
+                onChange={(default_kit_id) =>
+                  change({ default_kit_id: default_kit_id || null })
+                }
+              />
+            )}
+            <Failure message={kits.error} />
             <fieldset>
               <legend>Dias habituais</legend>
               {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(

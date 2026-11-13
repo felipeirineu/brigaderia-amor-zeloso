@@ -587,3 +587,7 @@ Próxima entrega R15-B, antes de codificar: componente compartilhado `KitItemsEd
 ### R19-1 — índice de itens por pedido
 
 Produzido: índice `kit_order_items_order(organization_id,order_id)` na 0020, ainda não aplicada fora dos testes. Sete testes SQL passaram; o plano SQLite de SELECT e DELETE usa o índice. Migração/backup/integração de kits continuam válidos. Sem aplicação remota.
+
+### R19-4 — kit padrão do cliente no perfil
+
+Produzido: `default_kit_id` opcional no JSON de perfil, sem nova tabela/rota. Valida kit da própria organização e atividade na mudança; permite preservar um padrão já arquivado ao editar outros dados. Campo omitido por editor antigo é preservado; null limpa explicitamente. CAS e auditoria do perfil existentes são mantidos. Escolha por chips em Dados do estabelecimento. Integrações de kits/perfil, financeiro, backup e 178 checks de segurança passaram. A adição rápida pela operadora é ligada no componente móvel no commit seguinte.

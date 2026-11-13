@@ -1,3 +1,4 @@
+import { kitsReady } from './kits';
 import { hasPhone, visiblePhone } from '../shared/phone';
 import { recurringDefaults, recurringMixedSchema } from './recurring-mixed';
 import { orderNumber } from './order-number';
@@ -476,6 +477,28 @@ export async function finance(
           .object({ version: z.number().int().min(0), data: profileSchema })
           .strict(),
       );
+      const prior = await db
+        .prepare(
+          'SELECT data FROM customer_profiles WHERE organization_id=? AND customer_id=?',
+        )
+        .bind(org, id)
+        .first<{ data: string }>();
+      const oldDefault = prior
+        ? (JSON.parse(prior.data).default_kit_id ?? null)
+        : null;
+      if (d.data.default_kit_id === undefined && oldDefault)
+        d.data.default_kit_id = oldDefault;
+      if (d.data.default_kit_id) {
+        if (!(await kitsReady(db)))
+          throw new HttpError(503, 'Cadastro de kits ainda indisponível.');
+        const kit = await db
+          .prepare('SELECT active FROM kits WHERE organization_id=? AND id=?')
+          .bind(org, d.data.default_kit_id)
+          .first<{ active: number }>();
+        if (!kit) throw new HttpError(404, 'Kit não encontrado.');
+        if (!kit.active && d.data.default_kit_id !== oldDefault)
+          throw new HttpError(400, 'Escolha um kit ativo.');
+      }
       const r = await db.batch([
         d.version
           ? db

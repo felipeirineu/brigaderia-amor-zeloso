@@ -25,6 +25,7 @@ export const termsSchema = z
   );
 export const profileSchema = z
   .object({
+    default_kit_id: z.uuid().nullable().optional(),
     establishment: text(120),
     responsible: text(120),
     address: text(600),

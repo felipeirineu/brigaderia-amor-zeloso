@@ -15,6 +15,7 @@ export const emptyTerms = (): Terms => ({
   due_days: null,
 });
 export interface B2BProfile {
+  default_kit_id?: string | null;
   establishment: string;
   responsible: string;
   address: string;
@@ -28,6 +29,7 @@ export interface B2BProfile {
   terms: Terms;
 }
 export const emptyProfile = (): B2BProfile => ({
+  default_kit_id: null,
   establishment: '',
   responsible: '',
   address: '',

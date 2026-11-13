@@ -37,6 +37,91 @@ try {
     max_flavors: 5,
   };
   const kit = (await call('p1/kits', kitData)).id;
+  const profilePath = 'finance/customers/' + customer + '/profile';
+  const profile = await call(profilePath, undefined, 'GET');
+  await call(
+    profilePath,
+    { version: 0, data: { ...profile.data, default_kit_id: kit } },
+    'PUT',
+  );
+  const oldEditor = { ...profile.data };
+  delete oldEditor.default_kit_id;
+  await call(
+    profilePath,
+    {
+      version: 1,
+      data: { ...oldEditor, reference: 'Referência DEMONSTRAÇÃO' },
+    },
+    'PUT',
+    operator,
+  );
+  let savedProfile = await call(profilePath, undefined, 'GET');
+  assert.equal(
+    savedProfile.data.default_kit_id,
+    kit,
+    'editor antigo preserva o kit padrão',
+  );
+  assert.equal(
+    (await call('mobile/defaults/' + customer, undefined, 'GET')).profile
+      .default_kit_id,
+    kit,
+  );
+  const foreignKit = (await call('p1/kits', kitData, 'POST', outside)).id;
+  for (const default_kit_id of [foreignKit, crypto.randomUUID()]) {
+    const response = await t.request(profilePath, {
+      cookie: owner,
+      method: 'PUT',
+      data: { version: 2, data: { ...savedProfile.data, default_kit_id } },
+    });
+    assert.equal(response.status, 404);
+  }
+  assert.equal(
+    (
+      await t.request(profilePath, {
+        cookie: outside,
+        method: 'PUT',
+        data: { version: 2, data: savedProfile.data },
+      })
+    ).status,
+    404,
+  );
+  const inactiveData = {
+    weight_grams: 20,
+    units_per_kit: 6,
+    price_cents: 500,
+    max_flavors: 2,
+  };
+  const inactiveKit = (await call('p1/kits', inactiveData)).id;
+  await call(
+    'p1/kits/' + inactiveKit,
+    { ...inactiveData, version: 1, active: false },
+    'PUT',
+  );
+  assert.equal(
+    (
+      await t.request(profilePath, {
+        cookie: owner,
+        method: 'PUT',
+        data: {
+          version: 2,
+          data: { ...savedProfile.data, default_kit_id: inactiveKit },
+        },
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (await call(profilePath, undefined, 'GET')).version,
+    2,
+    'tentativa inválida não grava perfil',
+  );
+  await call(
+    profilePath,
+    { version: 2, data: { ...savedProfile.data, default_kit_id: null } },
+    'PUT',
+  );
+  savedProfile = await call(profilePath, undefined, 'GET');
+  assert.equal(savedProfile.data.default_kit_id, null);
   const composition = {
     kit_id: kit,
     quantity: 1,
