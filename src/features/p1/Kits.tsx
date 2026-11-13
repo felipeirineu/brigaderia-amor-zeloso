@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { ChoiceChips } from '../../components/ChoiceChips';
 import { useRef, useState } from 'react';
 import { Button } from '../../components/Button';
@@ -6,6 +7,8 @@ import {
   kitLabel,
   kitWeights,
   kitCapacities,
+  suggestedDoughWeight,
+  nextKitCapacity,
   type Kit,
   type KitSettings,
 } from '../../../shared/kits';
@@ -20,12 +23,12 @@ interface Draft {
   packaging_supply_id: string;
   active: boolean;
 }
-const blank = (): Draft => ({
-  weight_grams: 30,
-  units_per_kit: 12,
-  dough_weight_grams: '',
+const blank = (weight = 30, units = 12): Draft => ({
+  weight_grams: weight,
+  units_per_kit: units,
+  dough_weight_grams: String(suggestedDoughWeight(weight) ?? ''),
   price_cents: null,
-  max_flavors: 3,
+  max_flavors: Math.min(units, units === 12 ? 3 : 5),
   packaging_supply_id: '',
   active: true,
 });
@@ -37,6 +40,8 @@ export function Kits({ role }: { role: string }) {
     }>('p1/supplies');
   const [draft, setDraft] = useState(blank),
     [editing, setEditing] = useState<Kit | null>(null),
+    [otherWeight, setOtherWeight] = useState(false),
+    [otherCapacity, setOtherCapacity] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(''),
     [notice, setNotice] = useState('');
@@ -72,6 +77,8 @@ export function Kits({ role }: { role: string }) {
   function reset() {
     setEditing(null);
     setDraft(blank());
+    setOtherWeight(false);
+    setOtherCapacity(false);
   }
   return (
     <>
@@ -128,7 +135,18 @@ export function Kits({ role }: { role: string }) {
                 ...(editing ? { version: editing.version } : {}),
               },
               editing ? 'PUT' : 'POST',
-              reset,
+              () => {
+                const saved = [...(view.data ?? []), draft];
+                const next = nextKitCapacity(draft.weight_grams, saved);
+                setEditing(null);
+                setDraft(
+                  blank(draft.weight_grams, next ?? draft.units_per_kit),
+                );
+                setOtherCapacity(
+                  next === null &&
+                    !kitCapacities.some((u) => u === draft.units_per_kit),
+                );
+              },
             );
           }}
         >
@@ -136,16 +154,63 @@ export function Kits({ role }: { role: string }) {
           <fieldset disabled={busy} className="customer-form-fields">
             <ChoiceChips
               label="Tamanho do doce"
-              value={String(draft.weight_grams)}
-              onChange={(value) =>
-                setDraft({ ...draft, weight_grams: Number(value) })
+              value={otherWeight ? 'other' : String(draft.weight_grams)}
+              onChange={(value) => {
+                setOtherWeight(value === 'other');
+                if (value !== 'other')
+                  setDraft({
+                    ...draft,
+                    weight_grams: Number(value),
+                    dough_weight_grams: String(
+                      suggestedDoughWeight(Number(value)) ?? '',
+                    ),
+                  });
+              }}
+              options={[
+                ...kitWeights.map((w) => [String(w), `${w} g`] as const),
+                ['other', 'Outro'],
+              ]}
+            />
+            {otherWeight && (
+              <QuantityInput
+                label="Outro tamanho (g)"
+                required
+                min={1}
+                max={500}
+                value={draft.weight_grams}
+                onValueChange={(weight_grams) =>
+                  setDraft({ ...draft, weight_grams, dough_weight_grams: '' })
+                }
+              />
+            )}
+            <ChoiceChips
+              label="Sugestão de massa"
+              value=""
+              onChange={() =>
+                setDraft({
+                  ...draft,
+                  dough_weight_grams: String(
+                    suggestedDoughWeight(draft.weight_grams) ?? '',
+                  ),
+                })
               }
-              options={kitWeights.map((w) => [String(w), `${w} g`])}
+              options={
+                suggestedDoughWeight(draft.weight_grams) === null
+                  ? []
+                  : [
+                      [
+                        'suggest',
+                        `Usar sugestão: ${suggestedDoughWeight(draft.weight_grams)} g (editável)`,
+                      ],
+                    ]
+              }
             />
             <ChoiceChips
               label="Doces por kit"
-              value={String(draft.units_per_kit)}
+              value={otherCapacity ? 'other' : String(draft.units_per_kit)}
               onChange={(value) => {
+                setOtherCapacity(value === 'other');
+                if (value === 'other') return;
                 const units = Number(value);
                 setDraft({
                   ...draft,
@@ -153,8 +218,27 @@ export function Kits({ role }: { role: string }) {
                   max_flavors: units === 12 ? 3 : 5,
                 });
               }}
-              options={kitCapacities.map((u) => [String(u), `${u} doces`])}
+              options={[
+                ...kitCapacities.map((u) => [String(u), `${u} doces`] as const),
+                ['other', 'Outro'],
+              ]}
             />
+            {otherCapacity && (
+              <QuantityInput
+                label="Outra quantidade de doces"
+                required
+                min={1}
+                max={500}
+                value={draft.units_per_kit}
+                onValueChange={(units_per_kit) =>
+                  setDraft({
+                    ...draft,
+                    units_per_kit,
+                    max_flavors: Math.min(draft.max_flavors, units_per_kit),
+                  })
+                }
+              />
+            )}
             <MoneyInput
               label="Preço do kit"
               required
@@ -244,7 +328,16 @@ export function Kits({ role }: { role: string }) {
           </fieldset>
         </form>
       )}
-      {view.data?.length === 0 && <p>Nenhum kit cadastrado.</p>}
+      {view.data?.length === 0 && (
+        <section className="panel">
+          <h2>Nenhum kit cadastrado.</h2>
+          <p>
+            Primeiro cadastre as embalagens em Insumos. Depois cadastre os kits
+            com o preço do kit inteiro.
+          </p>
+          <Link to="/gestao/insumos">Ir para Insumos</Link>
+        </section>
+      )}
       {view.data?.map((k) => (
         <article className="panel" key={k.id}>
           <h2>
@@ -278,6 +371,10 @@ export function Kits({ role }: { role: string }) {
               disabled={busy}
               onClick={() => {
                 setEditing(k);
+                setOtherWeight(!kitWeights.some((w) => w === k.weight_grams));
+                setOtherCapacity(
+                  !kitCapacities.some((u) => u === k.units_per_kit),
+                );
                 setDraft({
                   weight_grams: k.weight_grams,
                   units_per_kit: k.units_per_kit,

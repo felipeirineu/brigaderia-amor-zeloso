@@ -17,3 +17,20 @@ export interface KitSettings {
 }
 export const kitLabel = (kit: Pick<Kit, 'weight_grams' | 'units_per_kit'>) =>
   `Kit ${kit.units_per_kit} · ${kit.weight_grams} g`;
+
+/** Sugestões confirmadas; nunca um custo ou rendimento medido. */
+export const suggestedDoughWeight = (weight: number): number | null =>
+  (({ 15: 13, 23: 20, 30: 26 }) as Record<number, number>)[weight] ?? null;
+export function nextKitCapacity(
+  weight: number,
+  saved: readonly Pick<Kit, 'weight_grams' | 'units_per_kit'>[],
+): number | null {
+  return (
+    kitCapacities.find(
+      (units) =>
+        !saved.some(
+          (k) => k.weight_grams === weight && k.units_per_kit === units,
+        ),
+    ) ?? null
+  );
+}

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { kitCapacities, kitWeights } from '../shared/kits';
+import { kitOrdersReady } from './kit-order-items';
 import { HttpError, json, type Actor } from './security';
 import { ownerOnly, p1Mutation } from './p1-common';
 export async function kitsReady(db: D1Database) {
@@ -11,16 +13,11 @@ export async function kitsReady(db: D1Database) {
 }
 const kitSchema = z
   .object({
-    weight_grams: z.union([z.literal(15), z.literal(23), z.literal(30)]),
+    weight_grams: z.number().int().min(1).max(500),
     dough_weight_grams: z.number().int().positive().nullable().default(null),
-    units_per_kit: z.union([
-      z.literal(12),
-      z.literal(25),
-      z.literal(50),
-      z.literal(100),
-    ]),
+    units_per_kit: z.number().int().min(1).max(500),
     price_cents: z.number().int().min(0).max(100000000),
-    max_flavors: z.number().int().min(1).max(100),
+    max_flavors: z.number().int().min(1).max(500),
     packaging_supply_id: z.uuid().nullable().default(null),
     active: z.boolean().default(true),
     version: z.number().int().positive().optional(),
@@ -133,6 +130,15 @@ export async function kits(
   return p1Mutation(req, db, a, async (raw, nonce) => {
     const d = kitSchema.parse(raw),
       entity = id ?? crypto.randomUUID();
+    if (
+      (!kitWeights.some((w) => w === d.weight_grams) ||
+        !kitCapacities.some((u) => u === d.units_per_kit)) &&
+      !(await kitOrdersReady(db))
+    )
+      throw new HttpError(
+        503,
+        'Tamanhos personalizados exigem a migração 0020.',
+      );
     if (id && d.version !== current?.version)
       throw new HttpError(409, 'Kit alterado. Atualize antes de salvar.');
     if (d.packaging_supply_id) {

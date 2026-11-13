@@ -25,3 +25,11 @@ Nenhuma migração/deploy/secret/configuração foi executada remotamente. Para 
 Próximo: itens/snapshots de kit e composição por produto-sabor, validação do limite em cada gravação no servidor, Totem/recorrência/editor, Hoje/WhatsApp/relatórios/custos/compras, pessoa/estabelecimento e ocasião. Testes de 25×15g com cinco sabores e recusa de quatro sabores no kit12 pertencem a essa integração, ainda pendente. Não confundir o teste do cadastro de max_flavors com validação de uma composição de pedido.
 
 R17-6 foi avaliada: persistir número é desejável, mas será feito junto aos caminhos de gravação da integração, com sequência transacional, preservação histórica e restauração testadas. Esta migração não acrescenta uma coluna parcialmente ligada; o COUNT existente segue como leitura até a etapa apropriada.
+
+## Revisão R18 (R15-B em andamento)
+
+A 0019 permanece intacta. A 0020 amplia peso e capacidade para inteiros de 1 a 500, copiando o catálogo antes de criar as tabelas de itens de kit. IDs, versões, embalagem, preços e configuração são preservados. Os tamanhos e capacidades conhecidos continuam como atalhos; o administrador também pode escolher Outro. Com banco somente até 0019, valores personalizados ficam indisponíveis até a 0020.
+
+Ao escolher 15/23/30 g, o cadastro sugere massa de 13/20/26 g, identificada como sugestão editável. É possível limpar. Depois de salvar, o tamanho é mantido e a próxima capacidade ainda não cadastrada é selecionada; o preço sempre começa vazio. Sem kits, a tela explica a sequência embalagens em Insumos → kits e oferece o atalho.
+
+Validação R18: sete testes SQL incluindo preservação do catálogo na migração, integração D1 de tamanho/capacidade personalizados e limites 1–500, lint/tipos/build, 85 unitários e três E2E (Chromium móvel/PC e WebKit móvel) com zero violações de CSP. Integração dos kits aos pedidos permanece pendente.

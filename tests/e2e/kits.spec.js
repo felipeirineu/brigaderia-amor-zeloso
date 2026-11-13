@@ -59,6 +59,12 @@ test('R15-A administrador cadastra/edita kit sob CSP real e operadora só consul
       .getByRole('group', { name: 'Doces por kit', exact: true })
       .getByRole('button', { name: '25 doces', exact: true })
       .click();
+    await expect(
+      p.getByLabel('Peso da massa por doce (g, opcional)', { exact: true }),
+    ).toHaveValue('13');
+    await expect(
+      p.getByRole('link', { name: 'Ir para Insumos' }),
+    ).toHaveAttribute('href', '/gestao/insumos');
     await p.getByLabel('Preço do kit', { exact: true }).fill('12345');
     await p
       .getByLabel('Peso da massa por doce (g, opcional)', { exact: true })
@@ -75,6 +81,17 @@ test('R15-A administrador cadastra/edita kit sob CSP real e operadora só consul
     await expect(row).toContainText('até 5 sabores');
     await expect(row).toContainText('Massa: 13 g');
     await expect(row).toContainText('Caixa DEMONSTRAÇÃO');
+    await expect(
+      p
+        .getByRole('group', { name: 'Tamanho do doce', exact: true })
+        .getByRole('button', { name: '15 g', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+      p
+        .getByRole('group', { name: 'Doces por kit', exact: true })
+        .getByRole('button', { name: '12 doces', exact: true }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(p.getByLabel('Preço do kit', { exact: true })).toHaveValue('');
     await row
       .getByRole('button', { name: 'Editar Kit 25 · 15 g', exact: true })
       .click();
@@ -134,6 +151,21 @@ test('R15-A administrador cadastra/edita kit sob CSP real e operadora só consul
         exact: true,
       }),
     ).toBeDisabled();
+    await p
+      .getByRole('group', { name: 'Tamanho do doce', exact: true })
+      .getByRole('button', { name: 'Outro', exact: true })
+      .click();
+    await p.getByLabel('Outro tamanho (g)', { exact: true }).fill('20');
+    await p
+      .getByRole('group', { name: 'Doces por kit', exact: true })
+      .getByRole('button', { name: 'Outro', exact: true })
+      .click();
+    await p.getByLabel('Outra quantidade de doces', { exact: true }).fill('6');
+    await p.getByLabel('Preço do kit', { exact: true }).fill('22222');
+    await p.getByRole('button', { name: 'Salvar kit', exact: true }).click();
+    await expect(
+      p.getByRole('heading', { name: 'Kit 6 · 20 g', exact: true }),
+    ).toBeVisible();
     expect(await p.evaluate(() => window.__kitCsp)).toEqual([]);
     expect(violations).toEqual([]);
   } finally {

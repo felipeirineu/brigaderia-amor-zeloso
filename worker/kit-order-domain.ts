@@ -17,12 +17,12 @@ export const kitItemSchema = z
         z
           .object({
             product_id: z.uuid(),
-            units: z.number().int().min(1).max(100),
+            units: z.number().int().min(1).max(500),
           })
           .strict(),
       )
       .min(1)
-      .max(100),
+      .max(500),
   })
   .strict()
   .refine(

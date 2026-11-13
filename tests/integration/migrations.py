@@ -43,5 +43,28 @@ class IdentityMigrationTests(unittest.TestCase):
         self.assertEqual(self.db.execute('SELECT count(*) FROM sessions').fetchone()[0], 0)
 
 
+class KitExpansionTests(unittest.TestCase):
+    def test_expansion_preserves_catalog_and_constraints(self):
+        db = sqlite3.connect(':memory:')
+        for migration in sorted(Path('database/migrations').glob('*.sql')):
+            if migration.name.startswith('0020'):
+                break
+            db.executescript(migration.read_text())
+        db.execute("INSERT INTO organizations(id,name) VALUES('demo-org','DEMONSTRAÇÃO')")
+        db.execute("INSERT INTO kits(organization_id,id,weight_grams,dough_weight_grams,units_per_kit,price_cents,max_flavors,version,mutation_id) VALUES('demo-org','demo-kit',30,26,12,12345,3,7,'demo-mutation')")
+        db.execute("INSERT INTO kit_settings VALUES('demo-org','demo-org',0,4,'demo-setting')")
+        before = db.execute('SELECT * FROM kits').fetchall()
+        settings = db.execute('SELECT * FROM kit_settings').fetchall()
+        db.executescript(Path('database/migrations/0020_kit_order_items.sql').read_text())
+        self.assertEqual(db.execute('SELECT * FROM kits').fetchall(), before)
+        self.assertEqual(db.execute('SELECT * FROM kit_settings').fetchall(), settings)
+        db.execute("INSERT INTO kits(organization_id,id,weight_grams,units_per_kit,price_cents,max_flavors,mutation_id) VALUES('demo-org','demo-small',20,6,500,6,'demo')")
+        for weight, capacity in [(0, 6), (501, 6), (20, 0), (20, 501)]:
+            with self.assertRaises(sqlite3.IntegrityError):
+                db.execute("INSERT INTO kits(organization_id,id,weight_grams,units_per_kit,price_cents,max_flavors,mutation_id) VALUES('demo-org','demo-bad',?,?,500,1,'demo')", (weight, capacity))
+        self.assertEqual(db.execute('PRAGMA foreign_key_check').fetchall(), [])
+        db.close()
+
+
 if __name__ == '__main__':
     unittest.main()

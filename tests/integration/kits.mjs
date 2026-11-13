@@ -33,18 +33,30 @@ try {
     limit_flavors: true,
     version: 0,
   });
+  const custom = await call('p1/kits', {
+    ...data,
+    weight_grams: 20,
+    units_per_kit: 6,
+    max_flavors: 6,
+  });
+  assert.equal(
+    (await call('p1/kits/' + custom.id, undefined, 'GET')).units_per_kit,
+    6,
+  );
   const key = crypto.randomUUID(),
     kit = await call('p1/kits', data, 'POST', owner, key);
   assert.equal((await call('p1/kits', data, 'POST', owner, key)).id, kit.id);
-  assert.equal((await call('p1/kits', undefined, 'GET')).length, 1);
+  assert.equal((await call('p1/kits', undefined, 'GET')).length, 2);
   assert.equal(
     (await request('p1/kits', 'POST', data)).status,
     409,
     'combinação duplicada',
   );
   for (const change of [
-    { weight_grams: 20 },
-    { units_per_kit: 7 },
+    { weight_grams: 0 },
+    { weight_grams: 501 },
+    { units_per_kit: 0 },
+    { units_per_kit: 501 },
     { max_flavors: 26 },
     { max_flavors: 0 },
     { price_cents: -1 },
