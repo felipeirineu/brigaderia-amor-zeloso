@@ -1,3 +1,4 @@
+import { KitFlavorNotice } from '../../components/KitItemsEditor';
 import { Link } from 'react-router-dom';
 import { ChoiceChips } from '../../components/ChoiceChips';
 import { useRef, useState } from 'react';
@@ -33,6 +34,10 @@ const blank = (weight = 30, units = 12): Draft => ({
   active: true,
 });
 export function Kits({ role }: { role: string }) {
+  const products =
+    useRemote<{ id: string; name: string; variants: { active: number }[] }[]>(
+      'products',
+    );
   const view = useRemote<Kit[]>('p1/kits'),
     settings = useRemote<KitSettings>('p1/kit-settings'),
     supplies = useRemote<{
@@ -87,8 +92,15 @@ export function Kits({ role }: { role: string }) {
         Cadastre o preço do kit inteiro e sua embalagem. No Novo pedido, escolha
         tamanho e quantidade antes de montar os sabores.
       </p>
+      {products.data && <KitFlavorNotice products={products.data} />}
       <Failure
-        message={error || view.error || settings.error || supplies.error}
+        message={
+          error ||
+          view.error ||
+          settings.error ||
+          supplies.error ||
+          products.error
+        }
       />
       <p role="status">{notice}</p>
       {settings.data && (

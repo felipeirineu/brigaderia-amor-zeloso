@@ -1,6 +1,19 @@
 import { test, expect } from '@playwright/test';
 import { runtime } from '../helpers/runtime.mjs';
 import { demoProject } from '../helpers/demo-project.mjs';
+async function adjustUnits(page, name, target) {
+  const output = page.getByLabel('Unidades de ' + name, { exact: true });
+  let current = Number(await output.textContent());
+  while (current !== target) {
+    await page
+      .getByRole('button', {
+        name: (current < target ? 'Mais ' : 'Menos ') + name,
+        exact: true,
+      })
+      .click();
+    current = Number(await output.textContent());
+  }
+}
 // Somente fixtures DEMONSTRAÇÃO; nenhum cadastro remoto.
 test('R15-B monta kit25/15g com cinco sabores no celular e PC preserva preço ao editar quantidade', async ({
   browser,
@@ -72,11 +85,16 @@ test('R15-B monta kit25/15g com cinco sabores no celular e PC preserva preço ao
       .getByRole('button', { name: 'Cliente DEMONSTRAÇÃO P1', exact: true })
       .click();
     await p.getByRole('button', { name: 'Montar kit', exact: true }).click();
-    for (const name of names.slice(0, 3))
-      await p.getByLabel('Unidades de ' + name, { exact: true }).fill('1');
+    for (const name of names.slice(0, 3)) await adjustUnits(p, name, 1);
     await expect(
-      p.getByLabel('Unidades de ' + names[3], { exact: true }),
+      p.getByRole('button', { name: 'Mais ' + names[3], exact: true }),
     ).toBeDisabled();
+    await p
+      .getByRole('button', {
+        name: 'Escolher ' + names[0] + ' para completar',
+        exact: true,
+      })
+      .click();
     await p
       .getByRole('button', { name: 'Completar com ' + names[0], exact: true })
       .click();
@@ -101,8 +119,7 @@ test('R15-B monta kit25/15g com cinco sabores no celular e PC preserva preço ao
       ),
     ).toBe(true);
     await expect(p.getByRole('button', { name: /^Continuar/ })).toBeDisabled();
-    for (const name of names)
-      await p.getByLabel('Unidades de ' + name, { exact: true }).fill('5');
+    for (const name of names) await adjustUnits(p, name, 5);
     await expect(
       p.getByRole('status').filter({ hasText: 'Kit completo' }),
     ).toContainText('Até 5 sabores (5 escolhidos)');
@@ -159,9 +176,13 @@ test('R15-B monta kit25/15g com cinco sabores no celular e PC preserva preço ao
       })
       .click();
     await expect(
-      desktop.getByLabel('Quantidade de kits 1', { exact: true }),
+      desktop.getByLabel('Quantos kits iguais de Kit 25 · 15 g', {
+        exact: true,
+      }),
     ).toHaveValue('1');
-    await desktop.getByLabel('Quantidade de kits 1', { exact: true }).fill('2');
+    await desktop
+      .getByLabel('Quantos kits iguais de Kit 25 · 15 g', { exact: true })
+      .fill('2');
     await desktop
       .getByRole('button', { name: 'Salvar pedido', exact: true })
       .click();
@@ -191,14 +212,19 @@ test('R15-B monta kit25/15g com cinco sabores no celular e PC preserva preço ao
           t.url + '/gestao/pedidos/' + order.id + '/editar-simples',
         );
         await expect(
-          photo.getByLabel('Quantidade de kits 1', { exact: true }),
+          photo.getByLabel('Quantos kits iguais de Kit 25 · 15 g', {
+            exact: true,
+          }),
         ).toHaveValue('2');
         await photo.screenshot({
           path: 'docs/colaboracao/capturas/r15-depois-pedido-kit.png',
           fullPage: false,
         });
         await photo
-          .getByRole('button', { name: 'Editar sabores do kit 1', exact: true })
+          .getByRole('button', {
+            name: 'Editar sabores de Kit 25 · 15 g',
+            exact: true,
+          })
           .click();
         await expect(
           photo.getByRole('status').filter({ hasText: 'Kit completo' }),
@@ -218,14 +244,13 @@ test('R15-B monta kit25/15g com cinco sabores no celular e PC preserva preço ao
       })
       .click();
     await desktop
-      .getByRole('button', { name: 'Editar sabores do kit 1', exact: true })
+      .getByRole('button', {
+        name: 'Editar sabores de Kit 25 · 15 g',
+        exact: true,
+      })
       .click();
-    await desktop
-      .getByLabel('Unidades de ' + names[4], { exact: true })
-      .fill('0');
-    await desktop
-      .getByLabel('Unidades de ' + names[0], { exact: true })
-      .fill('10');
+    await adjustUnits(desktop, names[4], 0);
+    await adjustUnits(desktop, names[0], 10);
     await expect(
       desktop.getByRole('status').filter({ hasText: 'Kit completo' }),
     ).toBeVisible();

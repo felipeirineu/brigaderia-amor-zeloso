@@ -18,6 +18,7 @@ interface Flavor {
   name: string;
   description?: string;
   photo_key?: string | null;
+  variants?: { active: number | boolean }[];
 }
 export function KitItemsEditor({
   value,
@@ -28,6 +29,9 @@ export function KitItemsEditor({
   mixed = true,
   snapshots = [],
   onEditingChange,
+  quickMode = false,
+  defaultKitId,
+  disabled = false,
 }: {
   value: KitItemInput[];
   onChange: (items: KitItemInput[]) => void;
@@ -37,6 +41,9 @@ export function KitItemsEditor({
   mixed?: boolean;
   snapshots?: KitItemSnapshot[];
   onEditingChange?: (editing: boolean) => void;
+  quickMode?: boolean;
+  defaultKitId?: string | null;
+  disabled?: boolean;
 }) {
   const root = useRef<HTMLElement>(null);
   const active = kits.filter((k) => k.active),
@@ -47,6 +54,15 @@ export function KitItemsEditor({
     [index, setIndex] = useState<number | null>(null),
     [weight, setWeight] = useState(initial?.weight_grams ?? 30),
     [error, setError] = useState('');
+  const [completeId, setCompleteId] = useState(products[0]?.id ?? ''),
+    [quickChoice, setQuickChoice] = useState<string | null>(null),
+    [changingQuickKit, setChangingQuickKit] = useState(false);
+  const quickKit =
+    active.find((k) => k.id === (quickChoice ?? defaultKitId)) ??
+    (!quickChoice && !defaultKitId
+      ? active.find((k) => k.weight_grams === 30 && k.units_per_kit === 12)
+      : undefined);
+  const completer = products.find((p) => p.id === completeId) ?? products[0];
   const kit = kits.find((k) => k.id === draft?.kit_id),
     sum = draft?.components.reduce((n, c) => n + c.units, 0) ?? 0;
   const max = kit
@@ -56,10 +72,34 @@ export function KitItemsEditor({
         ? kit.max_flavors
         : kit.units_per_kit
     : 0;
+  function addFlavor(product: Flavor) {
+    if (!quickKit || disabled) return;
+    const item: KitItemInput = {
+      kit_id: quickKit.id,
+      quantity: 1,
+      components: [{ product_id: product.id, units: quickKit.units_per_kit }],
+    };
+    const existing = value.findIndex(
+      (i) => kitCompositionKey(i) === kitCompositionKey(item),
+    );
+    if (existing >= 0) {
+      if (value[existing].quantity >= 10000) {
+        setError('Quantidade de kits iguais excede o limite.');
+        return;
+      }
+      onChange(
+        value.map((i, n) =>
+          n === existing ? { ...i, quantity: i.quantity + 1 } : i,
+        ),
+      );
+    } else if (value.length < 50) onChange([...value, item]);
+  }
   function start(item?: KitItemInput, i?: number) {
     const selected = item
       ? kits.find((k) => k.id === item.kit_id)
-      : (active.find((k) => k.weight_grams === weight) ?? initial);
+      : quickMode && quickKit
+        ? quickKit
+        : (active.find((k) => k.weight_grams === weight) ?? initial);
     setDraft(
       item
         ? { ...item, components: item.components.map((c) => ({ ...c })) }
@@ -163,7 +203,8 @@ export function KitItemsEditor({
                 ),
             ) && <p className="alcohol-tag">{alcoholNotice}</p>}
             <QuantityInput
-              label={`Quantidade de kits ${i + 1}`}
+              label="Quantos kits iguais"
+              aria-label={`Quantos kits iguais de ${display ? kitLabel(display) : 'kit indisponível'}`}
               value={item.quantity}
               min={1}
               max={10000}
@@ -181,25 +222,102 @@ export function KitItemsEditor({
             <Button
               type="button"
               disabled={!!draft || !catalog?.active}
+              aria-label={`Editar sabores de ${display ? kitLabel(display) : 'kit indisponível'}`}
               onClick={() => start(item, i)}
             >
-              Editar sabores do kit {i + 1}
+              Editar sabores
             </Button>
             <Button
               type="button"
               variant="ghost"
               disabled={!!draft}
+              aria-label={`Remover ${display ? kitLabel(display) : 'kit indisponível'}`}
               onClick={() => onChange(value.filter((_, n) => n !== i))}
             >
-              Remover kit {i + 1}
+              Remover
             </Button>
           </article>
         );
       })}
+      <KitFlavorNotice products={products} />
+      {quickMode && !draft && (
+        <section aria-label="Adicionar sabor ao kit padrão">
+          <ChoiceChips
+            label="Kit deste pedido"
+            value={quickKit?.id ?? ''}
+            options={(changingQuickKit || !quickKit ? active : [quickKit]).map(
+              (k) => [k.id, `${kitLabel(k)} · ${money(k.price_cents)}`],
+            )}
+            onChange={(id) => {
+              setQuickChoice(id);
+              setChangingQuickKit(false);
+            }}
+          />
+          {quickKit && active.length > 1 && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setChangingQuickKit((v) => !v)}
+            >
+              {changingQuickKit ? 'Manter kit selecionado' : 'Trocar kit'}
+            </Button>
+          )}
+          {!quickKit && (
+            <p>Escolha um kit ativo para adicionar sabores em um toque.</p>
+          )}
+          {quickKit && (
+            <div className="flavor-grid">
+              {products.map((p) => {
+                const count = value
+                  .filter(
+                    (i) =>
+                      i.kit_id === quickKit.id &&
+                      i.components.length === 1 &&
+                      i.components[0].product_id === p.id,
+                  )
+                  .reduce((n, i) => n + i.quantity, 0);
+                return (
+                  <article className="flavor-card" key={p.id}>
+                    <Button
+                      type="button"
+                      className="flavor-add"
+                      aria-label={`Adicionar kit de ${p.name}`}
+                      disabled={
+                        disabled ||
+                        count >= 10000 ||
+                        (!count && value.length >= 50)
+                      }
+                      onClick={() => addFlavor(p)}
+                    >
+                      {p.photo_key && (
+                        <img
+                          src={photoURL(p.photo_key)}
+                          alt=""
+                          width={120}
+                          height={120}
+                        />
+                      )}
+                      <strong>{p.name}</strong>
+                      {containsAlcohol(p.photo_key, p.name, p.description) && (
+                        <small className="alcohol-tag">{alcoholNotice}</small>
+                      )}
+                      {count > 0 && (
+                        <span>
+                          {count} {count === 1 ? 'kit' : 'kits'}
+                        </span>
+                      )}
+                    </Button>
+                  </article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      )}
       {!draft && (
         <Button
           type="button"
-          disabled={!active.length || value.length >= 50}
+          disabled={disabled || !active.length || value.length >= 50}
           onClick={() => start()}
         >
           Montar kit
@@ -268,54 +386,102 @@ export function KitItemsEditor({
                   ))}
                 </div>
               )}
-              <div className="kit-flavors">
+              <div className="kit-composition">
                 {products.map((p) => {
                   const count =
                       draft.components.find((c) => c.product_id === p.id)
                         ?.units ?? 0,
-                    disabled = count === 0 && draft.components.length >= max,
+                    blocked = count === 0 && draft.components.length >= max,
                     remaining = kit.units_per_kit - sum;
                   return (
-                    <article className="panel kit-flavor" key={p.id}>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        disabled={disabled || remaining <= 0}
-                        onClick={() => units(p.id, count + 1)}
-                      >
-                        {p.photo_key && (
-                          <img
-                            src={photoURL(p.photo_key)}
-                            alt=""
-                            width={64}
-                            height={64}
-                          />
-                        )}
-                        <strong>{p.name}</strong>
-                      </Button>
-                      {containsAlcohol(p.photo_key, p.name, p.description) && (
-                        <small className="alcohol-tag">{alcoholNotice}</small>
+                    <div className="mix-row" key={p.id}>
+                      {p.photo_key ? (
+                        <img
+                          src={photoURL(p.photo_key)}
+                          alt=""
+                          width={44}
+                          height={44}
+                        />
+                      ) : (
+                        <span
+                          className="flavor-placeholder"
+                          aria-hidden="true"
+                        />
                       )}
-                      <QuantityInput
-                        label={`Unidades de ${p.name}`}
-                        min={0}
-                        max={Math.max(count, count + remaining)}
-                        value={count}
-                        disabled={disabled}
-                        onValueChange={(n) => units(p.id, n)}
-                      />
                       <Button
                         type="button"
                         variant="ghost"
-                        disabled={disabled || remaining <= 0}
-                        onClick={() => units(p.id, count + remaining)}
+                        className="kit-flavor-name"
+                        aria-label={`Escolher ${p.name} para completar`}
+                        aria-pressed={completer?.id === p.id}
+                        disabled={blocked}
+                        onClick={() => setCompleteId(p.id)}
                       >
-                        Completar com {p.name}
+                        <strong>{p.name}</strong>
+                        {containsAlcohol(
+                          p.photo_key,
+                          p.name,
+                          p.description,
+                        ) && (
+                          <small className="alcohol-tag">{alcoholNotice}</small>
+                        )}
                       </Button>
-                    </article>
+                      <div className="flavor-stepper">
+                        <Button
+                          type="button"
+                          aria-label={`Menos ${p.name}`}
+                          disabled={count <= 0}
+                          onClick={() => {
+                            setCompleteId(p.id);
+                            units(p.id, count - 1);
+                          }}
+                        >
+                          −
+                        </Button>
+                        <output aria-label={`Unidades de ${p.name}`}>
+                          {count}
+                        </output>
+                        <Button
+                          type="button"
+                          aria-label={`Mais ${p.name}`}
+                          disabled={blocked || remaining <= 0}
+                          onClick={() => {
+                            setCompleteId(p.id);
+                            units(p.id, count + 1);
+                          }}
+                        >
+                          +
+                        </Button>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={
+                  !completer ||
+                  sum >= kit.units_per_kit ||
+                  (!draft.components.some(
+                    (c) => c.product_id === completer.id,
+                  ) &&
+                    draft.components.length >= max)
+                }
+                onClick={() => {
+                  if (completer)
+                    units(
+                      completer.id,
+                      (draft.components.find(
+                        (c) => c.product_id === completer.id,
+                      )?.units ?? 0) +
+                        kit.units_per_kit -
+                        sum,
+                    );
+                }}
+              >
+                Completar com {completer?.name ?? 'sabor escolhido'}
+              </Button>
               {error && <p role="alert">{error}</p>}
               <Button
                 type="button"
@@ -365,4 +531,23 @@ export function LegacyItemsSection({
   ) : (
     <>{children}</>
   );
+}
+
+export function KitFlavorNotice({ products }: { products: Flavor[] }) {
+  const ambiguous = products.filter(
+    (p) => (p.variants?.filter((v) => v.active).length ?? 0) > 1,
+  );
+  return ambiguous.length ? (
+    <aside className="kit-variant-notice" role="note">
+      <details>
+        <DisclosureSummary>
+          Para kits, cadastre um produto por sabor.
+        </DisclosureSummary>
+        <p>
+          As variantes não viram sabores na composição. Confira:{' '}
+          {ambiguous.map((p) => p.name).join(', ')}.
+        </p>
+      </details>
+    </aside>
+  ) : null;
 }

@@ -53,3 +53,11 @@ Novo pedido permite escolher kit por tamanho/capacidade e montar sabores em unid
 Ao ajustar somente quantidade, o preço histórico é mantido. Outra composição usa o preço atual do kit; a prévia acompanha a mesma regra do servidor. Abrir montagem bloqueia a continuação até salvar/cancelar. Pedidos confirmados precisam ser reabertos antes da produção, pelo fluxo auditado existente.
 
 Modelos/geração recorrente de kits, defaults/repetição completa, cliente pessoa e ocasião ainda não foram integrados. Não considerar a R15 inteira concluída nem aplicar a branch diretamente no Cloudflare. A mudança documental `a7a1c64` foi incorporada: a R16 futura considerará uma sacola de envio por pedido iFood, com exemplo R$ 59,34.
+
+## Revisão R19
+
+A montagem usa uma linha compacta por sabor e apenas um botão Completar, para o sabor selecionado. O cartão identifica o kit pelo título e pergunta Quantos kits iguais. Produtos com várias variantes ativas exibem o aviso de que cada sabor precisa ser um produto; o app não converte cadastros automaticamente.
+
+Para agilizar os estabelecimentos, abra os Dados do estabelecimento do cliente, escolha Kit padrão do cliente e salve os padrões. No Novo pedido, esse kit vem selecionado: tocar no sabor soma um kit inteiro. Trocar kit muda só o pedido atual. Sem padrão salvo, o atalho usa12×30 somente se esse kit estiver cadastrado e ativo; não inventa um kit se faltar. O campo é validado por organização/atividade e preservado quando um editor antigo não o envia. Pedidos anteriores não são alterados.
+
+A 0020 também cria o índice kit_order_items_order por organização/pedido, antes de qualquer ativação remota. Testes SQL verificam que SELECT e DELETE o utilizam. A montagem de pedidos está testada em Chromium/WebKit; recorrência e os demais itens da R15-B ainda impedem declarar a fase inteira pronta para ativação.

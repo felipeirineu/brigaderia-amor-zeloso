@@ -673,7 +673,7 @@ export function Totem({
       {step === 1 && (
         <>
           <h2 className="totem-customer">{customer?.name}</h2>
-          <p className="totem-hint">Toque para adicionar caixas</p>
+          <p className="totem-hint">Escolha o kit e os sabores</p>
           {busy && <p role="status">Preenchendo o pedido…</p>}
           {defaults && defaults.plans.filter((p) => p.valid).length > 1 && (
             <div className="chips" aria-label="Pedidos padrão">
@@ -700,6 +700,7 @@ export function Totem({
           )}
           {(kitCatalog.kits.length > 0 || kitItems.length > 0) && (
             <KitItemsEditor
+              key={`${id ?? 'novo'}-${customer?.id ?? ''}`}
               value={kitItems}
               onChange={setKitItems}
               snapshots={kitSnapshots}
@@ -712,6 +713,9 @@ export function Totem({
               )}
               limit={kitCatalog.limit}
               mixed={defaults?.mixed ?? mixed}
+              quickMode
+              defaultKitId={defaults?.profile.default_kit_id}
+              disabled={busy}
               onEditingChange={setKitEditing}
             />
           )}
@@ -1442,7 +1446,11 @@ export function Totem({
                       ),
                   ) && <small className="alcohol-tag">{alcoholNotice}</small>}
                   <QuantityInput
-                    label={'Revisar quantidade de kits ' + (index + 1)}
+                    label="Quantos kits iguais"
+                    aria-label={
+                      'Revisar quantidade de ' +
+                      (display ? kitLabel(display) : 'kit indisponível')
+                    }
                     value={item.quantity}
                     min={1}
                     max={10000}
