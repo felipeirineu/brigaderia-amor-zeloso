@@ -606,3 +606,5 @@ Produzido: `default_kit_id` opcional no JSON de perfil, sem nova tabela/rota. Va
 ### Complemento R19-4 — modelo legado visível
 
 Produzido: preenchimento por modelo antigo mantém Embalagens anteriores aberto, com itens/valores visíveis. Adição rápida por kit fica disponível quando não há seleção legada; combinar formatos continua possível pela montagem explícita. Nenhuma conversão de SKU, preço ou modelo é feita. Testado nos três projetos: modelo antigo de R$ 10,00 mantém esse valor mesmo com kit novo de preço diferente no catálogo. O restante da migração funcional de recorrências para kits continua pendente, como informado na R15-B.
+
+- **Checagem R19:** o CI de 5afdf02 parou na formatação de uma cadeia de locator no teste novo. Correção apenas de estilo aplicada; format:check local passou. Segurança desse SHA passou; conferir CI e Segurança novamente no commit da correção, sem avançar main com check vermelho.

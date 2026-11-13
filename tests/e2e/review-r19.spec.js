@@ -225,11 +225,9 @@ test('R19 kit padrão salvo no cliente permite adicionar um kit com um toque', a
         exact: true,
       })
       .click();
-    const legacySection = legacyPage
-      .locator('details')
-      .filter({
-        has: legacyPage.getByText('Embalagens anteriores', { exact: true }),
-      });
+    const legacySection = legacyPage.locator('details').filter({
+      has: legacyPage.getByText('Embalagens anteriores', { exact: true }),
+    });
     await expect(legacySection).toHaveAttribute('open', '');
     await expect(
       legacyPage.getByRole('button', { name: /^Continuar/ }),
