@@ -64,7 +64,8 @@ export async function orderCosts(
             r.weight_grams === line.weight_grams
           : r.variant_id === line.variant_id),
     );
-    const recipe = candidates.length === 1 ? candidates[0] : undefined;
+    const recipe =
+      line.kit_id && candidates.length !== 1 ? undefined : candidates[0];
     let unitCost: number | null = null,
       cost: number | null = null;
     if (!recipe) missing.add('Sem ficha: ' + line.display_name);

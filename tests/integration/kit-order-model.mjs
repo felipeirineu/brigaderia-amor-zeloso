@@ -198,6 +198,40 @@ try {
     1320,
     'item legado mantém a fórmula anterior',
   );
+  const alternateVariant = crypto.randomUUID();
+  await t.db
+    .prepare(
+      "INSERT INTO product_variants(id,organization_id,product_id,label,weight_grams,units_per_box,price_cents) VALUES(?,?,?,'Outra variante DEMONSTRAÇÃO',15,2,100)",
+    )
+    .bind(alternateVariant, t.org, product.id)
+    .run();
+  const ambiguous = await call('p1/recipes', {
+    name: 'ZZZ ficha DEMONSTRAÇÃO ambígua',
+    variant_id: alternateVariant,
+    yield_units: 1,
+    packaging_cents: 0,
+    labor_cents: 0,
+    overhead_cents: 0,
+    margin_bps: 0,
+    components: [{ supply_id: ingredient, quantity_milli: 1000 }],
+  });
+  const ambiguousCost = await call('p1/order-costs/' + order, undefined, 'GET');
+  assert.equal(
+    ambiguousCost.items.find((i) => i.item_id === items[0].id)
+      .estimated_cost_cents,
+    null,
+    'kit não escolhe entre fichas ambíguas',
+  );
+  assert.equal(
+    ambiguousCost.items.find((i) => i.item_id !== items[0].id)
+      .estimated_cost_cents,
+    220,
+    'legado mantém seleção e cálculo anteriores',
+  );
+  await t.db
+    .prepare('UPDATE recipes SET active=0 WHERE organization_id=? AND id=?')
+    .bind(t.org, ambiguous.id)
+    .run();
   const shopping = await call(
     'p1/shopping?from=2030-01-07&to=2030-01-07',
     undefined,
@@ -274,8 +308,8 @@ try {
   assert.deepEqual(await h.readKitItems(t.db, other, [order]), []);
   assert.equal(
     (await t.db.prepare('SELECT COUNT(*) n FROM product_variants').first()).n,
-    1,
-    'sem variante artificial',
+    2,
+    'somente as duas variantes explícitas da fixture, sem variante artificial por kit',
   );
   assert.equal(
     (await t.db.prepare('PRAGMA foreign_key_check').all()).results.length,

@@ -160,7 +160,8 @@ export async function recipes(
             ? r.product_id === d.product_id && r.weight_grams === d.weight_grams
             : r.variant_id === d.variant_id),
       );
-      const recipe = candidates.length === 1 ? candidates[0] : undefined;
+      const recipe =
+        d.kit && candidates.length !== 1 ? undefined : candidates[0];
       if (!recipe) {
         missing.push('Sem ficha: ' + d.name);
         continue;
