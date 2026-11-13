@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-13 (3)** — R19: checkpoint R15-B4 revisado (branch do Codex). Base aprovada; 5 ajustes antes do main: índice por pedido, montagem compacta, textos do cartão, fluxo rápido dos estabelecimentos e aviso de sabor cadastrado como variante. Ver seção **R19**.
 - **2026-11-13 (2)** — R16-11: o iFood inclui a **sacola de envio** (1 por pedido). Etiquetas e embalagens do iFood serão cadastradas pelo Tiago como insumos. Caipirinha: 15 doces por receita, provisório.
 - **2026-11-13** — Respostas do Tiago incorporadas à **R16** (itens 7 a 12): rendimento editável por ficha (16 por padrão, Beijinho 17), forminha nº 4 para 30 g e nº 5 para 15/23 g, fundo rendado e pétala opcionais por uso, +20% de custos incalculáveis e preço iFood `(preço + embalagem + etiqueta) ÷ 0,74`. Leite condensado R$ 6,89.
 - **2026-11-12** — R18: R15-A revisada e aprovada, com 4 ajustes para a R15-B (o principal: tamanhos e quantidades de kit não podem ficar fixos em `CHECK`). Ver seção **R18**.
@@ -88,6 +89,24 @@
 - **2026-11-01** — Versão inicial: contexto do negócio, logo oficial, pendências técnicas, prioridades P0/P1/P2, diretrizes visuais, ajuda contextual e tutorial.
 
 ---
+
+## R19 — Revisão do checkpoint R15-B4 (branch `codex/r15-kit-order-model`, até `25531bd`, 2026-11-13)
+
+### Aprovado
+
+- R18-1 feito do jeito certo: 0020 reconstrói `kits` com faixas (1–500) antes de qualquer referência, sem editar a 0019. Nenhuma tabela aponta para `kits` antes da troca, então o `DROP` é seguro.
+- `kit_order_items`/`kit_order_components` aditivas, snapshots (preço, capacidade, massa, embalagem, nome, foto, álcool), CAS e idempotência compartilhados com o legado, 409 para editor sem `kit_items`, revalidação na confirmação individual e em lote. CI e Segurança verdes no SHA. Correto não avançar o main antes de fechar a R15-B.
+
+### Ajustes pedidos (antes de avançar o main)
+
+1. **Índice:** `kit_order_items` é lida e apagada por `(organization_id, order_id)` e só tem PK por `id`. Criar `CREATE INDEX kit_order_items_order ON kit_order_items(organization_id, order_id)` (na 0020, já que ela ainda não foi aplicada em lugar nenhum fora dos testes, ou numa 0021).
+2. **Montagem compacta.** Na captura, cada sabor ocupa um cartão alto com rótulo repetido e "Completar com…" próprio; com 9 sabores a tela fica muito longa. Reaproveitar o padrão da caixa mista (`.mix-row`): foto 44 px, nome, − / quantidade / +, uma linha por sabor. Um único "Completar com [sabor escolhido]" e "Limpar" no rodapé, mais o aviso de álcool na linha. Para 12 doces, manter o desenho da caixa; para 25/50/100, só a contagem "Faltam N de 25".
+3. **Textos do cartão do kit:**
+   - "Quantidade de kits 1" seguido do campo "2" confunde: o "1" é o número do kit. Usar o título do kit ("Kit 25 · 15 g") e o rótulo "Quantos kits iguais".
+   - "Editar sabores do kit 1" e "Remover kit 1" viram "Editar sabores" e "Remover" (o rótulo acessível pode manter o nome do kit).
+   - Trocar "Toque para adicionar caixas" por "Escolha o kit e os sabores".
+4. **Fluxo dos estabelecimentos não pode piorar.** Hoje a Alda toca no sabor e pronto (caixa de 12 × 30 g). Com os itens antigos dentro de "Embalagens anteriores", ela teria um passo a mais. Antes do main: kit padrão do cliente (ex.: Kit 12 · 30 g) pré-selecionado, e um toque no sabor soma um kit daquele sabor. A montagem completa fica para kits mistos e para clientes pessoa.
+5. **Sabor = produto.** A composição usa `product_id`. Produto cadastrado com os sabores como variantes (o caso do "Brigadeiro" que o responsável criou em 03/11) não funciona em kits. A tela de Kits e a montagem devem avisar quando um produto ativo tiver mais de uma variante ativa: "cadastre um produto por sabor".
 
 ## R18 — Revisão da R15-A (até `e722867`, 2026-11-12)
 
