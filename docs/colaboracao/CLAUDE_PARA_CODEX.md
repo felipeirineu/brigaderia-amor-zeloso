@@ -6,6 +6,8 @@
 
 ## Histórico
 
+- **2026-11-13** — Respostas do Tiago incorporadas à **R16** (itens 7 a 12): rendimento editável por ficha (16 por padrão, Beijinho 17), forminha nº 4 para 30 g e nº 5 para 15/23 g, fundo rendado e pétala opcionais por uso, +20% de custos incalculáveis e preço iFood `(preço + embalagem + etiqueta) ÷ 0,74`. Leite condensado R$ 6,89.
+- **2026-11-12** — R18: R15-A revisada e aprovada, com 4 ajustes para a R15-B (o principal: tamanhos e quantidades de kit não podem ficar fixos em `CHECK`). Ver seção **R18**.
 - **2026-11-11** — Revisão geral do Claude (R6-7/R6-8 aprovadas) e correções. Ver "Revisão de 11/11/2026" em `docs/SEGURANCA_AUDITORIA.md` e a seção **R17**:
   - `_headers`: `img-src … blob:` e `geolocation=(self)` (foto e GPS estavam bloqueados em produção). **O harness agora aplica `_headers`**: todo teste de tela roda sob a CSP real. Não use estilo inline, `eval`, nem recursos externos; teste novo que precise injetar estilo usa `bypassCSP` só nele, com comentário.
   - Lista de pedidos: 200 mais recentes. Raiz e `start_url` → `/gestao`.
@@ -86,6 +88,22 @@
 
 ---
 
+## R18 — Revisão da R15-A (até `e722867`, 2026-11-12)
+
+### Aprovado
+
+- Migração 0019 aditiva, kit separado de sabor, sem seed. API com CAS, idempotência, auditoria, owner grava e operadora lê. Rotas na matriz (178 verificações). Backup inclui kits. CI e Segurança verdes no main.
+- Interruptor "Limitar sabores por kit" só para o owner, como pedido pelo responsável.
+- Correção das barras de produção (sem estilo inline) e chips no lugar de selects: bom achado sob a CSP real.
+- Relatório honesto: a R15 **não** está completa; kits ainda não entram em pedidos.
+
+### Ajustes pedidos (fazer na R15-B, antes de qualquer tabela referenciar `kits`)
+
+1. **Tamanhos e quantidades fixos no banco.** `CHECK(weight_grams IN(15,23,30))` e `CHECK(units_per_kit IN(12,25,50,100))` obrigam a reconstruir a tabela quando o negócio mudar, e o Tiago já avisou que pode criar kits de lembrancinha (a planilha tem caixas de 4, 5 e 6). Na próxima migração, trocar por faixas (`weight_grams BETWEEN 1 AND 500`, `units_per_kit BETWEEN 1 AND 500`) e fazer o mesmo no Zod. A tela continua oferecendo os chips atuais como atalhos, mais um campo "Outro" só para o owner. A 0019 ainda não foi aplicada no banco real (última execução do workflow: 02/11), mas **não edite a 0019**: use a 0020.
+2. **Peso da massa:** ao escolher o tamanho, sugerir 13/20/26 g (valores confirmados pelo Tiago em 08/11), identificados como sugestão e editáveis. Vazio continua significando "não informado".
+3. **Cadastro inicial mais rápido:** são 12 kits para digitar. Depois de salvar um, manter o tamanho selecionado e avançar para a próxima quantidade ainda não cadastrada. Sem preencher preços automaticamente.
+4. **Estado vazio:** quando não houver kit, mostrar a ordem de cadastro (embalagens em Insumos → kits) e o atalho para Insumos.
+
 ## R17 — Achados da revisão de 11/11/2026 (para o Codex)
 
 Ordem geral: **R15 → R16 → R17 → R7**. Itens pequenos da R17 podem entrar junto com a R15 quando tocarem os mesmos arquivos.
@@ -110,8 +128,20 @@ Pedido do Tiago, a partir da planilha dele (os dados reais ficam fora do reposit
 3. **Acabamento por tamanho:** quantidade por doce, editável **para cada tamanho**. Se o Tiago informar só um tamanho, sugerir os demais pela proporção da superfície (peso^(2/3)), marcados como "estimativa", sem gravar sem confirmação.
 4. **Saída da calculadora**, por sabor × tamanho: custo por doce e custo por kit (12/25/50/100, com a embalagem do kit da R15 5b e as forminhas). Ao lado, o **preço da tabela** e a **margem**, mais o preço sugerido pela margem desejada. Somente consulta: não altera preços nem cria despesa.
 5. **Arredondamento:** centavos inteiros, critério explícito (o atual arredonda o custo unitário para cima). Ficha incompleta (insumo sem preço) mostra "indisponível", nunca zero.
+7. **Rendimento editável por ficha (Tiago, 13/11):** campo "doces por receita" com **16 como padrão** e o peso de massa de referência (26 g). Cada sabor pode ter o seu (Beijinho rende 17). O cálculo para 13/20 g parte desse rendimento: `rendimento × 26 ÷ peso da massa`, arredondado para baixo, marcado como estimativa até o Tiago informar o real.
+8. **Forminha por tamanho:** nº 4 nos doces de 30 g (massa 26 g) e nº 5 nos de 15 g e 23 g. É acabamento por doce, escolhido pelo tamanho, não fixo na ficha.
+9. **Itens opcionais (fundo rendado, pétala e outros):** não entram na ficha nem no custo padrão. No cálculo (e depois no pedido/kit) o Tiago marca "usar fundo rendado" / "usar pétala"; só então somam 1 unidade por doce. Lista configurável pelo owner (qualquer insumo em unidades pode ser marcado como "opcional por doce").
+10. **Custos incalculáveis: +20% sobre o custo total** (ingredientes, acabamento, gás, embalagem), antes da margem. Percentual configurável pelo owner, 20% por padrão, sempre visível no detalhamento ("Custo calculado R$ X + 20% = R$ Y").
+11. **Preço no iFood** (canal separado; não altera o preço de tabela nem pedidos):
+    - `preço iFood = (preço do produto + embalagem iFood + etiqueta) ÷ 0,74`;
+    - "preço do produto" = o preço da tabela do kit; mostrar também a versão com o preço sugerido pela margem;
+    - embalagem iFood e etiqueta são insumos escolhidos na configuração do canal (podem ficar sem preço: então o resultado é "indisponível", nunca zero);
+    - o divisor 0,74 é configurável pelo owner (mostrar como "o iFood fica com 26%");
+    - arredondamento do preço iFood para cima ao centavo; exibir o cálculo passo a passo.
+12. **Exemplo de aceite (fictício, mesmos números da planilha):** Brigadeiro com forminha nº 4: R$ 16,02 por receita, 16 doces → R$ 1,00 por doce. Kit 12 · 30 g com caixa de R$ 1,75: R$ 13,77; com +20%: R$ 16,52. iFood com preço R$ 42,00, embalagem R$ 1,00 e etiqueta R$ 0,20 (valores fictícios): (42,00 + 1,00 + 0,20) ÷ 0,74 = R$ 58,38.
 6. **Testes:**
    - unitários de rendimento por peso e de escala do acabamento;
+   - unitários dos itens 7 a 12, incluindo o exemplo de aceite;
    - conferência com um caso conhecido: ficha "Brigadeiro" fictícia com os mesmos números dá R$ 15,45 por receita e R$ 0,97 por doce com 16 doces;
    - E2E da tela;
    - permissões: operadora só lê (como fichas), owner edita.
