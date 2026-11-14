@@ -1,6 +1,21 @@
 // Apenas DEMONSTRAÇÃO em D1 efêmero. Nunca lê planilha ou cadastro real.
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { build } from 'esbuild';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
+const dir = await mkdtemp('/tmp/az-kit-recurrence-');
+await build({
+  entryPoints: ['worker/operations.ts'],
+  outfile: dir + '/operations.mjs',
+  bundle: true,
+  platform: 'node',
+  format: 'esm',
+  target: 'es2022',
+});
+const { operations } = await import(
+  pathToFileURL(dir + '/operations.mjs').href
+);
 import { runtime } from '../helpers/runtime.mjs';
 import { demoProject } from '../helpers/demo-project.mjs';
 import {
@@ -197,6 +212,54 @@ try {
     { ...kitData, price_cents: 22222, version: 2 },
     'PUT',
   );
+  // Handler real + D1 real; conta preparações, incluindo batches, sem API alternativa de produção.
+  let preparedCount = 0;
+  const measured = {
+    prepare(sql) {
+      preparedCount++;
+      return t.db.prepare(sql);
+    },
+    batch(statements) {
+      return t.db.batch(statements);
+    },
+  };
+  const member = await t.db
+    .prepare(
+      "SELECT user_id FROM memberships WHERE organization_id=? AND role='owner' LIMIT 1",
+    )
+    .bind(t.org)
+    .first();
+  const counted = await operations(
+    new Request(t.url + '/api/generate-week', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ week }),
+    }),
+    {
+      DB: measured,
+      OPERATIONS_ENABLED: 'true',
+      FINANCE_ENABLED: 'true',
+      P1_ENABLED: 'true',
+      MOBILE_ENABLED: 'true',
+      FIELD_ENABLED: 'true',
+      MIXED_BOXES_ENABLED: 'true',
+    },
+    {
+      organization_id: t.org,
+      user_id: member.user_id,
+      role: 'owner',
+      token_hash: 'DEMONSTRACAO',
+    },
+  );
+  assert.equal(counted.status, 200);
+  assert.equal((await counted.json()).created, 0);
+  assert(
+    preparedCount <= 45,
+    `orçamento D1 excedido: ${preparedCount} consultas no handler`,
+  );
+  console.log(
+    `OK geração com 67 modelos: ${preparedCount} preparações SQL, reserva de 5 até o teto50.`,
+  );
   const legacyDefaults = await call(
     'mobile/defaults/' + customer,
     undefined,
@@ -326,6 +389,7 @@ c=sqlite3.connect(':memory:');c.execute('PRAGMA foreign_keys=ON');c.executescrip
   );
 } finally {
   await t.dispose();
+  await rm(dir, { recursive: true, force: true });
 }
 const old = await runtime({
   migrationLimit: 20,
