@@ -57,7 +57,26 @@ export const paymentSchema = z
     (d) => !!d.order_id !== !!d.closing_id,
     'Selecione pedido ou fechamento.',
   );
-export const pixSchema = z
+/**
+ * Aceita a chave do jeito que a pessoa digita e guarda no formato do Pix:
+ * CPF/CNPJ sem pontuação, telefone com +55 e DDD, e-mail e chave aleatória
+ * em minúsculas.
+ */
+export function normalizePixKey(type: unknown, key: unknown) {
+  if (typeof key !== 'string') return key;
+  const k = key.trim();
+  if (type === 'cpf' || type === 'cnpj') return k.replace(/[.\-/\s]/g, '');
+  if (type === 'phone') {
+    const digits = k.replace(/\D/g, '');
+    if (k.startsWith('+')) return '+' + digits;
+    if (/^\d{10,11}$/.test(digits)) return '+55' + digits;
+    if (/^55\d{10,11}$/.test(digits)) return '+' + digits;
+    return k;
+  }
+  if (type === 'email' || type === 'random') return k.toLowerCase();
+  return k;
+}
+const pixFields = z
   .object({
     type: z.enum(['none', 'cpf', 'cnpj', 'email', 'phone', 'random']),
     key: text(254),
@@ -77,14 +96,23 @@ export const pixSchema = z
     if (v.type === 'email' && !z.email().safeParse(v.key).success)
       invalid('E-mail inválido.');
     if (v.type === 'phone' && !/^\+[1-9]\d{7,14}$/.test(v.key))
-      invalid('Telefone Pix deve estar em E.164.');
+      invalid('Telefone Pix: informe DDD e número, ex.: (83) 99999-9999.');
     if (v.type === 'cpf' && !/^\d{11}$/.test(v.key))
-      invalid('CPF deve ter 11 dígitos.');
+      invalid('CPF deve ter 11 dígitos (pode digitar com pontos e traço).');
     if (v.type === 'cnpj' && !/^\d{14}$/.test(v.key))
-      invalid('CNPJ deve ter 14 dígitos.');
+      invalid(
+        'CNPJ deve ter 14 dígitos (pode digitar com pontos, barra e traço).',
+      );
     if (v.type === 'random' && !z.uuid().safeParse(v.key).success)
       invalid('Chave aleatória inválida.');
   });
+export const pixSchema = z.preprocess(
+  (v) =>
+    v && typeof v === 'object' && 'key' in v
+      ? { ...v, key: normalizePixKey((v as { type?: unknown }).type, v.key) }
+      : v,
+  pixFields,
+);
 export const readTerms = (raw: string | null | undefined) =>
   raw ? termsSchema.parse(JSON.parse(raw)) : emptyTerms();
 /** CRC-16/CCITT-FALSE, init FFFF, poly 1021, sem reflexão. */

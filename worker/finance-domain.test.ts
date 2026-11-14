@@ -79,6 +79,20 @@ it('CRC16 CCITT-FALSE usa vetor conhecido e BR Code só existe com chave', () =>
   ).toBe(false);
 });
 
+it('chave Pix aceita o formato digitado e guarda o formato do Pix', () => {
+  const parse = (type: string, key: string) =>
+    pixSchema.parse({ type, key, receiver: 'TESTE', city: 'TESTE' }).key;
+  expect(parse('phone', '(83) 99999-0000')).toBe('+5583999990000');
+  expect(parse('phone', '+55 83 99999-0000')).toBe('+5583999990000');
+  expect(parse('cpf', '000.000.001-91')).toBe('00000000191');
+  expect(parse('cnpj', '00.000.000/0001-91')).toBe('00000000000191');
+  expect(parse('email', ' Pix@Example.Test ')).toBe('pix@example.test');
+  expect(
+    pixSchema.safeParse({ type: 'cpf', key: '123', receiver: 'T', city: 'T' })
+      .success,
+  ).toBe(false);
+});
+
 it('CRC16 confere exemplo estático oficial BACEN seção 2.6.3', () => {
   // Manual de Padrões para Iniciação do Pix, payload público ilustrativo.
   const payload =
