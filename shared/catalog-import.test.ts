@@ -15,18 +15,18 @@ const insumos = [
     'Preço da embalagem (R$)',
     'Observação',
   ],
-  ['Leite DEMONSTRAÇÃO', 'Gramas (g)', 395, 6.89, ''],
+  ['Leite DEMONSTRAÇÃO', 'Gramas (g)', 395, 7.1, ''],
   ['Creme DEMONSTRAÇÃO', 'Mililitros (mL)', '200', '3,15', ''],
   ['Pétala DEMONSTRAÇÃO', 'Unidades', 50, '', 'sem preço'],
   [],
-  ['Gás', '—', '—', 0.74, 'não é insumo'],
+  ['Gás', '—', '—', 0.5, 'não é insumo'],
 ];
 const fichas = [
   ['Ficha (sabor)', 'Insumo', 'Quantidade no lote', 'Unidade', 'De onde veio'],
   ['Sabor A DEMONSTRAÇÃO', 'Leite DEMONSTRAÇÃO', 395, 'g', ''],
   ['Sabor A DEMONSTRAÇÃO', 'Creme DEMONSTRAÇÃO', '30,3', 'mL', ''],
   ['Sabor A DEMONSTRAÇÃO', 'Rendimento do lote (unidades)', 16, 'doces', ''],
-  ['Sabor A DEMONSTRAÇÃO', 'Outros custos por lote (R$)', '0,74', 'R$', ''],
+  ['Sabor A DEMONSTRAÇÃO', 'Outros custos por lote (R$)', '0,50', 'R$', ''],
   [],
   ['Limão', '(receita a preencher pelo Tiago)', null, null, ''],
 ];
@@ -67,7 +67,7 @@ describe('planCatalog', () => {
         name: 'Leite DEMONSTRAÇÃO',
         unit: 'g',
         pack_quantity_milli: 395000,
-        pack_cost_cents: 689,
+        pack_cost_cents: 710,
       },
       {
         line: 3,
@@ -89,7 +89,7 @@ describe('planCatalog', () => {
         name: 'Sabor A DEMONSTRAÇÃO',
         flavor: 'Sabor A DEMONSTRAÇÃO',
         yield_units: 16,
-        overhead_cents: 74,
+        overhead_cents: 50,
         packaging_cents: 0,
         labor_cents: 0,
         margin_bps: 0,
@@ -129,7 +129,7 @@ describe('planCatalog', () => {
   });
   it('números no formato brasileiro', () => {
     expect(parseDecimal('1.234,56')).toBe(1234.56);
-    expect(parseDecimal('R$ 6,89')).toBe(6.89);
+    expect(parseDecimal('R$ 7,10')).toBe(7.1);
     expect(parseDecimal('30.3')).toBe(30.3);
     expect(parseDecimal('')).toBeNull();
     expect(parseDecimal('abc')).toBeNaN();

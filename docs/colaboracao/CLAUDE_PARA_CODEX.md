@@ -6,6 +6,7 @@
 
 ## Histórico
 
+- **2026-11-14 (4)** — **Custos reais removidos da documentação** (o repositório é público). O exemplo de aceite da R16 agora usa só valores fictícios (R$ 70,28 no iFood). Regra: custos, preços de insumos e clientes reais nunca entram em docs, testes ou capturas; ficam na planilha privada e no app.
 - **2026-11-14 (3)** — Tela **Importar cadastro inicial** (Claude, a pedido do responsável): `src/features/p1/ImportCatalog.tsx` e `shared/catalog-import.ts`, só para o owner. Uma planilha com abas Sabores/Insumos/Fichas/Clientes, prévia, e gravação pelas APIs existentes (sem rota nova); o que já existe pelo nome é mantido. Isto **cobre o item 1 da R17** (importar insumos), então não faça outro importador; se precisar, estenda este. Quando a R15 entrar, avaliar uma aba **Kits** aqui também.
 - **2026-11-14 (2)** — Limpeza dos dados de teste (Claude, autorizado pelo responsável: todos os pedidos atuais são testes). Workflow manual `test-data-cleanup.yml` + `scripts/clean-test-data.mjs` (`npm run test:cleanup`, no CI). O plano lê o schema remoto e apaga, na ordem dos vínculos, toda tabela que referencia pedidos/movimentos (e, por opção, clientes e produtos). **Para o Codex:** tabela nova que referencie `orders`, `customers` ou `products` entra na limpeza automaticamente; tabela nova de **configuração ou cadastro que deva sobreviver** (como `kits`) precisa entrar em `KEEP` se puder ser alcançada por vínculo, senão o script recusa rodar (proteção intencional). Guia para o responsável: `docs/LIMPEZA_E_CADASTRO_INICIAL.md`.
 - **2026-11-14** — R19 conferida no branch `codex/r15-kit-order-model` (até `3a563aa`, CI e Segurança verdes): os 5 ajustes foram aprovados. A montagem compacta ficou boa. Dois acabamentos pequenos para quando voltar à tela de toque rápido, sem bloquear:
@@ -14,7 +15,7 @@
   Segue a R15-B: recorrências com kits, pessoa/estabelecimento e ocasião, produção e relatórios por sabor × peso. Depois a R16.
 - **2026-11-13 (3)** — R19: checkpoint R15-B4 revisado (branch do Codex). Base aprovada; 5 ajustes antes do main: índice por pedido, montagem compacta, textos do cartão, fluxo rápido dos estabelecimentos e aviso de sabor cadastrado como variante. Ver seção **R19**.
 - **2026-11-13 (2)** — R16-11: o iFood inclui a **sacola de envio** (1 por pedido). Etiquetas e embalagens do iFood serão cadastradas pelo Tiago como insumos. Caipirinha: 15 doces por receita, provisório.
-- **2026-11-13** — Respostas do Tiago incorporadas à **R16** (itens 7 a 12): rendimento editável por ficha (16 por padrão, Beijinho 17), forminha nº 4 para 30 g e nº 5 para 15/23 g, fundo rendado e pétala opcionais por uso, +20% de custos incalculáveis e preço iFood `(preço + embalagem + etiqueta) ÷ 0,74`. Leite condensado R$ 6,89.
+- **2026-11-13** — Respostas do Tiago incorporadas à **R16** (itens 7 a 12): rendimento editável por ficha (16 por padrão, Beijinho 17), forminha nº 4 para 30 g e nº 5 para 15/23 g, fundo rendado e pétala opcionais por uso, +20% de custos incalculáveis e preço iFood `(preço + embalagem + etiqueta) ÷ 0,74`.
 - **2026-11-12** — R18: R15-A revisada e aprovada, com 4 ajustes para a R15-B (o principal: tamanhos e quantidades de kit não podem ficar fixos em `CHECK`). Ver seção **R18**.
 - **2026-11-11** — Revisão geral do Claude (R6-7/R6-8 aprovadas) e correções. Ver "Revisão de 11/11/2026" em `docs/SEGURANCA_AUDITORIA.md` e a seção **R17**:
   - `_headers`: `img-src … blob:` e `geolocation=(self)` (foto e GPS estavam bloqueados em produção). **O harness agora aplica `_headers`**: todo teste de tela roda sob a CSP real. Não use estilo inline, `eval`, nem recursos externos; teste novo que precise injetar estilo usa `bypassCSP` só nele, com comentário.
@@ -22,7 +23,7 @@
   - Sessão de 30 dias (`SESSION_SECONDS` em `worker/security.ts`).
   - Telefone opcional (`shared/phone.ts`: `noPhone`, `hasPhone`, `visiblePhone`). **Toda leitura de `customers.phone` que vá para a API ou para um link passa por `visiblePhone`**; nunca exponha `sem:<id>`. Importação sem telefone deduplica pelo nome.
   - `.gitleaksignore` com os dois falsos positivos de `ACCESS_AUD`.
-- **2026-11-09 (2)** — Respostas do Tiago: pétala R$ 3,50/50; gás R$ 0,74 por receita (1 lata de leite condensado); por enquanto só kits de doces. Massa de 13/20/26 g para os doces de 15/23/30 g. Aberta a **R16** (calculadora de preço por peso nas fichas), para depois da R15.
+- **2026-11-09 (2)** — Respostas do Tiago: gás como custo médio por receita (1 lata de leite condensado); por enquanto só kits de doces. Massa de 13/20/26 g para os doces de 15/23/30 g. Aberta a **R16** (calculadora de preço por peso nas fichas), para depois da R15.
 - **2026-11-09** — R15 ganhou 5a (interruptor do owner "Limitar sabores por kit") e 5b (embalagem do kit como insumo no custo), a partir de pedido do responsável e da planilha do Tiago. Os dados reais da planilha (clientes e custos) **não** vão para o repositório: o responsável importa pelo app. A planilha lista embalagens de 1, 4, 5 e 6 doces; possíveis kits de lembrancinha estão **a confirmar** e não devem ser modelados por suposição.
 - **2026-11-08 (3)** — Tabela de kits recebida e **R15** aberta (kits 12/25/50/100 em 15/23/30 g, limite de 3 ou 5 sabores, clientes de festa e brinde). Ver seção **R15**. Feito pelo Claude: aviso "Contém álcool" (`shared/alcohol.ts`), que reconhece a foto `caipirinha` ou as palavras cachaça/caipirinha/licor/álcool no nome ou na descrição. Aparece na grade do Novo pedido, na montagem da caixa, no Revisar e no WhatsApp ("(contém álcool)").
 - **2026-11-08 (2)** — Grafia corrigida pelo responsável: **Coco**, sem acento (antes escrito "Côco" por engano). Corrigido em todo o repositório. A sugestão de foto aceita as duas grafias.
@@ -149,7 +150,7 @@ Pedido do Tiago, a partir da planilha dele (os dados reais ficam fora do reposit
 1. **Ficha = 1 receita** (1 lata de leite condensado). Os insumos da ficha se dividem em três grupos:
    - **massa**, por receita (leite condensado, creme de leite, chocolate, margarina, coco, limão…);
    - **acabamento**, por doce (granulado, coco para enrolar, amendoim inteiro, ampola, cachaça, forminha);
-   - **custos por receita** (gás, R$ 0,74).
+   - **custos por receita** (gás).
 2. **Rendimento por peso:** a ficha guarda o **peso total da massa da receita (g)**, ou o rendimento medido num peso de referência (ex.: 16 doces de 26 g). O app calcula o rendimento para 13/20/26 g (= doce de 15/23/30 g). O peso de massa de cada tamanho fica no cadastro do tamanho/kit da R15 (13/20/26), editável.
 3. **Acabamento por tamanho:** quantidade por doce, editável **para cada tamanho**. Se o Tiago informar só um tamanho, sugerir os demais pela proporção da superfície (peso^(2/3)), marcados como "estimativa", sem gravar sem confirmação.
 4. **Saída da calculadora**, por sabor × tamanho: custo por doce e custo por kit (12/25/50/100, com a embalagem do kit da R15 5b e as forminhas). Ao lado, o **preço da tabela** e a **margem**, mais o preço sugerido pela margem desejada. Somente consulta: não altera preços nem cria despesa.
@@ -160,17 +161,16 @@ Pedido do Tiago, a partir da planilha dele (os dados reais ficam fora do reposit
 10. **Custos incalculáveis: +20% sobre o custo total** (ingredientes, acabamento, gás, embalagem), antes da margem. Percentual configurável pelo owner, 20% por padrão, sempre visível no detalhamento ("Custo calculado R$ X + 20% = R$ Y").
 11. **Preço no iFood** (canal separado; não altera o preço de tabela nem pedidos):
     - `preço iFood = (preço do produto + embalagem iFood + etiqueta + sacola de envio) ÷ 0,74`;
-    - a embalagem iFood, por padrão, é a mesma do kit; o owner pode escolher outra. A **sacola de envio** (sacola kraft, ~R$ 0,71) é 1 por pedido: no cálculo por kit, considerar 1 kit por pedido e deixar isso escrito na tela;
+    - a embalagem iFood, por padrão, é a mesma do kit; o owner pode escolher outra. A **sacola de envio** é 1 por pedido: no cálculo por kit, considerar 1 kit por pedido e deixar isso escrito na tela;
     - etiquetas e embalagens novas são cadastradas pelo Tiago como insumos comuns, quando ele definir; a configuração do canal só aponta para elas;
     - "preço do produto" = o preço da tabela do kit; mostrar também a versão com o preço sugerido pela margem;
     - embalagem iFood e etiqueta são insumos escolhidos na configuração do canal (podem ficar sem preço: então o resultado é "indisponível", nunca zero);
     - o divisor 0,74 é configurável pelo owner (mostrar como "o iFood fica com 26%");
     - arredondamento do preço iFood para cima ao centavo; exibir o cálculo passo a passo.
-12. **Exemplo de aceite (fictício, mesmos números da planilha):** Brigadeiro com forminha nº 4: R$ 16,02 por receita, 16 doces → R$ 1,00 por doce. Kit 12 · 30 g com caixa de R$ 1,75: R$ 13,77; com +20%: R$ 16,52. iFood com preço R$ 42,00, embalagem R$ 1,00, etiqueta R$ 0,20 e sacola R$ 0,71 (valores fictícios): (42,00 + 1,00 + 0,20 + 0,71) ÷ 0,74 = R$ 59,34.
+12. **Exemplo de aceite (todos os valores fictícios; não usar custos reais em testes ou docs):** ficha com R$ 20,00 por receita e 16 doces → R$ 1,25 por doce. Kit 12 com caixa de R$ 2,00: R$ 17,00; com +20%: R$ 20,40. iFood com preço R$ 50,00, embalagem R$ 1,00, etiqueta R$ 0,50 e sacola R$ 0,50: (50,00 + 1,00 + 0,50 + 0,50) ÷ 0,74 = R$ 70,28 (arredondado para cima).
 6. **Testes:**
    - unitários de rendimento por peso e de escala do acabamento;
    - unitários dos itens 7 a 12, incluindo o exemplo de aceite;
-   - conferência com um caso conhecido: ficha "Brigadeiro" fictícia com os mesmos números dá R$ 15,45 por receita e R$ 0,97 por doce com 16 doces;
    - E2E da tela;
    - permissões: operadora só lê (como fichas), owner edita.
 

@@ -509,7 +509,7 @@ Vou seguir a ordem explícita da solicitação atual para os dois acabamentos re
 
 ### R16 — fichas por peso
 
-Extensão aditiva das fichas: massa por receita, acabamento por doce/tamanho e custo por receita; pesos de massa editáveis no kit. Cálculo puro/testado de rendimento, escala de superfície marcada estimativa e custo/margem/preço por doce/kit; só confirmação salva sugestões. Preservar fichas/custos antigos e não mudar preço/despesa automaticamente. Testes do exemplo fictício 1545 centavos/16 →97, arredondamento, insumo sem preço indisponível, autorização owner e leitura operadora; E2E.
+Extensão aditiva das fichas: massa por receita, acabamento por doce/tamanho e custo por receita; pesos de massa editáveis no kit. Cálculo puro/testado de rendimento, escala de superfície marcada estimativa e custo/margem/preço por doce/kit; só confirmação salva sugestões. Preservar fichas/custos antigos e não mudar preço/despesa automaticamente. Testes do exemplo fictício do item 12 da R16, arredondamento, insumo sem preço indisponível, autorização owner e leitura operadora; E2E.
 
 ### R17 — revisão de segurança e uso
 

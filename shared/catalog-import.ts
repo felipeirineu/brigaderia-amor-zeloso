@@ -54,7 +54,7 @@ export const plain = (s: unknown) =>
     .trim()
     .toLowerCase();
 
-/** Aceita 30,3 / 30.3 / 1.234,56 / R$ 6,89. Vazio devolve null. */
+/** Aceita 30,3 / 30.3 / 1.234,56 / R$ 7,10. Vazio devolve null. */
 export function parseDecimal(value: unknown): number | null {
   if (value === null || value === undefined) return null;
   if (typeof value === 'number') return Number.isFinite(value) ? value : NaN;
@@ -250,7 +250,7 @@ export function planCatalog(sheets: {
         else r.yield_units = qty;
       } else if (key.startsWith('outros custos')) {
         if (qty === null || Number.isNaN(qty) || qty < 0)
-          bad(S, line, 'outros custos por lote em reais (ex.: 0,74).');
+          bad(S, line, 'outros custos por lote em reais (ex.: 0,50).');
         else r.overhead_cents = toCents(qty);
       } else if (key.startsWith('embalagens por lote')) {
         if (qty !== null && !Number.isNaN(qty) && qty >= 0)
