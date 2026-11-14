@@ -73,6 +73,7 @@ const mixBase = (comp: Record<string, number>) =>
     .filter(([, u]) => u > 0)
     .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))[0]?.[0] ?? '';
 interface Plan {
+  kit_items?: KitItemInput[];
   id: string;
   name: string;
   weekday: number;
@@ -97,6 +98,7 @@ interface Defaults {
   profile: B2BProfile;
   plans: Plan[];
   last: {
+    kit_items?: KitItemInput[];
     valid: boolean;
     items: {
       variant_id: string;
@@ -281,8 +283,13 @@ export function Totem({
       current = false;
     };
   }, [id, financial]);
-  function applyPlanItems(items: Plan['items']) {
-    setKitItems([]);
+  function applyPlanItems(items: Plan['items'], kits: KitItemInput[] = []) {
+    setKitItems(
+      kits.map((i) => ({
+        ...i,
+        components: i.components.map((c) => ({ ...c })),
+      })),
+    );
     setKitSnapshots([]);
     setCounts(
       Object.fromEntries(
@@ -308,7 +315,7 @@ export function Totem({
     );
   }
   function plan(p: Plan) {
-    applyPlanItems(p.items);
+    applyPlanItems(p.items, p.kit_items);
     const planned = nextWeeklyTime(p.weekday, p.time);
     setDue(planned);
     setPlanDue(planned);
@@ -335,7 +342,7 @@ export function Totem({
     setBusy(true);
     setError('');
     try {
-      const d = await api<Defaults>('mobile/defaults/' + c.id);
+      const d = await api<Defaults>('mobile/defaults/' + c.id + '?kits=1');
       if (serial !== choice.current) return;
       setDefaults(d);
       setAddress(
@@ -691,7 +698,7 @@ export function Totem({
               className="repeat-order"
               variant="ghost"
               onClick={() => {
-                applyPlanItems(defaults.last!.items);
+                applyPlanItems(defaults.last!.items, defaults.last!.kit_items);
                 setNotes(defaults.last!.notes);
               }}
             >

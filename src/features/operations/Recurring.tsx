@@ -1,3 +1,11 @@
+import { KitItemsEditor } from '../../components/KitItemsEditor';
+import { useKitCatalog } from '../p1/useKitCatalog';
+import {
+  kitSnapshotInput,
+  type KitItemInput,
+  type KitItemSnapshot,
+} from '../../../shared/kit-orders';
+import { kitLabel } from '../../../shared/kits';
 import { compositionValid } from '../../components/composition';
 import { CompositionEditor } from '../../components/CompositionEditor';
 import type { ItemInput } from '../../../shared/mixed';
@@ -26,6 +34,7 @@ interface Plan {
   active: number;
   version: number;
   items: ItemInput[];
+  kit_items?: KitItemSnapshot[];
 }
 interface ProductOption {
   id: string;
@@ -54,6 +63,10 @@ function monday() {
 }
 export function Recurring({ mixed = false }: { mixed?: boolean }) {
   const courierLabels = useCourierLabels();
+  const kitCatalog = useKitCatalog();
+  const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
+    [kitEditing, setKitEditing] = useState(false),
+    [kitEpoch, setKitEpoch] = useState(0);
   const plans = useRemote<Plan[]>('recurring'),
     customers = useRemote<{ id: string; name: string }[]>('customers'),
     products = useRemote<ProductOption[]>('products');
@@ -97,6 +110,9 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
     ) ?? [];
   function reset() {
     setEditing(null);
+    setKitItems([]);
+    setKitEditing(false);
+    setKitEpoch((n) => n + 1);
     setName('');
     setCustomer('');
     setWeekday(1);
@@ -123,7 +139,11 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
   }
   function save(e: FormEvent) {
     e.preventDefault();
-    if (items.some((i) => !compositionValid(i, options))) {
+    if (
+      kitEditing ||
+      (!items.length && !kitItems.length) ||
+      items.some((i) => !compositionValid(i, options))
+    ) {
       setError('Revise a soma das unidades da caixa mista.');
       return;
     }
@@ -143,6 +163,7 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
           courier_fee_cents: parsePrice(courierFee),
           notes: editing?.notes ?? '',
           composition_version: 1,
+          kit_items: kitItems,
           items: items.map(({ variant_id, quantity, components }) => ({
             variant_id,
             quantity,
@@ -231,7 +252,7 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
                   <li key={i.id ?? index}>
                     {i.quantity} ×{' '}
                     {i.components?.length
-                      ? `Caixa mista (${i.components.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
+                      ? `${i.kit_id ? i.product_name : 'Caixa mista'} (${i.components.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
                       : `${i.product_name} — ${i.variant_label}`}
                   </li>
                 ))}
@@ -418,6 +439,23 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
           onValueChange={(value) => setCourierFee(value)}
         />
         <p>Copiado aos novos pedidos e sempre revisável; não cria despesa.</p>
+        {(kitCatalog.kits.length > 0 || kitItems.length > 0) && (
+          <KitItemsEditor
+            key={`${kitEpoch}-${editing?.id ?? 'novo'}-${customer}`}
+            value={kitItems}
+            onChange={(value) => {
+              setKitItems(value);
+              if (value.length && items.every((i) => !i.variant_id))
+                setItems([]);
+            }}
+            kits={kitCatalog.kits}
+            products={products.data ?? []}
+            mixed={mixed}
+            limit={kitCatalog.limit}
+            onEditingChange={setKitEditing}
+          />
+        )}
+        <p>Os novos pedidos usam o preço atual do kit na geração.</p>
         {items.map((item, i) => (
           <fieldset key={i}>
             <legend>Item {i + 1}</legend>
@@ -499,13 +537,15 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
                 <Plus size={20} />
               </Button>
             </div>
-            {(items.length > 1 || item.components) && (
+            {(items.length > 1 || item.components || kitItems.length > 0) && (
               <Button
                 type="button"
                 onClick={() =>
                   setItems(
                     items.length === 1
-                      ? [{ variant_id: '', quantity: 1 }]
+                      ? kitItems.length
+                        ? []
+                        : [{ variant_id: '', quantity: 1 }]
                       : items.filter((_, j) => j !== i),
                   )
                 }
@@ -525,7 +565,11 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
           >
             Adicionar item
           </Button>
-          <Button disabled={busy} variant="primary" loading={busy}>
+          <Button
+            disabled={busy || kitEditing || (!items.length && !kitItems.length)}
+            variant="primary"
+            loading={busy}
+          >
             Salvar pedido padrão
           </Button>
           <Button type="button" onClick={reset}>
@@ -541,6 +585,15 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
             {p.active ? 'Ativo' : 'Pausado'}
           </p>
           <ul>
+            {p.kit_items?.map((i) => (
+              <li key={i.id}>
+                {i.quantity}× {kitLabel(i)} (
+                {i.components
+                  .map((c) => `${c.units} ${c.product_name}`)
+                  .join(' + ')}
+                )
+              </li>
+            ))}
             {p.items.map((i, index) => (
               <li key={index}>
                 {i.quantity} ×{' '}
@@ -554,6 +607,9 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
           <div className="actions">
             <Button
               onClick={() => {
+                setKitEditing(false);
+                setKitEpoch((n) => n + 1);
+                setKitItems((p.kit_items ?? []).map(kitSnapshotInput));
                 setEditing(p);
                 setName(p.name);
                 setCustomer(p.customer_id);
@@ -598,6 +654,7 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
                       ...(i.components ? { components: i.components } : {}),
                     })),
                     composition_version: 1,
+                    kit_items: (p.kit_items ?? []).map(kitSnapshotInput),
                     active: !p.active,
                     version: p.version,
                   });

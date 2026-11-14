@@ -61,3 +61,17 @@ A montagem usa uma linha compacta por sabor e apenas um botão Completar, para o
 Para agilizar os estabelecimentos, abra os Dados do estabelecimento do cliente, escolha Kit padrão do cliente e salve os padrões. No Novo pedido, esse kit vem selecionado: tocar no sabor soma um kit inteiro. Trocar kit muda só o pedido atual. Sem padrão salvo, o atalho usa12×30 somente se esse kit estiver cadastrado e ativo; não inventa um kit se faltar. O campo é validado por organização/atividade e preservado quando um editor antigo não o envia. Pedidos anteriores não são alterados.
 
 A 0020 também cria o índice kit_order_items_order por organização/pedido, antes de qualquer ativação remota. Testes SQL verificam que SELECT e DELETE o utilizam. A montagem de pedidos está testada em Chromium/WebKit; recorrência e os demais itens da R15-B ainda impedem declarar a fase inteira pronta para ativação.
+
+## Recorrências com kits — checkpoint R15-B5
+
+A migração aditiva `0021_kit_recurring.sql` guarda os kits e a composição dos pedidos padrão separadamente dos itens antigos. O editor permite os dois formatos. Uma gravação antiga que omita kits existentes recebe erro 409, para não apagar parte do modelo.
+
+Gerar pedidos da semana usa o catálogo atual, inclusive preço e embalagem; pedidos já gerados não são alterados. Um modelo com sabor/kit inativo é listado como ignorado e os demais continuam. A composição antiga intacta conserva o limite histórico de sabores na geração; alterar a composição exige o limite atual. A geração cria apenas rascunhos, para revisão humana.
+
+Novo pedido e editor completo recebem os kits dos modelos. A repetição do último pedido também valida os kits; consumidores antigos não recebem uma sugestão parcial como válida. Os pedidos existentes mantêm os snapshots anteriores.
+
+As tabelas `kit_recurring_items` e `kit_recurring_components` entram no backup. São dados operacionais de modelos, alcançados automaticamente pela limpeza por vínculos: **não** entram em `KEEP`. O catálogo `kits` e a configuração `kit_settings` continuam preservados. O teste restaura um backup em SQLite e limpa somente seu banco efêmero, nunca a conta Cloudflare.
+
+**Ativação ainda pendente:** não aplicar esta branch isoladamente. Quando a R15-B estiver completa e aprovada, o fluxo manual de homologação deverá aplicar, em ordem, 0019 → 0020 → 0021 (ou somente as ainda pendentes). A pré-checagem deve apresentar `schema_kit_recurring_ready: true`, ambas as tabelas e nenhuma violação em `foreign_key_check`. Se faltar uma tabela ou surgir violação, interromper e guardar o relatório sem dados pessoais; não repetir uma limpeza nem alterar flags para tentar resolver. Esta entrega não executa nenhuma dessas operações remotas.
+
+Importação inicial: reutilizar **Importar cadastro inicial**, que já cobre insumos (R17-1). Uma futura aba Kits pode usar `POST p1/kits`, com prévia e preço obrigatório, depois da consolidação da R15; não converter sabores/variantes ou deduzir preços automaticamente.

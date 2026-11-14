@@ -977,6 +977,7 @@ function FullOrders({
       notes: string;
       valid: boolean;
       items: Item[];
+      kit_items?: KitItemInput[];
     }[];
   } | null>(null);
   const [template, setTemplate] = useState('');
@@ -997,7 +998,7 @@ function FullOrders({
     setNotes('');
     try {
       const d = await api<NonNullable<typeof defaults>>(
-        `finance/customers/${id}/defaults`,
+        `finance/customers/${id}/defaults?kits=1`,
       );
       if (serial !== choice.current) return;
       setDefaults(d);
@@ -1008,7 +1009,7 @@ function FullOrders({
     }
   }
   function applyTemplate(plan: NonNullable<typeof defaults>['plans'][number]) {
-    setKitItems([]);
+    setKitItems(plan.kit_items ?? []);
     setKitSnapshots([]);
     setTemplate(plan.id);
     setItems(
