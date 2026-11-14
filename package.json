@@ -41,6 +41,7 @@
     "test:routing": "node tests/integration/routing.mjs",
     "test:mixed": "node tests/integration/mixed.mjs && node tests/integration/recurring-mixed.mjs",
     "test:security": "node tests/integration/security.mjs",
+    "test:cleanup": "node tests/integration/clean-test-data.mjs",
     "test:push": "node tests/integration/push.mjs && node tests/integration/push-failures.mjs",
     "test:kits": "node tests/integration/kits.mjs"
   },
