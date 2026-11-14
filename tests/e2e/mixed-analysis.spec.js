@@ -37,15 +37,14 @@ test('R11-4 relatório mostra sabores da composição e CSV privado', async ({
       })
       .locator('..');
     await expect(ranking).toContainText('rateado pelos sabores');
-    await expect(
-      ranking.locator('p').filter({ hasText: 'Beta DEMONSTRAÇÃO:' }),
-    ).toContainText('18 unidades');
-    await expect(
-      ranking.locator('p').filter({ hasText: 'Beta DEMONSTRAÇÃO:' }),
-    ).toContainText('6 unidades em caixas mistas');
-    await expect(
-      ranking.locator('p').filter({ hasText: 'Alfa DEMONSTRAÇÃO:' }),
-    ).toContainText('16 unidades');
+    const beta = ranking.locator('p').filter({ hasText: 'Beta DEMONSTRAÇÃO' });
+    const alfa = ranking.locator('p').filter({ hasText: 'Alfa DEMONSTRAÇÃO' });
+    await expect(beta).toContainText('18 unidades');
+    await expect(beta).toContainText('6 unidades em caixas mistas');
+    await expect(beta).toContainText('30 g · capacidade 12');
+    await expect(beta).toContainText('1,5 caixas equivalentes');
+    await expect(alfa).toContainText('16 unidades');
+    await expect(alfa).toContainText('30 g · capacidade 12');
     await expect(ranking).not.toContainText('0 caixas de um sabor');
     await expect(ranking).not.toContainText('0 unidades em caixas mistas');
     await expect(ranking).not.toContainText('Caixa DEMONSTRAÇÃO');
