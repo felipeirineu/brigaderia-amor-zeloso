@@ -1,3 +1,4 @@
+import type { CustomerType } from '../../../shared/customer-order';
 import { StaffIdentity } from '../field/FieldContext';
 import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
@@ -40,7 +41,7 @@ export interface View {
     amount_cents: number;
   }[];
   annulments: { closing_id: string; reason: string }[];
-  customer: { id: string; name: string };
+  customer: { id: string; name: string; customer_type?: CustomerType };
   version: number;
   received_cents: number;
   receivable_cents: number;
@@ -421,6 +422,7 @@ export function Account() {
               }}
             >
               <TermsEditor
+                person={view.data?.customer.customer_type === 'person'}
                 value={termsEdit.terms}
                 onChange={(terms) => setTermsEdit({ ...termsEdit, terms })}
               />

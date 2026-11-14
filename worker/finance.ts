@@ -1,3 +1,5 @@
+import { customerType } from '../shared/customer-order';
+import { checkPersonTerms } from './customer-order';
 import { kitsReady } from './kits';
 import { hasPhone, visiblePhone } from '../shared/phone';
 import { recurringDefaults, recurringMixedSchema } from './recurring-mixed';
@@ -423,6 +425,11 @@ export async function finance(
         throw new HttpError(409, 'Reabra antes de alterar a condição.');
       if (d.version !== o.version)
         throw new HttpError(409, 'Pedido alterado. Atualize.');
+      const payer = await db
+        .prepare('SELECT * FROM customers WHERE organization_id=? AND id=?')
+        .bind(org, o.customer_id)
+        .first<Row>();
+      checkPersonTerms(customerType(payer), d.terms);
       const nonce = crypto.randomUUID();
       const guard =
         'EXISTS(SELECT 1 FROM orders WHERE organization_id=? AND id=? AND mutation_id=?)';
@@ -450,13 +457,18 @@ export async function finance(
   }
   if (resource !== 'customers' || !id || !z.uuid().safeParse(id).success)
     throw new HttpError(404, 'Não encontrado.');
-  const customer = await db
-    .prepare(
-      'SELECT id,name,phone,active FROM customers WHERE organization_id=? AND id=?',
-    )
+  const rawCustomer = await db
+    .prepare('SELECT * FROM customers WHERE organization_id=? AND id=?')
     .bind(org, id)
     .first<Row>();
-  if (!customer) throw new HttpError(404, 'Cliente não encontrado.');
+  if (!rawCustomer) throw new HttpError(404, 'Cliente não encontrado.');
+  const customer = {
+    id: rawCustomer.id,
+    name: rawCustomer.name,
+    phone: visiblePhone(rawCustomer.phone),
+    active: rawCustomer.active,
+    customer_type: customerType(rawCustomer),
+  };
   if (action === 'profile') {
     if (req.method === 'GET') {
       const r = await db
@@ -466,6 +478,7 @@ export async function finance(
         .bind(org, id)
         .first<{ data: string; version: number }>();
       return json({
+        customer_type: customer.customer_type,
         data: r ? JSON.parse(r.data) : emptyProfile(),
         version: r?.version ?? 0,
       });
@@ -477,6 +490,7 @@ export async function finance(
           .object({ version: z.number().int().min(0), data: profileSchema })
           .strict(),
       );
+      checkPersonTerms(customer.customer_type, d.data.terms);
       const prior = await db
         .prepare(
           'SELECT data FROM customer_profiles WHERE organization_id=? AND customer_id=?',
@@ -532,9 +546,9 @@ export async function finance(
     const plans = (
       await db
         .prepare(
-          'SELECT id,name,weekday,time,notes,delivery_type,delivery_address,courier,courier_name,courier_fee_cents FROM recurring_templates WHERE organization_id=? AND customer_id=? AND active=1 ORDER BY weekday,name LIMIT 100',
+          'SELECT id,name,weekday,time,notes,delivery_type,delivery_address,courier,courier_name,courier_fee_cents FROM recurring_templates WHERE organization_id=? AND customer_id=? AND active=1 AND ?=0 ORDER BY weekday,name LIMIT 100',
         )
-        .bind(org, id)
+        .bind(org, id, +(customer.customer_type === 'person'))
         .all<Row>()
     ).results;
     const defaults = await recurringDefaults(
@@ -546,6 +560,7 @@ export async function finance(
         env.P1_ENABLED === 'true',
     );
     return json({
+      customer_type: customer.customer_type,
       profile: p ? JSON.parse(p.data) : emptyProfile(),
       plans: plans.map((p) => ({
         ...p,

@@ -1,4 +1,11 @@
 import {
+  customerType,
+  occasionLabel,
+  type CustomerType,
+  type Occasion,
+} from '../../../shared/customer-order';
+import { OccasionPicker } from '../../components/OccasionPicker';
+import {
   KitItemsEditor,
   LegacyItemsSection,
 } from '../../components/KitItemsEditor';
@@ -92,6 +99,7 @@ interface Plan {
   }[];
 }
 interface Defaults {
+  customer_type?: CustomerType;
   ranking: Popularity;
   product_order: string[];
   mixed?: boolean;
@@ -109,6 +117,7 @@ interface Defaults {
   } | null;
 }
 interface EditOrder {
+  occasion?: Occasion;
   id: string;
   customer_id: string;
   customer_name: string;
@@ -135,9 +144,11 @@ interface EditOrder {
 export function Totem({
   financial = false,
   mixed = false,
+  metadata = false,
 }: {
   financial?: boolean;
   mixed?: boolean;
+  metadata?: boolean;
 }) {
   const kitCatalog = useKitCatalog(financial);
   const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
@@ -150,23 +161,31 @@ export function Totem({
     [search] = useSearchParams(),
     products = useRemote<Product[]>('products'),
     [query, setQuery] = useState(''),
-    customers = useRemote<{ id: string; name: string; frequency: number }[]>(
-      'mobile/customers?q=' + encodeURIComponent(query),
-    );
+    customers = useRemote<
+      {
+        id: string;
+        name: string;
+        frequency: number;
+        customer_type?: CustomerType;
+      }[]
+    >('mobile/customers?q=' + encodeURIComponent(query));
   const [mixes, setMixes] = useState<Mix[]>([]),
     [mixDraft, setMixDraft] = useState<{
       comp: Record<string, number>;
       editing?: string;
     } | null>(null);
   const [step, setStep] = useState(0),
-    [customer, setCustomer] = useState<{ id: string; name: string } | null>(
-      null,
-    ),
+    [customer, setCustomer] = useState<{
+      id: string;
+      name: string;
+      customer_type?: CustomerType;
+    } | null>(null),
     [defaults, setDefaults] = useState<Defaults | null>(null),
     [counts, setCounts] = useState<Record<string, number>>({}),
     [due, setDue] = useState(''),
     [planDue, setPlanDue] = useState(''),
     [notes, setNotes] = useState(''),
+    [occasion, setOccasion] = useState<Occasion>(''),
     [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>(
       'delivery',
     ),
@@ -258,6 +277,16 @@ export function Totem({
           new Date(Date.parse(o.due_at) - 10800000).toISOString().slice(0, 16),
         );
         setNotes(o.notes);
+        setOccasion(o.occasion ?? '');
+        const payer = await api<{ customer_type?: CustomerType }>(
+          'customers/' + o.customer_id,
+        );
+        if (!current) return;
+        setCustomer({
+          id: o.customer_id,
+          name: o.customer_name,
+          customer_type: customerType(payer),
+        });
         setDeliveryType(o.delivery_type);
         setAddress(o.delivery_address);
         setCourier(o.courier);
@@ -338,6 +367,7 @@ export function Totem({
     setDue('');
     setPlanDue('');
     setNotes('');
+    setOccasion('');
     setStep(1);
     setBusy(true);
     setError('');
@@ -354,7 +384,11 @@ export function Totem({
       setCourier(d.profile.courier);
       setCourierName(d.profile.courier_name);
       setFee(d.profile.courier_fee_cents);
-      setTerms(d.profile.terms);
+      setTerms(
+        customerType(d) === 'person' && d.profile.terms.mode === 'credit'
+          ? emptyTerms()
+          : d.profile.terms,
+      );
       const valid = d.plans.filter((p) => p.valid);
       const nearest = [...valid].sort(
         (a, b) =>
@@ -494,6 +528,7 @@ export function Totem({
         throw Error('Escolha uma data a partir de hoje e um horário válido.');
       const data = {
           customer_id: customer.id,
+          occasion: metadata ? occasion : undefined,
           ...(editing ? { version: editing.version } : {}),
           due_at: new Date(due + ':00-03:00').toISOString(),
           notes,
@@ -720,7 +755,11 @@ export function Totem({
               )}
               limit={kitCatalog.limit}
               mixed={defaults?.mixed ?? mixed}
-              quickMode={selected.length === 0 && mixes.length === 0}
+              quickMode={
+                customerType(defaults ?? customer) !== 'person' &&
+                selected.length === 0 &&
+                mixes.length === 0
+              }
               defaultKitId={defaults?.profile.default_kit_id}
               disabled={busy}
               onEditingChange={setKitEditing}
@@ -1324,8 +1363,14 @@ export function Totem({
           <h2 className="wizard-question">Como vai pagar?</h2>
           <h3 className="order-section-label">Pagamento</h3>
           <div className="chips" aria-label="Condição de pagamento">
-            {(['unset', 'advance', 'delivery', 'credit'] as const).map(
-              (mode) => (
+            {(['unset', 'advance', 'delivery', 'credit'] as const)
+              .filter(
+                (mode) =>
+                  customerType(defaults ?? customer) !== 'person' ||
+                  mode === 'advance' ||
+                  mode === 'delivery',
+              )
+              .map((mode) => (
                 <Button
                   key={mode}
                   aria-pressed={terms.mode === mode}
@@ -1355,8 +1400,7 @@ export function Totem({
                         ? 'Na entrega'
                         : 'A prazo'}
                 </Button>
-              ),
-            )}
+              ))}
           </div>
           {terms.mode === 'credit' && (
             <>
@@ -1526,6 +1570,10 @@ export function Totem({
               </div>
             </article>
           ))}
+          {metadata && (
+            <OccasionPicker value={occasion} onChange={setOccasion} />
+          )}
+          {occasionLabel(occasion) && <p>Ocasião: {occasionLabel(occasion)}</p>}
           <ul className="order-summary" aria-label="Resumo do pedido">
             <li>
               <span>
@@ -1604,7 +1652,13 @@ export function Totem({
             <Button
               className="primary-action"
               disabled={
-                busy || kitEditing || !hasItems || (step === WHEN && !validDue)
+                busy ||
+                kitEditing ||
+                !hasItems ||
+                (step === WHEN && !validDue) ||
+                (step === PAYMENT &&
+                  customerType(defaults ?? customer) === 'person' &&
+                  !['advance', 'delivery'].includes(terms.mode))
               }
               onClick={() => setStep(step + 1)}
               variant="primary"

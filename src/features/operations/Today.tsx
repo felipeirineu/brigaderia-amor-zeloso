@@ -1,3 +1,4 @@
+import { occasionLabel } from '../../../shared/customer-order';
 import { useSearchParams } from 'react-router-dom';
 import { scheduleDay } from '../../../shared/order-schedule';
 import { RouteInfo } from '../field/RouteInfo';
@@ -524,6 +525,9 @@ export function Today({
                     />
                     <div>
                       <h3>{order.customer_name}</h3>
+                      {occasionLabel(order.occasion) && (
+                        <p>Ocasião: {occasionLabel(order.occasion)}</p>
+                      )}
                       <p className="delivery-address">
                         <Clock3 size={14} aria-hidden="true" />{' '}
                         {new Intl.DateTimeFormat('pt-BR', {

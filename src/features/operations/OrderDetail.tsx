@@ -1,3 +1,4 @@
+import { occasionLabel } from '../../../shared/customer-order';
 import { OrderCost } from '../p1/OrderCost';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
@@ -125,6 +126,9 @@ export function OrderDetail({
       {order ? (
         <>
           <h1>{order.customer_name}</h1>
+          {occasionLabel(order.occasion) && (
+            <p>Ocasião: {occasionLabel(order.occasion)}</p>
+          )}
           {field && (
             <>
               <Button onClick={() => setTrip(true)} variant="primary">

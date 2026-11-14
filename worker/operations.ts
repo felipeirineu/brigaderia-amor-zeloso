@@ -1,3 +1,5 @@
+import { customerType, occasionLabel } from '../shared/customer-order';
+import { customerOrderFieldsReady, checkPersonTerms } from './customer-order';
 import { p1Ready } from './p1-ready';
 import {
   recurringKits,
@@ -334,11 +336,16 @@ export async function operations(
       throw new HttpError(409, 'Modelo alterado. Atualize.');
     const customer = await db
       .prepare(
-        'SELECT id FROM customers WHERE organization_id=? AND id=? AND active=1',
+        'SELECT * FROM customers WHERE organization_id=? AND id=? AND active=1',
       )
       .bind(org, data.customer_id)
-      .first();
+      .first<Row>();
     if (!customer) throw new HttpError(400, 'Cliente ativo não encontrado.');
+    if ((data.active || !id) && customerType(customer) === 'person')
+      throw new HttpError(
+        400,
+        'Pedidos padrão são para estabelecimentos. Para pessoa, crie um pedido avulso.',
+      );
     const priorItems = id ? await recurringItems(db, org, [id]) : [];
     if (priorItems.some((i) => i.components) && data.composition_version !== 1)
       throw new HttpError(
@@ -479,10 +486,11 @@ export async function operations(
     const data = await body(req, z.object({ week: daySchema }).strict());
     if (new Date(data.week + 'T12:00:00Z').getUTCDay() !== 1)
       throw new HttpError(400, 'Escolha a segunda-feira da semana.');
+    const typed = await customerOrderFieldsReady(db);
     const plans = (
       await db
         .prepare(
-          'SELECT t.*,c.name AS customer_name,c.active AS customer_active FROM recurring_templates t JOIN customers c ON c.organization_id=t.organization_id AND c.id=t.customer_id WHERE t.organization_id=? AND t.active=1 ORDER BY t.id LIMIT 101',
+          `SELECT t.*,c.name AS customer_name,c.active AS customer_active,${typed ? 'c.customer_type' : "'establishment'"} AS customer_type FROM recurring_templates t JOIN customers c ON c.organization_id=t.organization_id AND c.id=t.customer_id WHERE t.organization_id=? AND t.active=1 ORDER BY t.id LIMIT 101`,
         )
         .bind(org)
         .all<Row>()
@@ -513,13 +521,15 @@ export async function operations(
       const contents = rows.filter((i) => i.template_id === plan.id);
       const contentsKits = modelKits.filter((i) => i.template_id === plan.id);
       let reason =
-        contentsKits.length && env.P1_ENABLED !== 'true'
-          ? 'Kits ainda não ativados.'
-          : !plan.customer_active
-            ? 'Cliente inativo.'
-            : !contents.length && !contentsKits.length
-              ? 'Itens ausentes; revise o modelo.'
-              : '';
+        customerType(plan) === 'person'
+          ? 'Cliente pessoa: crie um pedido avulso.'
+          : contentsKits.length && env.P1_ENABLED !== 'true'
+            ? 'Kits ainda não ativados.'
+            : !plan.customer_active
+              ? 'Cliente inativo.'
+              : !contents.length && !contentsKits.length
+                ? 'Itens ausentes; revise o modelo.'
+                : '';
       let snapshots: ItemSnapshot[] = [],
         kitSnapshots: KitItemSnapshot[] = [];
       if (!reason) {
@@ -882,7 +892,31 @@ export async function operations(
         400,
         'Informe o endereço de entrega ou selecione retirada antes de confirmar.',
       );
-    if (target === 'confirmed') await validateMixedConfirmation(env, org, id);
+    if (target === 'confirmed') {
+      await validateMixedConfirmation(env, org, id);
+      const payer = await db
+        .prepare('SELECT * FROM customers WHERE organization_id=? AND id=?')
+        .bind(org, order.customer_id)
+        .first<Row>();
+      if (customerType(payer) === 'person') {
+        if (!(await financeReady(env)))
+          throw new HttpError(
+            503,
+            'Ative o financeiro antes de confirmar pedidos de pessoa.',
+          );
+        const terms = await db
+          .prepare(
+            'SELECT data FROM order_terms WHERE organization_id=? AND order_id=?',
+          )
+          .bind(org, id)
+          .first<{ data: string }>();
+        checkPersonTerms(
+          'person',
+          terms ? JSON.parse(terms.data) : emptyTerms(),
+          true,
+        );
+      }
+    }
     const eventId = crypto.randomUUID();
     const result = await db.batch([
       db
@@ -1004,6 +1038,8 @@ export async function operations(
     } catch (e) {
       throw new HttpError(400, (e as Error).message);
     }
+    if (occasionLabel(order.occasion))
+      message += `\nOcasião: ${occasionLabel(order.occasion)}.`;
     return json({ message, phone: visiblePhone(customer.phone) });
   }
   if (action === 'contact' && req.method === 'POST') {

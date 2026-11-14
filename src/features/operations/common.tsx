@@ -22,6 +22,7 @@ interface Item {
   unit_price_cents: number;
 }
 export interface OperationalOrder {
+  occasion?: string;
   id: string;
   customer_id: string;
   customer_name: string;

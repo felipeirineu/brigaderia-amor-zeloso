@@ -1,3 +1,7 @@
+import {
+  customerType,
+  type CustomerType,
+} from '../../../shared/customer-order';
 import { useKitCatalog } from '../p1/useKitCatalog';
 import { ChoiceChips } from '../../components/ChoiceChips';
 import { kitLabel } from '../../../shared/kits';
@@ -14,14 +18,17 @@ export function CustomerProfile() {
   const courierLabels = useCourierLabels();
   const kits = useKitCatalog();
   const { id } = useParams(),
-    view = useRemote<{ data: B2BProfile; version: number }>(
-      `finance/customers/${id}/profile`,
-    );
+    view = useRemote<{
+      data: B2BProfile;
+      version: number;
+      customer_type?: CustomerType;
+    }>(`finance/customers/${id}/profile`);
   const [form, setForm] = useState<B2BProfile | null>(null),
     [fee, setFee] = useState('0,00'),
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [busy, setBusy] = useState(false);
+  const person = customerType(view.data) === 'person';
   const value = form ?? view.data?.data ?? emptyProfile();
   const change = (d: Partial<B2BProfile>) => {
     if (!form)
@@ -33,7 +40,11 @@ export function CustomerProfile() {
       <Button to="/gestao/clientes" variant="ghost">
         Clientes
       </Button>
-      <h1>Dados do estabelecimento e condições</h1>
+      <h1>
+        {person
+          ? 'Dados da pessoa e condições'
+          : 'Dados do estabelecimento e condições'}
+      </h1>
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
       {view.data && (
@@ -48,7 +59,9 @@ export function CustomerProfile() {
               );
             }}
           >
-            Editar dados do estabelecimento
+            {person
+              ? 'Editar dados da pessoa'
+              : 'Editar dados do estabelecimento'}
           </Button>
           <form
             className="panel data-form"
@@ -90,25 +103,33 @@ export function CustomerProfile() {
                 ['reference', 'Referência'],
                 ['delivery_window', 'Janela de entrega'],
               ] as const
-            ).map(([field, label]) => (
-              <label key={field}>
-                {label}
-                <input
-                  value={value[field]}
-                  maxLength={
-                    field === 'address'
-                      ? 600
-                      : field === 'reference'
-                        ? 200
-                        : field === 'delivery_window'
-                          ? 100
-                          : 120
-                  }
-                  onChange={(e) => change({ [field]: e.target.value })}
-                />
-              </label>
-            ))}
-            {kits.kits.length > 0 && (
+            )
+              .filter(
+                ([field]) =>
+                  !person ||
+                  !['establishment', 'responsible', 'delivery_window'].includes(
+                    field,
+                  ),
+              )
+              .map(([field, label]) => (
+                <label key={field}>
+                  {label}
+                  <input
+                    value={value[field]}
+                    maxLength={
+                      field === 'address'
+                        ? 600
+                        : field === 'reference'
+                          ? 200
+                          : field === 'delivery_window'
+                            ? 100
+                            : 120
+                    }
+                    onChange={(e) => change({ [field]: e.target.value })}
+                  />
+                </label>
+              ))}
+            {!person && kits.kits.length > 0 && (
               <ChoiceChips
                 label="Kit padrão do cliente"
                 value={value.default_kit_id ?? ''}
@@ -130,27 +151,29 @@ export function CustomerProfile() {
               />
             )}
             <Failure message={kits.error} />
-            <fieldset>
-              <legend>Dias habituais</legend>
-              {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(
-                (day, i) => (
-                  <label key={day}>
-                    <input
-                      type="checkbox"
-                      checked={value.delivery_days.includes(i + 1)}
-                      onChange={(e) =>
-                        change({
-                          delivery_days: e.target.checked
-                            ? [...value.delivery_days, i + 1]
-                            : value.delivery_days.filter((v) => v !== i + 1),
-                        })
-                      }
-                    />
-                    {day}
-                  </label>
-                ),
-              )}
-            </fieldset>
+            {!person && (
+              <fieldset>
+                <legend>Dias habituais</legend>
+                {['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'].map(
+                  (day, i) => (
+                    <label key={day}>
+                      <input
+                        type="checkbox"
+                        checked={value.delivery_days.includes(i + 1)}
+                        onChange={(e) =>
+                          change({
+                            delivery_days: e.target.checked
+                              ? [...value.delivery_days, i + 1]
+                              : value.delivery_days.filter((v) => v !== i + 1),
+                          })
+                        }
+                      />
+                      {day}
+                    </label>
+                  ),
+                )}
+              </fieldset>
+            )}
             <label>
               Entregador padrão do cliente
               <select
@@ -190,6 +213,7 @@ export function CustomerProfile() {
               }}
             />
             <TermsEditor
+              person={person}
               value={value.terms}
               onChange={(terms) => change({ terms })}
             />

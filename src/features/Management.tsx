@@ -1,3 +1,13 @@
+import {
+  customerType,
+  customerTypeLabels,
+  customerTypes,
+  occasionLabel,
+  type CustomerType,
+  type Occasion,
+} from '../../shared/customer-order';
+import { ChoiceChips } from '../components/ChoiceChips';
+import { OccasionPicker } from '../components/OccasionPicker';
 import { KitItemsEditor } from '../components/KitItemsEditor';
 import { useKitCatalog } from './p1/useKitCatalog';
 import {
@@ -69,6 +79,7 @@ import { statusLabels, type Status } from '../../shared/order-state';
 import { api, dateTime, money, parsePrice, nextWeeklyTime } from './api';
 
 interface Session {
+  customer_orders?: boolean;
   user_id: string;
   organization_id: string;
   role: 'owner' | 'operator';
@@ -82,6 +93,7 @@ interface Session {
   recurring_mixed?: boolean;
 }
 interface Customer {
+  customer_type?: CustomerType;
   id: string;
   name: string;
   phone: string;
@@ -123,6 +135,7 @@ interface Item {
   unit_price_cents?: number;
 }
 interface Order {
+  occasion?: Occasion;
   status: Status;
   id: string;
   customer_id: string;
@@ -251,7 +264,13 @@ export function Login() {
     </section>
   );
 }
-function Customers({ financial = false }: { financial?: boolean }) {
+function Customers({
+  financial = false,
+  metadata = false,
+}: {
+  financial?: boolean;
+  metadata?: boolean;
+}) {
   const field = useField(),
     [site, setSite] = useState<Place | null>(null),
     [siteVersion, setSiteVersion] = useState(0);
@@ -270,6 +289,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
   const save = useSave(list.reload);
   const [editing, setEditing] = useState<Customer | null>(null);
   const [form, setForm] = useState({
+    customer_type: 'establishment' as CustomerType,
     name: '',
     phone: '',
     email: '',
@@ -300,7 +320,14 @@ function Customers({ financial = false }: { financial?: boolean }) {
     setCaptureBusy(false);
     setDraft((d) => d + 1);
     setEditing(null);
-    setForm({ name: '', phone: '', email: '', notes: '', active: true });
+    setForm({
+      customer_type: 'establishment',
+      name: '',
+      phone: '',
+      email: '',
+      notes: '',
+      active: true,
+    });
     setSite(null);
     setSiteVersion(0);
     key.current = crypto.randomUUID();
@@ -315,6 +342,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
           editing ? 'PUT' : 'POST',
           {
             ...form,
+            customer_type: metadata ? form.customer_type : undefined,
             ...(editing ? { version: editing.version } : {}),
             ...(field && (site || photo)
               ? {
@@ -392,7 +420,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
           </div>
           <fieldset disabled={save.busy} className="customer-form-fields">
             <ErrorMessage message={save.error} />
-            {field && (
+            {field && form.customer_type === 'establishment' && (
               <CustomerCapture
                 key={draft}
                 onLocate={(coordinates) =>
@@ -403,6 +431,18 @@ function Customers({ financial = false }: { financial?: boolean }) {
               />
             )}
 
+            {metadata && (
+              <ChoiceChips
+                label="Tipo de cliente"
+                value={form.customer_type}
+                onChange={(v) =>
+                  setForm({ ...form, customer_type: v as CustomerType })
+                }
+                options={customerTypes.map(
+                  (v) => [v, customerTypeLabels[v]] as const,
+                )}
+              />
+            )}
             <label>
               Nome
               <input
@@ -446,7 +486,11 @@ function Customers({ financial = false }: { financial?: boolean }) {
             </label>
             {field && (
               <details>
-                <DisclosureSummary>Endereço e Instagram</DisclosureSummary>
+                <DisclosureSummary>
+                  {form.customer_type === 'person'
+                    ? 'Endereço (opcional)'
+                    : 'Endereço e Instagram'}
+                </DisclosureSummary>
                 <PlaceFields
                   hideLocation
                   value={site ?? emptyPlace()}
@@ -455,18 +499,20 @@ function Customers({ financial = false }: { financial?: boolean }) {
                     setForm({ ...form, name: name || form.name })
                   }
                 />
-                <label>
-                  Instagram (opcional)
-                  <input
-                    value={site?.instagram ?? ''}
-                    onChange={(e) =>
-                      setSite({
-                        ...(site ?? emptyPlace()),
-                        instagram: e.target.value,
-                      })
-                    }
-                  />
-                </label>
+                {form.customer_type === 'establishment' && (
+                  <label>
+                    Instagram (opcional)
+                    <input
+                      value={site?.instagram ?? ''}
+                      onChange={(e) =>
+                        setSite({
+                          ...(site ?? emptyPlace()),
+                          instagram: e.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                )}
               </details>
             )}
             <div className="actions">
@@ -525,6 +571,7 @@ function Customers({ financial = false }: { financial?: boolean }) {
                   setSite(existing?.data ?? null);
                   setSiteVersion(existing?.version ?? 0);
                   setForm({
+                    customer_type: customerType(c),
                     name: c.name,
                     phone: c.phone,
                     email: c.email,
@@ -556,7 +603,9 @@ function Customers({ financial = false }: { financial?: boolean }) {
                       to={`/gestao/clientes/${c.id}/b2b`}
                       variant="ghost"
                     >
-                      Dados do estabelecimento
+                      {customerType(c) === 'person'
+                        ? 'Dados da pessoa e condições'
+                        : 'Dados do estabelecimento'}
                     </Button>{' '}
                     <Button
                       className="button"
@@ -914,11 +963,18 @@ function Orders({
   operational?: boolean;
   financial?: boolean;
   mixed?: boolean;
+  metadata?: boolean;
 }) {
   const [search] = useSearchParams(),
     mode = useOrderMode(role);
   if (mobile && search.get('novo') && mode.simple)
-    return <Totem financial={props.financial} mixed={props.mixed} />;
+    return (
+      <Totem
+        financial={props.financial}
+        mixed={props.mixed}
+        metadata={props.metadata}
+      />
+    );
   return (
     <>
       <div className="chips">
@@ -945,6 +1001,7 @@ function Orders({
 }
 function FullOrders({
   simple = false,
+  metadata = false,
   operational = false,
   financial = false,
   mixed = false,
@@ -953,6 +1010,7 @@ function FullOrders({
   financial?: boolean;
   mixed?: boolean;
   simple?: boolean;
+  metadata?: boolean;
 }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -996,6 +1054,7 @@ function FullOrders({
     setItems([{ variant_id: '', quantity: 1 }]);
     setDue('');
     setNotes('');
+    setOccasion('');
     try {
       const d = await api<NonNullable<typeof defaults>>(
         `finance/customers/${id}/defaults?kits=1`,
@@ -1024,6 +1083,7 @@ function FullOrders({
   }
   const [due, setDue] = useState('');
   const [notes, setNotes] = useState('');
+  const [occasion, setOccasion] = useState<Occasion>('');
   const [items, setItems] = useState<Item[]>([{ variant_id: '', quantity: 1 }]);
   const key = useRef(crypto.randomUUID());
   const options = products.data.flatMap((p) =>
@@ -1050,6 +1110,7 @@ function FullOrders({
     choice.current++;
     setDue('');
     setNotes('');
+    setOccasion('');
     setItems([{ variant_id: '', quantity: 1 }]);
     key.current = crypto.randomUUID();
   }
@@ -1071,6 +1132,7 @@ function FullOrders({
             ...(!editing && template ? { template_id: template } : {}),
             due_at: new Date(`${due}:00-03:00`).toISOString(),
             notes,
+            occasion: metadata ? occasion : undefined,
             kit_items: kitItems,
             composition_version: 1,
             items: items.map((i) => ({
@@ -1297,6 +1359,9 @@ function FullOrders({
           >
             Adicionar item
           </Button>
+          {metadata && (
+            <OccasionPicker value={occasion} onChange={setOccasion} />
+          )}
           <label>
             Observações
             <textarea
@@ -1356,6 +1421,9 @@ function FullOrders({
           {orders.data.map((o) => (
             <article className="panel" key={o.id}>
               <h2>{o.customer_name}</h2>
+              {occasionLabel(o.occasion) && (
+                <p>Ocasião: {occasionLabel(o.occasion)}</p>
+              )}
               <p>
                 {statusLabels[o.status] || 'Rascunho'} · {dateTime(o.due_at)} ·{' '}
                 {money(o.total_cents)}
@@ -1401,6 +1469,7 @@ function FullOrders({
                           .slice(0, 16),
                       );
                       setNotes(o.notes);
+                      setOccasion((o.occasion ?? '') as Occasion);
                       setKitEditing(false);
                       const savedKits = o.items.filter(
                         (i) => i.kit_id,
@@ -1717,7 +1786,12 @@ export function Management() {
             />
             <Route
               path="clientes"
-              element={<Customers financial={session.finance} />}
+              element={
+                <Customers
+                  financial={session.finance}
+                  metadata={session.customer_orders}
+                />
+              }
             />
             <Route
               path="produtos"
@@ -1727,6 +1801,7 @@ export function Management() {
               path="pedidos"
               element={
                 <Orders
+                  metadata={session.customer_orders}
                   mixed={session.mixed}
                   operational={session.operations}
                   financial={session.finance}
@@ -1745,7 +1820,11 @@ export function Management() {
               <Route
                 path="pedidos/:id/editar-simples"
                 element={
-                  <Totem financial={session.finance} mixed={session.mixed} />
+                  <Totem
+                    financial={session.finance}
+                    mixed={session.mixed}
+                    metadata={session.customer_orders}
+                  />
                 }
               />
             )}

@@ -2,8 +2,10 @@ import type { Terms } from '../../../shared/finance';
 export function TermsEditor({
   value,
   onChange,
+  person = false,
 }: {
   value: Terms;
+  person?: boolean;
   onChange: (v: Terms) => void;
 }) {
   return (
@@ -20,10 +22,21 @@ export function TermsEditor({
           <option value="unset">A definir</option>
           <option value="advance">Adiantado</option>
           <option value="delivery">Na entrega</option>
-          <option value="credit">A prazo com fechamento</option>
+          {!person && <option value="credit">A prazo com fechamento</option>}
+          {person && value.mode === 'credit' && (
+            <option value="credit" disabled>
+              A prazo (condição anterior; altere)
+            </option>
+          )}
         </select>
       </label>
-      {value.mode === 'credit' && (
+      {person && (
+        <p>
+          Para pessoa, escolha adiantado ou na entrega antes de confirmar o
+          pedido.
+        </p>
+      )}
+      {!person && value.mode === 'credit' && (
         <>
           <label>
             Periodicidade

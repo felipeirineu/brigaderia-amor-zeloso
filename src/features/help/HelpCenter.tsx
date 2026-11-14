@@ -195,6 +195,38 @@ export function HelpCenter({
           Preparar pedido padrão
         </Button>
       </section>
+      {p1 && (
+        <section className="panel">
+          <h2>Pedido de festa, brinde ou presente</h2>
+          <ol>
+            <li>
+              Em Clientes, escolha Pessoa para um pedido pessoal ou
+              Estabelecimento para um cliente comercial. Telefone e endereço são
+              opcionais no cadastro; entrega precisa de endereço no pedido.
+            </li>
+            <li>
+              Em Novo pedido, escolha o tamanho e a capacidade do kit. Monte
+              todos os doces e confira a contagem de cada sabor antes de
+              continuar.
+            </li>
+            <li>
+              Combine data, retirada ou entrega e quem leva. Para pessoa,
+              escolha adiantado ou na entrega; registrar a condição não registra
+              pagamento.
+            </li>
+            <li>
+              Em Revisar, a ocasião é opcional. Confira itens, quantidades e
+              valor antes de confirmar. A ocasião aparece no Hoje e no texto
+              preparado para WhatsApp.
+            </li>
+            <li>
+              Pedidos padrão e geração da semana são para estabelecimentos. O
+              modelo usa o preço atual na geração; pedidos já gerados preservam
+              os valores anteriores.
+            </li>
+          </ol>
+        </section>
+      )}
       {field && (
         <section className="panel">
           <h2>Localização e corrida</h2>

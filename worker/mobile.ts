@@ -1,3 +1,9 @@
+import { customerType, occasionValues } from '../shared/customer-order';
+import {
+  customerOrderFieldWrite,
+  customerOrderFieldsReady,
+  checkPersonTerms,
+} from './customer-order';
 import { p1Ready } from './p1-ready';
 import {
   readKitItems,
@@ -32,6 +38,7 @@ import { deliverySchema, nextStatuses } from './operations-domain';
 const schema = z
   .object({
     customer_id: z.uuid(),
+    occasion: z.enum(occasionValues).optional(),
     version: z.number().int().positive().optional(),
     due_at: z.iso
       .datetime({ offset: true })
@@ -66,11 +73,12 @@ export async function mobile(req: Request, env: Env, a: Actor) {
     [, , , resource, id] = new URL(req.url).pathname.split('/');
   if (resource === 'customers' && req.method === 'GET') {
     const q = (new URL(req.url).searchParams.get('q') || '').slice(0, 120);
+    const typed = await customerOrderFieldsReady(db);
     return json(
       (
         await db
           .prepare(
-            "SELECT c.id,c.name,CASE WHEN c.phone LIKE '+%' THEN c.phone ELSE '' END AS phone,COUNT(o.id) AS frequency FROM customers c LEFT JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id AND o.active=1 AND o.status<>'cancelled' WHERE c.organization_id=? AND c.active=1 AND (c.name LIKE ? OR (c.phone LIKE '+%' AND c.phone LIKE ?)) GROUP BY c.id ORDER BY frequency DESC,c.name LIMIT 200",
+            `SELECT c.id,c.name,${typed ? 'c.customer_type' : "'establishment'"} AS customer_type,CASE WHEN c.phone LIKE '+%' THEN c.phone ELSE '' END AS phone,COUNT(o.id) AS frequency FROM customers c LEFT JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id AND o.active=1 AND o.status<>'cancelled' WHERE c.organization_id=? AND c.active=1 AND (c.name LIKE ? OR (c.phone LIKE '+%' AND c.phone LIKE ?)) GROUP BY c.id ORDER BY frequency DESC,c.name LIMIT 200`,
           )
           .bind(org, '%' + q + '%', '%' + q + '%')
           .all()
@@ -78,22 +86,21 @@ export async function mobile(req: Request, env: Env, a: Actor) {
     );
   }
   if (resource === 'defaults' && id && req.method === 'GET') {
-    if (
-      !z.uuid().safeParse(id).success ||
-      !(await db
-        .prepare(
-          'SELECT 1 FROM customers WHERE organization_id=? AND id=? AND active=1',
-        )
-        .bind(org, id)
-        .first())
-    )
+    if (!z.uuid().safeParse(id).success)
       throw new HttpError(404, 'Cliente não encontrado.');
+    const customer = await db
+      .prepare(
+        'SELECT * FROM customers WHERE organization_id=? AND id=? AND active=1',
+      )
+      .bind(org, id)
+      .first<Row>();
+    if (!customer) throw new HttpError(404, 'Cliente não encontrado.');
     const plans = (
       await db
         .prepare(
-          'SELECT * FROM recurring_templates WHERE organization_id=? AND customer_id=? AND active=1 ORDER BY weekday,name LIMIT 100',
+          'SELECT * FROM recurring_templates WHERE organization_id=? AND customer_id=? AND active=1 AND ?=0 ORDER BY weekday,name LIMIT 100',
         )
-        .bind(org, id)
+        .bind(org, id, +(customerType(customer) === 'person'))
         .all<Row>()
     ).results;
     const defaults = await recurringDefaults(
@@ -198,6 +205,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
         .all<{ id: string }>()
     ).results;
     return json({
+      customer_type: customerType(customer),
       ranking: Object.fromEntries(
         popularity.map((p) => [
           p.product_id,
@@ -274,10 +282,10 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       throw new HttpError(400, 'Informe o endereço ou escolha retirada.');
     const customer = await db
       .prepare(
-        'SELECT name FROM customers WHERE organization_id=? AND id=? AND active=1',
+        'SELECT * FROM customers WHERE organization_id=? AND id=? AND active=1',
       )
       .bind(org, d.customer_id)
-      .first<{ name: string }>();
+      .first<Row>();
     if (!customer) throw new HttpError(400, 'Cliente ativo obrigatório.');
     const old = id
       ? (
@@ -338,6 +346,36 @@ export async function mobile(req: Request, env: Env, a: Actor) {
           'Total abaixo dos recebimentos; estorne antes.',
         );
     }
+    if (customerType(customer) === 'person') {
+      if (!financial)
+        throw new HttpError(
+          503,
+          'Ative o financeiro antes de confirmar pedidos de pessoa.',
+        );
+      const existingTerms =
+        id && d.terms === null
+          ? await db
+              .prepare(
+                'SELECT data FROM order_terms WHERE organization_id=? AND order_id=?',
+              )
+              .bind(org, id)
+              .first<{ data: string }>()
+          : null;
+      checkPersonTerms(
+        customerType(customer),
+        d.terms ??
+          (existingTerms ? JSON.parse(existingTerms.data) : emptyTerms()),
+        true,
+      );
+    }
+    const occasionWrites = await customerOrderFieldWrite(
+      db,
+      org,
+      order,
+      nonce,
+      'occasion',
+      d.occasion,
+    );
     const field = await fieldReady(env);
     const key = req.headers.get('Idempotency-Key')!,
       fingerprint = await hash(JSON.stringify(d)),
@@ -388,6 +426,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
               d.delivery.courier_fee_cents,
             ),
       rest: (g, args) => [
+        ...occasionWrites,
         ...(field ? snapshotPlaces(db, org, nonce) : []),
         db
           .prepare(

@@ -1,4 +1,8 @@
 import {
+  customerOrderFieldWrite,
+  customerOrderFieldsReady,
+} from './customer-order';
+import {
   readKitItems,
   prepareOrderKits,
   writeKitItems,
@@ -45,6 +49,7 @@ export async function management(req: Request, env: Env, a: Actor) {
   if (resource === 'session' && req.method === 'GET')
     return json({
       role: a.role,
+      customer_orders: await customerOrderFieldsReady(db),
       mixed: await mixedReady(env),
       recurring_mixed:
         env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db)),
@@ -282,6 +287,17 @@ export async function management(req: Request, env: Env, a: Actor) {
               createKey,
               createHash,
             ),
+    );
+
+    statements.push(
+      ...(await customerOrderFieldWrite(
+        db,
+        org,
+        entityId,
+        mutation,
+        'customer_type',
+        d.customer_type,
+      )),
     );
 
     if (d.site)
@@ -555,6 +571,16 @@ export async function management(req: Request, env: Env, a: Actor) {
               fingerprint,
               mutation,
             ),
+    );
+    statements.push(
+      ...(await customerOrderFieldWrite(
+        db,
+        org,
+        entityId,
+        mutation,
+        'occasion',
+        d.occasion,
+      )),
     );
     statements.push(
       db

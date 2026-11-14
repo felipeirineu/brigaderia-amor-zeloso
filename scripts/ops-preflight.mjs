@@ -167,6 +167,12 @@ export function inspect(
     schema_p1_ready: p1,
     schema_mobile_ready: mobile,
     schema_field_ready: field,
+    schema_customer_orders_ready:
+      orderColumns.includes('occasion') &&
+      names.has('customers') &&
+      query("SELECT name FROM pragma_table_info('customers')").some(
+        (r) => r.name === 'customer_type',
+      ),
     schema_kit_recurring_ready:
       names.has('kit_recurring_items') && names.has('kit_recurring_components'),
     schema_kit_orders_ready:
@@ -178,12 +184,6 @@ export function inspect(
       'push_subscriptions',
       'push_jobs',
       'push_requests',
-      'kits',
-      'kit_settings',
-      'kit_order_items',
-      'kit_order_components',
-      'kit_recurring_items',
-      'kit_recurring_components',
     ].every((n) => names.has(n)),
     schema_profile_photos_ready: names.has('profile_photos'),
     schema_mixed_model_ready: names.has('order_item_components'),

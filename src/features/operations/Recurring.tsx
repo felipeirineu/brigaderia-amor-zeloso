@@ -1,3 +1,7 @@
+import {
+  customerType,
+  type CustomerType,
+} from '../../../shared/customer-order';
 import { KitItemsEditor } from '../../components/KitItemsEditor';
 import { useKitCatalog } from '../p1/useKitCatalog';
 import {
@@ -68,7 +72,10 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
     [kitEditing, setKitEditing] = useState(false),
     [kitEpoch, setKitEpoch] = useState(0);
   const plans = useRemote<Plan[]>('recurring'),
-    customers = useRemote<{ id: string; name: string }[]>('customers'),
+    customers =
+      useRemote<{ id: string; name: string; customer_type?: CustomerType }[]>(
+        'customers',
+      ),
     products = useRemote<ProductOption[]>('products');
   const [generated, setGenerated] = useState<OperationalOrder[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
@@ -361,11 +368,13 @@ export function Recurring({ mixed = false }: { mixed?: boolean }) {
             onChange={(e) => setCustomer(e.target.value)}
           >
             <option value="">Selecione</option>
-            {customers.data?.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
+            {customers.data
+              ?.filter((c) => customerType(c) !== 'person')
+              .map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
           </select>
         </label>
         <div className="chips" role="group" aria-label="Dia habitual">

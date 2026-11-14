@@ -1,3 +1,4 @@
+import { customerTypes, occasionValues } from '../shared/customer-order';
 import { kitItemSchema } from './kit-order-domain';
 import { itemInputSchema, uniqueItems } from './mixed-domain';
 import { placeSchema } from './field-domain';
@@ -22,6 +23,7 @@ export const phone = z
   );
 export const customerSchema = z
   .object({
+    customer_type: z.enum(customerTypes).optional(),
     site: z
       .object({ data: placeSchema, version: z.number().int().min(0) })
       .strict()
@@ -65,6 +67,7 @@ export const orderSchema = z
   .object({
     customer_id: z.uuid(),
     template_id: z.uuid().optional(),
+    occasion: z.enum(occasionValues).optional(),
     due_at: z.iso
       .datetime({ offset: true })
       .transform((s) => new Date(s).toISOString()),

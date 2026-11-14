@@ -5,7 +5,7 @@ export const helpTexts = {
   },
   recurring: {
     title: 'Pedido padrão',
-    text: 'Guarde os itens que um cliente costuma pedir e o dia da semana. O modelo não é uma venda e pode ser pausado.',
+    text: 'Para estabelecimentos, guarde os itens habituais e o dia da semana. O modelo não é uma venda e pode ser pausado. Para pessoa, faça um pedido avulso.',
   },
   generate: {
     title: 'Gerar pedidos da semana',
@@ -17,7 +17,7 @@ export const helpTexts = {
   },
   payment: {
     title: 'Condição de pagamento',
-    text: 'Adiantado, na entrega ou a prazo definem quando cobrar. Quando o financeiro estiver ativado, a condição é copiada para o pedido; não equivale a recebimento. A prazo exige vencimento configurado.',
+    text: 'Adiantado, na entrega ou a prazo definem quando cobrar. Quando o financeiro estiver ativado, a condição é copiada para o pedido; não equivale a recebimento. A prazo exige vencimento configurado e é para estabelecimentos. Para pessoa, escolha adiantado ou na entrega; condição não registra recebimento.',
   },
   closing: {
     title: 'Fechamento',

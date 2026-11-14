@@ -75,3 +75,15 @@ As tabelas `kit_recurring_items` e `kit_recurring_components` entram no backup. 
 **Ativação ainda pendente:** não aplicar esta branch isoladamente. Quando a R15-B estiver completa e aprovada, o fluxo manual de homologação deverá aplicar, em ordem, 0019 → 0020 → 0021 (ou somente as ainda pendentes). A pré-checagem deve apresentar `schema_kit_recurring_ready: true`, ambas as tabelas e nenhuma violação em `foreign_key_check`. Se faltar uma tabela ou surgir violação, interromper e guardar o relatório sem dados pessoais; não repetir uma limpeza nem alterar flags para tentar resolver. Esta entrega não executa nenhuma dessas operações remotas.
 
 Importação inicial: reutilizar **Importar cadastro inicial**, que já cobre insumos (R17-1). Uma futura aba Kits pode usar `POST p1/kits`, com prévia e preço obrigatório, depois da consolidação da R15; não converter sabores/variantes ou deduzir preços automaticamente.
+
+## Pessoa/estabelecimento e ocasião — R15-B6
+
+A `0022_customer_type_occasion.sql` é aditiva. Todo cadastro antigo continua como Estabelecimento; só uma escolha explícita muda o tipo. Nenhum nome é usado para inferir tipo. O app consulta a disponibilidade do schema na sessão: antes da 0022, o cadastro e os pedidos antigos continuam disponíveis sem enviar campos novos.
+
+Para um pedido pessoal, cadastre **Pessoa**, com nome e telefone opcional. Endereço também é opcional no cadastro; retirada dispensa endereço no pedido. A tela de condições não apresenta os campos de estabelecimento/dias habituais. Na confirmação, pessoa usa pagamento adiantado ou na entrega. A prazo fica para estabelecimentos; sem financeiro ativo, confirmar um pedido de pessoa fica indisponível. Nenhuma regra de sinal é criada. Contas e eventos antigos continuam legíveis.
+
+Pedido padrão novo não aceita pessoa. Modelos existentes de um cliente posteriormente convertido em pessoa podem ser arquivados e são ignorados na geração semanal, com motivo; não são sugeridos no Novo pedido. Os modelos e pedidos antigos não são convertidos nem excluídos.
+
+A ocasião é opcional, escolhida em Revisar ou no editor do PC. Aparece no Hoje, no detalhe e na mensagem de WhatsApp, sempre com conferência/envio humano. Editor antigo que omita tipo ou ocasião conserva o valor existente. CAS, hashes de idempotência e auditoria continuam protegendo a gravação no mesmo batch. Telefone vazio é apresentado vazio, inclusive na conta financeira; o marcador interno nunca é devolvido.
+
+Na ativação futura, aplicar 0019 → 0020 → 0021 → 0022, somente as pendentes. `ops:preflight` deverá mostrar `schema_customer_orders_ready: true` e nenhuma violação de FK. Falha ou campo false: interromper e compartilhar somente o relatório sem dados pessoais; não alterar flags ou limpar o banco para tentar corrigir. Nenhuma operação remota foi feita nesta etapa. Não há nova tabela: KEEP permanece inalterado, e tipo/ocasião acompanham as tabelas existentes no backup e na limpeza autorizada.
