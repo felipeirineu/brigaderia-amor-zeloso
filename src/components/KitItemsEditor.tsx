@@ -242,29 +242,33 @@ export function KitItemsEditor({
       <KitFlavorNotice products={products} />
       {quickMode && !draft && (
         <section aria-label="Adicionar sabor ao kit padrão">
-          <ChoiceChips
-            label="Kit deste pedido"
-            value={quickKit?.id ?? ''}
-            options={(changingQuickKit || !quickKit ? active : [quickKit]).map(
-              (k) => [k.id, `${kitLabel(k)} · ${money(k.price_cents)}`],
+          <div className="kit-quick-choice">
+            <ChoiceChips
+              label="Kit deste pedido"
+              value={quickKit?.id ?? ''}
+              options={(changingQuickKit || !quickKit
+                ? active
+                : [quickKit]
+              ).map((k) => [k.id, `${kitLabel(k)} · ${money(k.price_cents)}`])}
+              onChange={(id) => {
+                setQuickChoice(id);
+                setChangingQuickKit(false);
+              }}
+            />
+            {quickKit && active.length > 1 && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setChangingQuickKit((v) => !v)}
+              >
+                {changingQuickKit ? 'Manter kit selecionado' : 'Trocar kit'}
+              </Button>
             )}
-            onChange={(id) => {
-              setQuickChoice(id);
-              setChangingQuickKit(false);
-            }}
-          />
-          {quickKit && active.length > 1 && (
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setChangingQuickKit((v) => !v)}
-            >
-              {changingQuickKit ? 'Manter kit selecionado' : 'Trocar kit'}
-            </Button>
-          )}
+          </div>
           {!quickKit && (
             <p>Escolha um kit ativo para adicionar sabores em um toque.</p>
           )}
+          {quickKit && <p>Toque no sabor para somar 1 kit.</p>}
           {quickKit && (
             <div className="flavor-grid">
               {products.map((p) => {
@@ -301,11 +305,9 @@ export function KitItemsEditor({
                       {containsAlcohol(p.photo_key, p.name, p.description) && (
                         <small className="alcohol-tag">{alcoholNotice}</small>
                       )}
-                      {count > 0 && (
-                        <span>
-                          {count} {count === 1 ? 'kit' : 'kits'}
-                        </span>
-                      )}
+                      <span>
+                        {count} {count === 1 ? 'kit' : 'kits'}
+                      </span>
                     </Button>
                   </article>
                 );

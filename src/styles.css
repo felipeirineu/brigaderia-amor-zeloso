@@ -2742,3 +2742,17 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .catalog-preview li {
   margin: 2px 0;
 }
+
+.kit-quick-choice {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+.kit-quick-choice .choice-chips {
+  flex: 1 1 14rem;
+  min-width: 0;
+  margin: 0;
+}
+.kit-quick-choice > .button {
+  flex: 0 0 auto;
+}

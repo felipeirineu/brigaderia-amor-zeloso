@@ -183,7 +183,7 @@ export async function operations(
     const production = (
       await db
         .prepare(
-          `SELECT date(x.due_at,'-3 hours') AS day,x.name,x.label,x.weight_grams,x.units_per_box,SUM(x.units)/x.units_per_box AS boxes,SUM(x.units) AS units${mobile ? ',MIN(COALESCE(v.photo_key,p.photo_key)) AS photo_key' : ',NULL AS photo_key'} FROM (${productionSource}) x ${mobile ? 'LEFT JOIN product_variants v ON v.organization_id=? AND v.id=x.vid LEFT JOIN products p ON p.organization_id=? AND p.id=COALESCE(v.product_id,x.vid)' : ''} GROUP BY day,x.name,x.label,x.weight_grams,x.units_per_box ORDER BY day,x.name,x.label,x.weight_grams`,
+          `SELECT date(x.due_at,'-3 hours') AS day,x.name,x.label,x.weight_grams,x.units_per_box,SUM(x.units)*1.0/x.units_per_box AS boxes,SUM(x.units) AS units${mobile ? ',MIN(COALESCE(v.photo_key,p.photo_key)) AS photo_key' : ',NULL AS photo_key'} FROM (${productionSource}) x ${mobile ? 'LEFT JOIN product_variants v ON v.organization_id=? AND v.id=x.vid LEFT JOIN products p ON p.organization_id=? AND p.id=COALESCE(v.product_id,x.vid)' : ''} GROUP BY day,x.name,x.label,x.weight_grams,x.units_per_box ORDER BY day,x.name,x.label,x.weight_grams`,
         )
         .bind(
           ...(hasComponents

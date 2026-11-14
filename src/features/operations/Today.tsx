@@ -411,22 +411,24 @@ export function Today({
                       <div>
                         <strong>
                           {line.name}
-                          {new Set(
-                            view
-                              .data!.production.filter(
-                                (p) => p.name === line.name,
-                              )
-                              .map(
-                                (p) =>
-                                  p.label +
-                                  '|' +
-                                  p.weight_grams +
-                                  '|' +
-                                  p.units_per_box,
-                              ),
-                          ).size > 1 && (
+                          {(!line.label ||
+                            new Set(
+                              view
+                                .data!.production.filter(
+                                  (p) => p.name === line.name,
+                                )
+                                .map(
+                                  (p) =>
+                                    p.label +
+                                    '|' +
+                                    p.weight_grams +
+                                    '|' +
+                                    p.units_per_box,
+                                ),
+                            ).size > 1) && (
                             <small className="production-variant">
-                              {line.label} · {line.weight_grams} g/un.
+                              {line.label || 'Kit ' + line.units_per_box} ·{' '}
+                              {line.weight_grams} g/un.
                             </small>
                           )}
                         </strong>
@@ -442,9 +444,14 @@ export function Today({
                       </div>
                       <div
                         className="production-counts"
-                        aria-label={`${line.boxes} ${line.boxes === 1 ? 'caixa' : 'caixas'} · ${line.units} ${line.units === 1 ? 'unidade' : 'unidades'}`}
+                        aria-label={`${line.boxes.toLocaleString('pt-BR', { maximumFractionDigits: 4 })} ${line.boxes === 1 ? 'caixa' : 'caixas'} · ${line.units} ${line.units === 1 ? 'unidade' : 'unidades'}`}
                       >
-                        <strong>{line.boxes} cx</strong>
+                        <strong title="Caixas equivalentes: unidades divididas pela capacidade">
+                          {line.boxes.toLocaleString('pt-BR', {
+                            maximumFractionDigits: 4,
+                          })}{' '}
+                          {Number.isInteger(line.boxes) ? 'cx' : 'cx eq.'}
+                        </strong>
                         <small>{line.units} un.</small>
                       </div>
                       <small>{dayChip(line.day)}</small>

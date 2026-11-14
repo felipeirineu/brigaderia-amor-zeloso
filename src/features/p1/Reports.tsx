@@ -29,6 +29,8 @@ interface Report {
     name: string;
     variant: string;
     display_name: string;
+    weight_grams: number;
+    units_per_box: number;
     boxes: number;
     mixed_units: number;
     units: number;
@@ -201,7 +203,8 @@ export function Reports() {
             </p>
             {view.data.products.map((p, i) => (
               <p key={i}>
-                {p.display_name}:{' '}
+                {p.display_name} · {p.weight_grams} g · capacidade{' '}
+                {p.units_per_box}:{' '}
                 <strong>
                   {p.units} {p.units === 1 ? 'unidade' : 'unidades'}
                 </strong>{' '}
@@ -219,7 +222,11 @@ export function Reports() {
                     mistas
                   </>
                 )}{' '}
-                · vendas atribuídas: {money(p.total_cents)}
+                ·{' '}
+                {(p.units / p.units_per_box).toLocaleString('pt-BR', {
+                  maximumFractionDigits: 4,
+                })}{' '}
+                caixas equivalentes · vendas atribuídas: {money(p.total_cents)}
               </p>
             ))}
           </section>

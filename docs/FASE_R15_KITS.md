@@ -87,3 +87,11 @@ Pedido padrão novo não aceita pessoa. Modelos existentes de um cliente posteri
 A ocasião é opcional, escolhida em Revisar ou no editor do PC. Aparece no Hoje, no detalhe e na mensagem de WhatsApp, sempre com conferência/envio humano. Editor antigo que omita tipo ou ocasião conserva o valor existente. CAS, hashes de idempotência e auditoria continuam protegendo a gravação no mesmo batch. Telefone vazio é apresentado vazio, inclusive na conta financeira; o marcador interno nunca é devolvido.
 
 Na ativação futura, aplicar 0019 → 0020 → 0021 → 0022, somente as pendentes. `ops:preflight` deverá mostrar `schema_customer_orders_ready: true` e nenhuma violação de FK. Falha ou campo false: interromper e compartilhar somente o relatório sem dados pessoais; não alterar flags ou limpar o banco para tentar corrigir. Nenhuma operação remota foi feita nesta etapa. Não há nova tabela: KEEP permanece inalterado, e tipo/ocasião acompanham as tabelas existentes no backup e na limpeza autorizada.
+
+## Produção, compras e relatórios — R15-B7
+
+Produção mantém as unidades exatas por sabor, peso e capacidade. Caixas equivalentes são unidades divididas pela capacidade do kit, inclusive frações; o cálculo não usa 12 fixo nem divisão inteira. Relatórios mostram peso, capacidade e equivalentes, com receita rateada por unidades sem perder centavos. Variantes históricas continuam identificáveis.
+
+O ensaio usa o mesmo sabor em15g/25 unidades e30g/12 unidades. Custos e compras procuram ficha do sabor no peso correto; ausência ou ambiguidade mantém aviso/custo indisponível. Embalagem do kit entra uma vez por kit; não é repetida a embalagem por lote da ficha. Nenhuma compra, baixa de estoque, preço ou despesa é criada automaticamente. A calculadora por massa e as regras adicionais da R16 vêm depois desta integração.
+
+No toque rápido, Trocar kit fica junto ao kit escolhido. A instrução explica que tocar no sabor soma um kit inteiro. Foto do cadastro e contador acompanham os cartões; kits existentes e composições históricas permanecem editáveis pelas regras anteriores.
