@@ -1,5 +1,7 @@
 # Começar de verdade: backup, atualização do banco, limpeza dos testes e cadastro
 
+> **Limpeza concluída em 14/11/2026** (execução manual nº 2, sem restos e com zero vínculos quebrados). O botão de limpeza foi removido do GitHub depois do uso; o script `scripts/clean-test-data.mjs` e seu teste continuam no repositório caso seja preciso recriar o workflow com nova aprovação do responsável.
+
 Roteiro para o responsável (Felipe), autorizado em 14/11/2026: todos os pedidos existentes são de teste. Tempo total: uns 30 minutos. Nada aqui publica o app nem muda as flags.
 
 ## 1. Backup (no app, 2 min)
