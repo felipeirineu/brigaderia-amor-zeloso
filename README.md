@@ -2,7 +2,7 @@
 
 PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com preparação para catálogo público e atendimento assistido pelo WhatsApp.
 
-> **Código em 14/11/2026:** repositório privado. R15 integra kits, composição, recorrências, pessoa/estabelecimento, ocasião e agregações por sabor/peso; ativação depende das migrações0019–0022 e do roteiro em [FASE_R15_KITS](docs/FASE_R15_KITS.md). Isto não afirma ativação remota. Catálogo público permanece desligado. Relatos antigos abaixo são históricos; não são instruções para reverter flags. A R16 continua posterior.
+> **Código em 14/11/2026:** repositório privado. R15 integra kits, composição, recorrências, pessoa/estabelecimento, ocasião e agregações por sabor/peso; ativação depende das migrações0019–0022 e do roteiro em [FASE_R15_KITS](docs/FASE_R15_KITS.md). Isto não afirma ativação remota. Catálogo público permanece desligado. Relatos antigos abaixo são históricos; não são instruções para reverter flags. R16 implementa a calculadora por peso em cadastro separado, sem alterar preços ou pedidos; requer0023 conforme [FASE_R16](docs/FASE_R16.md). Validação/publicação registradas no canal de colaboração.
 
 ## Objetivos
 

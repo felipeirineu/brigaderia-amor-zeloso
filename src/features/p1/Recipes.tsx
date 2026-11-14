@@ -195,7 +195,9 @@ function simulatedPrice(cost: number | null, margin: string) {
     return null;
   }
 }
-export function Recipes() {
+export function Recipes({
+  weightCosting = false,
+}: { weightCosting?: boolean } = {}) {
   const view = useRemote<{ role: string; items: Recipe[] }>('p1/recipes'),
     supplies = useRemote<{ items: Supply[] }>('p1/supplies'),
     products = useRemote<
@@ -224,6 +226,11 @@ export function Recipes() {
   return (
     <>
       <h1 className="mobile-context-title">Fichas técnicas e preço sugerido</h1>
+      {weightCosting && (
+        <Button to="/gestao/fichas/peso" variant="primary">
+          Calculadora por peso
+        </Button>
+      )}
       <div className="actions">
         <Button className="button" to="/gestao/insumos" variant="ghost">
           Insumos e embalagens

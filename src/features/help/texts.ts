@@ -45,7 +45,7 @@ export const helpTexts = {
   },
   recipe: {
     title: 'Ficha técnica',
-    text: 'Registra ingredientes e rendimento para estimar custos. Com P1 ativado, cadastre insumos e custos informados, sem inferir receitas a partir de fotos. Custo ausente deixa a estimativa pendente.',
+    text: 'Registra ingredientes e rendimento para estimar custos. Com P1 ativado, cadastre insumos e custos informados, sem inferir receitas a partir de fotos. Custo ausente deixa a estimativa pendente. Na Calculadora por peso, cadastre a massa e os custos por receita, confirme o acabamento de cada tamanho e configure forminhas e canal iFood. Opcionais e margem podem ser simulados sem alterar preços, pedidos, despesas ou estoque.',
   },
   push: {
     title: 'Avisos no celular',

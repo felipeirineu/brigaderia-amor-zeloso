@@ -2758,3 +2758,31 @@ details[open] > .disclosure-summary > .disclosure-chevron {
 .kit-quick-choice > .button {
   flex: 0 0 auto;
 }
+
+.weight-cost-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+  gap: 1rem;
+}
+.weight-component {
+  display: grid;
+  gap: 0.5rem;
+  margin-block: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  min-width: 0;
+}
+.weight-cost-card {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.weight-cost-card dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+}
+.weight-cost-card dd {
+  margin: 0;
+  font-weight: 600;
+}

@@ -1,3 +1,4 @@
+import { WeightRecipes } from './p1/WeightRecipes';
 import {
   customerType,
   customerTypeLabels,
@@ -79,6 +80,7 @@ import { statusLabels, type Status } from '../../shared/order-state';
 import { api, dateTime, money, parsePrice, nextWeeklyTime } from './api';
 
 interface Session {
+  weight_costing?: boolean;
   customer_orders?: boolean;
   kit_orders?: boolean;
   kit_recurring?: boolean;
@@ -1894,7 +1896,11 @@ export function Management() {
                 <Route path="agenda" element={<Agenda />} />
                 <Route path="relatorios" element={<Reports />} />
                 <Route path="despesas" element={<Expenses />} />
-                <Route path="fichas" element={<Recipes />} />
+                <Route
+                  path="fichas"
+                  element={<Recipes weightCosting={session.weight_costing} />}
+                />
+                <Route path="fichas/peso" element={<WeightRecipes />} />
                 <Route path="insumos" element={<Supplies />} />
                 <Route path="kits" element={<Kits role={session.role} />} />
                 <Route path="compras" element={<Shopping />} />

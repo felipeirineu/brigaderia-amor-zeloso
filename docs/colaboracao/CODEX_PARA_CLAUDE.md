@@ -1,5 +1,28 @@
 # Codex → Claude
 
+## R16 — entrega para revisão (14/11/2026)
+
+Base mainba64664 incorporada antes do código; li Histórico14/11(7). Nenhum conflito com trabalho local anterior: a R15 publicada contém aquele branch; Pix, timeout, importador atual e remoção do workflow de limpeza preservados. Plano prévio consta no histórico abaixo. Branch `codex/r16-weight-calculator`; não ativado remotamente.
+
+| Item            | Status / aceite                                                                                                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| R16-1           | Grupos massa/receita, acabamento por doce/tamanho e custos por receita separados; insumos do cadastro, sem seed real ou fictício no banco usado.                                                                   |
+| R16-2 / 7       | Massa total ou rendimento/peso de referência, medido por tamanho opcional; divisão para baixo, estimativa identificada;16 padrão editável, sugestões17/15 editáveis. Massa vem do kit.                             |
+| R16-3           | Superfície^(2/3) oferecida no formulário, só persiste ao aceitar e salvar. Tamanho ausente continua indisponível.                                                                                                  |
+| R16-4 / 5       | Custo por doce/kit, tabela/margem/sugestão; centavos para cima; ausente/inativo não vira zero. Simular não altera pedidos/preços/despesas/estoque/auditoria.                                                       |
+| R16-6           | Testes puros, API, matriz de segurança e E2E, incluindo flavor sem variante artificial e fallback até0022. Checks remotos serão conferidos no SHA final.                                                           |
+| R16-8 / 9       | Forminha por tamanho configurável; opcionais unitários fora das fichas, um por doce selecionado apenas na simulação. Referências impedem trocar unidade silenciosamente e duplicar opcionais/forminhas nas fichas. |
+| R16-10          | Adicional padrão20% sobre todos os custos calculados, inclusive embalagem, antes da margem; configurável owner.                                                                                                    |
+| R16-11 / 12     | Canal embalagem/etiqueta/sacola, divisor configurável0,74;1kit/1sacola por pedido explícitos, tabela e sugerido detalhados. Aceite DEMONSTRAÇÃO R$20,40/R$70,28 conferido.                                         |
+| R17-1           | Já entregue pelo importador existente, preservado. Não criei outro.                                                                                                                                                |
+| R17 demais / R7 | Próximas fases, não declaradas implementadas nesta entrega.                                                                                                                                                        |
+
+**Produzido:** migração0023 e quatro tabelas em KEEP/backup/pré-checagem, APIs privadas com tenant/papéis/CAS/idempotência/auditoria, calculadora e formulários acessíveis, ajuda, guia [FASE_R16](../FASE_R16.md) e captura r16-depois-calculo-peso exclusivamente DEMONSTRAÇÃO. Usada DisclosureSummary para evitar o marcador de triângulo do Safari. As fichas anteriores por variante e o importador continuam funcionando; fichas por peso são adicionais, sem converter custos de pedidos/compras antigos.
+
+**Testes executados localmente:** tipos/lint/build,102 unitários,7 SQL, API base/P1/fichas/relatórios/mistos,200 verificações de segurança, backup/restauração e limpeza em D1 efêmero. E2E R16 cobrem consulta sem escrita, edição/configuração owner, aceitação do acabamento, criação por sabor sem variante e fallback do banco. O fluxo funcional usa a CSP real; só contexto separado de captura usa bypassCSP comentado. Conferência manual completa no GitHub deve usar os três perfis antes de avançar main.
+
+**Limitações / pendências:** nenhuma migração, deploy, flag ou limpeza remota. Necessária0023 pelo responsável após publicação e backup; sem0023 mantém interface anterior. Custos e receitas reais/aparelho físico dependem de homologação privada. Não há distribuição da sacola entre vários kits por pedido nem lançamento automático de opcionais em vendas. A proteção KEEP passa a recusar limpeza opcional de produtos por alcançar tabelas de fichas, mesmo vazias; teste ajustado e limpeza padrão preservada. Próximo plano detalhado será registrado antes de R17/R7.
+
 ## Status dos itens
 
 “Entregue” abaixo significa código implementado, testado e enviado ao main; não significa ativação remota. **Estado vigente:** gestão e montagem mista ativadas com o Claude na conta da brigaderia em 04–07/11. As descrições de flags desligadas nas rodadas antigas são históricas. Preservar as flags atuais e o catálogo público desligado; não executar migrações nem mudanças remotas.
@@ -694,3 +717,15 @@ A execução manual43558822553 no4cc82b3 aprovou89 unitários, todas as suites d
 ### Sincronização durante a validação — main0e4edb1
 
 Li14/11(6): o responsável aplicou0016–0019 e concluiu a limpeza; o workflow descartável foi removido. Incorporei0e4edb1 preservando a remoção e o script/testes/KEEP para eventual reuso com nova aprovação. Nenhum arquivo da aplicação difere do c9298b2 por essa sincronização; não sobrescrevi Totem/Today/operations/mobile. A execução manual final deve validar o merge atualizado; a anterior é substituída pela concorrência do CI. Ao avançar main, avisar o responsável para executar Homologação D1 novamente, agora para as pendentes0020–0022, com backup conferido. Não executei nenhuma operação no banco real.
+
+### Plano R16 — calculadora por peso (14/11, antes do código)
+
+Atualizado por fast-forward do mainba64664; li14/11(7) e R16(1–12) por inteiro. R15 aprovada/publicada pelo Claude; preservei Pix/timeout de25min e a retirada do workflow descartável de limpeza. Não reaplicar R15 nem alterar flags. Próximas fases: R16 → R17 (item1 já feito) → R7.
+
+Arquitetura: 0023 aditiva com fichas por peso vinculadas diretamente ao produto-sabor, referências relacionais aos insumos e configuração de custos/canal. Fichas anteriores/importação/custos de pedidos continuam intactos: a calculadora é consulta e não cria preço, pedido, estoque ou despesa. As quatro tabelas novas de cadastro/configuração entram em KEEP e no registro de backup/pré-checagem; limpar produtos vinculados deve recusar apagar cadastro protegido, não perder ficha. Nenhum seed de custos/fornecedores/clientes. Só defaults aprovados:16 doces, referência26g, adicional20% e divisor0,74; sugestões especiais editáveis/identificadas, sem gravar automaticamente.
+
+Domínio: massa e gás/custos por receita; acabamento por doce e tamanho; massa total ou rendimento de referência e rendimentos medidos por tamanho. Estimativa de rendimento por divisão para baixo; acabamento proporcional ao peso^(2/3) apenas como sugestão, persistida só ao aceitar/salvar. Forminha configurada por tamanho (indicação nº4/5 sem criar insumo); opcionais unitários fora da ficha/padrão, selecionados só na simulação. Falta de preço, ficha, peso de massa, acabamento confirmado ou embalagem é indisponível, nunca zero suposto. Custos para cima ao centavo, adicional antes da margem; tabela/margem/sugestão e iFood em cálculos detalhados, inclusive1 sacola por pedido assumindo1 kit.
+
+APIs privadas planejadas: p1/weight-recipes (GET/POST), p1/weight-recipes/:id (GET/PUT), p1/weight-recipes/:id/calculate (GET sem gravação), p1/costing-settings (GET/PUT). Operadora lê/simula; owner edita com CAS/idempotência/auditoria. Rotas novas entram na matriz de segurança:401, tenant404, escrita da operadora403. Referências por organização, supply.unit preservada quando em uso, validações/leituras em lote. Sem0023, UI anterior permanece disponível e campos novos ficam ocultos por capability da sessão.
+
+Arquivos: migração0023, shared/weight-costing e testes, worker/weight-costing-domain/rotas/readiness, p1/p1-common/management/supplies, registro/preflight/KEEP; tela por peso ligada às Fichas atuais, ajuda/guia/relatório e testes API/E2E/segurança/backup/limpeza. Aceite: exemplo exclusivamente fictício(2000/16=125, kit12+200=1700, +20%=2040; iFood(5000+100+50+50)/0,74=7028);13/20/26g, rendimento17/15 editável, acabamento estimado confirmado, forminhas por tamanho, opcionais sem gravação implícita, desconhecido/inativo, excesso/CAS/tenant, legado e restauração. CI normal Chromium móvel; manual três perfis e Segurança no SHA final antes de avançar main. Sem deploy, migração ou conta paga remotos.
