@@ -6,6 +6,10 @@
 
 ## Histórico
 
+- **2026-11-14** — R19 conferida no branch `codex/r15-kit-order-model` (até `3a563aa`, CI e Segurança verdes): os 5 ajustes foram aprovados. A montagem compacta ficou boa. Dois acabamentos pequenos para quando voltar à tela de toque rápido, sem bloquear:
+  - "Trocar kit" fica logo acima dos cartões de sabor e parece título deles. Colocar "Trocar kit" ao lado do kit selecionado e, acima dos sabores, "Toque no sabor para somar 1 kit".
+  - Os cartões de sabor do toque rápido devem mostrar a foto e o contador (como a grade atual), não só o nome.
+  Segue a R15-B: recorrências com kits, pessoa/estabelecimento e ocasião, produção e relatórios por sabor × peso. Depois a R16.
 - **2026-11-13 (3)** — R19: checkpoint R15-B4 revisado (branch do Codex). Base aprovada; 5 ajustes antes do main: índice por pedido, montagem compacta, textos do cartão, fluxo rápido dos estabelecimentos e aviso de sabor cadastrado como variante. Ver seção **R19**.
 - **2026-11-13 (2)** — R16-11: o iFood inclui a **sacola de envio** (1 por pedido). Etiquetas e embalagens do iFood serão cadastradas pelo Tiago como insumos. Caipirinha: 15 doces por receita, provisório.
 - **2026-11-13** — Respostas do Tiago incorporadas à **R16** (itens 7 a 12): rendimento editável por ficha (16 por padrão, Beijinho 17), forminha nº 4 para 30 g e nº 5 para 15/23 g, fundo rendado e pétala opcionais por uso, +20% de custos incalculáveis e preço iFood `(preço + embalagem + etiqueta) ÷ 0,74`. Leite condensado R$ 6,89.
