@@ -1,7 +1,18 @@
 name: Validação da gestão
+# Repositório privado: o plano gratuito tem 2.000 minutos de Actions por mês.
+# - Mudanças só em documentação não rodam a bateria.
+# - Envio novo no mesmo branch cancela a execução anterior.
+# - Nos branches de trabalho, testes de tela só no Chromium móvel; no main,
+#   em pull requests e na execução manual, nos três navegadores.
 on:
   push:
+    paths-ignore: ['docs/**', '**.md', '.zap/**']
   pull_request:
+    paths-ignore: ['docs/**', '**.md', '.zap/**']
+  workflow_dispatch:
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 permissions:
   contents: read
 jobs:
@@ -44,8 +55,16 @@ jobs:
       - run: npm run test:backup
       - run: npm run test:security
       - run: npm run test:cleanup
-      - run: npx playwright install --with-deps chromium webkit
-      - run: npm run test:e2e
+      - name: Testes de tela (três navegadores)
+        if: github.ref == 'refs/heads/main' || github.event_name != 'push'
+        run: |
+          npx playwright install --with-deps chromium webkit
+          npm run test:e2e
+      - name: Testes de tela (Chromium móvel, branch de trabalho)
+        if: github.ref != 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e -- --project=chromium-mobile
       - uses: actions/upload-artifact@v7
         if: failure()
         with:

@@ -213,3 +213,12 @@ Aplicar as migrações 0016 a 0018; tornar o repositório privado; regra de prot
 Matriz ampliada para **178 verificações**, incluindo todas as rotas do cadastro/configuração de kits. Escrita só por owner (operadora403), leituras autorizadas pela equipe, kit externo404 e anônimo401. CAS/idempotência, FK da embalagem e auditoria de alterações; nenhum telefone de cliente é lido ou exposto nessas rotas novas. Kits sem 0019 ficam indisponíveis e gestão legada permanece operacional. Backup/restauração inclui kit/configuração e vínculo com insumo, com FK verificada.
 
 Cabeçalhos de produção preservados. A barra do Hoje usa progress/value/max e CSS externo, em lugar de width inline. Nova tela usa chips para evitar violações internas de select no WebKit. Teste funcional e observador de securitypolicyviolation rodam sem bypass; só o contexto de fotografia tem exceção comentada, necessária à injeção de estilo do próprio Playwright. Sem eval ou recursos externos no produto. Nenhuma configuração Cloudflare, migração remota ou catálogo foi ativado.
+
+## Repositório privado (14/11/2026)
+
+O responsável tornou o repositório privado. Ajustes feitos pelo Claude:
+
+- **Removidos** CodeQL e dependency-review: em repositório privado exigem GitHub Advanced Security (pago). Continuam: gitleaks e npm audit (mesmo job, a cada envio de código), ZAP semanal, `test:security` (matriz de permissões) e os demais testes.
+- **Minutos de Actions** (plano gratuito: 2.000/mês): mudanças só em `docs/` e `*.md` não rodam a bateria; envio novo no mesmo branch cancela a execução anterior; nos branches de trabalho os testes de tela rodam só no Chromium móvel; no `main`, em PRs e na execução manual, nos três navegadores. Acompanhar em GitHub → Settings → Billing and plans → Usage.
+- Regra do `main` (se criada): exigir **"validate"** e **"Segredos (gitleaks) e dependências (npm audit)"**; os nomes antigos de CodeQL/gitleaks/npm audit deixaram de existir.
+- O histórico anterior (inclusive custos que chegaram a ser escritos em docs e depois foram removidos em `981153e`) deixou de ser público.
