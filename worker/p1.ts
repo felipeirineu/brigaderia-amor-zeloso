@@ -1,3 +1,4 @@
+import { weightCosting } from './weight-costing';
 import { kits } from './kits';
 import { push } from './push';
 import { orderCosts } from './order-costs';
@@ -16,6 +17,8 @@ export async function p1(req: Request, env: Env, a: Actor) {
   if (!(await p1Ready(env)))
     throw new HttpError(503, 'Módulos P1 ainda não ativados.');
   const [, , , resource, id] = new URL(req.url).pathname.split('/');
+  if (['weight-recipes', 'costing-settings'].includes(resource))
+    return weightCosting(req, env.DB!, a, resource, id);
   if (['kits', 'kit-settings'].includes(resource))
     return kits(req, env.DB!, a, resource, id);
   if (resource === 'push') return push(req, env, a);

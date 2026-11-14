@@ -70,6 +70,10 @@ const tables = [
   'kit_order_components',
   'kit_recurring_items',
   'kit_recurring_components',
+  'weight_recipes',
+  'weight_recipe_supplies',
+  'costing_settings',
+  'costing_setting_supplies',
 ];
 export function inspect(
   database,
@@ -177,6 +181,12 @@ export function inspect(
       names.has('kit_recurring_items') && names.has('kit_recurring_components'),
     schema_kit_orders_ready:
       names.has('kit_order_items') && names.has('kit_order_components'),
+    schema_weight_costing_ready: [
+      'weight_recipes',
+      'weight_recipe_supplies',
+      'costing_settings',
+      'costing_setting_supplies',
+    ].every((n) => names.has(n)),
     schema_kits_ready: names.has('kits') && names.has('kit_settings'),
     schema_push_ready: [
       'reminder_alerts',

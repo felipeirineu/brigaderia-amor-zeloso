@@ -90,6 +90,8 @@ try {
     'p1/reminders',
     'p1/kits',
     'p1/kit-settings',
+    'p1/weight-recipes',
+    'p1/costing-settings',
     'p1/push',
     'p1/reports',
     'p1/reports.csv',
@@ -587,6 +589,109 @@ try {
   ok(
     otherSettings.limit_flavors === true && otherSettings.version === 0,
     'configuração isolada por organização',
+  );
+  const weightProduct = (await call('products', undefined, 'GET'))[0];
+  const weightSupply = (
+    await call('p1/supplies', {
+      name: 'Insumo DEMONSTRAÇÃO segurança por peso',
+      unit: 'unit',
+      pack_quantity_milli: 1000,
+      pack_cost_cents: null,
+    })
+  ).id;
+  const weightData = {
+    product_id: weightProduct.id,
+    active: true,
+    data: {
+      reference_yield: 16,
+      reference_dough_milli: 26000,
+      reference_confirmed: false,
+      mass_milli: null,
+      margin_bps: 0,
+      measured: [],
+      components: [
+        {
+          supply_id: weightSupply,
+          group: 'dough',
+          quantity_milli: 1000,
+          sizes: [],
+        },
+      ],
+    },
+  };
+  const weightRecipe = (await call('p1/weight-recipes', weightData)).id;
+  const costSettings = {
+    version: 0,
+    data: {
+      overhead_bps: 2000,
+      ifood_divisor_bps: 7400,
+      ifood_packaging_supply_id: null,
+      ifood_label_supply_id: null,
+      ifood_bag_supply_id: null,
+      optional_supply_ids: [],
+      liners: [],
+    },
+  };
+  for (const [path, method, data, ownerOnly] of [
+    ['p1/weight-recipes', 'POST', weightData, true],
+    ['p1/weight-recipes/' + weightRecipe, 'GET', undefined, false],
+    [
+      'p1/weight-recipes/' + weightRecipe,
+      'PUT',
+      { ...weightData, version: 1 },
+      true,
+    ],
+    [
+      'p1/weight-recipes/' + weightRecipe + '/calculate',
+      'GET',
+      undefined,
+      false,
+    ],
+    ['p1/costing-settings', 'PUT', costSettings, true],
+    ['p1/costing-settings/' + t.org, 'GET', undefined, false],
+    ['p1/costing-settings/' + t.org, 'PUT', costSettings, true],
+  ]) {
+    ok(
+      (await t.request(path, { method, data })).status === 401,
+      path + ' sem sessão',
+    );
+    if (ownerOnly)
+      ok(
+        (
+          await t.request(path, {
+            method,
+            data,
+            cookie: operator,
+            key: crypto.randomUUID(),
+          })
+        ).status === 403,
+        path + ' escrita só owner',
+      );
+    if (path.includes(weightRecipe) || path.endsWith(t.org))
+      ok(
+        (
+          await t.request(path, {
+            method,
+            data,
+            cookie: outside,
+            key: crypto.randomUUID(),
+          })
+        ).status === 404,
+        path + ' organização externa',
+      );
+  }
+  ok(
+    (
+      await t.request('p1/weight-recipes/' + weightRecipe + '/calculate', {
+        cookie: operator,
+      })
+    ).status === 200,
+    'operadora simula sem gravar',
+  );
+  ok(
+    (await t.request('p1/costing-settings', { cookie: operator })).status ===
+      200,
+    'operadora lê configuração de custos',
   );
   console.log(
     `OK segurança: ${checks} verificações (sessão, JWT, CSRF, IDOR, papéis, catálogo, cabeçalhos).`,

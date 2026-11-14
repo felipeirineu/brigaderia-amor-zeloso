@@ -1,3 +1,4 @@
+import { weightCostingReady } from './weight-costing';
 import { kitsReady } from './kits';
 import {
   customerOrderFieldWrite,
@@ -51,6 +52,7 @@ export async function management(req: Request, env: Env, a: Actor) {
   if (resource === 'session' && req.method === 'GET')
     return json({
       role: a.role,
+      weight_costing: await weightCostingReady(db),
       customer_orders: await customerOrderFieldsReady(db),
       kit_orders: await kitOrdersReady(db),
       kit_recurring: await kitOrdersReady(db, 'recurring'),

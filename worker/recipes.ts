@@ -1,3 +1,4 @@
+import { weightCostingReady, weightSupplyInUse } from './weight-costing';
 import { readKitItems } from './kit-order-items';
 import { flavorLines } from './flavor-lines';
 import { z } from 'zod';
@@ -284,6 +285,7 @@ export async function recipes(
     if (resource === 'supplies') {
       const d = supplySchema.parse(raw);
       if (id && !d.version) throw new HttpError(400, 'Informe versão.');
+      const weightSchema = !!id && (await weightCostingReady(db));
       const stockSchema =
         id &&
         (await db
@@ -316,6 +318,11 @@ export async function recipes(
           .bind(org, id)
           .first<{ unit: string }>();
         if (!old) throw new HttpError(404, 'Insumo não encontrado.');
+        if (old.unit !== d.unit && (await weightSupplyInUse(db, org, id!)))
+          throw new HttpError(
+            409,
+            'Unidade em uso na calculadora por peso: crie outro insumo.',
+          );
         if (
           old.unit !== d.unit &&
           (await db
@@ -341,6 +348,9 @@ export async function recipes(
                 'UPDATE supplies SET name=?,unit=?,pack_quantity_milli=?,pack_cost_cents=?,active=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?' +
                   (stockSchema
                     ? ' AND (unit=? OR NOT EXISTS(SELECT 1 FROM inventory_balances WHERE organization_id=? AND id=?))'
+                    : '') +
+                  (weightSchema
+                    ? ' AND (unit=? OR (NOT EXISTS(SELECT 1 FROM weight_recipe_supplies WHERE organization_id=? AND supply_id=?) AND NOT EXISTS(SELECT 1 FROM costing_setting_supplies WHERE organization_id=? AND supply_id=?)))'
                     : ''),
               )
               .bind(
@@ -354,6 +364,7 @@ export async function recipes(
                 entity,
                 d.version,
                 ...(stockSchema ? [d.unit, org, id] : []),
+                ...(weightSchema ? [d.unit, org, id, org, id] : []),
               )
           : db
               .prepare(

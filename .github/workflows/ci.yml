@@ -46,6 +46,7 @@ jobs:
       - run: npm run build:pages
       - run: npm run test:mobile
       - run: npm run test:kits
+      - run: npm run test:weight-costing
       - run: npm run test:mixed
       - run: npm run test:push
       - run: npm run test:field

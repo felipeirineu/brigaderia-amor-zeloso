@@ -150,11 +150,18 @@ try {
   assert.equal((await call('orders', undefined, 'GET')).length, 0);
   assert.equal((await call('customers', undefined, 'GET')).length, 1);
 
-  // 2) Completa: clientes e produtos também; fichas ligadas a eles vão junto.
-  const second = await run({ customers: true, products: true });
-  assert.ok(second.includes('customers') && second.includes('recipes'));
-  for (const table of ['customers', 'products', 'product_variants', 'recipes'])
-    assert.equal(await count(table), 0, table);
+  // 2) Cadastro por peso é protegido mesmo vazio: apagar produtos não pode
+  // atravessar suas FKs. Clientes podem ser limpos sem alcançar esse cadastro.
+  const schema = await readSchema(query);
+  assert.throws(
+    () => planCleanup(schema, { customers: true, products: true }),
+    /tabelas protegidas.*weight_recipes/,
+  );
+  const second = await run({ customers: true });
+  assert.ok(second.includes('customers') && !second.includes('products'));
+  assert.equal(await count('customers'), 0);
+  assert.equal(await count('products'), 1);
+  assert.equal(await count('recipes'), 1);
   assert.equal(await count('supplies'), 2, 'insumos ficam');
   assert.equal(await count('kits'), 1, 'kits ficam');
   assert.equal(await count('authorized_emails'), accessBefore);
