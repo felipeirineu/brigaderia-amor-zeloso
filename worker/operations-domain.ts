@@ -1,3 +1,4 @@
+import { kitItemSchema } from './kit-order-domain';
 import { z } from 'zod';
 import { itemInputSchema, uniqueItems } from './mixed-domain';
 import { statuses } from '../shared/order-state';
@@ -42,11 +43,18 @@ export const recurringSchema = z
     composition_version: z.literal(1).optional(),
     items: z
       .array(itemInputSchema.omit({ item_id: true }))
-      .min(1)
-      .max(30),
+      .max(30)
+      .default([]),
+    kit_items: z.array(kitItemSchema).max(30).optional(),
   })
   .strict()
   .refine((v) => uniqueItems(v.items), 'Variante duplicada.')
+  .refine(
+    (v) =>
+      v.items.length + (v.kit_items?.length ?? 0) >= 1 &&
+      v.items.length + (v.kit_items?.length ?? 0) <= 30,
+    'Informe de 1 a 30 itens.',
+  )
   .refine(
     (v) => v.courier !== 'courier' || !!v.courier_name,
     'Informe o nome do motoboy.',

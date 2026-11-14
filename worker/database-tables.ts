@@ -65,4 +65,6 @@ export const databaseTables = [
   'kit_settings',
   'kit_order_items',
   'kit_order_components',
+  'kit_recurring_items',
+  'kit_recurring_components',
 ] as const;

@@ -6,10 +6,13 @@ import type {
 import type { Kit } from '../shared/kits';
 import { prepareKitItems, type KitFlavor } from './kit-order-domain';
 import { HttpError } from './security';
-export async function kitOrdersReady(db: D1Database) {
+export async function kitOrdersReady(
+  db: D1Database,
+  kind: 'order' | 'recurring' = 'order',
+) {
   const r = await db
     .prepare(
-      "SELECT COUNT(*) n FROM sqlite_schema WHERE type='table' AND name IN('kit_order_items','kit_order_components')",
+      `SELECT COUNT(*) n FROM sqlite_schema WHERE type='table' AND name IN('kit_${kind}_items','kit_${kind}_components')`,
     )
     .first<{ n: number }>();
   return r?.n === 2;
@@ -29,17 +32,19 @@ export async function readKitItems(
   db: D1Database,
   org: string,
   orderIds: string[],
+  kind: 'order' | 'recurring' = 'order',
 ) {
-  if (!orderIds.length || !(await kitOrdersReady(db))) return [];
+  if (!orderIds.length || !(await kitOrdersReady(db, kind))) return [];
+  const parent = kind === 'order' ? 'order_id' : 'template_id';
   const [parents, children] = await db.batch<Record<string, unknown>>([
     db
       .prepare(
-        'SELECT id,order_id,kit_id,quantity,weight_grams,dough_weight_grams,units_per_kit,unit_price_cents,packaging_supply_id FROM kit_order_items WHERE organization_id=? AND order_id IN(SELECT value FROM json_each(?)) ORDER BY order_id,id',
+        `SELECT id,${parent} AS order_id,kit_id,quantity,weight_grams,dough_weight_grams,units_per_kit,unit_price_cents,packaging_supply_id FROM kit_${kind}_items WHERE organization_id=? AND ${parent} IN(SELECT value FROM json_each(?)) ORDER BY ${parent},id`,
       )
       .bind(org, JSON.stringify(orderIds)),
     db
       .prepare(
-        'SELECT c.* FROM kit_order_components c JOIN kit_order_items i ON i.organization_id=c.organization_id AND i.id=c.item_id WHERE i.organization_id=? AND i.order_id IN(SELECT value FROM json_each(?)) ORDER BY c.item_id,c.product_id',
+        `SELECT c.* FROM kit_${kind}_components c JOIN kit_${kind}_items i ON i.organization_id=c.organization_id AND i.id=c.item_id WHERE i.organization_id=? AND i.${parent} IN(SELECT value FROM json_each(?)) ORDER BY c.item_id,c.product_id`,
       )
       .bind(org, JSON.stringify(orderIds)),
   ]);
@@ -60,13 +65,13 @@ export async function readKitItems(
     components: grouped.get(String(p.id)) ?? [],
   })) as unknown as (KitItemSnapshot & { order_id: string })[];
 }
-export async function prepareOrderKits(
+export async function loadKitCatalog(
   db: D1Database,
   org: string,
   input: KitItemInput[],
-  old: KitItemSnapshot[],
 ) {
-  if (!input.length) return [];
+  if (!input.length)
+    return { kits: [] as Kit[], flavors: [] as KitFlavor[], limit: true };
   if (!(await kitOrdersReady(db)))
     throw new HttpError(503, 'Pedidos com kits ainda indisponíveis.');
   const ids = [...new Set(input.map((i) => i.kit_id))],
@@ -90,12 +95,26 @@ export async function prepareOrderKits(
       )
       .bind(org, org),
   ]);
+  return {
+    kits: kits.results as unknown as Kit[],
+    flavors: flavors.results as unknown as KitFlavor[],
+    limit: settings.results.length ? !!settings.results[0].limit_flavors : true,
+  };
+}
+export async function prepareOrderKits(
+  db: D1Database,
+  org: string,
+  input: KitItemInput[],
+  old: KitItemSnapshot[],
+) {
+  if (!input.length) return [];
+  const context = await loadKitCatalog(db, org, input);
   return prepareKitItems(
     input,
     old,
-    kits.results as unknown as Kit[],
-    flavors.results as unknown as KitFlavor[],
-    settings.results.length ? !!settings.results[0].limit_flavors : true,
+    context.kits,
+    context.flavors,
+    context.limit,
   );
 }
 /** Chamado no batch do cabeçalho; guard/CAS impedem apagar itens numa atualização perdedora. */
@@ -106,19 +125,21 @@ export function writeKitItems(
   items: KitItemSnapshot[],
   guard: string,
   args: string[],
+  kind: 'order' | 'recurring' = 'order',
 ) {
+  const parent = kind === 'order' ? 'order_id' : 'template_id';
   const components = items.flatMap((i) =>
     i.components.map((c) => ({ ...c, item_id: i.id })),
   );
   return [
     db
       .prepare(
-        `DELETE FROM kit_order_items WHERE organization_id=? AND order_id=? AND ${guard}`,
+        `DELETE FROM kit_${kind}_items WHERE organization_id=? AND ${parent}=? AND ${guard}`,
       )
       .bind(org, order, ...args),
     db
       .prepare(
-        `INSERT INTO kit_order_items(organization_id,id,order_id,kit_id,quantity,weight_grams,dough_weight_grams,units_per_kit,unit_price_cents,packaging_supply_id) SELECT ?,json_extract(value,'$.id'),?,json_extract(value,'$.kit_id'),json_extract(value,'$.quantity'),json_extract(value,'$.weight_grams'),json_extract(value,'$.dough_weight_grams'),json_extract(value,'$.units_per_kit'),json_extract(value,'$.unit_price_cents'),json_extract(value,'$.packaging_supply_id') FROM json_each(?) WHERE ${guard}`,
+        `INSERT INTO kit_${kind}_items(organization_id,id,${parent},kit_id,quantity,weight_grams,dough_weight_grams,units_per_kit,unit_price_cents,packaging_supply_id) SELECT ?,json_extract(value,'$.id'),?,json_extract(value,'$.kit_id'),json_extract(value,'$.quantity'),json_extract(value,'$.weight_grams'),json_extract(value,'$.dough_weight_grams'),json_extract(value,'$.units_per_kit'),json_extract(value,'$.unit_price_cents'),json_extract(value,'$.packaging_supply_id') FROM json_each(?) WHERE ${guard}`,
       )
       .bind(
         org,
@@ -128,7 +149,7 @@ export function writeKitItems(
       ),
     db
       .prepare(
-        `INSERT INTO kit_order_components(organization_id,item_id,product_id,units,product_name,photo_key,contains_alcohol) SELECT ?,json_extract(value,'$.item_id'),json_extract(value,'$.product_id'),json_extract(value,'$.units'),json_extract(value,'$.product_name'),json_extract(value,'$.photo_key'),json_extract(value,'$.contains_alcohol') FROM json_each(?) WHERE ${guard}`,
+        `INSERT INTO kit_${kind}_components(organization_id,item_id,product_id,units,product_name,photo_key,contains_alcohol) SELECT ?,json_extract(value,'$.item_id'),json_extract(value,'$.product_id'),json_extract(value,'$.units'),json_extract(value,'$.product_name'),json_extract(value,'$.photo_key'),json_extract(value,'$.contains_alcohol') FROM json_each(?) WHERE ${guard}`,
       )
       .bind(org, JSON.stringify(components), ...args),
   ];

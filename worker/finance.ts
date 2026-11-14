@@ -542,6 +542,8 @@ export async function finance(
       org,
       plans.map((p) => String(p.id)),
       env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db)),
+      new URL(req.url).searchParams.get('kits') === '1' &&
+        env.P1_ENABLED === 'true',
     );
     return json({
       profile: p ? JSON.parse(p.data) : emptyProfile(),

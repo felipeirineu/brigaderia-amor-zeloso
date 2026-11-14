@@ -68,6 +68,8 @@ const tables = [
   'kit_settings',
   'kit_order_items',
   'kit_order_components',
+  'kit_recurring_items',
+  'kit_recurring_components',
 ];
 export function inspect(
   database,
@@ -165,6 +167,8 @@ export function inspect(
     schema_p1_ready: p1,
     schema_mobile_ready: mobile,
     schema_field_ready: field,
+    schema_kit_recurring_ready:
+      names.has('kit_recurring_items') && names.has('kit_recurring_components'),
     schema_kit_orders_ready:
       names.has('kit_order_items') && names.has('kit_order_components'),
     schema_kits_ready: names.has('kits') && names.has('kit_settings'),
@@ -178,6 +182,8 @@ export function inspect(
       'kit_settings',
       'kit_order_items',
       'kit_order_components',
+      'kit_recurring_items',
+      'kit_recurring_components',
     ].every((n) => names.has(n)),
     schema_profile_photos_ready: names.has('profile_photos'),
     schema_mixed_model_ready: names.has('order_item_components'),

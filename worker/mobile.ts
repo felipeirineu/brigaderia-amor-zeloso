@@ -101,6 +101,8 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       org,
       plans.map((p) => String(p.id)),
       env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db)),
+      new URL(req.url).searchParams.get('kits') === '1' &&
+        env.P1_ENABLED === 'true',
     );
     const last = await db
       .prepare(
@@ -132,13 +134,37 @@ export async function mobile(req: Request, env: Env, a: Actor) {
         : {}),
     }));
     const lastKits = last ? await readKitItems(db, org, [String(last.id)]) : [];
-    let lastValid = lastInput.length > 0 && lastKits.length === 0;
+    const kitSupported =
+      new URL(req.url).searchParams.get('kits') === '1' &&
+      env.P1_ENABLED === 'true';
+    let lastValid =
+      lastInput.length + lastKits.length > 0 &&
+      (!lastKits.length || kitSupported);
     try {
       prepareRecurring(
         lastInput,
         await catalogForItems(db, org, lastInput),
         await mixedReady(env),
       );
+      if (
+        lastKits.some((i) => i.components.length > 1) &&
+        !(await mixedReady(env))
+      )
+        lastValid = false;
+      if (lastKits.length && kitSupported)
+        await prepareOrderKits(
+          db,
+          org,
+          lastKits.map((i) => ({
+            kit_id: i.kit_id,
+            quantity: i.quantity,
+            components: i.components.map((c) => ({
+              product_id: c.product_id,
+              units: c.units,
+            })),
+          })),
+          [],
+        );
     } catch {
       lastValid = false;
     }

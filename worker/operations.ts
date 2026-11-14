@@ -1,3 +1,16 @@
+import { p1Ready } from './p1-ready';
+import {
+  recurringKits,
+  prepareKitModel,
+  generateKitSnapshots,
+  writeGeneratedKits,
+} from './kit-recurring';
+import {
+  loadKitCatalog,
+  writeKitItems,
+  kitOrdersReady,
+} from './kit-order-items';
+import type { KitItemSnapshot } from '../shared/kit-orders';
 import { saleItemSource, saleComponentSource } from './kit-order-items';
 import { hasPhone, visiblePhone } from '../shared/phone';
 import { containsAlcohol } from '../shared/alcohol';
@@ -287,10 +300,16 @@ export async function operations(
         'recurring',
         rows.map((t) => String(t.id)),
       );
+      const kitRows = await recurringKits(
+        db,
+        org,
+        rows.map((r) => String(r.id)),
+      );
       const output = rows.map((t) => ({
         ...t,
         mutation_id: undefined,
         items: children.get(String(t.id)) ?? [],
+        kit_items: kitRows.filter((i) => i.template_id === t.id),
       }));
       if (id && !output.length)
         throw new HttpError(404, 'Modelo não encontrado.');
@@ -326,6 +345,17 @@ export async function operations(
         409,
         'Este modelo tem caixa mista. Atualize o editor antes de salvar.',
       );
+    const priorKits = id ? await recurringKits(db, org, [id]) : [];
+    if (data.kit_items?.length && !(await p1Ready(env)))
+      throw new HttpError(503, 'Kits ainda não ativados.');
+    const preparedKits = await prepareKitModel(
+      db,
+      org,
+      data.kit_items,
+      priorKits,
+      env.MIXED_BOXES_ENABLED === 'true',
+      data.active,
+    );
     const schemaMixed = await recurringMixedSchema(db);
     const catalog = await catalogForItems(db, org, data.items);
     const prepared = prepareRecurring(
@@ -405,6 +435,17 @@ export async function operations(
           templateId,
           mutation,
         ),
+      ...(preparedKits.length || priorKits.length
+        ? writeKitItems(
+            db,
+            org,
+            templateId,
+            preparedKits,
+            guard,
+            [org, templateId, mutation],
+            'recurring',
+          )
+        : []),
       ...(schemaMixed
         ? writeRecurringMixed(db, org, templateId, prepared, guard, [
             org,
@@ -454,23 +495,41 @@ export async function operations(
       plans.map((p) => String(p.id)),
     );
     const catalog = await catalogForItems(db, org, rows);
+    const modelKits = await recurringKits(
+      db,
+      org,
+      plans.map((p) => String(p.id)),
+    );
+    const kitCatalog = await loadKitCatalog(db, org, modelKits);
+    const kitStorage = await kitOrdersReady(db);
     const canMix =
       env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db));
     const skipped: { id: string; name: string; reason: string }[] = [];
     const nonce = crypto.randomUUID();
     const planned: Record<string, unknown>[] = [],
       items: Record<string, unknown>[] = [];
+    const generatedKits: (KitItemSnapshot & { order_id: string })[] = [];
     for (const plan of plans) {
       const contents = rows.filter((i) => i.template_id === plan.id);
-      let reason = !plan.customer_active
-        ? 'Cliente inativo.'
-        : !contents.length
-          ? 'Itens ausentes; revise o modelo.'
-          : '';
-      let snapshots: ItemSnapshot[] = [];
+      const contentsKits = modelKits.filter((i) => i.template_id === plan.id);
+      let reason =
+        contentsKits.length && env.P1_ENABLED !== 'true'
+          ? 'Kits ainda não ativados.'
+          : !plan.customer_active
+            ? 'Cliente inativo.'
+            : !contents.length && !contentsKits.length
+              ? 'Itens ausentes; revise o modelo.'
+              : '';
+      let snapshots: ItemSnapshot[] = [],
+        kitSnapshots: KitItemSnapshot[] = [];
       if (!reason) {
         try {
           snapshots = prepareRecurring(contents, catalog, canMix);
+          kitSnapshots = generateKitSnapshots(
+            contentsKits,
+            kitCatalog,
+            env.MIXED_BOXES_ENABLED === 'true',
+          );
         } catch (e) {
           reason =
             e instanceof HttpError
@@ -486,7 +545,7 @@ export async function operations(
         `${addDays(data.week, Number(plan.weekday) - 1)}T${plan.time}:00-03:00`,
       ).toISOString();
       const id = crypto.randomUUID();
-      const total = snapshots.reduce(
+      const total = [...snapshots, ...kitSnapshots].reduce(
         (n, i) => n + i.quantity * i.unit_price_cents,
         0,
       );
@@ -514,10 +573,17 @@ export async function operations(
         request_key: crypto.randomUUID(),
       });
       for (const item of snapshots) items.push({ ...item, order_id: id });
+      for (const item of kitSnapshots)
+        generatedKits.push({ ...item, order_id: id });
     }
     const ordersJSON = JSON.stringify(planned),
       itemsJSON = JSON.stringify(items);
-    if (ordersJSON.length + itemsJSON.length > 900000)
+    if (
+      ordersJSON.length +
+        itemsJSON.length +
+        JSON.stringify(generatedKits).length >
+      900000
+    )
       throw new HttpError(400, 'Reduza os modelos desta geração.');
     const financial = await financeReady(env);
     const result = await db.batch([
@@ -538,6 +604,7 @@ export async function operations(
         `EXISTS(SELECT 1 FROM orders o JOIN order_items i ON i.organization_id=o.organization_id AND i.order_id=o.id WHERE o.organization_id=? AND o.mutation_id=? AND i.id=json_extract(value,'$.item_id'))`,
         [org, nonce],
       ),
+      ...(kitStorage ? writeGeneratedKits(db, org, nonce, generatedKits) : []),
       ...((await fieldReady(env)) ? snapshotPlaces(db, org, nonce) : []),
       ...(financial
         ? [

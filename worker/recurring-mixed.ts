@@ -1,3 +1,6 @@
+import { recurringKits, generateKitSnapshots } from './kit-recurring';
+import { loadKitCatalog } from './kit-order-items';
+import { kitSnapshotInput } from '../shared/kit-orders';
 import type { ComponentInput, ItemInput, ItemSnapshot } from '../shared/mixed';
 import { compositionKey } from '../shared/mixed';
 import {
@@ -120,20 +123,32 @@ export async function recurringDefaults(
   org: string,
   ids: string[],
   enabled: boolean,
+  kitSupported = false,
 ) {
   const items = await recurringItems(db, org, ids),
     catalog = await catalogForItems(db, org, items);
+  const kits = await recurringKits(db, org, ids),
+    kitCatalog = await loadKitCatalog(db, org, kits);
   return ids.map((id) => {
     const lines = items.filter((i) => i.template_id === id);
-    let valid = lines.length > 0;
+    const kitLines = kits.filter((i) => i.template_id === id);
+    let valid =
+      lines.length + kitLines.length > 0 && (!kitLines.length || kitSupported);
     try {
       prepareRecurring(lines, catalog, enabled);
+      if (kitLines.length && kitSupported)
+        generateKitSnapshots(kitLines, kitCatalog, enabled, true);
     } catch {
       valid = false;
     }
     return {
       id,
       valid,
+      kit_items: kitLines.map((i) => {
+        const { item_id, ...input } = kitSnapshotInput(i);
+        void item_id;
+        return input;
+      }),
       items: lines.map(({ variant_id, quantity, components }) => ({
         variant_id,
         quantity,
