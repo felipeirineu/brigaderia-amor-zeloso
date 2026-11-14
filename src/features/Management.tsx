@@ -11,6 +11,7 @@ import { Button } from '../components/Button';
 import { CompactHeader } from './mobile/CompactHeader';
 import { Backup } from './p1/Backup';
 import { ImportCustomers } from './p1/ImportCustomers';
+import { ImportCatalog } from './p1/ImportCatalog';
 import { Stock } from './p1/Stock';
 import { FieldProvider, SiteAvatar, useField } from './field/FieldContext';
 import { SiteEditor, CompanyEditor, SiteInfo } from './field/SiteEditor';
@@ -1677,6 +1678,9 @@ export function Management() {
             {session.tools && session.role === 'owner' && (
               <Route path="importar-clientes" element={<ImportCustomers />} />
             )}
+            {session.tools && session.p1 && session.role === 'owner' && (
+              <Route path="importar-cadastro" element={<ImportCatalog />} />
+            )}
             {session.tools && (
               <Route path="estoque" element={<Stock role={session.role} />} />
             )}
@@ -1872,6 +1876,15 @@ function More({
                 ...(role === 'owner'
                   ? [
                       ['importar-clientes', 'Importar clientes', 'clientes'],
+                      ...(p1
+                        ? [
+                            [
+                              'importar-cadastro',
+                              'Importar cadastro inicial',
+                              'produtos',
+                            ],
+                          ]
+                        : []),
                       ['backup', 'Backup privado', 'configuracoes'],
                     ]
                   : []),
