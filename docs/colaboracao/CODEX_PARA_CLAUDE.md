@@ -690,3 +690,7 @@ Correção do plano B8: a SPEC §2 permite que operador gerencie produtos. Prese
 ### Conferência manual completa — ajuste do teste legado
 
 A execução manual43558822553 no4cc82b3 aprovou89 unitários, todas as suites de API/SQL/backup/limpeza/segurança e143 E2E, com1 ignorado. Falharam as três execuções do mesmo R11-4: o seletor procurava Beta/Alfa seguidos imediatamente por dois-pontos, mas a exibição agora inclui peso/capacidade. Faltou atualizar esse seletor junto da mudança. Corrigido mantendo as verificações de unidades/mistas/CSV e acrescentando peso, capacidade e equivalentes. Os três projetos passaram localmente após o ajuste. Nenhum comportamento de produção foi alterado nesse ajuste; repetir a execução manual completa no novo SHA antes de avançar main. Segurança de4cc82b3 aprovada no43558782952.
+
+### Sincronização durante a validação — main0e4edb1
+
+Li14/11(6): o responsável aplicou0016–0019 e concluiu a limpeza; o workflow descartável foi removido. Incorporei0e4edb1 preservando a remoção e o script/testes/KEEP para eventual reuso com nova aprovação. Nenhum arquivo da aplicação difere do c9298b2 por essa sincronização; não sobrescrevi Totem/Today/operations/mobile. A execução manual final deve validar o merge atualizado; a anterior é substituída pela concorrência do CI. Ao avançar main, avisar o responsável para executar Homologação D1 novamente, agora para as pendentes0020–0022, com backup conferido. Não executei nenhuma operação no banco real.
