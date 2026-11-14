@@ -221,8 +221,8 @@ export function PixSettings() {
               <option value="cpf">CPF</option>
               <option value="cnpj">CNPJ</option>
               <option value="email">E-mail</option>
-              <option value="phone">Telefone E.164</option>
-              <option value="random">Aleatória</option>
+              <option value="phone">Telefone (celular)</option>
+              <option value="random">Chave aleatória</option>
             </select>
           </label>
           {value.type !== 'none' && (
@@ -234,8 +234,38 @@ export function PixSettings() {
                     : field === 'receiver'
                       ? 'Nome do recebedor'
                       : 'Cidade do recebedor'}
+                  {field !== 'key' && (
+                    <small>
+                      {field === 'receiver'
+                        ? 'Como aparece no banco, até 25 letras.'
+                        : 'Até 15 letras, ex.: Joao Pessoa.'}
+                    </small>
+                  )}
                   <input
                     required
+                    inputMode={
+                      field !== 'key'
+                        ? 'text'
+                        : value.type === 'cpf' || value.type === 'cnpj'
+                          ? 'numeric'
+                          : value.type === 'phone'
+                            ? 'tel'
+                            : value.type === 'email'
+                              ? 'email'
+                              : 'text'
+                    }
+                    placeholder={
+                      field !== 'key'
+                        ? undefined
+                        : {
+                            none: undefined,
+                            cpf: '000.000.000-00',
+                            cnpj: '00.000.000/0000-00',
+                            email: 'nome@exemplo.com',
+                            phone: '(83) 99999-9999',
+                            random: 'Cole a chave aleatória do banco',
+                          }[value.type]
+                    }
                     maxLength={
                       field === 'key' ? 254 : field === 'receiver' ? 25 : 15
                     }

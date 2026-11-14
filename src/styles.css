@@ -1,4 +1,6 @@
 :root {
+  /* App só em tema claro: seletores nativos (Android/iOS) seguem o mesmo tema. */
+  color-scheme: light;
   font-family:
     Inter,
     ui-sans-serif,
