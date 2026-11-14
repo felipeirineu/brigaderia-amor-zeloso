@@ -29,10 +29,13 @@ Em **Actions → Limpeza dos dados de teste (manual) → Run workflow** (branch 
 **Sempre apagado:** pedidos, itens e caixas mistas, recebimentos, fechamentos e créditos, modelos recorrentes, lembretes, despesas e corridas, movimentos e saldo de estoque.
 **Sempre mantido:** acessos (Felipe, Tiago, Alda) e sessões, nomes e fotos da equipe, endereço da base, Pix e configurações, mensagens prontas, insumos, kits e o histórico de auditoria.
 
-## 4. Cadastro inicial (no app, 15 min)
+## 4. Cadastro inicial (no app, 5 min)
 
-1. **Produtos:** um por sabor, com o nome do catálogo (Brigadeiro, Brigadeiro Colorido, Brigadeiro com Amendoim, Prestígio, Beijinho, Cajuzinho, Surpresa de Uva, Limão, Caipirinha). Em cada um, a variante "Caixa 12 un.", 30 g, 12 unidades, R$ 42,00 e a foto sugerida.
-2. **Insumos:** pela planilha `insumos-para-cadastrar.xlsx`.
-3. **Fichas:** pela planilha `fichas-para-cadastrar.xlsx`.
-4. **Clientes:** Mais → Importar clientes com `clientes-para-importar.xlsx` (telefone opcional).
-5. **Kits:** quando a R15 estiver no app, em Mais → Kits, pela tabela de kits.
+1. **Mais → Importar cadastro inicial** (só o administrador vê).
+2. Escolha a planilha `cadastro-inicial-brigaderia.xlsx` (abas Sabores, Insumos, Fichas e Clientes) e toque em **Ver prévia**.
+3. Confira a lista. Se aparecer algum erro, ele diz a aba e a linha: corrija na planilha e escolha o arquivo de novo.
+4. Toque em **Confirmar cadastro**. O que já existir com o mesmo nome fica como está, então repetir a importação não duplica nada.
+
+Depois disso, o Tiago só cadastra o que for novo: as 4 receitas que faltam (Prestígio, Brigadeiro com Amendoim, Surpresa de Uva e Limão), etiquetas, telefones dos clientes e, quando a R15 estiver no app, os kits (Mais → Kits).
+
+A planilha tem custos e clientes: guarde fora do GitHub e não envie por WhatsApp.
