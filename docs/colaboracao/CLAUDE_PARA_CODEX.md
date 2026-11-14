@@ -1200,6 +1200,16 @@ Aposentar as planilhas de Excel e deixar a brigaderia inteira na palma da mão. 
 - **Feedback de salvamento** visível. Offline continua com aviso claro e sem gravação.
 - **PC:** mesmas telas em duas colunas, tabelas completas, filtros e atalhos de teclado nos cadastros longos.
 
+### 8.1 Visual 2026 (`src/theme.css`) — aprovado em 14/11/2026
+
+- `src/theme.css` é carregado **depois** de `styles.css` e só muda aparência. Componentes novos devem **usar os tokens** (`--az-choc`, `--az-paper`, `--az-tonal`, `--az-gold`, `--az-gold-ink`, `--az-muted`, `--az-ok`, `--az-ok-bg`, `--az-warn-bg`, `--az-radius-card` 28px, `--az-radius-field` 16px, `--az-shadow-card`, `--az-spring`), nunca cores ou raios soltos.
+- Reaproveite as classes existentes (`.panel`, `.az-button` e variantes, `.status-tag`) em vez de criar estilos próprios; assim o tema chega sozinho.
+- Títulos de página usam a serifa (`--az-serif`); títulos de cartão continuam sem serifa.
+- Fontes são locais (`@fontsource`). Não adicionar Google Fonts nem CDN: a CSP bloqueia.
+- O verde de sucesso é `#2b7a49` (há teste E2E conferindo). Não alterar sem atualizar o teste.
+- **Mascote da marca:** não usar até os proprietários enviarem o arquivo e autorizarem. Quando vier, aparece só em momentos especiais (estados vazios, pedido confirmado, abertura, ajuda).
+- Modo escuro fica para uma fase posterior. Não implementar por conta própria.
+
 ## 9. Ajuda contextual (ícones de explicação)
 
 - Componente único `HelpTip`:
