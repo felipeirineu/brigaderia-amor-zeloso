@@ -145,12 +145,14 @@ export function Totem({
   financial = false,
   mixed = false,
   metadata = false,
+  kitOrders = false,
 }: {
   financial?: boolean;
   mixed?: boolean;
   metadata?: boolean;
+  kitOrders?: boolean;
 }) {
-  const kitCatalog = useKitCatalog(financial);
+  const kitCatalog = useKitCatalog(financial && kitOrders);
   const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
     [kitSnapshots, setKitSnapshots] = useState<KitItemSnapshot[]>([]),
     [kitEditing, setKitEditing] = useState(false);
@@ -715,7 +717,11 @@ export function Totem({
       {step === 1 && (
         <>
           <h2 className="totem-customer">{customer?.name}</h2>
-          <p className="totem-hint">Escolha o kit e os sabores</p>
+          <p className="totem-hint">
+            {kitCatalog.kits.length
+              ? 'Escolha o kit e os sabores'
+              : 'Escolha os sabores'}
+          </p>
           {busy && <p role="status">Preenchendo o pedido…</p>}
           {defaults && defaults.plans.filter((p) => p.valid).length > 1 && (
             <div className="chips" aria-label="Pedidos padrão">

@@ -129,3 +129,12 @@ As seções anteriores registram as entregas de cada rodada. A prioridade atual 
 4. R6-5, R6-7 e R6-8; depois R7 com PROSPECTS_ENABLED desligada até validação. Homologação física e ativação permanecem com o responsável.
 
 Critérios de aceite e status detalhados em FASE_R11_CAIXA_MISTA.md e CODEX_PARA_CLAUDE.md. Cada item recebe commit/push; sem deploy ou alteração remota de banco/configuração pelo agente.
+
+
+## Continuação R15/R16 — 14/11/2026
+
+R15-B: integração de kits concluída no código com recorrências, defaults/repetição, editor PC, pessoa/estabelecimento, condição aplicável, ocasião e produção/compras/relatórios por sabor×peso/capacidade. Cadastro só de sabor não exige embalagem/preço artificiais. Legado permanece legível e editável pelas guardas anteriores; migrações aditivas0019–0022 e disponibilidade da interface consultada no servidor. Guia de ativação e relatórios em FASE_R15_KITS e CODEX_PARA_CLAUDE.
+
+Antes de avançar main, execução manual de Validação da gestão no SHA final da branch (três navegadores), além de Segurança verde. Sem deploy/migração/flags automáticos. Repositório privado não autoriza custos/clientes reais em docs/testes/capturas; usar DEMONSTRAÇÃO. R17-1 já coberta por Importar cadastro inicial, sem outro importador; uma futura aba Kits deverá estender essa mesma tela. KEEP já protege kits/configuração; modelos são operacionais.
+
+Próxima fase: R16 conforme briefing vigente, após revisão/validação da R15-B. Exemplo de aceite inteiramente fictício: iFood R$70,28. Não antecipar a calculadora nem inferir custos ou valores comerciais reais.

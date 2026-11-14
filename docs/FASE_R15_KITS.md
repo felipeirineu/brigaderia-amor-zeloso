@@ -95,3 +95,19 @@ Produção mantém as unidades exatas por sabor, peso e capacidade. Caixas equiv
 O ensaio usa o mesmo sabor em15g/25 unidades e30g/12 unidades. Custos e compras procuram ficha do sabor no peso correto; ausência ou ambiguidade mantém aviso/custo indisponível. Embalagem do kit entra uma vez por kit; não é repetida a embalagem por lote da ficha. Nenhuma compra, baixa de estoque, preço ou despesa é criada automaticamente. A calculadora por massa e as regras adicionais da R16 vêm depois desta integração.
 
 No toque rápido, Trocar kit fica junto ao kit escolhido. A instrução explica que tocar no sabor soma um kit inteiro. Foto do cadastro e contador acompanham os cartões; kits existentes e composições históricas permanecem editáveis pelas regras anteriores.
+
+## Sabor sem embalagem artificial — fechamento da integração
+
+No cadastro de produto, Somente sabor (para kits) permite salvar nome, descrição, foto e ativo sem cadastrar peso/preço de uma embalagem antiga. O tamanho, a capacidade e o preço são escolhidos no kit. Não é criada variante artificial ao montar o pedido. As permissões de produtos existentes continuam válidas para administrador e operadora; criar/configurar kit continua exclusivo do administrador.
+
+Sem ficha compatível, o custo permanece indisponível com aviso. A R16 acrescentará sua calculadora; esta entrega não supõe rendimento, custo real ou preço sugerido para um sabor sem ficha. O importador inicial existente é preservado. A extensão com aba Kits é viável usando a API atual, prévia, deduplicação por tamanho/capacidade e embalagem vinculada pelo cadastro; deverá preservar preços já cadastrados e aceitar Sabores sem embalagem, sem criar outro importador.
+
+### Ativação pelo responsável, após revisão e checks completos
+
+1. GitHub → Actions → Validação da gestão → Run workflow. Selecione a branch revisada. Resultado esperado: validate verde e testes nos três navegadores, incluindo WebKit. O envio normal da branch só testa Chromium móvel. Falha: guardar o link da execução; não avançar main enquanto houver erro. Segurança também deve estar verde no mesmo SHA.
+2. Conferir o backup pelo roteiro já existente, restaurado fora do GitHub, e pausar gravações. Isto não é feito automaticamente por esta entrega. Sem backup conferido, interromper aqui.
+3. GitHub → Actions → Homologação D1 (manual) → Run workflow → main → mode PRE_CHECAGEM. Resultado esperado: nenhuma violação de FK e lista das migrações realmente pendentes. O código R15 usa0019–0022, em ordem; não reaplicar as já registradas. Erro/violação: interromper e compartilhar só o resumo sem dados pessoais.
+4. Somente com os requisitos reais do formulário cumpridos, executar o mesmo workflow com mode APLICAR_PENDENTES e backup_verified marcado. Resultado esperado: execução verde, pending vazio, foreign_key_violations zero, schema_kits_ready / schema_kit_orders_ready / schema_kit_recurring_ready / schema_customer_orders_ready verdadeiros. Falha: parar; não apagar tabelas, editar flags ou rodar limpeza para corrigir migração.
+5. Abrir o app atualizado e conferir: sabor sem embalagem; kit com composição completa; pedido padrão de estabelecimento; pessoa com retirada/condição/ocasião; produção e relatório por peso. Usar cadastros de demonstração próprios para esse ensaio e não enviá-los para docs/capturas do repositório. Os dados reais ficam privados no app/planilha.
+
+Antes das migrações, os controles novos ficam ocultos conforme o schema disponível. Catálogo0019 sem0020 mantém pedidos pelas embalagens anteriores; recorrências só oferecem kits após0021; tipo/ocasião só após0022. Nenhuma flag nova é necessária, e o catálogo público continua desligado. O Codex não executou esse procedimento remoto.

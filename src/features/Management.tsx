@@ -80,6 +80,8 @@ import { api, dateTime, money, parsePrice, nextWeeklyTime } from './api';
 
 interface Session {
   customer_orders?: boolean;
+  kit_orders?: boolean;
+  kit_recurring?: boolean;
   user_id: string;
   organization_id: string;
   role: 'owner' | 'operator';
@@ -667,7 +669,13 @@ const emptyVariant = (): Variant => ({
   price_cents: 0,
   active: true,
 });
-function Products({ mobile = false }: { mobile?: boolean }) {
+function Products({
+  mobile = false,
+  flavorOnly = false,
+}: {
+  mobile?: boolean;
+  flavorOnly?: boolean;
+}) {
   const [photo, setPhoto] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const list = useList<Product>(
@@ -785,6 +793,24 @@ function Products({ mobile = false }: { mobile?: boolean }) {
             <p>Escolha editável; só é salva ao salvar o produto.</p>
           </fieldset>
         )}
+        {!editing && flavorOnly && variants.length > 0 && (
+          <Button
+            type="button"
+            variant="tonal"
+            onClick={() => {
+              setVariants([]);
+              setPrices([]);
+            }}
+          >
+            Somente sabor (para kits)
+          </Button>
+        )}
+        {variants.length === 0 && (
+          <p>
+            Somente sabor: tamanho, quantidade e preço vêm do kit. Não é preciso
+            cadastrar uma embalagem anterior.
+          </p>
+        )}
         {variants.map((v, i) => (
           <fieldset key={i}>
             <legend>Variante {i + 1}</legend>
@@ -862,7 +888,9 @@ function Products({ mobile = false }: { mobile?: boolean }) {
               setPrices([...prices, '']);
             }}
           >
-            Adicionar variante
+            {variants.length
+              ? 'Adicionar variante'
+              : 'Adicionar embalagem anterior'}
           </Button>
           <Button disabled={save.busy} variant="primary" loading={save.busy}>
             Salvar produto
@@ -889,6 +917,9 @@ function Products({ mobile = false }: { mobile?: boolean }) {
           {list.data.map((p) => (
             <article className="panel" key={p.id}>
               <h2>{p.name}</h2>
+              {!p.variants.length && (
+                <p>Somente sabor · tamanhos e preços nos kits</p>
+              )}
               <p>{p.active ? 'Ativo' : 'Arquivado'}</p>
               <ul>
                 {p.variants.map((v) => (
@@ -964,6 +995,7 @@ function Orders({
   financial?: boolean;
   mixed?: boolean;
   metadata?: boolean;
+  kitOrders?: boolean;
 }) {
   const [search] = useSearchParams(),
     mode = useOrderMode(role);
@@ -973,6 +1005,7 @@ function Orders({
         financial={props.financial}
         mixed={props.mixed}
         metadata={props.metadata}
+        kitOrders={props.kitOrders}
       />
     );
   return (
@@ -1002,6 +1035,7 @@ function Orders({
 function FullOrders({
   simple = false,
   metadata = false,
+  kitOrders = false,
   operational = false,
   financial = false,
   mixed = false,
@@ -1011,11 +1045,12 @@ function FullOrders({
   mixed?: boolean;
   simple?: boolean;
   metadata?: boolean;
+  kitOrders?: boolean;
 }) {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const orders = useList<Order>(`orders?q=${encodeURIComponent(query)}`);
-  const kitCatalog = useKitCatalog(financial);
+  const kitCatalog = useKitCatalog(financial && kitOrders);
   const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
     [kitSnapshots, setKitSnapshots] = useState<KitItemSnapshot[]>([]),
     [kitEditing, setKitEditing] = useState(false),
@@ -1795,13 +1830,19 @@ export function Management() {
             />
             <Route
               path="produtos"
-              element={<Products mobile={session.mobile} />}
+              element={
+                <Products
+                  mobile={session.mobile}
+                  flavorOnly={session.customer_orders && session.p1}
+                />
+              }
             />
             <Route
               path="pedidos"
               element={
                 <Orders
                   metadata={session.customer_orders}
+                  kitOrders={session.kit_orders}
                   mixed={session.mixed}
                   operational={session.operations}
                   financial={session.finance}
@@ -1821,6 +1862,7 @@ export function Management() {
                 path="pedidos/:id/editar-simples"
                 element={
                   <Totem
+                    kitOrders={session.kit_orders}
                     financial={session.finance}
                     mixed={session.mixed}
                     metadata={session.customer_orders}
@@ -1886,7 +1928,12 @@ export function Management() {
                 />
                 <Route
                   path="recorrentes"
-                  element={<Recurring mixed={session.recurring_mixed} />}
+                  element={
+                    <Recurring
+                      mixed={session.recurring_mixed}
+                      kitModels={session.kit_recurring}
+                    />
+                  }
                 />
                 <Route path="mensagens" element={<MessageTemplates />} />
                 <Route

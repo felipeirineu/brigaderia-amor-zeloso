@@ -1,9 +1,11 @@
+import { kitsReady } from './kits';
 import {
   customerOrderFieldWrite,
   customerOrderFieldsReady,
 } from './customer-order';
 import {
   readKitItems,
+  kitOrdersReady,
   prepareOrderKits,
   writeKitItems,
 } from './kit-order-items';
@@ -50,6 +52,8 @@ export async function management(req: Request, env: Env, a: Actor) {
     return json({
       role: a.role,
       customer_orders: await customerOrderFieldsReady(db),
+      kit_orders: await kitOrdersReady(db),
+      kit_recurring: await kitOrdersReady(db, 'recurring'),
       mixed: await mixedReady(env),
       recurring_mixed:
         env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db)),
@@ -316,6 +320,11 @@ export async function management(req: Request, env: Env, a: Actor) {
       );
   } else if (resource === 'products') {
     const d = await body(req, productSchema);
+    if (!d.variants.length && (!(await p1Ready(env)) || !(await kitsReady(db))))
+      throw new HttpError(
+        503,
+        'Cadastro de sabor sem embalagem requer o catálogo de kits ativo.',
+      );
     if (id && d.version !== previous!.version)
       throw new HttpError(409, 'Produto alterado em outra sessão. Atualize.');
     const existing = id

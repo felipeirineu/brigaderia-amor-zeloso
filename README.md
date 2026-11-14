@@ -2,7 +2,7 @@
 
 PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com preparação para catálogo público e atendimento assistido pelo WhatsApp.
 
-> **Estado em 07/11/2026:** gestão privada ativada na conta da brigaderia, conforme o histórico. Montagem mista e produção por sabor disponíveis; catálogo público desligado. Relatórios/custos por composição seguem a continuação documentada na R11. Os relatos de fases anteriores abaixo são históricos, não instruções para reverter flags.
+> **Código em 14/11/2026:** repositório privado. R15 integra kits, composição, recorrências, pessoa/estabelecimento, ocasião e agregações por sabor/peso; ativação depende das migrações0019–0022 e do roteiro em [FASE_R15_KITS](docs/FASE_R15_KITS.md). Isto não afirma ativação remota. Catálogo público permanece desligado. Relatos antigos abaixo são históricos; não são instruções para reverter flags. A R16 continua posterior.
 
 ## Objetivos
 

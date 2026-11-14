@@ -354,3 +354,56 @@ try {
 } finally {
   await old.dispose();
 }
+
+const paused = await runtime({ mobileEnabled: true });
+try {
+  const { call, owner, variant } = await demoProject(paused);
+  const person = (
+    await call('customers', {
+      name: 'Pessoa DEMONSTRAÇÃO financeiro pausado',
+      customer_type: 'person',
+    })
+  ).id;
+  const data = {
+    customer_id: person,
+    due_at: '2030-01-07T13:00:00Z',
+    items: [{ variant_id: variant, quantity: 1 }],
+  };
+  assert.equal(
+    (
+      await paused.request('mobile/orders', {
+        cookie: owner,
+        method: 'POST',
+        key: crypto.randomUUID(),
+        data: {
+          ...data,
+          delivery: { delivery_type: 'pickup', courier: 'unassigned' },
+          terms: null,
+        },
+      })
+    ).status,
+    503,
+  );
+  const order = (await call('orders', data)).id;
+  await call(
+    'orders/' + order + '/delivery',
+    { version: 1, delivery_type: 'pickup', courier: 'unassigned' },
+    'PUT',
+  );
+  assert.equal(
+    (
+      await paused.request('orders/' + order + '/status', {
+        cookie: owner,
+        method: 'POST',
+        key: crypto.randomUUID(),
+        data: { version: 2, to: 'confirmed' },
+      })
+    ).status,
+    503,
+  );
+  console.log(
+    'OK pessoa não confirma pelo móvel ou PC com financeiro pausado.',
+  );
+} finally {
+  await paused.dispose();
+}

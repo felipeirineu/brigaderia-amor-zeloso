@@ -65,9 +65,15 @@ function monday() {
   date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
   return date.toISOString().slice(0, 10);
 }
-export function Recurring({ mixed = false }: { mixed?: boolean }) {
+export function Recurring({
+  mixed = false,
+  kitModels = false,
+}: {
+  mixed?: boolean;
+  kitModels?: boolean;
+}) {
   const courierLabels = useCourierLabels();
-  const kitCatalog = useKitCatalog();
+  const kitCatalog = useKitCatalog(kitModels);
   const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
     [kitEditing, setKitEditing] = useState(false),
     [kitEpoch, setKitEpoch] = useState(0);

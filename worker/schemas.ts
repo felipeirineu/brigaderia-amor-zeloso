@@ -53,7 +53,7 @@ export const productSchema = z
     description: text(2000).default(''),
     photo_key: z.enum(flavorPhotos).nullable().optional(),
     active: z.boolean().default(true),
-    variants: z.array(variantSchema).min(1).max(30),
+    variants: z.array(variantSchema).max(30),
     version: z.number().int().positive().optional(),
   })
   .strict()
