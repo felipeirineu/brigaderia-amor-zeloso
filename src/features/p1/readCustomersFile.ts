@@ -56,7 +56,7 @@ export function inspectSpreadsheet(bytes: Uint8Array) {
           const r = cell.getAttribute('r') ?? '',
             m = /^([A-Z]{1,2})(\d+)$/.exec(r);
           if (!m || m[1].length > 1 || m[1] > 'T' || Number(m[2]) > 51)
-            throw Error('Use até 50 linhas de clientes e 20 colunas.');
+            throw Error('Use até 50 linhas por aba e 20 colunas.');
         }
         for (const dim of doc.getElementsByTagNameNS('*', 'dimension')) {
           const end = dim.getAttribute('ref')?.split(':').pop() ?? '';
@@ -77,4 +77,31 @@ export async function readCustomersFile(file: File) {
   inspectSpreadsheet(bytes);
   const { readSheet } = await import('read-excel-file/browser');
   return customerRows(await readSheet(file, 1, { parseNumber: (s) => s }));
+}
+
+/** Planilha de cadastro inicial: lê as abas pelo nome; aba ausente = vazia. */
+export async function readWorkbookSheets(file: File, names: string[]) {
+  if (file.size > 1024 * 1024)
+    throw Error('Arquivo maior que 1 MB. Divida a planilha.');
+  if (!/\.xlsx$/i.test(file.name))
+    throw Error(
+      'Use a planilha XLSX do cadastro inicial, sem macros/fórmulas.',
+    );
+  inspectSpreadsheet(new Uint8Array(await file.arrayBuffer()));
+  const { readSheet } = await import('read-excel-file/browser');
+  const out: Record<string, unknown[][] | undefined> = {};
+  for (const name of names) {
+    try {
+      out[name] = (await readSheet(file, name, {
+        parseNumber: (s) => s,
+      })) as unknown[][];
+    } catch {
+      out[name] = undefined;
+    }
+  }
+  if (Object.values(out).every((v) => !v))
+    throw Error(
+      'Nenhuma aba reconhecida: Sabores, Insumos, Fichas ou Clientes.',
+    );
+  return out;
 }

@@ -23,9 +23,9 @@ Indicação de cada tamanho (peso médio; varia com o sabor e os confeitos):
 
 **Peso da massa (informado pelo Tiago em 08/11/2026):** os pesos do catálogo são do doce já confeitado. A massa padrão pesa **13 g** (doce de 15 g), **20 g** (23 g) e **26 g** (30 g).
 
-**Receita e custos:** uma receita (lote) corresponde a **1 lata de leite condensado**. O gás custa em média **R$ 0,74 por receita**. Pétala: R$ 3,50 o pacote com 50. Por enquanto só existem kits de doces; kits de lembrancinha ficam para o futuro.
+**Receita e custos:** uma receita (lote) corresponde a **1 lata de leite condensado**. O gás entra como custo médio **por receita**. Valores de custo ficam só na planilha privada do responsável e no app (não no repositório). Por enquanto só existem kits de doces; kits de lembrancinha ficam para o futuro.
 
-**Precificação (Tiago, 13/11/2026):** rendimento padrão de 16 doces por receita com massa de 26 g, variando por sabor (Beijinho: 17). Forminha nº 4 nos doces de 30 g e nº 5 nos de 15 g e 23 g. Fundo rendado e pétala só quando o pedido usar. Sobre o custo soma-se **20% de custos incalculáveis**. **iFood:** (preço do produto + embalagem + etiqueta + sacola de envio) ÷ 0,74; a sacola kraft custa cerca de R$ 0,71, uma por pedido. Caipirinha: 15 doces por receita, provisório.
+**Precificação (Tiago, 13/11/2026):** rendimento padrão de 16 doces por receita com massa de 26 g, variando por sabor (Beijinho: 17). Forminha nº 4 nos doces de 30 g e nº 5 nos de 15 g e 23 g. Fundo rendado e pétala só quando o pedido usar. Sobre o custo soma-se **20% de custos incalculáveis**. **iFood:** (preço do produto + embalagem + etiqueta + sacola de envio) ÷ 0,74; a sacola de envio é uma por pedido. Caipirinha: 15 doces por receita, provisório.
 
 Regras do kit:
 

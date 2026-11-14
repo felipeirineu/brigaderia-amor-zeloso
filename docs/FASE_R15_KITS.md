@@ -52,7 +52,7 @@ Novo pedido permite escolher kit por tamanho/capacidade e montar sabores em unid
 
 Ao ajustar somente quantidade, o preço histórico é mantido. Outra composição usa o preço atual do kit; a prévia acompanha a mesma regra do servidor. Abrir montagem bloqueia a continuação até salvar/cancelar. Pedidos confirmados precisam ser reabertos antes da produção, pelo fluxo auditado existente.
 
-Modelos/geração recorrente de kits, defaults/repetição completa, cliente pessoa e ocasião ainda não foram integrados. Não considerar a R15 inteira concluída nem aplicar a branch diretamente no Cloudflare. A mudança documental `a7a1c64` foi incorporada: a R16 futura considerará uma sacola de envio por pedido iFood, com exemplo R$ 59,34.
+Modelos/geração recorrente de kits, defaults/repetição completa, cliente pessoa e ocasião ainda não foram integrados. Não considerar a R15 inteira concluída nem aplicar a branch diretamente no Cloudflare. A mudança documental `a7a1c64` foi incorporada: a R16 futura considerará uma sacola de envio por pedido iFood, com exemplo R$ 70,28 (exemplo inteiramente fictício atualizado em 14/11).
 
 ## Revisão R19
 

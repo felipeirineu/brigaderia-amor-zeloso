@@ -2730,3 +2730,15 @@ details[open] > .disclosure-summary > .disclosure-chevron {
   font-weight: 500;
   gap: 0.5rem;
 }
+
+.catalog-preview h2 {
+  margin: 16px 0 4px;
+  font-size: 1.05rem;
+}
+.catalog-preview ul {
+  margin: 0;
+  padding-left: 20px;
+}
+.catalog-preview li {
+  margin: 2px 0;
+}

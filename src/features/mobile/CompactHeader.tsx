@@ -37,6 +37,7 @@ const titles: Record<string, string> = {
   acessos: 'Acessos',
   mensagens: 'Mensagens',
   'importar-clientes': 'Importar clientes',
+  'importar-cadastro': 'Importar cadastro',
 };
 export function CompactHeader({
   role,
