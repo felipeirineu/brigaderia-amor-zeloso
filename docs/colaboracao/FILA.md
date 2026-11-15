@@ -52,7 +52,7 @@ Contador de entregas desde a última revisão: **1/3** (T0 publicada; revisão d
 | --- | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
 | T0 | R17 (sessão, Fase 0, validade dos avisos, ZAP) | **publicada** 15/11 (`35f1cd1`, PR #4) |
 | T1 | 5 ajustes de interface (detalhes abaixo) | **vez do Codex** |
-| T2  | Endereço do perfil B2B no mesmo formato em campos (sem migração) | a detalhar pelo Claude                                               |
+| T2 | Endereço: perfil B2B em campos (sem migração) + aviso de número ausente (abaixo) | a detalhar pelo Claude antes da vez |
 | T3  | Acabamento visual tela a tela                                    | a detalhar pelo Claude                                               |
 | T4  | Modo escuro                                                      | a detalhar pelo Claude                                               |
 | —   | R7 (visitas e amostras)                                          | **fora da fila**: exige migração → aprovação do Felipe               |
@@ -94,6 +94,11 @@ Antes de abrir o PR, incorpore o `main` atual. Conflito esperado em `src/App.tsx
      - E2E: digitar no cliente A, abrir o cliente B (e Novo cliente) → busca vazia, sem sugestões.
 
 Regras: use os tokens de `src/theme.css` e não reintroduza `backdrop-filter`. Nenhuma operação remota (Cloudflare/D1) e nenhum dado real em testes ou capturas.
+
+### T2 — anotações já aprovadas pelo Felipe
+
+- **Número ausente na sugestão:** quando a sugestão escolhida (ou "Usar minha localização") vier sem número, mostrar "O mapa não tem o número deste local. Digite o número ou marque S/N." e focar o campo Número. **Não** buscar o número por proximidade: pode trazer o número de um vizinho.
+- **Perfil B2B:** o endereço do perfil B2B passa a usar o mesmo formato em campos do cadastro de cliente. O detalhamento será escrito pelo Claude antes da vez.
 
 ## Registro de ciclos
 
