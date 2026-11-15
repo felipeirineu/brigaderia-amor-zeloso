@@ -91,6 +91,7 @@ test('R6-7 aviso só por escolha humana, calendário privado, teste e revogaçã
               addEventListener: () => {},
               active: {},
               scope: location.origin + '/',
+              update: async () => {},
             }),
           },
           configurable: true,

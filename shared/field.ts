@@ -9,6 +9,8 @@ export interface Place {
   complement?: string;
   neighborhood: string;
   city?: string;
+  /** CEP no formato 00000-000 (opcional). */
+  postcode?: string;
   reference?: string;
   latitude: number | null;
   longitude: number | null;
@@ -23,17 +25,18 @@ export const emptyPlace = (): Place => ({
   complement: '',
   neighborhood: '',
   city: '',
+  postcode: '',
   reference: '',
   latitude: null,
   longitude: null,
   instagram: '',
 });
-/** "Rua X, 123, Apto 2, Bairro, Cidade" (S/N quando marcado). */
+/** "Rua X, 123, Apto 2, Bairro, Cidade, 00000-000" (S/N quando marcado). */
 export function composeAddress(p: Partial<Place>) {
   const street = (p.street ?? '').trim();
   if (!street) return '';
   const number = p.no_number ? 'S/N' : (p.number ?? '').trim();
-  return [street, number, p.complement, p.neighborhood, p.city]
+  return [street, number, p.complement, p.neighborhood, p.city, p.postcode]
     .map((x) => (x ?? '').trim())
     .filter(Boolean)
     .join(', ');
@@ -152,3 +155,9 @@ export const travelLegs = {
   return: 'Volta',
   roundtrip: 'Ida e volta',
 };
+
+/** CEP brasileiro: só dígitos viram 00000-000; outro formato vira vazio. */
+export function normalizePostcode(raw: unknown) {
+  const digits = String(raw ?? '').replace(/\D/g, '');
+  return digits.length === 8 ? digits.slice(0, 5) + '-' + digits.slice(5) : '';
+}

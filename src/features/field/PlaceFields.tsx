@@ -111,9 +111,9 @@ export function PlaceFields({
           latitude: p.coords.latitude,
           longitude: p.coords.longitude,
         };
-        const found = await reverseLookup(coords);
+        const { found, status } = await reverseLookup(coords);
         onChange(mergeLocated(value, coords, found));
-        setNotice(locatedNotice(!!found));
+        setNotice(locatedNotice(status));
         setBusy(false);
       },
       () => {
@@ -263,6 +263,22 @@ export function PlaceFields({
           maxLength={120}
           value={value.city ?? ''}
           onChange={(e) => set({ city: e.target.value }, true)}
+        />
+      </label>
+      <label>
+        CEP (opcional)
+        <input
+          inputMode="numeric"
+          autoComplete="postal-code"
+          placeholder="00000-000"
+          maxLength={9}
+          value={value.postcode ?? ''}
+          onChange={(e) => {
+            const d = e.target.value.replace(/\D/g, '').slice(0, 8);
+            set({
+              postcode: d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d,
+            });
+          }}
         />
       </label>
       <label>

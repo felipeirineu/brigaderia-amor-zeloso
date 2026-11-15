@@ -3,6 +3,7 @@ import {
   composeAddress,
   deliveryAddress,
   emptyPlace,
+  normalizePostcode,
   withAddress,
 } from './field';
 
@@ -35,5 +36,14 @@ describe('endereço em campos', () => {
     expect(p.address).not.toContain('praça');
     expect(deliveryAddress(p)).toBe(p.address + ' · Ref.: Perto da praça');
     expect(deliveryAddress({ reference: 'Só referência' })).toBe('');
+  });
+});
+
+describe('CEP', () => {
+  it('normaliza 8 dígitos e recusa o resto', () => {
+    expect(normalizePostcode('00000111')).toBe('00000-111');
+    expect(normalizePostcode('00000-111')).toBe('00000-111');
+    expect(normalizePostcode('123')).toBe('');
+    expect(normalizePostcode(undefined)).toBe('');
   });
 });

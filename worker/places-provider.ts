@@ -1,12 +1,38 @@
 import type { Place } from '../shared/field';
-import { emptyPlace } from '../shared/field';
+import { emptyPlace, normalizePostcode } from '../shared/field';
 import { HttpError, hash } from './security';
+import { serviceRegion } from '../shared/region';
 
 type Feature = {
   geometry?: { coordinates?: number[] };
   properties?: Record<string, string>;
 };
 const cut = (v: unknown, n: number) => String(v ?? '').slice(0, n);
+
+/**
+ * Ordem das sugestões: estabelecimentos (loja, shopping, restaurante…) antes
+ * de ruas, e ruas antes de bairros/cidades. Ex.: "Mangabeira" traz o shopping
+ * antes dos bairros com o mesmo nome. Mantém a ordem do Photon dentro de cada
+ * grupo.
+ */
+export function placeRank(p: Record<string, string>) {
+  const key = p.osm_key ?? '';
+  if (['place', 'boundary'].includes(key)) return 2;
+  if (
+    [
+      'city',
+      'district',
+      'locality',
+      'county',
+      'state',
+      'country',
+      'region',
+    ].includes(p.type ?? '')
+  )
+    return 2;
+  if (key === 'highway' || p.type === 'street') return 1;
+  return p.name ? 0 : 1;
+}
 
 /** Converte um resultado do Photon em endereço com campos separados. */
 function toPlace(f: Feature): Place[] {
@@ -19,6 +45,7 @@ function toPlace(f: Feature): Place[] {
     Math.abs(longitude) > 180
   )
     return [];
+  if (p.state && p.state !== serviceRegion.state) return [];
   return [
     {
       ...emptyPlace(),
@@ -35,10 +62,16 @@ function toPlace(f: Feature): Place[] {
         .filter(Boolean)
         .join(', ')
         .slice(0, 1000),
-      street: cut(p.street, 200),
+      // Quando o ponto achado é a própria rua, o nome dela vem em "name".
+      street: cut(
+        p.street ||
+          (p.osm_key === 'highway' || p.type === 'street' ? p.name : ''),
+        200,
+      ),
       number: cut(p.housenumber, 20),
       neighborhood: cut(p.district ?? p.locality, 150),
       city: cut(p.city, 120),
+      postcode: normalizePostcode(p.postcode),
       latitude,
       longitude,
     },
@@ -56,6 +89,7 @@ async function photon(
   url: URL,
   limit: number,
   userAgent = 'BrigaderiaGestao/1.0',
+  rank = false,
 ): Promise<Place[]> {
   const key = await hash(cacheKey),
     now = Date.now();
@@ -97,7 +131,12 @@ async function photon(
       'Busca indisponível. Preencha o endereço manualmente.',
     );
   const payload = (await res.json()) as { features?: Feature[] };
-  const results = (payload.features ?? []).slice(0, limit).flatMap(toPlace);
+  const features = (payload.features ?? []).slice(0, limit);
+  if (rank)
+    features.sort(
+      (a, b) => placeRank(a.properties ?? {}) - placeRank(b.properties ?? {}),
+    );
+  const results = features.flatMap(toPlace);
   await db.batch([
     db
       .prepare(
@@ -126,7 +165,9 @@ export async function searchPlaces(
 ): Promise<Place[]> {
   const u = new URL('https://photon.komoot.io/api/');
   u.searchParams.set('q', query);
-  u.searchParams.set('limit', '6');
+  // Pede mais resultados porque os de fora da região são descartados.
+  u.searchParams.set('limit', '10');
+  u.searchParams.set('bbox', serviceRegion.bbox.join(','));
   let bias = '';
   try {
     const row = await db
@@ -149,7 +190,17 @@ export async function searchPlaces(
   } catch {
     // Sem base legível, busca sem prioridade de proximidade.
   }
-  return photon(db, org, query.toLowerCase() + bias, u, 6, userAgent);
+  return (
+    await photon(
+      db,
+      org,
+      query.toLowerCase() + bias + '#' + serviceRegion.state + '#v3',
+      u,
+      10,
+      userAgent,
+      true,
+    )
+  ).slice(0, 6);
 }
 
 /**
@@ -169,14 +220,16 @@ export async function reversePlace(
   const u = new URL('https://photon.komoot.io/reverse');
   u.searchParams.set('lat', lat);
   u.searchParams.set('lon', lon);
-  u.searchParams.set('limit', '1');
-  const [found] = await photon(
+  u.searchParams.set('limit', '5');
+  const found = await photon(
     db,
     org,
-    'reverse:' + lat + ',' + lon,
+    'reverse6:' + lat + ',' + lon,
     u,
-    1,
+    5,
     userAgent,
   );
-  return found ?? null;
+  // O mais próximo pode ser um ponto sem rua (praça, lote): usa o primeiro
+  // que tiver rua.
+  return found.find((p) => p.street) ?? found[0] ?? null;
 }

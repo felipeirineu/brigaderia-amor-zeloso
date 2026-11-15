@@ -2,7 +2,8 @@ import { Button } from './components/Button';
 import { useEffect, useRef } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Login, Management } from './features/Management';
-import { RuntimeStatus } from './components/RuntimeStatus';
+import { AppUpdate } from './components/AppUpdate';
+import { OfflineStatus } from './components/OfflineStatus';
 
 export function App() {
   const location = useLocation();
@@ -37,7 +38,8 @@ export function App() {
             Amor Zeloso <small>Gestão</small>
           </span>
         </Link>
-        <RuntimeStatus />
+        <OfflineStatus />
+        {location.pathname.startsWith('/gestao') && <AppUpdate />}
         <Routes>
           <Route path="/" element={<Navigate to="/gestao" replace />} />
           <Route path="/gestao/*" element={<Management />} />

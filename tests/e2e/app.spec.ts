@@ -99,7 +99,7 @@ test('shell offline somente leitura, sem cache de API ou catálogo', async ({
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Gestão restrita',
   );
-  await expect(page.locator('.runtime')).toContainText('Sem conexão');
+  await expect(page.locator('.connection-status')).toContainText('Sem conexão');
   await context.setOffline(false);
   // O handshake e o logout do Access precisam chegar à rede, sem fallback SPA.
   for (const path of [

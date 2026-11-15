@@ -1,16 +1,23 @@
 import { api } from '../api';
 import type { Place } from '../../../shared/field';
 
-/** Endereço provável das coordenadas (null se o mapa não achar ou falhar). */
+export type LookupResult = {
+  found: Place | null;
+  /** 'found': rua achada; 'nostreet': mapa respondeu sem rua; 'error': falhou. */
+  status: 'found' | 'nostreet' | 'error';
+};
+/** Endereço provável das coordenadas. */
 export async function reverseLookup(coords: {
   latitude: number;
   longitude: number;
-}): Promise<Place | null> {
+}): Promise<LookupResult> {
   try {
     const found = await api<Place | null>('field/reverse', 'POST', coords);
-    return found?.street ? found : null;
+    return found?.street
+      ? { found, status: 'found' }
+      : { found: null, status: 'nostreet' };
   } catch {
-    return null;
+    return { found: null, status: 'error' };
   }
 }
 /**
@@ -31,10 +38,13 @@ export function mergeLocated(
         no_number: false,
         neighborhood: found.neighborhood || located.neighborhood,
         city: found.city || located.city,
+        postcode: found.postcode || located.postcode,
       }
     : located;
 }
-export const locatedNotice = (filled: boolean) =>
-  filled
+export const locatedNotice = (status: LookupResult['status']) =>
+  status === 'found'
     ? 'Endereço preenchido pelo mapa. Confira a rua e o número antes de salvar.'
-    : 'Localização guardada. O mapa não achou a rua: preencha o endereço.';
+    : status === 'nostreet'
+      ? 'Localização guardada. O mapa não tem o nome desta rua: preencha o endereço.'
+      : 'Localização guardada. O serviço de mapa não respondeu agora: preencha o endereço ou tente de novo em instantes.';
