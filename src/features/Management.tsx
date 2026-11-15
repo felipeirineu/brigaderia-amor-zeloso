@@ -512,6 +512,7 @@ function Customers({
                     : 'Endereço e Instagram'}
                 </DisclosureSummary>
                 <PlaceFields
+                  key={draft}
                   hideLocation
                   value={site ?? emptyPlace()}
                   onChange={setSite}
@@ -922,7 +923,7 @@ function Products({
             Salvar produto
           </Button>
           <Button type="button" onClick={reset}>
-            Limpar edição
+            {editing ? 'Cancelar edição' : 'Limpar campos'}
           </Button>
         </div>
       </form>
@@ -1459,7 +1460,7 @@ function FullOrders({
               Salvar pedido
             </Button>
             <Button type="button" onClick={reset}>
-              Limpar edição
+              {editing ? 'Cancelar edição' : 'Limpar campos'}
             </Button>
           </div>
         </form>

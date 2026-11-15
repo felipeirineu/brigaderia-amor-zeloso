@@ -149,7 +149,7 @@ export function Supplies() {
             Salvar insumo
           </Button>
           <Button type="button" onClick={reset}>
-            Limpar insumo
+            {editing ? 'Cancelar edição' : 'Limpar campos'}
           </Button>
         </form>
       )}
@@ -411,7 +411,7 @@ export function Recipes({
             Salvar ficha
           </Button>
           <Button type="button" onClick={reset}>
-            Limpar ficha
+            {editing ? 'Cancelar edição' : 'Limpar campos'}
           </Button>
         </form>
       )}

@@ -1,3 +1,4 @@
+import { nameInitials } from '../../../shared/initials';
 import type { RouteEstimate } from '../../../shared/routing';
 /* eslint-disable react-refresh/only-export-components -- Contexto privado compartilhado. */
 import { createContext, useContext, useState, type ReactNode } from 'react';
@@ -58,12 +59,7 @@ export function SiteAvatar({ id, name }: { id: string; name: string }) {
     />
   ) : (
     <span className="initial-avatar" aria-hidden="true">
-      {name
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((w) => w[0])
-        .join('')}
+      {nameInitials(name)}
     </span>
   );
 }
@@ -95,13 +91,7 @@ export function StaffAvatar({
       className={'initial-avatar staff-avatar ' + className}
       aria-hidden="true"
     >
-      {label
-        .trim()
-        .split(/\s+/)
-        .slice(0, 2)
-        .map((w) => w[0])
-        .join('')
-        .toLocaleUpperCase('pt-BR')}
+      {nameInitials(label)}
     </span>
   );
 }

@@ -314,6 +314,16 @@ input[type='radio'] {
   font-size: 1.05rem;
 }
 
+/* A folha rola sozinha, sem mover a página por trás no celular. */
+html:has(dialog[open]),
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+.help-sheet,
+.help-sheet .sheet-body {
+  overscroll-behavior: contain;
+}
+
 /* Folhas: sobem de baixo, cantos grandes e alça (iOS). */
 .help-sheet {
   border: 0;
