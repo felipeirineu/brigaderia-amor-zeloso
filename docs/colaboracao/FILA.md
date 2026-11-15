@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T1** (abaixo). Ao terminar, abra o pull request.
+`VEZ: CODEX` — tarefa **T2** (abaixo). Ao terminar, abra o pull request.
 
 ## Como funciona
 
@@ -38,7 +38,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **1/3** (T0 publicada; revisão depois de T1 e T2).
+Contador de entregas desde a última revisão: **2/3** (T0 e T1 publicadas; revisão geral depois da T2).
 
 ## Limites
 
@@ -51,8 +51,8 @@ Contador de entregas desde a última revisão: **1/3** (T0 publicada; revisão d
 | ID  | Tarefa                                                           | Estado                                                               |
 | --- | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
 | T0 | R17 (sessão, Fase 0, validade dos avisos, ZAP) | **publicada** 15/11 (`35f1cd1`, PR #4) |
-| T1 | 5 ajustes de interface (detalhes abaixo) | **vez do Codex** |
-| T2 | Endereço: perfil B2B em campos (sem migração) + aviso de número ausente + versão do app na tela Mais (abaixo) | a detalhar pelo Claude antes da vez |
+| T1 | 5 ajustes de interface | **publicada** 15/11 (PR #5) |
+| T2 | Endereço único do cliente (B2B usa o mesmo endereço em campos) + aviso de número ausente + versão 0.9.0 em Mais | **vez do Codex** |
 | T3  | Acabamento visual tela a tela                                    | a detalhar pelo Claude                                               |
 | T4  | Modo escuro                                                      | a detalhar pelo Claude                                               |
 | —   | R7 (visitas e amostras)                                          | **fora da fila**: exige migração → aprovação do Felipe               |
@@ -95,16 +95,35 @@ Antes de abrir o PR, incorpore o `main` atual. Conflito esperado em `src/App.tsx
 
 Regras: use os tokens de `src/theme.css` e não reintroduza `backdrop-filter`. Nenhuma operação remota (Cloudflare/D1) e nenhum dado real em testes ou capturas.
 
-### T2 — anotações já aprovadas pelo Felipe
+### T2 — endereço único do cliente, número ausente e versão do app
 
-- **Número ausente na sugestão:** quando a sugestão escolhida (ou "Usar minha localização") vier sem número, mostrar "O mapa não tem o número deste local. Digite o número ou marque S/N." e focar o campo Número. **Não** buscar o número por proximidade: pode trazer o número de um vizinho.
-- **Versão do app na tela Mais:** rodapé discreto "Versão 0.9.0 · 15/11 15h20 · 1a2b3c4".
-  - O número vem do `version` do `package.json` (o Codex ajusta para `0.9.0` nesta tarefa).
-  - A data/hora do build é em America/Fortaleza, seguida do SHA curto.
-  - Injetar no build via Vite `define` (ex.: `__APP_VERSION__`, `__APP_BUILD__`), com fallback "desenvolvimento" sem git.
-  - Sem chamada ao servidor.
-  - E2E: o rodapé aparece em Mais com o número do `package.json`.
-- **Perfil B2B:** o endereço do perfil B2B passa a usar o mesmo formato em campos do cadastro de cliente. O detalhamento será escrito pelo Claude antes da vez.
+**1. Endereço único (sem migração de banco).** Hoje cada cliente pode ter **dois** endereços:
+- o do cadastro de campo (`customer_sites`), já em campos, usado pelo Novo pedido, mapa e rotas;
+- o do perfil B2B (`customer_profiles.data.address/neighborhood/reference`, texto livre em `finance/Profile.tsx`).
+
+Passa a existir só o primeiro:
+
+- a) Em `finance/Profile.tsx` ("Dados do estabelecimento/pessoa"), remover os campos "Endereço padrão / Bairro / Referência".
+  - No lugar, o mesmo `<PlaceFields>` do cliente, ligado a `field/customers/:id` (mesma API, CAS e permissões do `SiteEditor`), com `key` pelo id do cliente.
+  - Se o cliente não tiver `customer_sites` e o perfil B2B tiver endereço antigo, mostrar esse texto como "Endereço anterior" (o mesmo aviso do `PlaceFields`) para redistribuir nos campos.
+- b) No servidor, onde o endereço de entrega vem do perfil B2B (`worker/finance.ts` ~981, `trim(address||' '||neighborhood||' '||reference)`), usar primeiro o endereço do `customer_sites` (linha completa + " · Ref.: " referência, igual a `deliveryAddress()`) e cair no texto antigo do perfil só se não houver site.
+  - Não duplicar o bairro.
+  - Conferir também `worker/management.ts` ~649/666 e `operations.ts` (pedido padrão), para que todos usem a mesma regra.
+- c) `profileSchema` continua aceitando os campos antigos (compatibilidade e backup), mas a interface não os edita mais.
+- d) Testes:
+  - integração: cliente com site e com perfil antigo → pedido usa o site; cliente só com perfil antigo → usa o antigo; sem bairro duplicado;
+  - E2E: editar o endereço em "Dados do estabelecimento" reflete em Clientes → Localização e no Novo pedido.
+
+**2. Número ausente.** Quando a sugestão escolhida (ou "Usar minha localização") vier sem número, mostrar "O mapa não tem o número deste local. Digite o número ou marque S/N." e focar o campo Número. **Não** buscar o número por proximidade: pode trazer o número de um vizinho. E2E com sugestão simulada sem `housenumber`.
+
+**3. Versão do app em Mais.** Rodapé discreto "Versão 0.9.0 · 15/11 15h20 · 1a2b3c4".
+- O número vem do `version` do `package.json`, que deve ser ajustado para `0.9.0` nesta tarefa.
+- A data/hora do build é em America/Fortaleza, seguida do SHA curto.
+- Injetar via Vite `define` (`__APP_VERSION__`, `__APP_BUILD__`), com fallback "desenvolvimento" sem git.
+- Sem chamada ao servidor.
+- E2E: o rodapé aparece em Mais com o número do `package.json`.
+
+Regras de sempre: tokens do `theme.css`, nada de dados reais, nenhuma operação remota.
 
 ## Versões do app
 
@@ -126,3 +145,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | ----- | ----- | ------------ | ------------- |
 | 15/11 | — | fluxo criado | — |
 | 15/11 | 1 | T0 — R17 (PR #4) | publicada em `35f1cd1`; 176 E2E nos três navegadores verdes. A Segurança do PR falhou só por permissão do gitleaks na API (corrigida no workflow); gitleaks/npm audit no push e ZAP verdes no mesmo SHA. |
+| 15/11 | 2 | T1 — 5 ajustes (PR #5) | publicada; 185 E2E nos três navegadores e Segurança do PR verdes (permissão do gitleaks confirmada). |
