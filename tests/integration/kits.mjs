@@ -213,6 +213,75 @@ try {
     1,
     'nenhum produto virtual criado para o kit',
   );
+  // Kit padrão em todos os estabelecimentos: só administrador, só
+  // estabelecimentos ativos, preserva o resto do cadastro B2B e repete sem efeito.
+  {
+    const active = (await call('p1/kits', undefined, 'GET')).find(
+      (k) => k.active,
+    );
+    const mk = async (name, phone) =>
+      (await call('customers', { name, phone, email: '', notes: '' })).id;
+    const shop = await mk('Loja DEMONSTRAÇÃO kit', '+5511900000301'),
+      person = await mk('Pessoa DEMONSTRAÇÃO kit', '+5511900000302'),
+      closed = await mk('Inativa DEMONSTRAÇÃO kit', '+5511900000303');
+    await t.db.batch([
+      t.db
+        .prepare("UPDATE customers SET customer_type='person' WHERE id=?")
+        .bind(person),
+      t.db.prepare('UPDATE customers SET active=0 WHERE id=?').bind(closed),
+    ]);
+    const profile = await call(
+      'finance/customers/' + shop + '/profile',
+      undefined,
+      'GET',
+    );
+    await call(
+      'finance/customers/' + shop + '/profile',
+      {
+        version: profile.version,
+        data: { ...profile.data, responsible: 'Responsável DEMONSTRAÇÃO' },
+      },
+      'PUT',
+    );
+    assert.equal(
+      (await request('p1/kit-default', 'POST', { kit_id: active.id }, operator))
+        .status,
+      403,
+    );
+    assert.equal(
+      (await request('p1/kit-default', 'POST', { kit_id: active.id }, outside))
+        .status,
+      404,
+      'kit de outra organização',
+    );
+    const done = await call('p1/kit-default', { kit_id: active.id });
+    assert.ok(done.changed >= 1 && done.establishments >= 1);
+    const kitOf = async (id) =>
+      (await call('finance/customers/' + id + '/profile', undefined, 'GET'))
+        .data.default_kit_id ?? null;
+    assert.equal(await kitOf(shop), active.id);
+    assert.equal(await kitOf(person), null, 'pessoa física fica de fora');
+    assert.equal(await kitOf(closed), null, 'inativo fica de fora');
+    assert.equal(
+      (await call('finance/customers/' + shop + '/profile', undefined, 'GET'))
+        .data.responsible,
+      'Responsável DEMONSTRAÇÃO',
+    );
+    assert.equal(
+      (await call('p1/kit-default', { kit_id: active.id })).changed,
+      0,
+      'repetir não muda nada',
+    );
+    assert.ok(
+      (
+        await t.db
+          .prepare(
+            "SELECT COUNT(*) n FROM audit_events WHERE action='kit.default_all'",
+          )
+          .first()
+      ).n >= 2,
+    );
+  }
   console.log(
     'OK R15-A kits/configuração: CAS concorrente, idempotência, embalagem/unidade, limites de cadastro, organização, papéis, auditoria e legado intacto.',
   );

@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { kitCapacities, kitWeights } from '../shared/kits';
 import { kitOrdersReady } from './kit-order-items';
-import { HttpError, json, type Actor } from './security';
+import { HttpError, body, json, type Actor } from './security';
+import { emptyProfile } from '../shared/finance';
 import { ownerOnly, p1Mutation } from './p1-common';
 export async function kitsReady(db: D1Database) {
   const r = await db
@@ -92,6 +93,51 @@ export async function kits(
           ),
         rest: () => [],
       };
+    });
+  }
+  if (resource === 'kit-default') {
+    // Define o kit padrão de TODOS os estabelecimentos ativos de uma vez
+    // (pessoas físicas ficam de fora). Cria o cadastro B2B vazio quando falta.
+    // Repetir com o mesmo kit não muda nada; troca padrões já escolhidos, por
+    // isso a tela pede confirmação.
+    if (id) throw new HttpError(404, 'Não encontrado.');
+    if (req.method !== 'POST')
+      throw new HttpError(405, 'Método não permitido.');
+    ownerOnly(a);
+    if (!z.uuid().safeParse(req.headers.get('Idempotency-Key')).success)
+      throw new HttpError(400, 'Chave de repetição inválida.');
+    const d = await body(req, z.object({ kit_id: z.uuid() }).strict());
+    const kit = await db
+      .prepare('SELECT active FROM kits WHERE organization_id=? AND id=?')
+      .bind(org, d.kit_id)
+      .first<{ active: number }>();
+    if (!kit) throw new HttpError(404, 'Kit não encontrado.');
+    if (!kit.active) throw new HttpError(400, 'Escolha um kit ativo.');
+    const targets =
+      "SELECT id FROM customers WHERE organization_id=? AND active=1 AND customer_type='establishment'";
+    const r = await db.batch([
+      db
+        .prepare(
+          `UPDATE customer_profiles SET data=json_set(data,'$.default_kit_id',?),version=version+1 WHERE organization_id=? AND customer_id IN(${targets}) AND COALESCE(json_extract(data,'$.default_kit_id'),'')<>?`,
+        )
+        .bind(d.kit_id, org, org, d.kit_id),
+      db
+        .prepare(
+          `INSERT OR IGNORE INTO customer_profiles(organization_id,customer_id,data) SELECT ?,c.id,json_set(?,'$.default_kit_id',?) FROM customers c WHERE c.organization_id=? AND c.active=1 AND c.customer_type='establishment' AND NOT EXISTS(SELECT 1 FROM customer_profiles p WHERE p.organization_id=c.organization_id AND p.customer_id=c.id)`,
+        )
+        .bind(org, JSON.stringify(emptyProfile()), d.kit_id, org),
+      db
+        .prepare(
+          "INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) VALUES(?,?,?,'kit.default_all',?)",
+        )
+        .bind(crypto.randomUUID(), org, a.user_id, d.kit_id),
+      db.prepare(`SELECT COUNT(*) AS n FROM (${targets})`).bind(org),
+    ]);
+    return json({
+      changed: (r[0].meta.changes ?? 0) + (r[1].meta.changes ?? 0),
+      establishments: Number(
+        (r[3].results as { n: number }[] | undefined)?.[0]?.n ?? 0,
+      ),
     });
   }
   if (resource !== 'kits') throw new HttpError(404, 'Não encontrado.');
