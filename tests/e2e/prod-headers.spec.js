@@ -37,6 +37,10 @@ test('cabeçalhos de produção permitem foto e localização, sem violar a CSP'
     expect(headers['cross-origin-resource-policy']).toBe('same-origin');
     expect(headers['x-frame-options']).toBe('DENY');
     expect(headers['x-content-type-options']).toBe('nosniff');
+    const configResponse = await p.request.get(t.url + '/api/auth/config');
+    expect(configResponse.headers()['cross-origin-resource-policy']).toBe(
+      'same-origin',
+    );
     await expect(p.getByRole('navigation').first()).toBeVisible();
     const result = await p.evaluate(async () => {
       const canvas = document.createElement('canvas');

@@ -37,6 +37,7 @@ export function json(
   return Response.json(body, {
     status,
     headers: {
+      'Cross-Origin-Resource-Policy': 'same-origin',
       'Cache-Control': 'no-store',
       'X-Content-Type-Options': 'nosniff',
       'Content-Security-Policy': "default-src 'none'; frame-ancestors 'none'",

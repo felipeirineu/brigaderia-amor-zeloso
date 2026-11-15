@@ -25,6 +25,12 @@ try {
   const { call, owner, operator, outside, customer, makeOrder } =
     await demoProject(t);
   const order = await makeOrder();
+  ok(
+    (await t.request('auth/config')).headers.get(
+      'Cross-Origin-Resource-Policy',
+    ) === 'same-origin',
+    'auth/config JSON também tem CORP same-origin',
+  );
   const ownUser = (await call('session', undefined, 'GET')).user_id,
     operatorUser = (await call('session', undefined, 'GET', operator)).user_id;
   const fake = crypto.randomUUID();

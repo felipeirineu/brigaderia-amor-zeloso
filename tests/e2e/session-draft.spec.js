@@ -1,3 +1,4 @@
+import { createServer } from 'node:http';
 import { test, expect } from '@playwright/test';
 import { runtime } from '../helpers/runtime.mjs';
 import { demoProject } from '../helpers/demo-project.mjs';
@@ -37,6 +38,14 @@ test('R17 expira sessão real, recupera só seleção e exige de novo a confirma
     p1Enabled: true,
     mixedEnabled: true,
   });
+  // Origem distinta, controlada e sem login real: exercita o retorno da aba sob COOP/COEP.
+  const provider = createServer((_, res) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.end('<h1>Provedor local DEMONSTRAÇÃO</h1>');
+  });
+  await new Promise((r) => provider.listen(0, '127.0.0.1', r));
   const c = await browser.newContext({
     viewport: { width: 390, height: 844 },
     extraHTTPHeaders: {
@@ -105,7 +114,12 @@ test('R17 expira sessão real, recupera só seleção e exige de novo a confirma
       p.getByRole('heading', { name: 'Gestão restrita', exact: true }),
     ).toBeVisible();
     expect(await snapshot(p)).toEqual(before);
+    await p.goto('http://127.0.0.1:' + provider.address().port);
+    await expect(
+      p.getByRole('heading', { name: 'Provedor local DEMONSTRAÇÃO' }),
+    ).toBeVisible();
     await p.goto(t.url + '/api/access/start');
+    expect(await snapshot(p)).toEqual(before);
     await p.getByRole('link', { name: 'Retomar seleção', exact: true }).click();
     await p
       .getByRole('button', { name: 'Recuperar seleção', exact: true })
@@ -145,6 +159,7 @@ test('R17 expira sessão real, recupera só seleção e exige de novo a confirma
   } finally {
     await c.close();
     await t.dispose();
+    await new Promise((r) => provider.close(r));
   }
 });
 
