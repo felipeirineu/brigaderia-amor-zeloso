@@ -259,12 +259,13 @@ input[type='radio'] {
   border-color: var(--az-gold);
 }
 
-/* Barra inferior: vidro fosco (iOS) e indicador em pílula (Android 16). */
+/* Barra inferior: translúcida e indicador em pílula (Android 16). */
 @media (max-width: 700px) {
   .private-bottom-nav {
-    background: rgb(252 246 236 / 0.82);
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
-    backdrop-filter: blur(18px) saturate(1.4);
+    /* Creme quase opaco em vez de desfoque: o desfoque custava caro em
+       aparelhos sem aceleração gráfica e dobrava o tempo dos testes no Safari. */
+    background: rgb(252 246 236 / 0.96);
+    box-shadow: 0 -4px 16px rgb(50 29 16 / 0.06);
     border-top: 1px solid var(--az-line);
     gap: 0;
     padding: 6px 8px calc(10px + env(safe-area-inset-bottom));
@@ -341,6 +342,48 @@ input[type='radio'] {
   }
 }
 
+/* Mascote: só em momentos especiais, sempre decorativo. */
+.mascot {
+  display: block;
+  height: auto;
+  margin: 0 auto 12px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.mascot-wave {
+  animation: az-mascot-in 520ms var(--az-spring);
+}
+.empty-state .mascot {
+  margin-bottom: 16px;
+}
+.mascot-empty {
+  padding: 20px 8px;
+  text-align: center;
+  color: var(--az-muted);
+}
+.mascot-empty p {
+  margin: 0;
+}
+.help-hello {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--az-cream);
+}
+.help-hello .mascot {
+  flex: none;
+  margin: 0;
+}
+.help-hello p {
+  margin: 0;
+}
+.auth-panel {
+  text-align: center;
+}
+.tour-sheet .mascot {
+  margin-top: -4px;
+}
+
 /* Transição entre telas e etapas. */
 .private-workspace main > *,
 .order-focus > * {
@@ -365,6 +408,16 @@ input[type='radio'] {
   }
   to {
     opacity: 1;
+  }
+}
+@keyframes az-mascot-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) rotate(-6deg);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
   }
 }
 @keyframes az-pop {
