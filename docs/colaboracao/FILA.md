@@ -98,8 +98,27 @@ Regras: use os tokens de `src/theme.css` e não reintroduza `backdrop-filter`. N
 ### T2 — anotações já aprovadas pelo Felipe
 
 - **Número ausente na sugestão:** quando a sugestão escolhida (ou "Usar minha localização") vier sem número, mostrar "O mapa não tem o número deste local. Digite o número ou marque S/N." e focar o campo Número. **Não** buscar o número por proximidade: pode trazer o número de um vizinho.
-- **Versão do app na tela Mais:** rodapé discreto "Versão 15/11 15h20 · 1a2b3c4", com a data/hora do build em America/Fortaleza e o SHA curto. Injetar no build (Vite `define`, ex.: `__APP_VERSION__` a partir de `git rev-parse --short HEAD` e da hora do build, com fallback "desenvolvimento" quando não houver git). Sem chamada ao servidor. E2E: o rodapé aparece em Mais.
+- **Versão do app na tela Mais:** rodapé discreto "Versão 0.9.0 · 15/11 15h20 · 1a2b3c4".
+  - O número vem do `version` do `package.json` (o Codex ajusta para `0.9.0` nesta tarefa).
+  - A data/hora do build é em America/Fortaleza, seguida do SHA curto.
+  - Injetar no build via Vite `define` (ex.: `__APP_VERSION__`, `__APP_BUILD__`), com fallback "desenvolvimento" sem git.
+  - Sem chamada ao servidor.
+  - E2E: o rodapé aparece em Mais com o número do `package.json`.
 - **Perfil B2B:** o endereço do perfil B2B passa a usar o mesmo formato em campos do cadastro de cliente. O detalhamento será escrito pelo Claude antes da vez.
+
+## Versões do app
+
+Formato **MAIOR.MENOR.CORREÇÃO**. Quem sobe o número é o **Claude**, ao publicar:
+
+- **MENOR** em cada tarefa da fila publicada;
+- **CORREÇÃO** em cada conserto avulso;
+- **1.0.0** no dia em que o Felipe entregar o app ao Tiago e à Alda (decisão do Felipe).
+
+Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simples.
+
+| Versão | Data | O que mudou |
+|---|---|---|
+| 0.9.0 | (T2) | Primeira versão numerada: endereço do B2B em campos, aviso de número ausente e versão visível em Mais. |
 
 ## Registro de ciclos
 
