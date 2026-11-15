@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — **corrigir T2 no PR #6** (diagnóstico abaixo). Faça push no mesmo branch; não abra outro PR.
+`VEZ: CODEX` — **corrigir T2 no PR #6 (2º diagnóstico abaixo)**. Push no mesmo branch.
 
 ## Como funciona
 
@@ -97,6 +97,13 @@ Antes de abrir o PR, incorpore o `main` atual. Conflito esperado em `src/App.tsx
 
 Regras: use os tokens de `src/theme.css` e não reintroduza `backdrop-filter`. Nenhuma operação remota (Cloudflare/D1) e nenhum dado real em testes ou capturas.
 
+### ⚠️ T2 — PR #6, CI vermelho de novo, ponto diferente (`df474c4`) — diagnóstico do Claude
+
+- O orçamento D1 foi resolvido (passou).
+- **Nova falha:** `tests/e2e/review-r19.spec.js:76` (chromium-mobile e webkit-mobile): `getByRole('status')` encontrou **2** elementos em "Dados do estabelecimento". Um deles é o `<p role="status"></p>` **vazio** do novo formulário "Endereço do cliente" em `finance/Profile.tsx`.
+- **Correção:** renderizar esse `<p role="status">` (e qualquer outro aviso do bloco de endereço) **só quando houver texto**, como o `PlaceFields` já faz. Não altere o teste R19 para contornar o problema.
+- Confira localmente os E2E de Profile, R19 e t2-address, e faça push no mesmo branch.
+
 ### ⚠️ T2 — CI vermelho no PR #6 (1ª falha) — diagnóstico do Claude
 
 - **Onde:** `npm run test:kits` → `tests/integration/kit-recurring.mjs:256`, "orçamento D1 excedido: 47 consultas no handler" (limite 45) em `POST generate-week`.
@@ -173,3 +180,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 15/11 | 1 | T0 — R17 (PR #4) | publicada em `35f1cd1`; 176 E2E nos três navegadores verdes. A Segurança do PR falhou só por permissão do gitleaks na API (corrigida no workflow); gitleaks/npm audit no push e ZAP verdes no mesmo SHA. |
 | 15/11 | 2 | T1 — 5 ajustes (PR #5) | publicada; 185 E2E nos três navegadores e Segurança do PR verdes (permissão do gitleaks confirmada). |
 | 15/11 | — | T2 (PR #6) | CI vermelho (1ª): orçamento D1 47/45 em generate-week; diagnóstico no FILA, vez devolvida ao Codex. |
+| 15/11 | — | T2 (PR #6) | 2º CI vermelho, ponto diferente: role=status vazio duplicado em Profile (R19). Vez devolvida ao Codex. |
