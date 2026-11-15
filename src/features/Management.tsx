@@ -78,6 +78,7 @@ import { HelpCenter, Tour } from './help/HelpCenter';
 import { Today, OrderDetail, Recurring, MessageTemplates } from './Operations';
 import { statusLabels, type Status } from '../../shared/order-state';
 import { api, dateTime, money, parsePrice, nextWeeklyTime } from './api';
+import { Mascot } from '../components/Mascot';
 
 interface Session {
   weight_costing?: boolean;
@@ -237,6 +238,7 @@ export function Login() {
   }, []);
   return (
     <section className="panel auth-panel">
+      <Mascot size={120} className="mascot-wave" />
       <p className="eyebrow">ACESSO RESTRITO</p>
       <h1>Entrar na gestão</h1>
       <p>
@@ -557,7 +559,10 @@ function Customers({
       {list.loading ? (
         <p role="status">Carregando…</p>
       ) : list.data.length === 0 ? (
-        <p>Nenhum cliente encontrado.</p>
+        <div className="mascot-empty">
+          <Mascot size={72} />
+          <p>Nenhum cliente encontrado.</p>
+        </div>
       ) : (
         <div className="customer-tiles customer-records">
           {list.data.map((c) => (
@@ -1452,7 +1457,10 @@ function FullOrders({
       {orders.loading ? (
         <p>Carregando…</p>
       ) : !orders.data.length ? (
-        <p>Nenhum pedido encontrado.</p>
+        <div className="mascot-empty">
+          <Mascot size={72} />
+          <p>Nenhum pedido encontrado.</p>
+        </div>
       ) : (
         <div className="record-list">
           {orders.data.map((o) => (

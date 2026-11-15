@@ -5,6 +5,7 @@ import { FinancialTutorial } from '../finance/Tutorial';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { helpTexts } from './texts';
+import { Mascot } from '../../components/Mascot';
 
 export function Tour({ role }: { role: string }) {
   const [step, setStep] = useState(-1),
@@ -102,6 +103,7 @@ export function Tour({ role }: { role: string }) {
       >
         {step >= 0 && (
           <div className="sheet-body">
+            {step === 0 && <Mascot size={88} className="mascot-wave" />}
             <p>
               Passo {step + 1} de {steps.length} ·{' '}
               {role === 'owner' ? 'Administrador' : 'Operador'}
@@ -139,6 +141,13 @@ export function HelpCenter({
   return (
     <>
       <h1 className="mobile-context-title">Ajuda</h1>
+      <section className="panel help-hello">
+        <Mascot size={80} />
+        <p>
+          Oi! Aqui estão as explicações de cada parte do app. Toque no{' '}
+          <strong>?</strong> ao lado de um campo para ver a ajuda dele.
+        </p>
+      </section>
       <section className="panel">
         <h2>Novo pedido (modo simples)</h2>
         <p>

@@ -47,6 +47,7 @@ import {
   type B2BProfile,
   type Terms,
 } from '../../../shared/finance';
+import { Mascot } from '../../components/Mascot';
 interface Product {
   id: string;
   name: string;
@@ -608,9 +609,7 @@ export function Totem({
   if (success)
     return (
       <section className="panel order-success">
-        <span className="success-check" aria-hidden="true">
-          ✓
-        </span>
+        <Mascot size={120} className="mascot-wave" />
         <h1>Pedido confirmado</h1>
         <p>
           {customer?.name} · {money(total)}
