@@ -31,9 +31,12 @@ Depois de cada **3 entregas publicadas**, o Claude faz uma revisão geral antes 
 1. Lê o diff acumulado desde a última revisão, e não só tarefa por tarefa.
 2. Tira capturas das telas principais (Hoje, Novo pedido, Clientes, Kits, Mais) no celular simulado.
 3. Confere as regras do `AGENTS.md`: dados reais, catálogo, segurança, pt-BR e acessibilidade.
-4. Escreve `VEZ: FELIPE` e manda ao Felipe o resumo com as capturas.
 
-O fluxo só segue quando o Felipe responder "segue" ou pedir ajustes. Ajustes viram tarefa na fila.
+Resultado:
+
+- **Sem problema real:** a fila segue sozinha. O Felipe recebe só um resumo informativo.
+- **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
+- **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
 Contador de entregas desde a última revisão: **0/3** (próxima revisão depois de T0, T1 e T2).
 
