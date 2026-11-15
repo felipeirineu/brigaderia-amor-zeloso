@@ -2,7 +2,7 @@
 
 PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com preparação para catálogo público e atendimento assistido pelo WhatsApp.
 
-> **Código em 14/11/2026:** repositório privado. R15 integra kits, composição, recorrências, pessoa/estabelecimento, ocasião e agregações por sabor/peso; ativação depende das migrações0019–0022 e do roteiro em [FASE_R15_KITS](docs/FASE_R15_KITS.md). Isto não afirma ativação remota. Catálogo público permanece desligado. Relatos antigos abaixo são históricos; não são instruções para reverter flags. R16 implementa a calculadora por peso em cadastro separado, sem alterar preços ou pedidos; requer0023 conforme [FASE_R16](docs/FASE_R16.md). Validação/publicação registradas no canal de colaboração.
+> **Código em15/11/2026:** repositório privado; R15/R16 aprovadas pelo Claude e0023 já aplicada pelo responsável (Histórico15/11). R17 em revisão no branch `codex/r17-session-continuity`, sem nova migração: seleção mínima após expiração, retirada da Fase0 e validade dos avisos; ver [FASE_R17](docs/FASE_R17.md). Catálogo público continua desligado. Relatos antigos abaixo são históricos, sem instrução para reverter flags. A R17 ainda depende de revisão/publicação pelo Claude e responsável.
 
 ## Objetivos
 
@@ -35,9 +35,9 @@ PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com prepara
 
 A criação do código de aplicação e infraestrutura será conduzida pelo Codex nas fases planejadas. Nunca comitar dados reais de clientes, credenciais ou backups sensíveis.
 
-## Desenvolvimento — Fase 0
+## Desenvolvimento local
 
-A demonstração pública continua sem dados privados ou cadastros. A gestão autenticada da Fase 1 é separada; ativação remota depende de D1/Access. WhatsApp fica para a Fase 2. Veja o [relatório e decisões da Fase 0](docs/FASE_0.md).
+A gestão privada abre em `/gestao`; `/app` da Fase0 foi retirado na R17. Login e dados exigem sessão válida. O [relatório da Fase0](docs/FASE_0.md) é histórico. Ver [R17](docs/FASE_R17.md) para recuperação de seleções após expiração.
 
 Requisitos: Node.js 24 (mínimo 22.12), npm e Python 3 para testes de SQL. Use o checkout existente; o ambiente de nuvem já é isolado, sem necessidade de criar worktrees.
 
@@ -46,9 +46,9 @@ npm ci
 npm run dev
 ```
 
-O Vite informa a porta local (padrão 5173). Abra a rota `/app`. Não é necessário criar `.env`: a demonstração não usa segredos. `.env.example` documenta a flag de servidor; o Worker local recebe `PUBLIC_CATALOG_ENABLED=false` em `worker/wrangler.jsonc`. Alterar a flag não ativa o catálogo na Fase 0.
+O Vite informa a porta local (padrão 5173). Abra `/gestao`. Sem backend/autenticação configurados, os dados privados são negados; não existe usuário padrão. `.env.example` documenta a flag de servidor; o Worker local recebe `PUBLIC_CATALOG_ENABLED=false` em `worker/wrangler.jsonc`. Alterar a flag não ativa o catálogo na Fase 0.
 
-Para testar o build e o service worker, use `npm run build` seguido de `npm run preview`. O service worker não é ativado pelo servidor de desenvolvimento. A atualização é oferecida na interface; offline funciona após carregar o build online.
+Para testar o build e o service worker, use `npm run build` seguido de `npm run preview`. O service worker não é ativado pelo servidor de desenvolvimento. A atualização é oferecida na interface; o shell pode abrir offline após carregar o build online. Dados privados e alterações exigem conexão.
 
 ```bash
 npm run lint
@@ -71,7 +71,7 @@ npm run db:migrate:local
 npm run worker:dev
 ```
 
-O Worker escuta em loopback na porta 8787. `/api/health` retorna saúde do scaffold, `/api/customers` retorna 401 e `/api/catalogo` retorna 404. O frontend não chama essa API nesta fase. D1 é emulado em `.wrangler/`, sem seeds reais e sem vínculo com banco remoto. Não usar comandos de deploy ou `--remote` com esta configuração.
+O Worker escuta em loopback na porta 8787. `/api/health` retorna saúde do scaffold, `/api/customers` retorna 401 e `/api/catalogo` retorna 404. O frontend usa essa API; autenticação local exige a configuração da Fase1 ou os runtimes isolados dos testes. D1 é emulado em `.wrangler/`, sem seeds reais e sem vínculo com banco remoto. Não usar comandos de deploy ou `--remote` com esta configuração.
 
 ### Particularidades do ambiente de nuvem
 
@@ -96,11 +96,11 @@ Isso não executa WebKit nem valida Safari/iPhone real. Para a suíte completa, 
 
 ## Testar online
 
-O projeto está preparado para publicar **somente a demonstração** no Cloudflare Pages por integração com GitHub. Use o comando de build `npm run build:pages`, saída `dist` e Node 24. O guia [Testar online](docs/TESTAR_ONLINE.md) explica a conexão da conta, publicação e roteiro de testes. Catálogo e acesso privado da API continuam bloqueados; nenhum banco real é necessário.
+A gestão privada já foi ativada pelo responsável no Cloudflare Pages. A demonstração pública antiga foi retirada; não republicar o scaffold da Fase0. Use o comando de build `npm run build:pages`, saída `dist` e Node 24. O guia [Testar online](docs/TESTAR_ONLINE.md) explica a conexão da conta, publicação e roteiro de testes. O catálogo público continua desligado. Login e banco dependem da configuração privada vigente, que não deve ser alterada para executar testes locais.
 
 ## Fase 1 — Gestão privada
 
-A área `/gestao` implementa clientes, produtos/variantes e rascunhos de pedidos com sessões e permissões no servidor. O login `/login` depende de **Cloudflare Access e D1 configurados**; sem isso, a demonstração continua pública e os dados privados são negados. Não há senha de demonstração ou usuário padrão.
+A área `/gestao` implementa clientes, produtos/variantes e rascunhos de pedidos com sessões e permissões no servidor. O login `/login` depende de **Cloudflare Access e D1 configurados**; sem isso, os dados privados são negados. Não há senha de demonstração ou usuário padrão.
 
 Consulte [Fase 1: configuração e homologação](docs/FASE_1.md) para conectar o banco, configurar o Access, autorizar o primeiro administrador e testar dois usuários. `npm run test:api` executa integração real em workerd/D1 locais; a CI também executa os E2E da gestão. A publicação da Fase 0 foi validada por HTTP e pelo responsável, mas isso não valida a autenticação/banco da Fase 1.
 

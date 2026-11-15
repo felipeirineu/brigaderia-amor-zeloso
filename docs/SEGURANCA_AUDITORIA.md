@@ -222,3 +222,13 @@ O responsável tornou o repositório privado. Ajustes feitos pelo Claude:
 - **Minutos de Actions** (plano gratuito: 2.000/mês): mudanças só em `docs/` e `*.md` não rodam a bateria; envio novo no mesmo branch cancela a execução anterior; nos branches de trabalho os testes de tela rodam só no Chromium móvel; no `main`, em PRs e na execução manual, nos três navegadores. Acompanhar em GitHub → Settings → Billing and plans → Usage.
 - Regra do `main` (se criada): exigir **"validate"** e **"Segredos (gitleaks) e dependências (npm audit)"**; os nomes antigos de CodeQL/gitleaks/npm audit deixaram de existir.
 - O histórico anterior (inclusive custos que chegaram a ser escritos em docs e depois foram removidos em `981153e`) deixou de ser público.
+
+## R17 — continuidade e scanner bloqueante (15/11/2026, branch de revisão)
+
+Seleção do Totem limitada por whitelist estrita a IDs/quantidades, em sessionStorage isolado por organização/usuário. Não guarda nomes, endereço, texto livre, datas, condições ou valores; não restaura o aceite de pedido repetido. Recuperação explícita relê cliente/catálogo e exige revisão; sucesso, descarte e logout limpam o vínculo. Parser frontend em modo jitless, inclusive sem probe de Function, para preservar CSP sem eval. Sem fila offline ou envio automático.
+
+GET push mostra valid_until da sessão vinculada, sem hash/token de sessão ou endpoint. Sessões inválidas não aparecem ativas. Corrigida a verificação do cron: autorização e membership são checadas ao enfileirar, cancelar pendências e imediatamente antes do envio, além da validade/usuário da sessão. Testes em D1 efêmero removem autorização/equipe, expiram sessão e verificam reativação humana; nenhuma notificação real foi enviada. Matriz ampliada para207 verificações, inclusive a rota de kit padrão em massa trazida do main. Nenhuma rota nova nesta fase.
+
+Cabeçalhos estáticos COOP same-origin, COEP require-corp e CORP same-origin; CSP, cookies e Origin/CSRF preservados. Fotos blob/GPS e os fluxos recentes do main passaram em Chromium/WebKit. ZAP2.17 local, imagem stable, comando baseline com -a -j e alvo efêmero:36 URLs,60 PASS,0 FAIL,0 WARN não ignorados,2 informativos ignorados, exit0. O build não foi alterado durante esse scan final. Depois desse resultado, fail_action passou para true. Exceções10027/10094/10109/90005 justificam falsos positivos informativos revisados;90004 não foi ignorada. API privada continua no-store e com matriz de autorização própria; scanner de shell não equivale a pentest autenticado completo.
+
+Sem operação Cloudflare/D1, flags ou avanço de main pelo Codex. Publicação depende da revisão do Claude e aprovação do responsável. CI manual três navegadores uma vez no SHA final e Segurança devem estar verdes antes da publicação.

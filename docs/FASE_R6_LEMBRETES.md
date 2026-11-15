@@ -35,3 +35,7 @@ Para interromper envios: desabilitar o Cron Trigger, remover os secrets do Pages
 ## Validação local
 
 `npm run test:push` usa workerd/D1 efêmeros, chaves temporárias e provedores simulados. Testa interoperabilidade criptográfica, cron repetido/concorrente, 410, redirecionamento bloqueado, erro ambíguo sem retry, recuperação de claim, limites, ausência de schema/configuração e logout. A matriz `npm run test:security` cobre todas as rotas novas. Playwright simula somente as APIs de aparelho: não equivale a recebimento físico nem ativa push de produção.
+
+## R17-5 — validade dos avisos por aparelho
+
+Em **Preferências → Avisos neste aparelho**, “Avisos ativos neste aparelho até” mostra data/hora de Fortaleza da sessão vinculada. A validade vem do servidor, não de contagem local de30 dias. Sair da conta, vencer a sessão ou revogar acesso interrompe o vínculo; um envio já despachado pode ainda chegar. Após entrar novamente, confira a ativação nesse aparelho. Assinaturas sem sessão válida deixam de aparecer como ativas. O calendário (.ics) permanece alternativa por escolha humana; push não tem entrega pontual garantida. A sessão não é renovada automaticamente nesta rodada.

@@ -138,3 +138,9 @@ R15-B: integração de kits concluída no código com recorrências, defaults/re
 Antes de avançar main, execução manual de Validação da gestão no SHA final da branch (três navegadores), além de Segurança verde. Sem deploy/migração/flags automáticos. Repositório privado não autoriza custos/clientes reais em docs/testes/capturas; usar DEMONSTRAÇÃO. R17-1 já coberta por Importar cadastro inicial, sem outro importador; uma futura aba Kits deverá estender essa mesma tela. KEEP já protege kits/configuração; modelos são operacionais.
 
 R15 foi aprovada/publicada no mainba64664. R16 implementada no branch de trabalho: calculadora por produto-sabor e peso, rendimento, acabamento confirmado, forminhas/opcionais, adicional e canal iFood; migração aditiva0023. Exemplo exclusivamente fictício: custo com adicional R$20,40 e iFood R$70,28. Ver FASE_R16 para funcionamento, limites e ativação humana. Sem conversão automática de fichas antigas ou alteração dos preços/pedidos. Próximas fases: R17 (exceto item1, já atendido pelo importador atual) → R7. CI completo e Segurança no SHA final precedem avanço do main.
+
+## R17 — execução no branch,15/11/2026
+
+Base main8f135a6 incorporada. Implementar2/3/5/7 conforme FASE_R17, sem flags/migração nova: seleção mínima isolada e repetido revalidado, retirada da Fase0, validade de push e ZAP bloqueante após baseline limpo.1 e6 resolvidos;4 adiado; R7 posterior. Preservar tema/mascote, endereço estruturado/Photon, kit padrão em massa e ApiError(0). Nenhum dado real em fixtures ou capturas.
+
+Publicação exclusivamente pelo Claude com aprovação do responsável; Codex não avança main. Economizar Actions: testar localmente e só uma execução manual completa de três navegadores no SHA final do branch; nos intermediários basta automático Chromium móvel. Segurança no SHA final também precisa verde. Relatório no canal de colaboração, sem operação remota Cloudflare/D1.

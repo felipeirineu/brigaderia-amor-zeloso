@@ -32,6 +32,9 @@ test('cabeçalhos de produção permitem foto e localização, sem violar a CSP'
     expect(headers['content-security-policy']).toContain("default-src 'self'");
     expect(headers['content-security-policy']).toContain("script-src 'self'");
     expect(headers['content-security-policy']).not.toContain('unsafe');
+    expect(headers['cross-origin-opener-policy']).toBe('same-origin');
+    expect(headers['cross-origin-embedder-policy']).toBe('require-corp');
+    expect(headers['cross-origin-resource-policy']).toBe('same-origin');
     expect(headers['x-frame-options']).toBe('DENY');
     expect(headers['x-content-type-options']).toBe('nosniff');
     await expect(p.getByRole('navigation').first()).toBeVisible();

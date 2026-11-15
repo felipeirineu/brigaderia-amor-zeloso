@@ -326,3 +326,83 @@ try {
 } finally {
   await t.dispose();
 }
+
+// R17: o cron deve respeitar autorização/equipe, além de expiração e logout.
+let authorizedSent = 0;
+const authRuntime = await runtime({
+  financeEnabled: true,
+  p1Enabled: true,
+  mobileEnabled: true,
+  entryPoint: 'tests/helpers/push-worker.ts',
+  vapid: await pushKeys(),
+  pushProvider: async () => {
+    authorizedSent++;
+    return new Response(null, { status: 201 });
+  },
+});
+try {
+  const { call, operator } = await demoProject(authRuntime);
+  const op = (await call('session', undefined, 'GET', operator)).user_id;
+  const subscription = (await receiver()).subscription;
+  await call('p1/push/subscriptions', { subscription }, 'POST', operator);
+  await call('p1/reminders', {
+    title: 'Autorização DEMONSTRAÇÃO',
+    due_at: new Date(Date.now() + 3600000).toISOString(),
+    alert_at: new Date(Date.now() - 1000).toISOString(),
+    recipient_ids: [op],
+  });
+  await authRuntime.db
+    .prepare(
+      "DELETE FROM authorized_emails WHERE organization_id=? AND email='operator@example.test'",
+    )
+    .bind(authRuntime.org)
+    .run();
+  await authRuntime.scheduled();
+  assert.equal(authorizedSent, 0, 'email revogado bloqueia cron');
+  await authRuntime.db
+    .prepare(
+      "INSERT INTO authorized_emails(email,organization_id,role) VALUES('operator@example.test',?,'operator')",
+    )
+    .bind(authRuntime.org)
+    .run();
+  await authRuntime.db
+    .prepare('DELETE FROM memberships WHERE organization_id=? AND user_id=?')
+    .bind(authRuntime.org, op)
+    .run();
+  await authRuntime.scheduled();
+  assert.equal(authorizedSent, 0, 'sem vínculo na equipe não há envio');
+  await authRuntime.db
+    .prepare(
+      "INSERT INTO memberships(organization_id,user_id,role) VALUES(?,?,'operator')",
+    )
+    .bind(authRuntime.org, op)
+    .run();
+  await authRuntime.db
+    .prepare(
+      'UPDATE sessions SET expires_at=unixepoch()-1 WHERE organization_id=? AND user_id=?',
+    )
+    .bind(authRuntime.org, op)
+    .run();
+  await authRuntime.scheduled();
+  assert.equal(authorizedSent, 0, 'sessão expirada bloqueia envio');
+  const fresh = await authRuntime.login('operator@example.test');
+  await call('p1/push/subscriptions', { subscription }, 'POST', fresh);
+  // Reativação não deve reproduzir avisos antigos: confirme um novo lembrete após ativar.
+  await call('p1/reminders', {
+    title: 'Reativado DEMONSTRAÇÃO',
+    due_at: new Date(Date.now() + 3600000).toISOString(),
+    alert_at: new Date(Date.now() - 1000).toISOString(),
+    recipient_ids: [op],
+  });
+  await authRuntime.scheduled();
+  assert.equal(
+    authorizedSent,
+    1,
+    'nova sessão autorizada volta a receber após ativar',
+  );
+  console.log(
+    'OK R17 cron: autorização revogada, equipe removida e sessão vencida bloqueiam envio; reativação humana válida permite.',
+  );
+} finally {
+  await authRuntime.dispose();
+}

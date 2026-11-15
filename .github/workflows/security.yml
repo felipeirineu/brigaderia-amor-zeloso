@@ -65,6 +65,6 @@ jobs:
           rules_file_name: .zap/rules.tsv
           cmd_options: '-a -j'
           allow_issue_writing: false
-          # Primeira execução só relata; depois de triar os alertas, mudar para true.
-          fail_action: false
+          # R17: baseline local com CSP real, zero FAIL/WARN; exceções justificadas em rules.tsv.
+          fail_action: true
           artifact_name: relatorio-zap

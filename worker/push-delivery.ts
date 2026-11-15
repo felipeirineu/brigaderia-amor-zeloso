@@ -15,6 +15,8 @@ interface Job {
   title: string | null;
   due_at: string | null;
 }
+// Cron não passa por actor(): revogação de autorização/equipe também deve bloquear o aparelho.
+const authorizedDevice = `EXISTS(SELECT 1 FROM memberships m JOIN users u ON u.id=m.user_id JOIN authorized_emails a ON a.email=u.email AND a.organization_id=m.organization_id WHERE m.organization_id=s.organization_id AND m.user_id=s.user_id)`;
 /** Claim atômico antes da chamada externa: não repetir automaticamente um envio incerto. */
 export async function processPushJobs(
   env: Env,
@@ -41,7 +43,7 @@ export async function processPushJobs(
  JOIN reminders r ON r.organization_id=a.organization_id AND r.id=a.reminder_id
  JOIN reminder_recipients p ON p.organization_id=a.organization_id AND p.reminder_id=a.reminder_id
  JOIN push_subscriptions s ON s.organization_id=p.organization_id AND s.user_id=p.user_id AND s.active=1
- JOIN sessions session ON session.organization_id=s.organization_id AND session.token_hash=s.session_hash AND session.expires_at>unixepoch()
+ JOIN sessions session ON session.organization_id=s.organization_id AND session.token_hash=s.session_hash AND session.expires_at>unixepoch() AND session.user_id=s.user_id AND ${authorizedDevice}
  WHERE a.alert_at IS NOT NULL AND a.alert_at<=? AND (a.alert_at>=s.created_at OR a.updated_at>=s.created_at) AND r.active=1 AND r.done=0 AND NOT EXISTS(SELECT 1 FROM push_jobs j WHERE j.organization_id=a.organization_id AND j.reminder_id=a.reminder_id AND j.schedule_key=a.schedule_key AND j.subscription_id=s.id)
  LIMIT 501`,
       )
@@ -51,7 +53,7 @@ export async function processPushJobs(
   await db
     .prepare(
       `UPDATE push_jobs SET state='cancelled' WHERE state='pending' AND (
- NOT EXISTS(SELECT 1 FROM push_subscriptions s JOIN memberships m ON m.organization_id=s.organization_id AND m.user_id=s.user_id JOIN sessions session ON session.organization_id=s.organization_id AND session.token_hash=s.session_hash WHERE s.organization_id=push_jobs.organization_id AND s.id=push_jobs.subscription_id AND s.active=1 AND session.expires_at>unixepoch())
+ NOT EXISTS(SELECT 1 FROM push_subscriptions s JOIN sessions session ON session.organization_id=s.organization_id AND session.token_hash=s.session_hash WHERE s.organization_id=push_jobs.organization_id AND s.id=push_jobs.subscription_id AND s.active=1 AND session.expires_at>unixepoch() AND session.user_id=s.user_id AND ${authorizedDevice})
  OR (reminder_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM reminders r JOIN reminder_alerts a ON a.organization_id=r.organization_id AND a.reminder_id=r.id JOIN reminder_recipients p ON p.organization_id=r.organization_id AND p.reminder_id=r.id JOIN push_subscriptions s ON s.organization_id=p.organization_id AND s.user_id=p.user_id WHERE r.organization_id=push_jobs.organization_id AND r.id=push_jobs.reminder_id AND r.active=1 AND r.done=0 AND a.schedule_key=push_jobs.schedule_key AND s.id=push_jobs.subscription_id)))`,
     )
     .run();
@@ -77,7 +79,7 @@ export async function processPushJobs(
         // Reconfere revogação/conclusão depois do claim, antes de tentar o envio.
         const valid = await db
           .prepare(
-            `SELECT 1 FROM push_jobs j JOIN push_subscriptions s ON s.organization_id=j.organization_id AND s.id=j.subscription_id JOIN sessions session ON session.organization_id=s.organization_id AND session.token_hash=s.session_hash WHERE j.organization_id=? AND j.id=? AND j.claim_nonce=? AND s.active=1 AND session.expires_at>unixepoch() AND (j.reminder_id IS NULL OR EXISTS(SELECT 1 FROM reminders r JOIN reminder_alerts a ON a.organization_id=r.organization_id AND a.reminder_id=r.id WHERE r.organization_id=j.organization_id AND r.id=j.reminder_id AND r.active=1 AND r.done=0 AND a.schedule_key=j.schedule_key AND EXISTS(SELECT 1 FROM reminder_recipients p WHERE p.organization_id=j.organization_id AND p.reminder_id=j.reminder_id AND p.user_id=s.user_id)))`,
+            `SELECT 1 FROM push_jobs j JOIN push_subscriptions s ON s.organization_id=j.organization_id AND s.id=j.subscription_id JOIN sessions session ON session.organization_id=s.organization_id AND session.token_hash=s.session_hash WHERE j.organization_id=? AND j.id=? AND j.claim_nonce=? AND s.active=1 AND session.expires_at>unixepoch() AND session.user_id=s.user_id AND ${authorizedDevice} AND (j.reminder_id IS NULL OR EXISTS(SELECT 1 FROM reminders r JOIN reminder_alerts a ON a.organization_id=r.organization_id AND a.reminder_id=r.id WHERE r.organization_id=j.organization_id AND r.id=j.reminder_id AND r.active=1 AND r.done=0 AND a.schedule_key=j.schedule_key AND EXISTS(SELECT 1 FROM reminder_recipients p WHERE p.organization_id=j.organization_id AND p.reminder_id=j.reminder_id AND p.user_id=s.user_id)))`,
           )
           .bind(job.organization_id, job.id, nonce)
           .first();
