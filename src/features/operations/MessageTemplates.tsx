@@ -16,6 +16,7 @@ export function MessageTemplates() {
   const view =
     useRemote<{ kind: MessageKind; content: string }[]>('message-templates');
   const [selected, setSelected] = useState<MessageKind>('confirmation'),
+    [editing, setEditing] = useState(false),
     [content, setContent] = useState(''),
     [error, setError] = useState(''),
     [notice, setNotice] = useState('');
@@ -38,6 +39,7 @@ export function MessageTemplates() {
           <p>{t.content}</p>
           <Button
             onClick={() => {
+              setEditing(true);
               setSelected(t.kind);
               setContent(t.content);
             }}
@@ -46,7 +48,7 @@ export function MessageTemplates() {
           </Button>
         </section>
       ))}
-      {content && (
+      {editing && (
         <form
           className="panel data-form"
           onSubmit={(e) => {
@@ -54,6 +56,7 @@ export function MessageTemplates() {
             void api('message-templates', 'PUT', { kind: selected, content })
               .then(() => {
                 setNotice('Modelo salvo.');
+                setEditing(false);
                 setContent('');
                 void view.refresh();
               })
@@ -70,6 +73,16 @@ export function MessageTemplates() {
             />
           </label>
           <Button variant="primary">Salvar modelo</Button>
+          <Button
+            type="button"
+            onClick={() => {
+              setEditing(false);
+              setContent('');
+              setError('');
+            }}
+          >
+            Cancelar edição
+          </Button>
         </form>
       )}
     </>

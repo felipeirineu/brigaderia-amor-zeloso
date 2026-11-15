@@ -84,6 +84,11 @@ function Editor({
   }
   return (
     <section className="panel">
+      {!company && (
+        <Button to="/gestao/clientes" variant="ghost">
+          Voltar para Clientes
+        </Button>
+      )}
       <h1 className={company ? 'mobile-context-title' : undefined}>
         {company ? 'Endereço da empresa' : customer.name}
       </h1>
@@ -113,7 +118,7 @@ function Editor({
         </Button>
       )}
       {!company && <RouteInfo id={customer.id} />}
-      <PlaceFields value={value} onChange={setDraft} />
+      <PlaceFields key={customer.id} value={value} onChange={setDraft} />
       {!company && (
         <>
           <label>
@@ -150,6 +155,19 @@ function Editor({
       >
         Salvar localização
       </Button>
+      {draft !== null && (
+        <Button
+          type="button"
+          disabled={busy}
+          onClick={() => {
+            setDraft(null);
+            setError('');
+            setNotice('');
+          }}
+        >
+          Descartar alterações
+        </Button>
+      )}
       {!company && (
         <>
           <h2>Foto do estabelecimento</h2>

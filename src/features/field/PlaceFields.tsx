@@ -1,5 +1,5 @@
 import { Button } from '../../components/Button';
-import { useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { api } from '../api';
 import { Failure } from '../operations/common';
 import { composeAddress, type Place } from '../../../shared/field';
@@ -42,6 +42,13 @@ export function PlaceFields({
   // uma consulta por segundo do serviço gratuito e ignora respostas antigas.
   const serial = useRef(0),
     timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+      serial.current++;
+    },
+    [],
+  );
   function schedule(text: string, delay = 700) {
     if (timer.current) clearTimeout(timer.current);
     const mine = ++serial.current;

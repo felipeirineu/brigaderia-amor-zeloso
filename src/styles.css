@@ -1562,7 +1562,7 @@ button,
   .compact-header:has(#mobile-header-actions:not(:empty))
     .profile-menu-trigger
     .az-button-label
-    > span {
+    > span:not(.profile-initials):not(.initial-avatar) {
     display: none;
   }
 }

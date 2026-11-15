@@ -588,7 +588,7 @@ export function Recurring({
             Salvar pedido padrão
           </Button>
           <Button type="button" onClick={reset}>
-            Limpar edição
+            {editing ? 'Cancelar edição' : 'Limpar campos'}
           </Button>
         </div>
       </form>

@@ -264,7 +264,7 @@ export function Reminders() {
           Salvar lembrete
         </Button>
         <Button type="button" onClick={reset}>
-          Limpar edição
+          {editing ? 'Cancelar edição' : 'Limpar campos'}
         </Button>
       </form>
       <p>
