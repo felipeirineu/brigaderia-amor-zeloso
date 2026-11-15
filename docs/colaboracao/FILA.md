@@ -38,7 +38,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **0/3** (próxima revisão depois de T0, T1 e T2).
+Contador de entregas desde a última revisão: **1/3** (T0 publicada; revisão depois de T1 e T2).
 
 ## Limites
 
