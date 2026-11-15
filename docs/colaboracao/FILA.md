@@ -11,7 +11,7 @@
 
 1. **Codex** trabalha quando o Felipe manda "continue". Faz `git fetch` e lê este arquivo no `main`. Executa **só a tarefa marcada na VEZ**.
 2. Ao terminar: commits no próprio branch `codex/...`, incorpora o `main` atual e abre um **pull request para o `main`** (`gh pr create`, sem merge). O título começa com o ID da tarefa (ex.: `T1: ...`). O relatório (Produzido / Testes executados / Limitações / Pendências) vai na descrição do PR e em `CODEX_PARA_CLAUDE.md`. **Não rode o CI manual:** o CI do pull request já é o completo (três navegadores). Não troque a VEZ: o PR aberto é o sinal.
-3. **Claude** verifica a cada 2 horas, das 8h às 22h (America/Fortaleza). Com PR aberto e CI + Segurança verdes: revisa, corrige o que for pequeno, publica no `main` (o PR fica como mesclado) e atualiza a VEZ para a próxima tarefa. Avisa o Felipe no celular.
+3. **Claude** verifica de hora em hora (minuto :52, America/Fortaleza). Com PR aberto e CI + Segurança verdes: revisa, corrige o que for pequeno, publica no `main` (o PR fica como mesclado) e atualiza a VEZ para a próxima tarefa. Avisa o Felipe no celular.
 4. Se o CI do PR ficar vermelho, o Claude escreve o diagnóstico aqui e devolve a VEZ ao Codex (no máximo 2 vezes no mesmo ponto; na terceira, `VEZ: FELIPE`).
 
 ## Paradas obrigatórias → `VEZ: FELIPE`
