@@ -23,10 +23,10 @@
   --az-warn-ink: #8a3f10;
   --az-radius-card: 28px;
   --az-radius-field: 16px;
-  --az-shadow-card:
-    0 1px 2px rgb(50 29 16 / 0.08), 0 8px 24px rgb(50 29 16 / 0.07);
-  --az-shadow-raised:
-    0 2px 4px rgb(50 29 16 / 0.18), 0 8px 20px rgb(50 29 16 / 0.22);
+  /* Sombras de uma camada e desfoque curto: leves para desenhar em
+     aparelhos simples, mesma aparência. */
+  --az-shadow-card: 0 2px 10px rgb(50 29 16 / 0.09);
+  --az-shadow-raised: 0 4px 12px rgb(50 29 16 / 0.28);
   /* Molinha do Material 3 Expressive: passa um pouco e volta. */
   --az-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
   --az-ease: cubic-bezier(0.2, 0, 0, 1);
@@ -111,12 +111,12 @@ h1,
 .az-button--chip[aria-pressed='true'] {
   background: var(--az-choc);
   color: var(--az-cream);
-  box-shadow: 0 4px 14px rgb(50 29 16 / 0.22);
+  box-shadow: 0 3px 8px rgb(50 29 16 / 0.2);
 }
 .az-button--success {
   background: var(--az-ok);
   color: #ffffff;
-  box-shadow: 0 4px 14px rgb(43 122 73 / 0.25);
+  box-shadow: 0 3px 8px rgb(43 122 73 / 0.25);
 }
 .az-button--ghost {
   background: transparent;
@@ -265,7 +265,6 @@ input[type='radio'] {
     /* Creme quase opaco em vez de desfoque: o desfoque custava caro em
        aparelhos sem aceleração gráfica e dobrava o tempo dos testes no Safari. */
     background: rgb(252 246 236 / 0.96);
-    box-shadow: 0 -4px 16px rgb(50 29 16 / 0.06);
     border-top: 1px solid var(--az-line);
     gap: 0;
     padding: 6px 8px calc(10px + env(safe-area-inset-bottom));
