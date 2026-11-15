@@ -55,6 +55,7 @@ Contador de entregas desde a última revisão: **2/3** (T0 e T1 publicadas; revi
 | T2 | Endereço único do cliente (B2B usa o mesmo endereço em campos) + aviso de número ausente + versão 0.9.0 em Mais | **vez do Codex** |
 | T3  | Acabamento visual tela a tela                                    | a detalhar pelo Claude                                               |
 | T4  | Modo escuro                                                      | a detalhar pelo Claude                                               |
+| T5 | "Novidades" após atualizar + histórico em Mais (ligado a partir da 1.0.0) | a detalhar pelo Claude; última tarefa antes da 1.0 |
 | —   | R7 (visitas e amostras)                                          | **fora da fila**: exige migração → aprovação do Felipe               |
 
 ### T0 — R17
@@ -124,6 +125,13 @@ Passa a existir só o primeiro:
 - E2E: o rodapé aparece em Mais com o número do `package.json`.
 
 Regras de sempre: tokens do `theme.css`, nada de dados reais, nenhuma operação remota.
+
+### T5 — anotações já aprovadas pelo Felipe
+
+- Depois de tocar em **Atualizar** e abrir a versão nova, mostrar **uma vez** uma folha "Novidades da versão X" com no máximo 3 itens, em linguagem de quem usa, e o botão "Entendi".
+- Em **Mais → Novidades**, o histórico de todas as versões.
+- Fonte única: o texto vem do histórico "Versões do app" (o Claude escreve ao publicar). Correções técnicas que não mudam o uso não entram.
+- Só fica ativo a partir da **1.0.0**, para funcionar como boas-vindas no dia da entrega.
 
 ## Versões do app
 
