@@ -29,9 +29,8 @@ export async function api<T>(
           ? 'A conexão caiu antes da resposta. Confira a internet e toque de novo — o app não duplica o registro.'
           : 'A conexão caiu antes da resposta. Confira na lista se foi salvo antes de tentar de novo.',
     );
-  let response: Response;
-  try {
-    response = await fetch(`/api/${path}`, {
+  const send = () =>
+    fetch(`/api/${path}`, {
       method,
       credentials: 'same-origin',
       cache: 'no-store',
@@ -41,8 +40,18 @@ export async function api<T>(
       },
       ...(data !== undefined ? { body: JSON.stringify(data) } : {}),
     });
-  } catch {
-    throw lost();
+  let response: Response | undefined;
+  // Leituras tentam de novo sozinhas (1,5 s e 3 s): ao voltar para o app, o
+  // celular pode levar alguns segundos para religar a internet. Gravações
+  // nunca são repetidas aqui.
+  const waits = method === 'GET' ? [1500, 3000] : [];
+  for (let attempt = 0; !response; attempt++) {
+    try {
+      response = await send();
+    } catch {
+      if (attempt >= waits.length) throw lost();
+      await new Promise((r) => setTimeout(r, waits[attempt]));
+    }
   }
   let result: { error?: string };
   try {

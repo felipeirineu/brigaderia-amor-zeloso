@@ -13,7 +13,11 @@ describe('api: conexão que cai no meio', () => {
       /não duplica/,
     );
     await expect(api('orders', 'POST', {})).rejects.toThrow(/Confira na lista/);
-    await expect(api('orders')).rejects.toThrow(/A conexão caiu/);
+    vi.useFakeTimers();
+    const pending = expect(api('orders')).rejects.toThrow(/A conexão caiu/);
+    await vi.advanceTimersByTimeAsync(5000);
+    await pending;
+    vi.useRealTimers();
   });
   it('resposta cortada (sem JSON) não vira erro em inglês', async () => {
     vi.stubGlobal('navigator', { onLine: true });
@@ -31,5 +35,28 @@ describe('api: conexão que cai no meio', () => {
     await expect(api('orders', 'PUT', {}, 'k3')).rejects.toThrow(
       'Não foi possível concluir.',
     );
+  });
+  it('leitura tenta de novo quando a internet volta em instantes', async () => {
+    vi.stubGlobal('navigator', { onLine: true });
+    vi.useFakeTimers();
+    const fetcher = vi
+      .fn()
+      .mockRejectedValueOnce(new TypeError('Failed to fetch'))
+      .mockResolvedValueOnce(Response.json({ ok: true }));
+    vi.stubGlobal('fetch', fetcher);
+    const pending = api<{ ok: boolean }>('session');
+    await vi.advanceTimersByTimeAsync(1600);
+    await expect(pending).resolves.toEqual({ ok: true });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
+  });
+  it('gravação nunca é repetida automaticamente', async () => {
+    vi.stubGlobal('navigator', { onLine: true });
+    const fetcher = vi.fn().mockRejectedValue(new TypeError('Load failed'));
+    vi.stubGlobal('fetch', fetcher);
+    await expect(api('orders', 'POST', {}, 'k9')).rejects.toThrow(
+      /não duplica/,
+    );
+    expect(fetcher).toHaveBeenCalledTimes(1);
   });
 });
