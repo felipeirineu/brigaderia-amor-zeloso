@@ -344,7 +344,7 @@ input[type='radio'] {
 /* Transição entre telas e etapas. */
 .private-workspace main > *,
 .order-focus > * {
-  animation: az-enter 280ms var(--az-ease);
+  animation: az-enter 200ms var(--az-ease);
 }
 
 @keyframes az-sheet-up {
@@ -357,13 +357,13 @@ input[type='radio'] {
     opacity: 1;
   }
 }
+/* Só opacidade: não desloca a caixa do elemento (toque e leitores de tela
+   encontram o botão no lugar certo desde o primeiro quadro). */
 @keyframes az-enter {
   from {
-    transform: translateY(8px);
     opacity: 0;
   }
   to {
-    transform: none;
     opacity: 1;
   }
 }
