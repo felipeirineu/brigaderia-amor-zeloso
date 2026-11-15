@@ -11,7 +11,7 @@ import { fieldReady } from './field-ready';
 import { body, HttpError, json, type Actor, type Env } from './security';
 import { p1Mutation, ownerOnly } from './p1-common';
 import { placeSchema } from './field-domain';
-import { searchPlaces } from './places-provider';
+import { reversePlace, searchPlaces } from './places-provider';
 import { emptyPlace } from '../shared/field';
 import { travel } from './travel';
 export async function field(req: Request, env: Env, a: Actor) {
@@ -48,6 +48,26 @@ export async function field(req: Request, env: Env, a: Actor) {
       z.object({ q: z.string().trim().min(3).max(200) }).strict(),
     );
     return json(await searchPlaces(db, org, d.q, env.PLACES_USER_AGENT));
+  }
+  if (resource === 'reverse' && req.method === 'POST') {
+    const d = await body(
+      req,
+      z
+        .object({
+          latitude: z.number().min(-90).max(90),
+          longitude: z.number().min(-180).max(180),
+        })
+        .strict(),
+    );
+    return json(
+      await reversePlace(
+        db,
+        org,
+        d.latitude,
+        d.longitude,
+        env.PLACES_USER_AGENT,
+      ),
+    );
   }
   if (resource === 'orders' && id && req.method === 'GET') {
     if (

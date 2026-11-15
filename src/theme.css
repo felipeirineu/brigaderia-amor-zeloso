@@ -341,6 +341,50 @@ input[type='radio'] {
   }
 }
 
+/* Endereço em campos separados. */
+.place-fields .place-number {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+}
+.place-fields .place-sn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 52px;
+  white-space: nowrap;
+}
+.place-fields .place-preview,
+.place-fields .place-legacy {
+  margin: 4px 0 8px;
+  padding: 12px 14px;
+  border-radius: var(--az-radius-field);
+  background: var(--az-tonal);
+  color: var(--az-ink);
+}
+.place-fields .place-legacy {
+  background: var(--az-warn-bg);
+}
+.place-fields .place-located {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  color: var(--az-muted);
+}
+.place-fields .place-credit {
+  font-size: 0.85rem;
+  color: var(--az-muted);
+}
+.place-fields details > summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+}
+
 /* Aviso de pedido repetido no mesmo dia (não bloqueia, pede um toque). */
 .same-day-warning {
   margin: 4px 0 16px;

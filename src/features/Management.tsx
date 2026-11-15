@@ -36,6 +36,7 @@ import { FieldProvider, SiteAvatar, useField } from './field/FieldContext';
 import { SiteEditor, CompanyEditor, SiteInfo } from './field/SiteEditor';
 import { CustomerCapture } from './field/CustomerCapture';
 import { PlaceFields } from './field/PlaceFields';
+import { locatedNotice, mergeLocated, reverseLookup } from './field/locate';
 import { Travel } from './field/Travel';
 import { emptyPlace, type Place } from '../../shared/field';
 import { Preferences } from './mobile/Preferences';
@@ -279,7 +280,8 @@ function Customers({
 }) {
   const field = useField(),
     [site, setSite] = useState<Place | null>(null),
-    [siteVersion, setSiteVersion] = useState(0);
+    [siteVersion, setSiteVersion] = useState(0),
+    [addressOpen, setAddressOpen] = useState(false);
   const [balances, setBalances] = useState<Summary | null>(null);
   useEffect(() => {
     if (financial)
@@ -336,6 +338,7 @@ function Customers({
     });
     setSite(null);
     setSiteVersion(0);
+    setAddressOpen(false);
     key.current = crypto.randomUUID();
   }
   function submit(e: FormEvent) {
@@ -429,9 +432,14 @@ function Customers({
             {field && form.customer_type === 'establishment' && (
               <CustomerCapture
                 key={draft}
-                onLocate={(coordinates) =>
-                  setSite((s) => ({ ...(s ?? emptyPlace()), ...coordinates }))
-                }
+                onLocate={async (coordinates) => {
+                  const found = await reverseLookup(coordinates);
+                  setSite((s) =>
+                    mergeLocated(s ?? emptyPlace(), coordinates, found),
+                  );
+                  setAddressOpen(true);
+                  return locatedNotice(!!found);
+                }}
                 onPhoto={setPhoto}
                 onBusy={setCaptureBusy}
               />
@@ -491,7 +499,10 @@ function Customers({
               Ativo
             </label>
             {field && (
-              <details>
+              <details
+                open={addressOpen}
+                onToggle={(e) => setAddressOpen(e.currentTarget.open)}
+              >
                 <DisclosureSummary>
                   {form.customer_type === 'person'
                     ? 'Endereço (opcional)'

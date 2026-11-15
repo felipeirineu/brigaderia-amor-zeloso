@@ -48,8 +48,9 @@ test('R6-4 aviso da base exclusivo do administrador e cadastro pela interface', 
       .click();
     await expect(p).toHaveURL(/\/gestao\/empresa$/);
     await p
-      .getByLabel('Endereço do estabelecimento', { exact: true })
+      .getByLabel('Rua/Avenida', { exact: true })
       .fill('Endereço da base DEMONSTRAÇÃO');
+    await p.getByText('Coordenadas (avançado)', { exact: true }).click();
     await p.getByLabel('Latitude', { exact: true }).fill('0');
     await p.getByLabel('Longitude', { exact: true }).fill('0');
     await p

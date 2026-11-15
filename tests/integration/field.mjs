@@ -287,6 +287,56 @@ try {
     ).n,
     0,
   );
+  // Endereço em campos: busca reversa preenche rua/número/bairro/cidade e o
+  // servidor monta a linha única (com S/N); referência fica separada.
+  await new Promise((r) => setTimeout(r, 1200));
+  const reverse = await call('field/reverse', {
+    latitude: -3.123456,
+    longitude: -38.654321,
+  });
+  assert.equal(reverse.street, 'Endereço DEMONSTRAÇÃO');
+  assert.equal(reverse.number, '10');
+  assert.equal(reverse.neighborhood, 'Bairro DEMONSTRAÇÃO');
+  assert.equal(reverse.city, 'Cidade DEMONSTRAÇÃO');
+  assert.equal(
+    (
+      await t.request('field/reverse', {
+        cookie: owner,
+        method: 'POST',
+        data: { latitude: 200, longitude: 0 },
+      })
+    ).status,
+    400,
+  );
+  const fieldsVersion = (
+    await call('field/context', undefined, 'GET')
+  ).sites.find((s) => s.id === customer).version;
+  const structured = await call(
+    'field/customers/' + customer,
+    {
+      data: {
+        ...place,
+        address: 'texto antigo ignorado',
+        street: 'Rua DEMONSTRAÇÃO',
+        number: '99',
+        no_number: true,
+        complement: 'Loja 1',
+        city: 'Cidade DEMONSTRAÇÃO',
+        reference: 'Perto da praça DEMONSTRAÇÃO',
+      },
+      version: fieldsVersion,
+    },
+    'PUT',
+  );
+  assert.ok(structured.version > fieldsVersion);
+  const saved = (await call('field/context', undefined, 'GET')).sites.find(
+    (s) => s.id === customer,
+  ).data;
+  assert.equal(
+    saved.address,
+    'Rua DEMONSTRAÇÃO, S/N, Loja 1, Bairro DEMONSTRAÇÃO, Cidade DEMONSTRAÇÃO',
+  );
+  assert.equal(saved.reference, 'Perto da praça DEMONSTRAÇÃO');
   console.log(
     'OK R4 locais CAS, perfis, fotos privadas, snapshots, rateio, despesa única, idempotência, estornos e isolamento.',
   );

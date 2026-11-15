@@ -74,11 +74,32 @@ test('R4 localização por toque, foto privada, perfil e despesa após entrega',
       .fill('11900000001');
     await p.getByText('Endereço e Instagram', { exact: true }).click();
     await p
-      .getByLabel('Endereço do estabelecimento', { exact: true })
+      .getByLabel('Rua/Avenida', { exact: true })
       .fill('Destino DEMONSTRAÇÃO');
     await p
       .getByRole('button', { name: 'Usar minha localização', exact: true })
       .click();
+    // A localização vira endereço pelo mapa (Photon simulado nos testes).
+    await expect(p.getByLabel('Rua/Avenida', { exact: true })).toHaveValue(
+      'Endereço DEMONSTRAÇÃO',
+    );
+    await expect(p.getByLabel('Número', { exact: true })).toHaveValue('10');
+    await expect(p.getByLabel('Cidade', { exact: true })).toHaveValue(
+      'Cidade DEMONSTRAÇÃO',
+    );
+    await expect(
+      p.getByText('Endereço preenchido pelo mapa.', { exact: false }),
+    ).toBeVisible();
+    await p.getByLabel('Sem número (S/N)', { exact: true }).check();
+    await expect(p.getByLabel('Número', { exact: true })).toBeDisabled();
+    await p
+      .getByLabel('Ponto de referência (opcional)', { exact: true })
+      .fill('Perto da praça DEMONSTRAÇÃO');
+    await expect(p.locator('.place-preview')).toContainText(
+      'Endereço DEMONSTRAÇÃO, S/N, Bairro DEMONSTRAÇÃO, Cidade DEMONSTRAÇÃO · Ref.: Perto da praça DEMONSTRAÇÃO',
+    );
+    await expect(p.getByText('📍 Localização guardada')).toBeVisible();
+    await p.getByText('Coordenadas (avançado)', { exact: true }).click();
     await expect(p.getByLabel('Latitude', { exact: true })).toHaveValue('0');
     const buffer = await sharp({
       create: { width: 400, height: 200, channels: 3, background: '#321d10' },

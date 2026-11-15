@@ -7,7 +7,11 @@ export function CustomerCapture({
   onPhoto,
   onBusy,
 }: {
-  onLocate: (p: { latitude: number; longitude: number }) => void;
+  /** Pode devolver o aviso a mostrar (ex.: endereço preenchido pelo mapa). */
+  onLocate: (p: {
+    latitude: number;
+    longitude: number;
+  }) => void | Promise<string | void>;
   onPhoto: (photo: string) => void;
   onBusy: (busy: boolean) => void;
 }) {
@@ -35,13 +39,18 @@ export function CustomerCapture({
     pending(true);
     setNotice('Buscando localização…');
     navigator.geolocation.getCurrentPosition(
-      (p) => {
+      async (p) => {
         if (!active.current) return;
-        onLocate({
+        setNotice('Procurando o endereço no mapa…');
+        const message = await onLocate({
           latitude: p.coords.latitude,
           longitude: p.coords.longitude,
         });
-        setNotice('Localização capturada. Confira o endereço antes de salvar.');
+        if (!active.current) return;
+        setNotice(
+          message ||
+            'Localização capturada. Confira o endereço antes de salvar.',
+        );
         pending(false);
       },
       () => {

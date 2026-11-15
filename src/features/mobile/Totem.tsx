@@ -45,7 +45,7 @@ import {
 } from '../operations/common';
 import { MoneyInput, QuantityInput } from '../../components/NumericInputs';
 import { photoURL } from '../../../shared/flavors';
-import { emptyPlace } from '../../../shared/field';
+import { deliveryAddress, emptyPlace } from '../../../shared/field';
 import {
   emptyTerms,
   type B2BProfile,
@@ -211,7 +211,7 @@ export function Totem({
       ? field?.data?.sites.find((x) => x.id === customer.id)
       : undefined,
     savedAddress =
-      site?.data.address ||
+      deliveryAddress(site?.data ?? {}) ||
       (defaults
         ? [
             defaults.profile.address,
@@ -421,7 +421,9 @@ export function Totem({
       if (serial !== choice.current) return;
       setDefaults(d);
       setAddress(
-        field?.data?.sites.find((s) => s.id === c.id)?.data.address ||
+        deliveryAddress(
+          field?.data?.sites.find((s) => s.id === c.id)?.data ?? {},
+        ) ||
           [d.profile.address, d.profile.neighborhood, d.profile.reference]
             .filter(Boolean)
             .join(' '),
