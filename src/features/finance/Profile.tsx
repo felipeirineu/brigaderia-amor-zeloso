@@ -280,7 +280,7 @@ function CustomerAddress({ id, profile }: { id: string; profile: B2BProfile }) {
         mudam.
       </p>
       <Failure message={error} />
-      <p role="status">{notice}</p>
+      {notice && <p role="status">{notice}</p>}
       <fieldset disabled={busy || !field.data}>
         <PlaceFields key={id} value={value} onChange={setDraft} />
         <Button variant="primary" disabled={busy || !field.data} loading={busy}>

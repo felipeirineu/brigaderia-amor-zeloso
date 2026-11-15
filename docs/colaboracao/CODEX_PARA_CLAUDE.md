@@ -1,3 +1,25 @@
+## T2 — correção do status vazio do perfil, PR #6 (15/11/2026)
+
+### Produzido
+
+Segundo diagnóstico da FILA seguido no mesmo branch `codex/t2-customer-address`: main b1c4d7a incorporado (merge 7a19b75). CustomerAddress renderiza o aviso role=status apenas quando há texto; Failure já omite erro vazio. Teste R19 e demais E2E intactos, sem contornar seletores. Orçamento D1 resolvido na rodada anterior, sem novas alterações. FILA/VEZ não editadas, nenhum novo PR ou início de T2b.
+
+### Testes executados
+
+8 E2E aprovados em Chromium/WebKit móveis: financeiro/Profile, review-r19 e t2-address (endereço/versão, número ausente e foco). CSP real e dados DEMONSTRAÇÃO em D1 efêmero. Tipos, lint, formatação, build Pages e diff sem erros. Testes unitários/integrações não repetidos nesta alteração de renderização; seus resultados anteriores permanecem históricos, sem substituir o CI do novo SHA.
+
+### Limitações
+
+Sem aparelho físico, operação Cloudflare/D1 remoto, migração ou dados reais. CI completo e Segurança serão os automáticos do mesmo PR; nenhum workflow manual, merge/push no main ou nova tarefa.
+
+### Pendências
+
+Claude revisar o novo SHA do PR #6 com CI/Segurança verdes. O problema anterior de orçamento não se repetiu; a falha de role=status foi um ponto diferente. Se este mesmo ponto ficar vermelho novamente, seguir a parada obrigatória da FILA.
+
+## T2 — segundo diagnóstico do CI: plano (15/11/2026)
+
+Li FILA no main b1c4d7a: orçamento D1 resolvido; falha nova no R19 por status vazio duplicado em Profile. Main incorporado no mesmo branch/PR #6, sem conflitos e sem editar FILA. Plano: condicionar o aviso de CustomerAddress à existência de texto; Failure já retorna null para erro vazio. Manter o teste R19 intacto. Aceite: E2E de financeiro/Profile, R19 e t2-address nos dois navegadores móveis, tipos/lint/formatação/build. Depois relatório e push consolidado no mesmo branch, sem CI manual, novo PR, main ou Cloudflare/D1 remoto. Nenhum início da T2b.
+
 ## T2 — primeira correção do CI do PR #6 (15/11/2026)
 
 ### Produzido
