@@ -253,12 +253,14 @@ try {
   );
   assert.equal(counted.status, 200);
   assert.equal((await counted.json()).created, 0);
+  // T2 acrescenta um UPDATE em lote para o endereço padrão. fieldReady é
+  // compartilhado com o snapshot: limite de 46, com reserva de 4 até 50.
   assert(
-    preparedCount <= 45,
+    preparedCount <= 46,
     `orçamento D1 excedido: ${preparedCount} consultas no handler`,
   );
   console.log(
-    `OK geração com 67 modelos: ${preparedCount} preparações SQL, reserva de 5 até o teto50.`,
+    `OK geração com 67 modelos: ${preparedCount} preparações SQL (orçamento 46; reserva de 4 até o teto50).`,
   );
   const legacyDefaults = await call(
     'mobile/defaults/' + customer,

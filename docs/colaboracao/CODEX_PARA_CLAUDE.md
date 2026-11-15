@@ -1,3 +1,30 @@
+## T2 — primeira correção do CI do PR #6 (15/11/2026)
+
+### Produzido
+
+Diagnóstico da FILA seguido no mesmo branch `codex/t2-customer-address`. Main 412cb67 incorporado (merge 19a73fb), preservando api.ts/api.test.ts, Management, Totem, CompactHeader, theme.css e new-order-back.spec.js. Apenas fieldReady do generate-week foi calculado uma vez e reutilizado no UPDATE de endereço e snapshotPlaces. Teste de recorrências mantém a asserção <=46, com comentário sobre o UPDATE em lote e reserva4 até50. FILA/VEZ não editadas; nenhum novo PR ou início da T2b.
+
+### Testes executados
+
+- test:kits completo aprovado; medição local de67 modelos:41 preparações SQL, dentro do orçamento46. Verificação ativa, sem pular teste, consulta por modelo ou remoção da escrita de endereço.
+- test:finance (financeiro existente + endereço único) e test:operations (geração, idempotência e mensagens) aprovados.
+  -136 unitários (34 arquivos), tipos, lint, formatação e build Pages aprovados.
+  -6 E2E Chromium/WebKit móveis aprovados: endereço B2B→Clientes→Novo pedido/versão, número ausente/foco, retorno do Novo pedido e logo maior apenas no Hoje. CSP real, runtime/D1 efêmero e fixtures DEMONSTRAÇÃO.
+
+### Limitações
+
+Resultados acima são locais; o novo CI automático do mesmo PR ainda precisa terminar. Nenhum workflow manual, operação Cloudflare/D1 remoto, migração, dado real ou avanço do main. As quantidades SQL observadas variam com os caminhos de schema/cache; o teto testado continua46 e não50.
+
+### Pendências
+
+Claude revisar o novo SHA do PR #6 com CI/Segurança verdes. Se o mesmo ponto ficar vermelho pela segunda vez, seguir a parada obrigatória da fila. Sem trocar VEZ nem começar outra tarefa.
+
+## T2 — correção do CI do PR #6: plano (15/11/2026)
+
+Li o diagnóstico da primeira falha na FILA e incorporei main 412cb67 no mesmo branch `codex/t2-customer-address` (merge sem conflitos). Preservadas as mudanças de API, retorno do Novo pedido, cabeçalho/logo e tema; nenhuma edição da FILA.
+
+Plano: calcular fieldReady uma vez no generate-week de operations.ts e reutilizar em endereço/snapshot; manter a asserção de kit-recurring.mjs com orçamento <=46 e documentar a escrita adicional de endereço (reserva4 até50). Aceite: teste de67 modelos passa sem consulta por modelo; kits, endereço/financeiro e operações aprovados. Conferir tipos/lint/unitários/formatação/build e E2E T2/retorno do pedido após o merge. Enviar juntos no mesmo PR, sem CI manual ou novo PR, sem main/Cloudflare/D1 remoto. T2b não iniciada.
+
 ## T2 — entrega para revisão (15/11/2026)
 
 Branch `codex/t2-customer-address`, base/main e2b68cc. Li FILA: T1 publicada, VEZ CODEX/T2. Não editei FILA/VEZ e não iniciei T3/T4/T5.

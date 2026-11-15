@@ -484,6 +484,7 @@ export async function operations(
     return json({ id: templateId }, id ? 200 : 201);
   }
   if (resource === 'generate-week' && req.method === 'POST') {
+    const field = await fieldReady(env);
     const data = await body(req, z.object({ week: daySchema }).strict());
     if (new Date(data.week + 'T12:00:00Z').getUTCDay() !== 1)
       throw new HttpError(400, 'Escolha a segunda-feira da semana.');
@@ -618,10 +619,10 @@ export async function operations(
       ...(kitStorage ? writeGeneratedKits(db, org, nonce, generatedKits) : []),
       db
         .prepare(
-          `UPDATE orders SET delivery_address=${customerAddressSQL(await fieldReady(env), financial)} WHERE organization_id=? AND mutation_id=? AND trim(delivery_address)=''`,
+          `UPDATE orders SET delivery_address=${customerAddressSQL(field, financial)} WHERE organization_id=? AND mutation_id=? AND trim(delivery_address)=''`,
         )
         .bind(org, nonce),
-      ...((await fieldReady(env)) ? snapshotPlaces(db, org, nonce) : []),
+      ...(field ? snapshotPlaces(db, org, nonce) : []),
       ...(financial
         ? [
             db
