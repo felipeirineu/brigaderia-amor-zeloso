@@ -1,3 +1,4 @@
+import { nameInitials } from '../../../shared/initials';
 import { Button } from '../../components/Button';
 import { useEffect, useState, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -69,15 +70,7 @@ export function CompactHeader({
           : (titles[segment] ?? 'Gestão'),
     own = field?.data?.staff.find((s) => s.id === field.data!.user_id),
     name = own?.version ? own.display_name : 'Meu perfil',
-    initials = own?.version
-      ? own.display_name
-          .trim()
-          .split(/\s+/)
-          .slice(0, 2)
-          .map((w) => w[0])
-          .join('')
-          .toLocaleUpperCase('pt-BR')
-      : '';
+    initials = own?.version ? nameInitials(own.display_name) : '';
   return (
     <>
       <header className="compact-header" aria-label="Cabeçalho da gestão">

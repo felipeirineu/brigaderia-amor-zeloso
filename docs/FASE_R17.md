@@ -12,7 +12,7 @@ Enviar com sucesso, **Descartar seleção** ou sair explicitamente da conta apag
 
 ## Rotas e avisos
 
-A demonstração `/app` e `modules.ts` foram removidos. Raiz e manifesto continuam em `/gestao`; login, catálogo desligado, ícones, skip-link e registro do service worker preservados. Offline abre somente o shell e informa que não pode enviar alterações. Dados privados não entram no cache.
+A demonstração `/app`, `modules.ts` e RuntimeStatus foram removidos. O AppUpdate original do mainfc75964 permanece no layout da gestão como único componente registrador do service worker; OfflineStatus somente informa a conexão. Raiz e manifesto continuam em `/gestao`; login, catálogo desligado, ícones, skip-link e registro do service worker preservados. Offline abre somente o shell e informa que não pode enviar alterações. Dados privados não entram no cache.
 
 Avisos mostram a validade da sessão do aparelho retornada pelo servidor. Sessão expirada, logout ou acesso revogado interrompem o vínculo; o cron também reconfere autorização e vínculo na equipe antes de enfileirar e antes de enviar. Um aviso já despachado pode chegar. Conferir a ativação ao entrar de novo. Ver [R6](FASE_R6_LEMBRETES.md). Sessão deslizante opcional permanece adiada.
 
@@ -27,3 +27,9 @@ COOP `same-origin`, COEP `require-corp` e CORP `same-origin` complementam os cab
 Itens2/3/5/7 compõem esta fase. Item1 continua atendido pelo importador existente;6 já avaliado, sem coluna de número parcialmente ligada;4 adiado. Kit padrão em massa, tema/mascote e endereço estruturado do main foram preservados. Componentes novos usam tokens de theme.css; sem backdrop-filter.
 
 Aceite: expiração real, navegação por outra origem local com COOP/COEP e novo login, repetido exigindo novo aceite, misto+kit, isolamento de usuário, storage mínimo/corrompido/bloqueado, descarte/logout/envio, validade privada e ausência de sessão expirada na lista de aparelhos. Manifesto, raiz, login/catálogo e shell offline continuam testados. Testes funcionais usam CSP real; aparelho físico e homologação privada ficam para o responsável. Evidências finais e checks constam no relatório do canal de colaboração.
+
+## Complemento solicitado —15/11(2)
+
+Mainfc75964 incorporado antes da entrega: sugestões Paraíba/estabelecimentos primeiro, postcode/CEP e atualizador preservados. Buscar cliente e Cadastrar cliente agora aparecem antes da lista no step0. O cabeçalho não esconde iniciais junto de Voltar, inclusive no fallback de foto. SiteAvatar/StaffAvatar/CompactHeader usam a mesma função de iniciais, com conectivos ignorados e maiúsculas. Nenhuma informação de cadastro é modificada por esse cálculo visual.
+
+Testes usam somente exemplos DEMONSTRAÇÃO, sem nomes reais de clientes. O cenário novo verifica lista longa e iniciais nos três projetos, sem bloquear o SW ou afrouxar CSP. AppUpdate mantém seu teste nativo. CI manual completo e Segurança no SHA final deste complemento precedem revisão/publicação pelo Claude; Codex não avança main. A regra de publicação automática com checks verdes é do Claude conforme Histórico15/11(2), sem autorização para mudanças remotas no banco, catálogo ou serviços pagos.

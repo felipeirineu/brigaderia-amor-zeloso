@@ -1,5 +1,27 @@
 # Codex → Claude
 
+## R17 — complemento integrado ao mainfc75964 (15/11/2026)
+
+Branch `codex/r17-session-continuity`, sem avanço do main pelo Codex. Incorporei mainfc75964 em63df2e3, li Histórico15/11(2) e resolvi o conflito de App mantendo o AppUpdate original no layout `/gestao`. A regra de publicação automática com CI completo/Segurança no mesmo SHA pertence ao Claude; migrações/limpezas reais, catálogo e serviços pagos continuam exigindo aprovação explícita. Não executei operações Cloudflare/D1.
+
+| Pedido                     | Estado no código                                                                                                                                                                                                                  |
+| -------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Incorporação do main       | Paraíba/estabelecimentos primeiro, postcode/CEP e kit padrão em massa preservados. AppUpdate e app-update.spec.js idênticos ao mainfc75964. Tema/mascote/sem backdrop-filter e timeout do WebKit preservados.                     |
+| Atualização do app / R17-3 | AppUpdate é o único componente que chama registerSW; RuntimeStatus foi removido. OfflineStatus conserva a mensagem de conexão sem registrar o worker. Manifesto/ícones/raiz/login/catálogo desligado/shell continuam disponíveis. |
+| Step0 do Totem             | Buscar cliente e Cadastrar cliente antes de customer-tiles; E2E usa lista de16 clientes fictícios e confere posição/viewport e busca funcional.                                                                                   |
+| Círculo do perfil          | Seletor de compactação não esconde profile-initials nem fallback initial-avatar. Iniciais visíveis com Voltar no step0 e após selecionar cliente, inclusive com imagem sintética inválida em D1 efêmero.                          |
+| Iniciais compartilhadas    | shared/initials.ts usado por SiteAvatar, StaffAvatar e CompactHeader; ignora de/da/do/das/dos/e, normaliza NFC e usa maiúsculas.10 testes puros; apenas nomes DEMONSTRAÇÃO nas fixtures, sem reproduzir cadastros reais.          |
+
+**Produzido:** integração do main e os três ajustes solicitados, sem alterar as regras de recuperação/repetido da R17. Atualizador original preservado; não há registro duplicado do SW. Guia R17 atualizado. R17-2/3/5/7 continuam implementados no branch;1/6 resolvidos,4 adiado e R7 posterior.
+
+**Testes executados localmente:**134 unitários;209 verificações de segurança, incluindo POST field/reverse recebido do main como rota privada; tipos/lint/build/formatação.21 E2E aprovados na integração (Chromium/WebKit),1 ignorado previsto de SW no WebKit, cobrindo AppUpdate/PWA, login/catálogo, rascunho e push. Regressão dirigida adicional de endereços/CEP/fotos/CSP e os três ajustes; o novo cenário de lista/avatares passou nos três projetos. O primeiro mock de foto não foi interceptado no WebKit após o SW assumir a página: trocado por imagem inválida sintética no D1 efêmero, sem bloquear SW ou relaxar CSP. API de locais/fotos e push/revogação/reativação passaram.
+
+**Validação remota final:** consultar checks do commit final deste complemento no branch. Rodar uma única Validação da gestão manual nos três projetos e Segurança nesse mesmo SHA; os resultados anteriores do4d6f3f3 não substituem essa conferência. Envio consolidado para poupar minutos de Actions, sem publicar main. Não alterar o SHA depois dos checks apenas para registrar resultados; a evidência remota estará nos checks e no relatório da entrega.
+
+**Limitações:** sem homologação em iPhone/Android físicos ou Access real. Os testes usam banco local efêmero e dados identificados como DEMONSTRAÇÃO; nenhuma mensagem real ou operação no banco remoto. Rascunho continua limitado a IDs/quantidades, não é backup/fila offline e não restaura o aceite de repetido.
+
+**Pendências:** revisão e publicação pelo Claude conforme a regra vigente após checks verdes do SHA final; aparelhos físicos; R17-4 adiado e R7 posterior. Nenhuma aprovação adicional é pedida pelo Codex para publicar: essa ação pertence ao Claude, não ao agente nesta tarefa.
+
 ## R17 — entrega no branch para revisão (15/11/2026)
 
 Base main8f135a6 incorporada antes do código; branch `codex/r17-session-continuity`. Nenhum avanço do main. R16 foi revisada sem bloqueios e0023 aplicada pelo responsável, conforme Histórico15/11(1); relatos anteriores de ativação pendente são históricos.
@@ -810,3 +832,7 @@ Ambiente voltou a responder; branch limpo no4d6f3f3 antes da operação. Fetch d
 Plano dos ajustes: mover Buscar cliente e Cadastrar cliente antes de customer-tiles no step0; limitar o seletor CSS para preservar profile-initials (e fallback de StaffAvatar); função pura compartilhada de iniciais que ignora de/da/do/das/dos/e e usa maiúsculas, aplicada a SiteAvatar/StaffAvatar/CompactHeader. Arquivos: App, componente offline sem SW, RuntimeStatus removido, Totem, styles, FieldContext/CompactHeader, shared/initials e testes. Não persistir iniciais nem criar cadastro real. Fixtures claramente DEMONSTRAÇÃO, sem nomes de clientes reais.
 
 Aceite: AppUpdate original preservado e app-update.spec passando; SW/manifesto/ícones/raiz/login/catálogo/offline mantidos; lista longa deixa busca/cadastro antes dos cartões; com Voltar no cabeçalho, iniciais continuam visíveis; os três consumidores usam a mesma função, com conectivos/case/espaços/acentos cobertos. Regressão dirigida de rascunho/repetido/push/endereço/CEP/região. Executar uma única Validação da gestão manual (três navegadores) e Segurança no SHA final desta revisão, registrar relatório e deixar publicação ao Claude.
+
+### Fechamento do complemento R17 — mainfc75964
+
+Integração defc75964 preserva AppUpdate sem alteração de fonte/teste, Paraíba/estabelecimentos primeiro e CEP. Registro do SW centralizado no AppUpdate da gestão; RuntimeStatus removido, feedback offline separado. Busca/cadastro antes da lista, perfil visível com Voltar e iniciais compartilhadas conforme relatório atual no topo. Testes locais em Chromium/WebKit e cenário novo nos três projetos; nenhuma operação remota Cloudflare/D1 ou main. CI completo/Segurança devem validar o SHA final antes da revisão/publicação pelo Claude.

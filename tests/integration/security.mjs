@@ -124,6 +124,7 @@ try {
     ['orders', 'POST'],
     ['orders/' + order, 'PUT'],
     ['mobile/orders', 'POST'],
+    ['field/reverse', 'POST'],
     ['finance/customers/' + customer + '/payments', 'POST'],
     ['p1/backup', 'POST'],
     ['members', 'POST'],

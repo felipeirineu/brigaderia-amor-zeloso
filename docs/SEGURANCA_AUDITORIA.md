@@ -234,3 +234,7 @@ Cabeçalhos estáticos COOP same-origin, COEP require-corp e CORP same-origin; C
 Sem operação Cloudflare/D1, flags ou avanço de main pelo Codex. Publicação depende da revisão do Claude e aprovação do responsável. CI manual três navegadores uma vez no SHA final e Segurança devem estar verdes antes da publicação.
 
 Complemento: Segurança43682500827 bloqueou90004 em `/api/auth/config` por faltar CORP no JSON, apesar de os arquivos já terem o cabeçalho. Helper json passou a enviar CORP same-origin;208 verificações e E2E de cabeçalhos cobrem essa resposta.90004 continua ativa. O teste de recuperação também passou por outra origem HTTP efêmera com COOP/COEP, em Chromium/WebKit, sem operar o Access real. Conferir a Segurança do SHA final corrigido antes da revisão/publicação.
+
+### Integração R17 com mainfc75964
+
+AppUpdate preservado no layout da gestão e seu teste original mantido; sem dois componentes registrando o SW. RuntimeStatus removido e feedback offline separado. Iniciais são cálculo visual compartilhado, sem persistência; busca/cadastro movidos antes da lista e seletor CSS corrigido. Sem mudança de autenticação, flags, CSP, schema ou comandos remotos. Matriz local209 inclui POST field/reverse recebido do main como operação privada. Regressão cobre rascunho/repetido, push/revogação, endereço/CEP/região, PWA e avatares sob SW/CSP reais. Conferir CI completo e Segurança do SHA final deste complemento; não usar o4d6f3f3 como prova da integração.
