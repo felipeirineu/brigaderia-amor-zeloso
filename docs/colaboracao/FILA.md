@@ -53,6 +53,7 @@ Contador de entregas desde a última revisão: **2/3** (T0 e T1 publicadas; revi
 | T0 | R17 (sessão, Fase 0, validade dos avisos, ZAP) | **publicada** 15/11 (`35f1cd1`, PR #4) |
 | T1 | 5 ajustes de interface | **publicada** 15/11 (PR #5) |
 | T2 | Endereço único do cliente (B2B usa o mesmo endereço em campos) + aviso de número ausente + versão 0.9.0 em Mais | **vez do Codex** |
+| T2b | Novo pedido: aviso de horário de hoje que já passou | depois da T2 (detalhes abaixo) |
 | T3  | Acabamento visual tela a tela                                    | a detalhar pelo Claude                                               |
 | T4  | Modo escuro                                                      | a detalhar pelo Claude                                               |
 | T5 | "Novidades" após atualizar + histórico em Mais (ligado a partir da 1.0.0) | a detalhar pelo Claude; última tarefa antes da 1.0 |
@@ -141,6 +142,14 @@ Regras de sempre: tokens do `theme.css`, nada de dados reais, nenhuma operação
 - Em **Mais → Novidades**, o histórico de todas as versões.
 - Fonte única: o texto vem do histórico "Versões do app" (o Claude escreve ao publicar). Correções técnicas que não mudam o uso não entram.
 - Só fica ativo a partir da **1.0.0**, para funcionar como boas-vindas no dia da entrega.
+
+### T2b — horário de hoje que já passou (aprovado pelo Felipe em 15/11)
+
+No passo "Quando entregar?" do Novo pedido (`src/features/mobile/Totem.tsx`, passo WHEN):
+- Com o dia = **hoje** (America/Fortaleza), os botões de horário que já passaram ficam com aparência apagada, mas continuam clicáveis.
+- Se o horário escolhido ou digitado ("Outro horário") já passou: aviso "Esse horário de hoje já passou. É um pedido que já foi entregue?" e **Continuar** só libera depois de "Sim, registrar mesmo assim". Mesmo padrão do aviso de pedido repetido: não bloqueia de vez.
+- Trocar o dia ou o horário zera a confirmação. Dias futuros não mudam nada. Na edição de pedido existente, não avisar.
+- Unitário para "já passou" (fuso America/Fortaleza, virada de dia) e E2E com relógio controlado (`page.clock`): horário passado exige o toque extra; horário futuro não.
 
 ## Versões do app
 
