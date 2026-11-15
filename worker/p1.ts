@@ -19,7 +19,7 @@ export async function p1(req: Request, env: Env, a: Actor) {
   const [, , , resource, id] = new URL(req.url).pathname.split('/');
   if (['weight-recipes', 'costing-settings'].includes(resource))
     return weightCosting(req, env.DB!, a, resource, id);
-  if (['kits', 'kit-settings'].includes(resource))
+  if (['kits', 'kit-settings', 'kit-default'].includes(resource))
     return kits(req, env.DB!, a, resource, id);
   if (resource === 'push') return push(req, env, a);
   if (resource === 'backup' && req.method === 'GET') {

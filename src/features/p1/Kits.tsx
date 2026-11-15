@@ -79,6 +79,38 @@ export function Kits({ role }: { role: string }) {
       setBusy(false);
     }
   }
+  async function defaultAll(k: Kit) {
+    if (
+      pending.current ||
+      !confirm(
+        `Usar ${kitLabel(k)} como kit padrão de todos os estabelecimentos ativos? ` +
+          'Isso troca o padrão de quem já tinha outro kit. Pessoas físicas não mudam.',
+      )
+    )
+      return;
+    pending.current = true;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const r = await api<{ changed: number; establishments: number }>(
+        'p1/kit-default',
+        'POST',
+        { kit_id: k.id },
+        crypto.randomUUID(),
+      );
+      setNotice(
+        `${kitLabel(k)} agora é o padrão de ${r.establishments} ${
+          r.establishments === 1 ? 'estabelecimento' : 'estabelecimentos'
+        }` + (r.changed ? '.' : ' (já estava assim).'),
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      pending.current = false;
+      setBusy(false);
+    }
+  }
   function reset() {
     setEditing(null);
     setDraft(blank());
@@ -402,6 +434,16 @@ export function Kits({ role }: { role: string }) {
               }}
             >
               Editar {kitLabel(k)}
+            </Button>
+          )}
+          {owner && !!k.active && (
+            <Button
+              variant="ghost"
+              disabled={busy}
+              aria-label={`Usar ${kitLabel(k)} como padrão em todos os estabelecimentos`}
+              onClick={() => void defaultAll(k)}
+            >
+              Usar como padrão em todos os estabelecimentos
             </Button>
           )}
         </article>
