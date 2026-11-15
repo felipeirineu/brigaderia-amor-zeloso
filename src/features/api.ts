@@ -17,17 +17,40 @@ export async function api<T>(
       0,
       'Sem conexão. Alterações não foram enviadas nem guardadas offline.',
     );
-  const response = await fetch(`/api/${path}`, {
-    method,
-    credentials: 'same-origin',
-    cache: 'no-store',
-    headers: {
-      ...(method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
-      ...(key ? { 'Idempotency-Key': key } : {}),
-    },
-    ...(data !== undefined ? { body: JSON.stringify(data) } : {}),
-  });
-  const result = (await response.json()) as { error?: string };
+  // A conexão pode cair no meio do envio. Com a mesma Idempotency-Key, tocar
+  // de novo não duplica: o servidor devolve o que já tinha gravado. Sem chave,
+  // não prometemos isso.
+  const lost = () =>
+    new ApiError(
+      0,
+      method === 'GET'
+        ? 'A conexão caiu. Confira a internet e tente de novo.'
+        : key
+          ? 'A conexão caiu antes da resposta. Confira a internet e toque de novo — o app não duplica o registro.'
+          : 'A conexão caiu antes da resposta. Confira na lista se foi salvo antes de tentar de novo.',
+    );
+  let response: Response;
+  try {
+    response = await fetch(`/api/${path}`, {
+      method,
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: {
+        ...(method !== 'GET' ? { 'Content-Type': 'application/json' } : {}),
+        ...(key ? { 'Idempotency-Key': key } : {}),
+      },
+      ...(data !== undefined ? { body: JSON.stringify(data) } : {}),
+    });
+  } catch {
+    throw lost();
+  }
+  let result: { error?: string };
+  try {
+    result = (await response.json()) as { error?: string };
+  } catch {
+    if (response.ok) throw lost();
+    result = {};
+  }
   if (!response.ok) {
     if (response.status === 401)
       window.dispatchEvent(new Event('session-expired'));
