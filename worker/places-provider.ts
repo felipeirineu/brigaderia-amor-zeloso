@@ -113,8 +113,12 @@ async function photon(
   return results;
 }
 
-/** Sugestões por nome ou endereço digitado. */
-export function searchPlaces(
+/**
+ * Sugestões por nome ou endereço digitado. Com a base da empresa cadastrada,
+ * o Photon prioriza o que está perto dela (ex.: "Shopping" traz primeiro os
+ * da cidade). A base vai arredondada (~1 km): basta para ordenar.
+ */
+export async function searchPlaces(
   db: D1Database,
   org: string,
   query: string,
@@ -122,8 +126,30 @@ export function searchPlaces(
 ): Promise<Place[]> {
   const u = new URL('https://photon.komoot.io/api/');
   u.searchParams.set('q', query);
-  u.searchParams.set('limit', '5');
-  return photon(db, org, query.toLowerCase(), u, 5, userAgent);
+  u.searchParams.set('limit', '6');
+  let bias = '';
+  try {
+    const row = await db
+      .prepare(
+        'SELECT data FROM company_places WHERE organization_id=? AND id=?',
+      )
+      .bind(org, org)
+      .first<{ data: string }>();
+    const base = row ? (JSON.parse(row.data) as Partial<Place>) : null;
+    if (
+      typeof base?.latitude === 'number' &&
+      typeof base?.longitude === 'number'
+    ) {
+      const lat = base.latitude.toFixed(2),
+        lon = base.longitude.toFixed(2);
+      u.searchParams.set('lat', lat);
+      u.searchParams.set('lon', lon);
+      bias = '@' + lat + ',' + lon;
+    }
+  } catch {
+    // Sem base legível, busca sem prioridade de proximidade.
+  }
+  return photon(db, org, query.toLowerCase() + bias, u, 6, userAgent);
 }
 
 /**

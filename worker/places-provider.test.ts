@@ -33,3 +33,24 @@ for (const [label, configured, expected] of [
     expect(new Headers(call[0][1].headers).get('User-Agent')).toBe(expected);
   });
 }
+it('Photon prioriza resultados perto da base cadastrada (arredondada)', async () => {
+  const base = JSON.stringify({ latitude: -3.731862, longitude: -38.526669 });
+  let calls = 0;
+  const db = {
+    prepare: (sql: string) => ({
+      bind: () => ({
+        first: async () =>
+          sql.includes('company_places') ? { data: base } : (calls++, null),
+        run: async () => ({ meta: { changes: 1 } }),
+      }),
+    }),
+    batch: async () => [],
+  } as unknown as D1Database;
+  const fetcher = vi.fn(async () => Response.json({ features: [] }));
+  vi.stubGlobal('fetch', fetcher);
+  await searchPlaces(db, 'org-demo', 'Shopping DEMONSTRAÇÃO');
+  const url = (fetcher.mock.calls as unknown as [URL][])[0][0];
+  expect(url.searchParams.get('lat')).toBe('-3.73');
+  expect(url.searchParams.get('lon')).toBe('-38.53');
+  expect(calls).toBe(1);
+});

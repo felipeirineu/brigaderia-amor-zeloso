@@ -513,7 +513,12 @@ function Customers({
                   value={site ?? emptyPlace()}
                   onChange={setSite}
                   onName={(name) =>
-                    setForm({ ...form, name: name || form.name })
+                    // Só sugere o nome se ainda estiver vazio: não troca o
+                    // nome do cliente pelo do estabelecimento escolhido.
+                    setForm((f) => ({
+                      ...f,
+                      name: f.name.trim() ? f.name : name,
+                    }))
                   }
                 />
                 {form.customer_type === 'establishment' && (

@@ -385,6 +385,40 @@ input[type='radio'] {
   font-weight: 600;
 }
 
+/* Sugestões de endereço enquanto digita. */
+.place-suggestions {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 6px;
+  border-radius: var(--az-radius-field);
+  background: var(--az-surface);
+  box-shadow: var(--az-shadow-card);
+}
+.place-suggestions .az-button {
+  width: 100%;
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  text-align: left;
+  border-radius: 12px;
+  padding: 10px 12px;
+  min-height: 52px;
+}
+.place-suggestion-name,
+.place-suggestion-address {
+  display: block;
+  text-align: left;
+}
+.place-suggestion-name {
+  font-weight: 700;
+  color: var(--az-ink);
+}
+.place-suggestion-address {
+  font-weight: 400;
+  font-size: 0.88rem;
+  color: var(--az-muted);
+}
+
 /* Aviso de pedido repetido no mesmo dia (não bloqueia, pede um toque). */
 .same-day-warning {
   margin: 4px 0 16px;

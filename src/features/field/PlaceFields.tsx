@@ -1,9 +1,12 @@
 import { Button } from '../../components/Button';
-import { useRef, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import { api } from '../api';
 import { Failure } from '../operations/common';
 import { composeAddress, type Place } from '../../../shared/field';
 import { locatedNotice, mergeLocated, reverseLookup } from './locate';
+
+// Relógio só usado em eventos e temporizadores (nunca durante a renderização).
+const clock = () => Date.now();
 
 export function PlaceFields({
   value,
@@ -21,6 +24,8 @@ export function PlaceFields({
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [busy, setBusy] = useState(false),
+    [searching, setSearching] = useState(false),
+    listId = useId(),
     waiting = useRef(false),
     last = useRef(0);
   const located = value.latitude !== null && value.longitude !== null,
@@ -33,20 +38,64 @@ export function PlaceFields({
       ...patch,
       ...(move ? { latitude: null, longitude: null } : {}),
     });
-  async function search() {
-    if (waiting.current || Date.now() - last.current < 1100) return;
+  // Sugestões enquanto digita: espera uma pausa curta, respeita o limite de
+  // uma consulta por segundo do serviço gratuito e ignora respostas antigas.
+  const serial = useRef(0),
+    timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function schedule(text: string, delay = 700) {
+    if (timer.current) clearTimeout(timer.current);
+    const mine = ++serial.current;
+    if (text.trim().length < 3) {
+      setSuggestions([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const gap = Math.max(delay, 1100 - (clock() - last.current));
+    timer.current = setTimeout(() => void search(text, mine), gap);
+  }
+  async function search(text: string, mine: number) {
+    if (waiting.current) return schedule(text, 400);
     waiting.current = true;
-    last.current = Date.now();
-    setBusy(true);
+    last.current = clock();
     setError('');
     try {
-      setSuggestions(await api<Place[]>('field/search', 'POST', { q }));
+      const found = await api<Place[]>('field/search', 'POST', { q: text });
+      if (mine === serial.current) {
+        setSuggestions(found);
+        setSearching(false);
+      }
     } catch (e) {
-      setError((e as Error).message);
+      if (mine !== serial.current) return;
+      // Limite momentâneo do serviço: tenta de novo sozinho, sem erro na tela.
+      if ((e as { status?: number }).status === 429)
+        timer.current = setTimeout(() => void search(text, mine), 1200);
+      else {
+        setError((e as Error).message);
+        setSearching(false);
+      }
     } finally {
       waiting.current = false;
-      setBusy(false);
     }
+  }
+  function choose(p: Place) {
+    if (timer.current) clearTimeout(timer.current);
+    serial.current++;
+    onChange({
+      ...value,
+      ...p,
+      no_number: false,
+      complement: value.complement,
+      reference: value.reference,
+      instagram: value.instagram,
+    });
+    onName?.(p.name);
+    setSuggestions([]);
+    setSearching(false);
+    setQ('');
+    setNotice(
+      'Endereço preenchido pela sugestão. Confira a rua e o número antes de salvar.',
+    );
   }
   function locate() {
     setError('');
@@ -91,28 +140,51 @@ export function PlaceFields({
           </Button>
         </>
       )}
-      <details className="place-search">
-        <summary>Buscar pelo nome ou endereço</summary>
+      <div className="place-search">
         <label>
-          Buscar estabelecimento
+          Buscar endereço ou estabelecimento
           <input
+            type="search"
+            autoComplete="off"
+            enterKeyHint="search"
+            placeholder="Ex.: Shopping, Rua das Flores 120"
+            aria-controls={listId}
+            aria-autocomplete="list"
             value={q}
             onChange={(e) => {
               setQ(e.target.value);
-              setSuggestions([]);
+              schedule(e.target.value);
             }}
           />
         </label>
-        <Button
-          type="button"
-          disabled={busy || q.trim().length < 3}
-          onClick={() => void search()}
-          loading={busy}
-        >
-          Buscar sugestões
-        </Button>
+        {(searching ||
+          (q.trim().length >= 3 && !suggestions.length && !error)) && (
+          <p className="place-credit" role="status">
+            {searching
+              ? 'Procurando…'
+              : 'Nenhuma sugestão. Preencha os campos abaixo.'}
+          </p>
+        )}
+        {suggestions.length > 0 && (
+          <ul
+            id={listId}
+            className="place-suggestions"
+            aria-label="Sugestões de endereço"
+          >
+            {suggestions.map((p, i) => (
+              <li key={i}>
+                <Button type="button" variant="ghost" onClick={() => choose(p)}>
+                  <span className="place-suggestion-name">
+                    {p.name || p.street || p.address}
+                  </span>
+                  <span className="place-suggestion-address">{p.address}</span>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
         <p className="place-credit">
-          Busca gratuita · ©{' '}
+          Sugestões gratuitas · ©{' '}
           <a
             href="https://www.openstreetmap.org/copyright"
             target="_blank"
@@ -122,26 +194,7 @@ export function PlaceFields({
           </a>{' '}
           · Photon. Confira o resultado.
         </p>
-        {suggestions.map((p, i) => (
-          <Button
-            type="button"
-            key={i}
-            onClick={() => {
-              onChange({
-                ...value,
-                ...p,
-                complement: value.complement,
-                reference: value.reference,
-                instagram: value.instagram,
-              });
-              onName?.(p.name);
-              setSuggestions([]);
-            }}
-          >
-            {p.name} · {p.address}
-          </Button>
-        ))}
-      </details>
+      </div>
       <Failure message={error} />
       {notice && <p role="status">{notice}</p>}
       {legacy && (
