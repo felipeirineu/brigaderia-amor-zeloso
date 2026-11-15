@@ -32,6 +32,7 @@ import {
   type Status,
 } from '../../../shared/order-state';
 import { useRemote, Failure, localDay, type OperationalOrder } from './common';
+import { Mascot } from '../../components/Mascot';
 function DayTotals({
   totals,
   financial = false,
@@ -720,7 +721,7 @@ export function Today({
                 ['delivered', 'picked_up'].includes(o.status)),
           ) && (
             <section className="empty-state">
-              <CheckCircle2 size={36} aria-hidden="true" />
+              <Mascot size={88} />
               <h2>Nenhuma entrega neste período.</h2>
               <Button to="/gestao/pedidos?novo=1" variant="primary">
                 Novo pedido

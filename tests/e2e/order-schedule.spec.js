@@ -102,6 +102,16 @@ test('R12 calendário com contagem, sugestão editável e sucesso abre agenda do
       p.getByRole('heading', { name: 'Como vai pagar?', exact: true }),
     ).toBeVisible();
     await p.getByRole('button', { name: /^Continuar/ }).click();
+    // O dia escolhido já tem um pedido deste cliente: aviso de repetido.
+    await expect(
+      p.getByRole('alert').filter({ hasText: 'Já existe' }),
+    ).toBeVisible();
+    await p
+      .getByRole('button', {
+        name: 'É outro pedido, confirmar mesmo assim',
+        exact: true,
+      })
+      .click();
     const create = p.waitForResponse(
       (r) =>
         r.url().endsWith('/api/mobile/orders') &&

@@ -1,7 +1,15 @@
 export interface Place {
   name: string;
+  /** Linha única usada por mapa, Uber/99, WhatsApp e pedidos. Montada a partir
+   *  dos campos abaixo quando `street` existe; texto livre nos cadastros antigos. */
   address: string;
+  street?: string;
+  number?: string;
+  no_number?: boolean;
+  complement?: string;
   neighborhood: string;
+  city?: string;
+  reference?: string;
   latitude: number | null;
   longitude: number | null;
   instagram: string;
@@ -9,11 +17,38 @@ export interface Place {
 export const emptyPlace = (): Place => ({
   name: '',
   address: '',
+  street: '',
+  number: '',
+  no_number: false,
+  complement: '',
   neighborhood: '',
+  city: '',
+  reference: '',
   latitude: null,
   longitude: null,
   instagram: '',
 });
+/** "Rua X, 123, Apto 2, Bairro, Cidade" (S/N quando marcado). */
+export function composeAddress(p: Partial<Place>) {
+  const street = (p.street ?? '').trim();
+  if (!street) return '';
+  const number = p.no_number ? 'S/N' : (p.number ?? '').trim();
+  return [street, number, p.complement, p.neighborhood, p.city]
+    .map((x) => (x ?? '').trim())
+    .filter(Boolean)
+    .join(', ');
+}
+/** Recalcula `address` quando há campos separados; preserva o texto antigo. */
+export function withAddress<T extends Partial<Place>>(p: T): T {
+  const composed = composeAddress(p);
+  return composed ? { ...p, address: composed } : p;
+}
+/** Endereço para entrega: inclui o ponto de referência, se houver. */
+export function deliveryAddress(p: Partial<Place>) {
+  const base = (p.address ?? '').trim(),
+    ref = (p.reference ?? '').trim();
+  return ref && base ? base + ' · Ref.: ' + ref : base;
+}
 export function instagramProfile(raw: string) {
   const text = raw.trim();
   if (!text) return '';

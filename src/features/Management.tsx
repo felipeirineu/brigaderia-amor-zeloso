@@ -36,6 +36,7 @@ import { FieldProvider, SiteAvatar, useField } from './field/FieldContext';
 import { SiteEditor, CompanyEditor, SiteInfo } from './field/SiteEditor';
 import { CustomerCapture } from './field/CustomerCapture';
 import { PlaceFields } from './field/PlaceFields';
+import { locatedNotice, mergeLocated, reverseLookup } from './field/locate';
 import { Travel } from './field/Travel';
 import { emptyPlace, type Place } from '../../shared/field';
 import { Preferences } from './mobile/Preferences';
@@ -78,6 +79,7 @@ import { HelpCenter, Tour } from './help/HelpCenter';
 import { Today, OrderDetail, Recurring, MessageTemplates } from './Operations';
 import { statusLabels, type Status } from '../../shared/order-state';
 import { api, dateTime, money, parsePrice, nextWeeklyTime } from './api';
+import { Mascot } from '../components/Mascot';
 
 interface Session {
   weight_costing?: boolean;
@@ -237,6 +239,7 @@ export function Login() {
   }, []);
   return (
     <section className="panel auth-panel">
+      <Mascot size={120} className="mascot-wave" />
       <p className="eyebrow">ACESSO RESTRITO</p>
       <h1>Entrar na gestão</h1>
       <p>
@@ -277,7 +280,8 @@ function Customers({
 }) {
   const field = useField(),
     [site, setSite] = useState<Place | null>(null),
-    [siteVersion, setSiteVersion] = useState(0);
+    [siteVersion, setSiteVersion] = useState(0),
+    [addressOpen, setAddressOpen] = useState(false);
   const [balances, setBalances] = useState<Summary | null>(null);
   useEffect(() => {
     if (financial)
@@ -334,6 +338,7 @@ function Customers({
     });
     setSite(null);
     setSiteVersion(0);
+    setAddressOpen(false);
     key.current = crypto.randomUUID();
   }
   function submit(e: FormEvent) {
@@ -427,9 +432,14 @@ function Customers({
             {field && form.customer_type === 'establishment' && (
               <CustomerCapture
                 key={draft}
-                onLocate={(coordinates) =>
-                  setSite((s) => ({ ...(s ?? emptyPlace()), ...coordinates }))
-                }
+                onLocate={async (coordinates) => {
+                  const found = await reverseLookup(coordinates);
+                  setSite((s) =>
+                    mergeLocated(s ?? emptyPlace(), coordinates, found),
+                  );
+                  setAddressOpen(true);
+                  return locatedNotice(!!found);
+                }}
                 onPhoto={setPhoto}
                 onBusy={setCaptureBusy}
               />
@@ -489,7 +499,10 @@ function Customers({
               Ativo
             </label>
             {field && (
-              <details>
+              <details
+                open={addressOpen}
+                onToggle={(e) => setAddressOpen(e.currentTarget.open)}
+              >
                 <DisclosureSummary>
                   {form.customer_type === 'person'
                     ? 'Endereço (opcional)'
@@ -500,7 +513,12 @@ function Customers({
                   value={site ?? emptyPlace()}
                   onChange={setSite}
                   onName={(name) =>
-                    setForm({ ...form, name: name || form.name })
+                    // Só sugere o nome se ainda estiver vazio: não troca o
+                    // nome do cliente pelo do estabelecimento escolhido.
+                    setForm((f) => ({
+                      ...f,
+                      name: f.name.trim() ? f.name : name,
+                    }))
                   }
                 />
                 {form.customer_type === 'establishment' && (
@@ -557,7 +575,10 @@ function Customers({
       {list.loading ? (
         <p role="status">Carregando…</p>
       ) : list.data.length === 0 ? (
-        <p>Nenhum cliente encontrado.</p>
+        <div className="mascot-empty">
+          <Mascot size={72} />
+          <p>Nenhum cliente encontrado.</p>
+        </div>
       ) : (
         <div className="customer-tiles customer-records">
           {list.data.map((c) => (
@@ -1452,7 +1473,10 @@ function FullOrders({
       {orders.loading ? (
         <p>Carregando…</p>
       ) : !orders.data.length ? (
-        <p>Nenhum pedido encontrado.</p>
+        <div className="mascot-empty">
+          <Mascot size={72} />
+          <p>Nenhum pedido encontrado.</p>
+        </div>
       ) : (
         <div className="record-list">
           {orders.data.map((o) => (

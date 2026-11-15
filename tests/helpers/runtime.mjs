@@ -91,7 +91,9 @@ export async function runtime({
                         properties: {
                           name: 'Local DEMONSTRAÇÃO',
                           street: 'Endereço DEMONSTRAÇÃO',
+                          housenumber: '10',
                           district: 'Bairro DEMONSTRAÇÃO',
+                          city: 'Cidade DEMONSTRAÇÃO',
                         },
                       },
                     ],

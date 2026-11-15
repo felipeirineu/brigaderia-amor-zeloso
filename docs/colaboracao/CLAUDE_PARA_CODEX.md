@@ -6,6 +6,12 @@
 
 ## Histórico
 
+- **2026-11-15 (1)** — Publicado pelo Claude no main (`847e1c3`, três navegadores e Segurança verdes), com aprovação do responsável. R16 revisada pelo Claude sem bloqueios; **0023 aplicada no banco real** (23 aplicadas, 0 pendentes, 0 violações). **Atualize do main antes da R17**, porque ela mexe nos mesmos arquivos:
+  - **Visual 2026** (`src/theme.css`, seção 8.1) e **mascote** (`src/components/Mascot.tsx`, só nos pontos já usados). A barra inferior ficou **sem `backdrop-filter`** e as sombras têm uma camada: o WebKit do CI sem GPU estourava o tempo. Não reintroduzir. O projeto `webkit-mobile` tem `timeout: 60000`.
+  - **Totem:** aviso de pedido repetido (mesmo cliente, mesmo dia, via `today?date=`), que não bloqueia e exige "É outro pedido, confirmar mesmo assim"; não aparece ao editar. **R17-2 (rascunho):** não restaurar o "confirmar mesmo assim" a partir do rascunho; o aviso deve reaparecer.
+  - **`api.ts`:** a conexão que cai no meio do envio vira `ApiError(0)` em português. A frase "não duplica" só aparece com `Idempotency-Key`.
+  - **Endereço (`shared/field.ts`):** `Place` ganhou `street`, `number`, `no_number`, `complement`, `city` e `reference`. O servidor monta `address` (`withAddress`) quando há rua; texto antigo é preservado. Use `deliveryAddress()` quando precisar da referência. `POST field/reverse` (Photon, coordenada arredondada) e busca com viés pela base (`company_places`). Sugestões enquanto digita em `PlaceFields` (pausa de 700 ms, 1 consulta/s). Nada de Google/pago sem aprovação.
+  - O perfil B2B (`customer_profiles`) ainda usa o endereço antigo (address/neighborhood/reference). Unificar depois, com aprovação.
 - **2026-11-14 (7)** — **R15 aprovada e publicada** pelo Claude (Codex sem cota), com aprovação do responsável: junção de `codex/r15-kit-order-model` (0bad99f) com o main (Pix e timeout do CI), sem conflitos, em `01b36de`. Testes após a junção: lint, tipos, 90 unitários, 12 suítes de servidor e 49 E2E Chromium móvel; conferência completa do Codex em 0bad99f (143 E2E, três navegadores). **Ao voltar: atualize do main antes de qualquer coisa; seu branch está contido nele.** O responsável vai aplicar 0020–0022 pelo "Homologação D1". Próximo: **R16** (calculadora por peso, itens 1–12) e depois R17 (exceto o item 1, já feito) → R7.
 - **2026-11-14 (6)** — Banco real: migrações 0016–0019 aplicadas pelo responsável (19 aplicadas, 0 pendentes, 0 violações) e dados de teste apagados (pedidos, movimentos, cliente e produtos de teste). Workflow de limpeza removido após o uso. **Ao avançar o main com a 0020, avise o responsável para rodar "Homologação D1" de novo.**
 - **2026-11-14 (5)** — **Repositório privado.** CodeQL e dependency-review removidos (exigem Advanced Security). Para caber em 2.000 min/mês: CI ignora mudanças só de docs, cancela execuções antigas do mesmo branch e, em branch de trabalho, roda E2E só no Chromium móvel (no `main`, PR e manual: três navegadores). **Antes de avançar o main, rode a bateria completa no branch** com "Run workflow" (workflow_dispatch) em "Validação da gestão", para ver o WebKit também. Evite commits só de formatação separados: rode `format:check` antes de enviar.
@@ -1199,6 +1205,16 @@ Aposentar as planilhas de Excel e deixar a brigaderia inteira na palma da mão. 
 - **Estados vazios úteis** ("Nenhuma entrega hoje. Gerar pedidos da semana?").
 - **Feedback de salvamento** visível. Offline continua com aviso claro e sem gravação.
 - **PC:** mesmas telas em duas colunas, tabelas completas, filtros e atalhos de teclado nos cadastros longos.
+
+### 8.1 Visual 2026 (`src/theme.css`) — aprovado em 14/11/2026
+
+- `src/theme.css` é carregado **depois** de `styles.css` e só muda aparência. Componentes novos devem **usar os tokens** (`--az-choc`, `--az-paper`, `--az-tonal`, `--az-gold`, `--az-gold-ink`, `--az-muted`, `--az-ok`, `--az-ok-bg`, `--az-warn-bg`, `--az-radius-card` 28px, `--az-radius-field` 16px, `--az-shadow-card`, `--az-spring`), nunca cores ou raios soltos.
+- Reaproveite as classes existentes (`.panel`, `.az-button` e variantes, `.status-tag`) em vez de criar estilos próprios; assim o tema chega sozinho.
+- Títulos de página usam a serifa (`--az-serif`); títulos de cartão continuam sem serifa.
+- Fontes são locais (`@fontsource`). Não adicionar Google Fonts nem CDN: a CSP bloqueia.
+- O verde de sucesso é `#2b7a49` (há teste E2E conferindo). Não alterar sem atualizar o teste.
+- **Mascote da marca:** não usar até os proprietários enviarem o arquivo e autorizarem. Quando vier, aparece só em momentos especiais (estados vazios, pedido confirmado, abertura, ajuda).
+- Modo escuro fica para uma fase posterior. Não implementar por conta própria.
 
 ## 9. Ajuda contextual (ícones de explicação)
 

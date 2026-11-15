@@ -22,6 +22,9 @@ export default defineConfig({
     },
     {
       name: 'webkit-mobile',
+      // O WebKit do CI desenha sem GPU e é ~2x mais lento que o Chromium;
+      // mais folga só para ele, sem pular nenhuma verificação.
+      timeout: 60000,
       use: {
         ...devices['iPhone 13'],
         launchOptions: {
