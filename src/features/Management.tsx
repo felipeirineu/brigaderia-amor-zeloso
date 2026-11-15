@@ -86,7 +86,14 @@ import { Icon, type IconName } from '../components/Icon';
 import { HelpCenter, Tour } from './help/HelpCenter';
 import { Today, OrderDetail, Recurring, MessageTemplates } from './Operations';
 import { statusLabels, type Status } from '../../shared/order-state';
-import { api, dateTime, money, parsePrice, nextWeeklyTime } from './api';
+import {
+  ApiError,
+  api,
+  dateTime,
+  money,
+  parsePrice,
+  nextWeeklyTime,
+} from './api';
 import { Mascot } from '../components/Mascot';
 
 interface Session {
@@ -1705,12 +1712,24 @@ export function Management() {
           }
         })
         .catch((e) => {
-          if (active) {
-            setSession(null);
-            setError(e.message);
+          if (!active) return;
+          // Falha só de rede (ex.: Android "acordando" a internet ao voltar
+          // ao app): mantém a gestão aberta e tenta de novo em instantes.
+          // Só sai da gestão quando o servidor recusa a sessão.
+          if (e instanceof ApiError && e.status === 0) {
+            if (retry) clearTimeout(retry);
+            retry = setTimeout(check, 4000);
+            setSession((current) => {
+              if (!current) setError(e.message);
+              return current;
+            });
+            return;
           }
+          setSession(null);
+          setError(e.message);
         });
     };
+    let retry: ReturnType<typeof setTimeout> | undefined;
     check();
     const timer = setInterval(check, 60000);
     const expired = () => {
@@ -1731,6 +1750,7 @@ export function Management() {
     return () => {
       active = false;
       clearInterval(timer);
+      if (retry) clearTimeout(retry);
       window.removeEventListener('session-expired', expired);
       window.removeEventListener('offline', offline);
       window.removeEventListener('online', connected);

@@ -73,7 +73,10 @@ export function CompactHeader({
     initials = own?.version ? nameInitials(own.display_name) : '';
   return (
     <>
-      <header className="compact-header" aria-label="Cabeçalho da gestão">
+      <header
+        className={'compact-header' + (segment ? '' : ' compact-header--home')}
+        aria-label="Cabeçalho da gestão"
+      >
         <Button
           to="/gestao"
           aria-label="Início da gestão Amor Zeloso"

@@ -79,6 +79,14 @@ h1,
   font-weight: 600;
   letter-spacing: 0.08em;
 }
+/* Data do dia mais legível (pedido do responsável, 15/11). */
+.today-greeting .eyebrow {
+  font-size: 14px;
+  letter-spacing: 0.06em;
+  /* Compensa o tamanho maior para o primeiro cartão continuar sem rolar. */
+  line-height: 1.2;
+  margin-bottom: 1px;
+}
 
 /* Cartões. */
 .panel {
@@ -305,6 +313,17 @@ input[type='radio'] {
   }
 }
 
+/* Cabeçalho compacto. Logo maior ao lado do título (pedido de 15/11). */
+.compact-header > a img {
+  width: 44px;
+  height: 44px;
+}
+/* No Hoje (tela de boas-vindas) o logo é maior; nas telas de trabalho fica
+   em 44 px para não apertar o cabeçalho. */
+.compact-header--home > a img {
+  width: 56px;
+  height: 56px;
+}
 /* Cabeçalho compacto. */
 .compact-header {
   background: transparent;
