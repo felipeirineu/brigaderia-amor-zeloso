@@ -419,6 +419,28 @@ input[type='radio'] {
   color: var(--az-muted);
 }
 
+/* Versão nova disponível (gestão). */
+.app-update {
+  position: sticky;
+  top: 8px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 8px 0 12px;
+  padding: 10px 10px 10px 16px;
+  border-radius: 20px;
+  background: var(--az-choc);
+  color: var(--az-cream);
+  box-shadow: var(--az-shadow-raised);
+}
+.app-update .az-button {
+  background: var(--az-cream);
+  color: var(--az-choc);
+  min-height: 44px;
+}
+
 /* Aviso de pedido repetido no mesmo dia (não bloqueia, pede um toque). */
 .same-day-warning {
   margin: 4px 0 16px;

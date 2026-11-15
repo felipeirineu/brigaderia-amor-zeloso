@@ -11,6 +11,7 @@ import {
 import { Login, Management } from './features/Management';
 import { Icon } from './components/Icon';
 import { RuntimeStatus } from './components/RuntimeStatus';
+import { AppUpdate } from './components/AppUpdate';
 import { demoSteps, modules } from './features/modules';
 
 function Dashboard() {
@@ -198,6 +199,7 @@ export function App() {
             Amor Zeloso <small>Gestão</small>
           </span>
         </Link>
+        <AppUpdate />
         <Routes>
           <Route path="/gestao/*" element={<Management />} />
         </Routes>
