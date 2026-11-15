@@ -282,9 +282,9 @@ export function Totem({
   const site = customer
       ? field?.data?.sites.find((x) => x.id === customer.id)
       : undefined,
-    savedAddress =
-      deliveryAddress(site?.data ?? {}) ||
-      (defaults
+    savedAddress = site
+      ? deliveryAddress(site.data)
+      : defaults
         ? [
             defaults.profile.address,
             defaults.profile.neighborhood,
@@ -292,7 +292,7 @@ export function Totem({
           ]
             .filter(Boolean)
             .join(' ')
-        : ''),
+        : '',
     [saveAddress, setSaveAddress] = useState(true),
     [addressNotice, setAddressNotice] = useState('');
   const flow = financial
@@ -493,13 +493,13 @@ export function Totem({
       const d = await api<Defaults>('mobile/defaults/' + c.id + '?kits=1');
       if (serial !== choice.current) return false;
       setDefaults(d);
+      const currentSite = field?.data?.sites.find((s) => s.id === c.id);
       setAddress(
-        deliveryAddress(
-          field?.data?.sites.find((s) => s.id === c.id)?.data ?? {},
-        ) ||
-          [d.profile.address, d.profile.neighborhood, d.profile.reference]
-            .filter(Boolean)
-            .join(' '),
+        currentSite
+          ? deliveryAddress(currentSite.data)
+          : [d.profile.address, d.profile.neighborhood, d.profile.reference]
+              .filter(Boolean)
+              .join(' '),
       );
       setCourier(d.profile.courier);
       setCourierName(d.profile.courier_name);

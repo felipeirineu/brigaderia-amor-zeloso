@@ -48,3 +48,6 @@ export const locatedNotice = (status: LookupResult['status']) =>
     : status === 'nostreet'
       ? 'Localização guardada. O mapa não tem o nome desta rua: preencha o endereço.'
       : 'Localização guardada. O serviço de mapa não respondeu agora: preencha o endereço ou tente de novo em instantes.';
+
+export const missingNumberNotice =
+  'O mapa não tem o número deste local. Digite o número ou marque S/N.';

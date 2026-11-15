@@ -3,7 +3,12 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { api } from '../api';
 import { Failure } from '../operations/common';
 import { composeAddress, type Place } from '../../../shared/field';
-import { locatedNotice, mergeLocated, reverseLookup } from './locate';
+import {
+  locatedNotice,
+  mergeLocated,
+  reverseLookup,
+  missingNumberNotice,
+} from './locate';
 
 // Relógio só usado em eventos e temporizadores (nunca durante a renderização).
 const clock = () => Date.now();
@@ -13,12 +18,22 @@ export function PlaceFields({
   onChange,
   onName,
   hideLocation = false,
+  numberFocusRequest = 0,
 }: {
   hideLocation?: boolean;
+  numberFocusRequest?: number;
   value: Place;
   onChange: (p: Place) => void;
   onName?: (name: string) => void;
 }) {
+  const numberInput = useRef<HTMLInputElement>(null);
+  const [numberFocus, setNumberFocus] = useState(0);
+  useEffect(() => {
+    if (!numberFocusRequest && !numberFocus) return;
+    // Aguarda o React reabrir os campos e o toque terminar antes de focar.
+    const frame = requestAnimationFrame(() => numberInput.current?.focus());
+    return () => cancelAnimationFrame(frame);
+  }, [numberFocusRequest, numberFocus]);
   const [q, setQ] = useState(''),
     [suggestions, setSuggestions] = useState<Place[]>([]),
     [error, setError] = useState(''),
@@ -101,8 +116,11 @@ export function PlaceFields({
     setSearching(false);
     setQ('');
     setNotice(
-      'Endereço preenchido pela sugestão. Confira a rua e o número antes de salvar.',
+      p.number?.trim()
+        ? 'Endereço preenchido pela sugestão. Confira a rua e o número antes de salvar.'
+        : missingNumberNotice,
     );
+    if (!p.number?.trim()) setNumberFocus((n) => n + 1);
   }
   function locate() {
     setError('');
@@ -120,7 +138,9 @@ export function PlaceFields({
         };
         const { found, status } = await reverseLookup(coords);
         onChange(mergeLocated(value, coords, found));
-        setNotice(locatedNotice(status));
+        const missing = status !== 'error' && !found?.number?.trim();
+        setNotice(missing ? missingNumberNotice : locatedNotice(status));
+        if (missing) setNumberFocus((n) => n + 1);
         setBusy(false);
       },
       () => {
@@ -225,6 +245,7 @@ export function PlaceFields({
         <label>
           Número
           <input
+            ref={numberInput}
             inputMode="numeric"
             maxLength={20}
             disabled={!!value.no_number}

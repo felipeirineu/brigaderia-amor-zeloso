@@ -1,3 +1,6 @@
+import { useField } from '../field/FieldContext';
+import { PlaceFields } from '../field/PlaceFields';
+import { emptyPlace, type Place } from '../../../shared/field';
 import {
   customerType,
   type CustomerType,
@@ -15,14 +18,17 @@ import { useRemote, Failure } from '../operations/common';
 import { emptyProfile, type B2BProfile } from '../../../shared/finance';
 import { TermsEditor } from './TermsEditor';
 export function CustomerProfile() {
+  const { id } = useParams();
+  return <Profile key={id} id={id!} />;
+}
+function Profile({ id }: { id: string }) {
   const courierLabels = useCourierLabels();
   const kits = useKitCatalog();
-  const { id } = useParams(),
-    view = useRemote<{
-      data: B2BProfile;
-      version: number;
-      customer_type?: CustomerType;
-    }>(`finance/customers/${id}/profile`);
+  const view = useRemote<{
+    data: B2BProfile;
+    version: number;
+    customer_type?: CustomerType;
+  }>(`finance/customers/${id}/profile`);
   const [form, setForm] = useState<B2BProfile | null>(null),
     [fee, setFee] = useState('0,00'),
     [error, setError] = useState(''),
@@ -98,9 +104,6 @@ export function CustomerProfile() {
               [
                 ['establishment', 'Estabelecimento'],
                 ['responsible', 'Responsável'],
-                ['address', 'Endereço padrão'],
-                ['neighborhood', 'Bairro'],
-                ['reference', 'Referência'],
                 ['delivery_window', 'Janela de entrega'],
               ] as const
             )
@@ -116,15 +119,7 @@ export function CustomerProfile() {
                   {label}
                   <input
                     value={value[field]}
-                    maxLength={
-                      field === 'address'
-                        ? 600
-                        : field === 'reference'
-                          ? 200
-                          : field === 'delivery_window'
-                            ? 100
-                            : 120
-                    }
+                    maxLength={field === 'delivery_window' ? 100 : 120}
                     onChange={(e) => change({ [field]: e.target.value })}
                   />
                 </label>
@@ -221,6 +216,7 @@ export function CustomerProfile() {
               Salvar padrões do cliente
             </Button>
           </form>
+          <CustomerAddress key={id} id={id} profile={value} />
           <Button
             className="button"
             to={`/gestao/financeiro/${id}`}
@@ -231,5 +227,71 @@ export function CustomerProfile() {
         </>
       )}
     </>
+  );
+}
+
+/** Mesmo cadastro de Clientes/Localização; salvar condições não cria outro endereço. */
+function CustomerAddress({ id, profile }: { id: string; profile: B2BProfile }) {
+  const field = useField();
+  const site = field?.data?.sites.find((s) => s.id === id);
+  const [draft, setDraft] = useState<Place | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const value = draft ??
+    site?.data ?? {
+      ...emptyPlace(),
+      address: [profile.address, profile.neighborhood]
+        .filter(Boolean)
+        .join(', '),
+      reference: profile.reference,
+    };
+  if (!field)
+    return <p>O endereço em campos depende da ativação de Localização.</p>;
+  return (
+    <form
+      className="panel data-form"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (busy || !field.data) return;
+        setBusy(true);
+        setError('');
+        setNotice('');
+        try {
+          await api(
+            `field/customers/${id}`,
+            'PUT',
+            { data: value, version: site?.version ?? 0 },
+            crypto.randomUUID(),
+          );
+          await field.refresh();
+          setDraft(null);
+          setNotice('Endereço salvo no cadastro do cliente.');
+        } catch (e) {
+          setError((e as Error).message);
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <h2>Endereço do cliente</h2>
+      <p>
+        O mesmo endereço de Clientes e dos novos pedidos. Pedidos anteriores não
+        mudam.
+      </p>
+      <Failure message={error} />
+      <p role="status">{notice}</p>
+      <fieldset disabled={busy || !field.data}>
+        <PlaceFields key={id} value={value} onChange={setDraft} />
+        <Button variant="primary" disabled={busy || !field.data} loading={busy}>
+          Salvar endereço
+        </Button>
+        {draft && (
+          <Button type="button" onClick={() => setDraft(null)}>
+            Descartar alterações
+          </Button>
+        )}
+      </fieldset>
+    </form>
   );
 }

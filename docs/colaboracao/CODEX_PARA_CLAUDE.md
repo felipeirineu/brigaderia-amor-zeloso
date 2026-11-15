@@ -1,3 +1,45 @@
+## T2 — entrega para revisão (15/11/2026)
+
+Branch `codex/t2-customer-address`, base/main e2b68cc. Li FILA: T1 publicada, VEZ CODEX/T2. Não editei FILA/VEZ e não iniciei T3/T4/T5.
+
+### Produzido
+
+| Item                | Status                                                                                                                                                                                                                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| T2-1 endereço único | Perfil B2B/pessoa usa PlaceFields com chave pelo cliente e a mesma API, CAS e permissões de Localização; formulário próprio Salvar endereço, independente de Salvar padrões. Legado aparece como Endereço anterior quando não há site; campos antigos preservados no schema/backup.                     |
+| T2-1 servidor       | Helper SQL comum prioriza customer_sites com linha completa e referência uma vez; legado só sem site, sem N+1. Financeiro/PC e geração semanal seguem a regra; destino específico do modelo e snapshots anteriores preservados. Totem não ressuscita legado quando um site existe com endereço apagado. |
+| T2-2 número ausente | Sugestão, GPS de PlaceFields e captura no Novo cliente avisam e focam Número após atualizar os campos. S/N permanece opção explícita, sem procurar número por proximidade.                                                                                                                              |
+| T2-3 versão         | package/package-lock em 0.9.0; Vite define versão, data/hora Fortaleza e SHA curto, fallback desenvolvimento sem git. Rodapé discreto em Mais sem chamada ao servidor.                                                                                                                                  |
+
+Sem migração, tabela nova, flag, rota nova, gasto ou dado real. Matriz de segurança mantida e executada. Tokens/estilos existentes e CSP preservados, sem inline/eval/backdrop-filter. AppUpdate e manifesto permanecem intactos.
+
+### Testes executados
+
+- 134 unitários (34 arquivos); tipos, lint, formatação e build Pages aprovados.
+- 209 verificações de segurança; financeiro existente (8 verificações) e integração nova no mesmo comando test:finance: legado/site, bairro/referência, site vazio, CAS, tenant, destino específico, geração semanal e snapshots aprovados em D1 efêmero.
+- Listagens: 65 produtos/pedidos com filhos e isolamento, mais 216 pedidos com limite 200; operações (14 verificações), geração/idempotência e mensagens passaram.
+- 4 E2E T2 aprovados nos dois navegadores móveis: perfil→Clientes/Localização→Novo pedido, versão em Mais, sugestão/GPS sem housenumber incluindo captura do cadastro, foco e S/N, sem consultas adicionais por proximidade. CSP real, runtime/D1 efêmero e fixtures DEMONSTRAÇÃO.
+- Ajustes locais da suíte antes do envio: seletores compatíveis com o fluxo atual (data explícita e endereço salvo exibido em checkbox), cooldown real do provedor respeitado e foco após renderização. Sem enfraquecer o limitador ou a CSP.
+- Mais 4 E2E de regressão aprovados: foto/localização/perfil/despesa e AppUpdate em Chromium/WebKit móveis (8 E2E únicos ao todo com os da T2). CI completo/Segurança serão os automáticos do PR; nenhum workflow manual.
+
+### Limitações
+
+Não homologado em aparelho físico ou dados de produção. Campos legados permanecem para compatibilidade e exigem redistribuição manual quando necessário; não houve conversão em massa. Endereço e condições têm botões de gravação separados; pedidos anteriores e destinos próprios de modelos não são sobrescritos. Build identifica o HEAD do checkout que o produziu (no PR pode ser o merge de teste). Consumo mensal de Actions não está disponível pela integração atual; não afirmo saldo abaixo do limite da fila.
+
+### Pendências
+
+Claude revisar/publicar somente com CI e Segurança do PR verdes, conferir limite mensal e executar a revisão geral prevista depois da T2. Codex não avança main nem troca VEZ. Em vermelho, diagnóstico na fila e correção no mesmo PR. Demais tarefas dependem de liberação e novo continue.
+
+## T2 — plano antes do código (15/11/2026)
+
+Base/main e2b68cc; li FILA (VEZ CODEX/T2; T1 publicada), AGENTS e referências vigentes. Branch `codex/t2-customer-address`; somente T2.
+
+- Profile/PlaceFields/FieldContext: endereço em campos usa customer_sites, mesma API/CAS/permissões do SiteEditor; sem site mostra legado B2B para redistribuir. Campos antigos continuam aceitos no servidor. Aceite E2E: salvar ali reflete em Localização e Novo pedido.
+- finance/management/operations e helper de endereço: site primeiro, legado apenas sem site, referência formatada uma vez, sem bairro duplicado. Preservar snapshots de pedidos e endereço explícito do modelo. Aceite integração em D1 efêmero para site+legado, só legado e recorrência; sem migração e sem N+1.
+- PlaceFields/locate: sugestão/localização sem número avisa e foca Número, sem consulta por proximidade. Aceite E2E com mapa simulado sem housenumber.
+- package/package-lock/Vite/declarações/More: versão 0.9.0 e build em Fortaleza + SHA curto via define, fallback desenvolvimento, sem chamada de rede. Aceite E2E em Mais confere package.json.
+- Tipos/lint/unitários/formatação/build, integrações e E2E dirigidos sob CSP real. Incorporar main antes de push único/PR T2; sem workflow manual, alteração da FILA ou operação Cloudflare/D1 remoto.
+
 ## T1 — entrega para revisão (15/11/2026)
 
 Branch `codex/t1-interface-exits`, base/main `7d5cd0a`. Li a fila atual: T0 publicada (PR #4), VEZ CODEX/T1. Nenhuma edição de FILA/VEZ; T2 e posteriores não iniciadas. A correção de permissão do Gitleaks publicada pelo Claude está incorporada, sem alteração de workflows nesta entrega.

@@ -91,7 +91,11 @@ export async function runtime({
                         properties: {
                           name: 'Local DEMONSTRAÇÃO',
                           street: 'Endereço DEMONSTRAÇÃO',
-                          housenumber: '10',
+                          // Objeto opcional para testar mapa sem número; true preserva a fixture usual.
+                          housenumber:
+                            typeof placesProvider === 'object'
+                              ? placesProvider.housenumber
+                              : '10',
                           district: 'Bairro DEMONSTRAÇÃO',
                           city: 'Cidade DEMONSTRAÇÃO',
                           postcode: '00000000',

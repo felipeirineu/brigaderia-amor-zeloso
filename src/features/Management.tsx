@@ -39,7 +39,12 @@ import { FieldProvider, SiteAvatar, useField } from './field/FieldContext';
 import { SiteEditor, CompanyEditor, SiteInfo } from './field/SiteEditor';
 import { CustomerCapture } from './field/CustomerCapture';
 import { PlaceFields } from './field/PlaceFields';
-import { locatedNotice, mergeLocated, reverseLookup } from './field/locate';
+import {
+  locatedNotice,
+  mergeLocated,
+  reverseLookup,
+  missingNumberNotice,
+} from './field/locate';
 import { Travel } from './field/Travel';
 import { emptyPlace, type Place } from '../../shared/field';
 import { Preferences } from './mobile/Preferences';
@@ -314,6 +319,7 @@ function Customers({
   const [captureBusy, setCaptureBusy] = useState(false);
   const [photoNotice, setPhotoNotice] = useState('');
   const [draft, setDraft] = useState(0);
+  const [numberFocusRequest, setNumberFocusRequest] = useState(0);
   useEffect(() => {
     if (search.get('novo') === '1') sheet.current?.showModal();
   }, [search]);
@@ -329,6 +335,7 @@ function Customers({
   function reset() {
     setPhoto(null);
     setCaptureBusy(false);
+    setNumberFocusRequest(0);
     setDraft((d) => d + 1);
     setEditing(null);
     setForm({
@@ -441,6 +448,10 @@ function Customers({
                     mergeLocated(s ?? emptyPlace(), coordinates, found),
                   );
                   setAddressOpen(true);
+                  if (status !== 'error' && !found?.number?.trim()) {
+                    setNumberFocusRequest((n) => n + 1);
+                    return missingNumberNotice;
+                  }
                   return locatedNotice(status);
                 }}
                 onPhoto={setPhoto}
@@ -513,6 +524,7 @@ function Customers({
                 </DisclosureSummary>
                 <PlaceFields
                   key={draft}
+                  numberFocusRequest={numberFocusRequest}
                   hideLocation
                   value={site ?? emptyPlace()}
                   onChange={setSite}
@@ -2176,6 +2188,9 @@ function More({
           : financial
             ? 'Agenda, receitas e estoque dependem da próxima ativação.'
             : 'Financeiro, agenda, receitas e estoque serão entregues em etapas próprias.'}
+      </p>
+      <p className="place-credit">
+        Versão {__APP_VERSION__} · {__APP_BUILD__}
       </p>
     </>
   );

@@ -1,3 +1,4 @@
+import { customerAddressSQL } from './customer-address';
 import { customerType, occasionLabel } from '../shared/customer-order';
 import { customerOrderFieldsReady, checkPersonTerms } from './customer-order';
 import { p1Ready } from './p1-ready';
@@ -615,6 +616,11 @@ export async function operations(
         [org, nonce],
       ),
       ...(kitStorage ? writeGeneratedKits(db, org, nonce, generatedKits) : []),
+      db
+        .prepare(
+          `UPDATE orders SET delivery_address=${customerAddressSQL(await fieldReady(env), financial)} WHERE organization_id=? AND mutation_id=? AND trim(delivery_address)=''`,
+        )
+        .bind(org, nonce),
       ...((await fieldReady(env)) ? snapshotPlaces(db, org, nonce) : []),
       ...(financial
         ? [

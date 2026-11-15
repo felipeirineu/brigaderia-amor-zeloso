@@ -1,8 +1,37 @@
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const version = JSON.parse(
+  readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
+).version;
+let build = 'desenvolvimento';
+try {
+  const sha = execFileSync('git', ['rev-parse', '--short=7', 'HEAD'], {
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'ignore'],
+  }).trim();
+  const parts = new Intl.DateTimeFormat('pt-BR', {
+    timeZone: 'America/Fortaleza',
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(new Date());
+  const part = (key: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === key)?.value;
+  build = `${part('day')}/${part('month')} ${part('hour')}h${part('minute')} · ${sha}`;
+} catch {
+  /* Fonte sem git: versão continua disponível, build é desenvolvimento. */
+}
 export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
+    __APP_BUILD__: JSON.stringify(build),
+  },
   server: { proxy: { '/api': 'http://127.0.0.1:8787' } },
   plugins: [
     react(),

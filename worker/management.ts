@@ -1,3 +1,4 @@
+import { customerAddressSQL } from './customer-address';
 import { weightCostingReady } from './weight-costing';
 import { kitsReady } from './kits';
 import {
@@ -628,7 +629,14 @@ export async function management(req: Request, env: Env, a: Actor) {
             .bind(org, id, ...guardArgs),
         );
       statements.push(
-        ...orderDefaults(db, org, entityId, d.customer_id, mutation),
+        ...orderDefaults(
+          db,
+          org,
+          entityId,
+          d.customer_id,
+          mutation,
+          await fieldReady(env),
+        ),
       );
     }
     if (!id && d.template_id) {
@@ -646,7 +654,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       statements.push(
         db
           .prepare(
-            `UPDATE orders SET delivery_type=t.delivery_type,delivery_address=t.delivery_address,courier=t.courier,courier_name=t.courier_name,courier_fee_cents=t.courier_fee_cents FROM recurring_templates t WHERE t.organization_id=? AND t.id=? AND orders.organization_id=? AND orders.id=? AND orders.mutation_id=?`,
+            `UPDATE orders SET delivery_type=t.delivery_type,delivery_address=CASE WHEN trim(t.delivery_address)<>'' THEN t.delivery_address ELSE orders.delivery_address END,courier=t.courier,courier_name=t.courier_name,courier_fee_cents=t.courier_fee_cents FROM recurring_templates t WHERE t.organization_id=? AND t.id=? AND orders.organization_id=? AND orders.id=? AND orders.mutation_id=?`,
           )
           .bind(org, d.template_id, org, entityId, mutation),
       );
@@ -663,7 +671,7 @@ export async function management(req: Request, env: Env, a: Actor) {
         statements.push(
           db
             .prepare(
-              `UPDATE orders SET delivery_address=COALESCE((SELECT json_extract(data,'$.address') FROM customer_sites WHERE organization_id=orders.organization_id AND id=orders.customer_id),delivery_address) WHERE organization_id=? AND id=? AND mutation_id=?`,
+              `UPDATE orders SET delivery_address=${customerAddressSQL(true, await financeReady(env))} WHERE organization_id=? AND id=? AND mutation_id=?`,
             )
             .bind(org, entityId, mutation),
         );

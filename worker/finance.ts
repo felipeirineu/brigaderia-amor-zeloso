@@ -1,3 +1,4 @@
+import { customerAddressSQL } from './customer-address';
 import { customerType } from '../shared/customer-order';
 import { checkPersonTerms } from './customer-order';
 import { kitsReady } from './kits';
@@ -958,6 +959,7 @@ export function orderDefaults(
   order: string,
   customer: string,
   mutation: string,
+  hasSite = false,
 ) {
   const guard =
     'EXISTS(SELECT 1 FROM orders WHERE organization_id=? AND id=? AND mutation_id=?)';
@@ -978,20 +980,8 @@ export function orderDefaults(
       ),
     db
       .prepare(
-        `UPDATE orders SET delivery_address=COALESCE((SELECT trim(json_extract(data,'$.address')||' '||json_extract(data,'$.neighborhood')||' '||json_extract(data,'$.reference')) FROM customer_profiles WHERE organization_id=? AND customer_id=?),''),courier=COALESCE((SELECT json_extract(data,'$.courier') FROM customer_profiles WHERE organization_id=? AND customer_id=?),'unassigned'),courier_name=COALESCE((SELECT json_extract(data,'$.courier_name') FROM customer_profiles WHERE organization_id=? AND customer_id=?),''),courier_fee_cents=COALESCE((SELECT json_extract(data,'$.courier_fee_cents') FROM customer_profiles WHERE organization_id=? AND customer_id=?),0) WHERE organization_id=? AND id=? AND mutation_id=?`,
+        `UPDATE orders SET delivery_address=${customerAddressSQL(hasSite, true)},courier=COALESCE((SELECT json_extract(data,'$.courier') FROM customer_profiles WHERE organization_id=? AND customer_id=?),'unassigned'),courier_name=COALESCE((SELECT json_extract(data,'$.courier_name') FROM customer_profiles WHERE organization_id=? AND customer_id=?),''),courier_fee_cents=COALESCE((SELECT json_extract(data,'$.courier_fee_cents') FROM customer_profiles WHERE organization_id=? AND customer_id=?),0) WHERE organization_id=? AND id=? AND mutation_id=?`,
       )
-      .bind(
-        org,
-        customer,
-        org,
-        customer,
-        org,
-        customer,
-        org,
-        customer,
-        org,
-        order,
-        mutation,
-      ),
+      .bind(org, customer, org, customer, org, customer, org, order, mutation),
   ];
 }
