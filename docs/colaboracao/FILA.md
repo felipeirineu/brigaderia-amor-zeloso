@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — **corrigir T2 no PR #6 (2º diagnóstico abaixo)**. Push no mesmo branch.
+`VEZ: CODEX` — tarefa **T2b** (abaixo). Ao terminar, abra o pull request.
 
 ## Como funciona
 
@@ -38,7 +38,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **2/3** (T0 e T1 publicadas; revisão geral depois da T2).
+Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 15/11 após T0, T1 e T2; próxima depois de 3 novas entregas).
 
 ## Limites
 
@@ -52,8 +52,8 @@ Contador de entregas desde a última revisão: **2/3** (T0 e T1 publicadas; revi
 | --- | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
 | T0 | R17 (sessão, Fase 0, validade dos avisos, ZAP) | **publicada** 15/11 (`35f1cd1`, PR #4) |
 | T1 | 5 ajustes de interface | **publicada** 15/11 (PR #5) |
-| T2 | Endereço único do cliente (B2B usa o mesmo endereço em campos) + aviso de número ausente + versão 0.9.0 em Mais | **vez do Codex** |
-| T2b | Novo pedido: aviso de horário de hoje que já passou | depois da T2 (detalhes abaixo) |
+| T2 | Endereço único + número ausente + versão 0.9.0 | **publicada** 15/11 (PR #6, `f0f67df`) |
+| T2b | Novo pedido: aviso de horário de hoje que já passou | **vez do Codex** |
 | T3  | Acabamento visual tela a tela                                    | a detalhar pelo Claude                                               |
 | T4  | Modo escuro                                                      | a detalhar pelo Claude                                               |
 | T5 | "Novidades" após atualizar + histórico em Mais (ligado a partir da 1.0.0) | a detalhar pelo Claude; última tarefa antes da 1.0 |
@@ -96,22 +96,6 @@ Antes de abrir o PR, incorpore o `main` atual. Conflito esperado em `src/App.tsx
      - E2E: digitar no cliente A, abrir o cliente B (e Novo cliente) → busca vazia, sem sugestões.
 
 Regras: use os tokens de `src/theme.css` e não reintroduza `backdrop-filter`. Nenhuma operação remota (Cloudflare/D1) e nenhum dado real em testes ou capturas.
-
-### ⚠️ T2 — PR #6, CI vermelho de novo, ponto diferente (`df474c4`) — diagnóstico do Claude
-
-- O orçamento D1 foi resolvido (passou).
-- **Nova falha:** `tests/e2e/review-r19.spec.js:76` (chromium-mobile e webkit-mobile): `getByRole('status')` encontrou **2** elementos em "Dados do estabelecimento". Um deles é o `<p role="status"></p>` **vazio** do novo formulário "Endereço do cliente" em `finance/Profile.tsx`.
-- **Correção:** renderizar esse `<p role="status">` (e qualquer outro aviso do bloco de endereço) **só quando houver texto**, como o `PlaceFields` já faz. Não altere o teste R19 para contornar o problema.
-- Confira localmente os E2E de Profile, R19 e t2-address, e faça push no mesmo branch.
-
-### ⚠️ T2 — CI vermelho no PR #6 (1ª falha) — diagnóstico do Claude
-
-- **Onde:** `npm run test:kits` → `tests/integration/kit-recurring.mjs:256`, "orçamento D1 excedido: 47 consultas no handler" (limite 45) em `POST generate-week`.
-- **Causa:** em `worker/operations.ts` (~619), o novo `UPDATE orders SET delivery_address=${customerAddressSQL(await fieldReady(env), financial)} …` soma 1 statement e chama `fieldReady(env)` de novo (o `snapshotPlaces` logo abaixo já chama). São 2 consultas a mais.
-- **Correção:**
-  1. Calcular `const field = await fieldReady(env)` uma vez no handler e reutilizar no `customerAddressSQL` e no `snapshotPlaces`. Fica em 46.
-  2. Como o `UPDATE` de endereço é uma escrita nova e necessária, subir o orçamento do teste para `<= 46`, com um comentário explicando por quê. Não remova nem pule a verificação.
-- Depois: push no mesmo branch (`codex/t2-customer-address`), e o CI do PR roda de novo.
 
 ### T2 — endereço único do cliente, número ausente e versão do app
 
@@ -158,6 +142,11 @@ No passo "Quando entregar?" do Novo pedido (`src/features/mobile/Totem.tsx`, pas
 - Trocar o dia ou o horário zera a confirmação. Dias futuros não mudam nada. Na edição de pedido existente, não avisar.
 - Unitário para "já passou" (fuso America/Fortaleza, virada de dia) e E2E com relógio controlado (`page.clock`): horário passado exige o toque extra; horário futuro não.
 
+### T3 — anotações da revisão geral de 15/11
+
+- Títulos de cartão (`.panel h2`, ex.: "Novo pedido", "Limite de sabores", "Novo kit") aparecem numa serifa genérica (fallback tipo Times). Padronizar: títulos de cartão em Figtree 600 (sem serifa), como definido na seção 8.1 do CLAUDE_PARA_CODEX.
+- Telefone na lista de clientes aparece cru ("+5511900000001"). Exibir formatado "(11) 90000-0001", só na exibição e sem mudar o que é gravado.
+
 ## Versões do app
 
 Formato **MAIOR.MENOR.CORREÇÃO**. Quem sobe o número é o **Claude**, ao publicar:
@@ -170,7 +159,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
-| 0.9.0 | (T2) | Primeira versão numerada: endereço do B2B em campos, aviso de número ausente e versão visível em Mais. |
+| 0.9.0 | 15/11 | Primeira versão numerada: endereço do B2B em campos, aviso de número ausente e versão visível em Mais. |
 
 ## Registro de ciclos
 
@@ -181,3 +170,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 15/11 | 2 | T1 — 5 ajustes (PR #5) | publicada; 185 E2E nos três navegadores e Segurança do PR verdes (permissão do gitleaks confirmada). |
 | 15/11 | — | T2 (PR #6) | CI vermelho (1ª): orçamento D1 47/45 em generate-week; diagnóstico no FILA, vez devolvida ao Codex. |
 | 15/11 | — | T2 (PR #6) | 2º CI vermelho, ponto diferente: role=status vazio duplicado em Profile (R19). Vez devolvida ao Codex. |
+| 15/11 | 3 | T2 — endereço único, número ausente, versão (PR #6) | publicada em `f0f67df`; 194 E2E nos três navegadores e Segurança verdes. **Revisão geral 3/3:** sem problema real; 2 detalhes visuais anotados na T3. |
