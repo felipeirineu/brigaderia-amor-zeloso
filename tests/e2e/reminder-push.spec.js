@@ -87,7 +87,11 @@ test('R6-7 aviso só por escolha humana, calendário privado, teste e revogaçã
           value: {
             getRegistration: async () => ({ active: {}, pushManager: manager }),
             addEventListener: () => {},
-            register: async () => ({}),
+            register: async () => ({
+              addEventListener: () => {},
+              active: {},
+              scope: location.origin + '/',
+            }),
           },
           configurable: true,
         });
@@ -173,7 +177,8 @@ test('R6-7 aviso só por escolha humana, calendário privado, teste e revogaçã
       })
       .click();
     const settings = p.locator('#avisos');
-    await expect(settings).toContainText('Avisos ativados neste aparelho.');
+    await expect(settings).toContainText('Avisos ativos neste aparelho até');
+    await expect(settings).toContainText('Sair da conta ou vencer a sessão');
     await settings
       .getByRole('button', { name: 'Enviar aviso de teste', exact: true })
       .click();

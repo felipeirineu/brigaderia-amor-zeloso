@@ -39,7 +39,7 @@ export async function push(req: Request, env: Env, a: Actor) {
       ? (
           await db
             .prepare(
-              'SELECT id,endpoint_hash,version,created_at,session_hash=? AS current FROM push_subscriptions WHERE organization_id=? AND user_id=? AND active=1 ORDER BY created_at',
+              'SELECT p.id,p.endpoint_hash,p.version,p.created_at,p.session_hash=? AS current,s.expires_at AS valid_until FROM push_subscriptions p JOIN sessions s ON s.organization_id=p.organization_id AND s.token_hash=p.session_hash AND s.user_id=p.user_id WHERE p.organization_id=? AND p.user_id=? AND p.active=1 AND s.expires_at>unixepoch() ORDER BY p.created_at',
             )
             .bind(a.token_hash, org, a.user_id)
             .all()

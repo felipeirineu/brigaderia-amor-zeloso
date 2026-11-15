@@ -533,3 +533,10 @@ input[type='radio'] {
     transition: none !important;
   }
 }
+
+/* Recuperação explícita: só seleção, nunca confirmação de envio. */
+.draft-notice {
+  background: var(--az-tonal);
+  color: var(--az-ink);
+  border: 1px solid var(--az-line);
+}

@@ -8,6 +8,7 @@ export function useKitCatalog(enabled = true) {
     limit: true,
   });
   const [error, setError] = useState('');
+  const [loaded, setLoaded] = useState(!enabled);
   useEffect(() => {
     if (!enabled) return;
     let current = true;
@@ -21,10 +22,13 @@ export function useKitCatalog(enabled = true) {
       .catch((e) => {
         if (current && !(e instanceof ApiError && e.status === 503))
           setError((e as Error).message);
+      })
+      .finally(() => {
+        if (current) setLoaded(true);
       });
     return () => {
       current = false;
     };
   }, [enabled]);
-  return { ...data, error };
+  return { ...data, error, loading: enabled && !loaded };
 }

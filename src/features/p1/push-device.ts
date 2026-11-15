@@ -10,6 +10,7 @@ export interface PushState {
     version: number;
     created_at: string;
     current: number;
+    valid_until: number;
   }[];
   staff: { id: string; display_name: string; role: string }[];
 }

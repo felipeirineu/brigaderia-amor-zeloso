@@ -1,36 +1,17 @@
 import { expect, test } from '@playwright/test';
-const routes = [
-  ['clientes', 'Clientes'],
-  ['produtos', 'Produtos'],
-  ['pedidos', 'Pedidos'],
-  ['producao', 'Produção'],
-  ['entregas', 'Entregas'],
-  ['financeiro', 'Financeiro'],
-  ['configuracoes', 'Configurações'],
-];
-test('navegação, demonstração explícita e foco acessível', async ({ page }) => {
-  // A raiz e o app instalado abrem a gestão; a demonstração fica em /app.
+test('raiz abre gestão e a demonstração antiga não existe', async ({
+  page,
+}) => {
   await page.goto('/');
   await expect(page).toHaveURL('/gestao');
-  await page.goto('/app');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Um cuidado em cada detalhe.',
-  );
-  await expect(
-    page.getByText('Ambiente de demonstração.', { exact: true }),
-  ).toBeVisible();
-  for (const [slug, title] of routes) {
-    await page.goto('/app');
-    const link =
-      slug === 'configuracoes'
-        ? page.getByRole('link', { name: /Ver próximos passos/ })
-        : page.locator('main').getByRole('link', { name: new RegExp(title) });
-    await link.click();
-    await expect(page).toHaveURL(`/app/${slug}`);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(title);
-    await expect(page.locator('main')).toBeFocused();
-    await page.reload();
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText(title);
+  for (const path of ['/app', '/app/clientes', '/app/configuracoes']) {
+    await page.goto(path);
+    await expect(
+      page.getByRole('heading', { name: 'Página não encontrada' }),
+    ).toBeVisible();
+    await expect(
+      page.getByText('Ambiente de demonstração.', { exact: true }),
+    ).toHaveCount(0);
   }
 });
 test('catálogo e login não simulam funcionalidades entregues', async ({
@@ -48,12 +29,14 @@ test('catálogo e login não simulam funcionalidades entregues', async ({
     page.getByRole('heading', { name: 'Entrar na gestão' }),
   ).toBeVisible();
   await expect(page.locator('input')).toHaveCount(0);
+  await expect(page.getByText(/demonstração/i)).toHaveCount(0);
+  await expect(page.locator('a[href^="/app"]')).toHaveCount(0);
 });
 test('layout cabe em 360px e navegação por teclado possui atalho', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 360, height: 800 });
-  await page.goto('/app');
+  await page.goto('/gestao');
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -87,7 +70,7 @@ test('shell offline somente leitura, sem cache de API ou catálogo', async ({
     browserName !== 'chromium',
     'Validação automatizada de service worker em Chromium; instalação iOS requer dispositivo real.',
   );
-  await page.goto('/app');
+  await page.goto('/gestao');
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
@@ -114,14 +97,9 @@ test('shell offline somente leitura, sem cache de API ou catálogo', async ({
   await context.setOffline(true);
   await page.reload();
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-    'Um cuidado em cada detalhe.',
+    'Gestão restrita',
   );
-  await expect(page.getByRole('status')).toContainText('Sem conexão');
-  await page
-    .locator('main')
-    .getByRole('link', { name: /Clientes/ })
-    .click();
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Clientes');
+  await expect(page.locator('.runtime')).toContainText('Sem conexão');
   await context.setOffline(false);
   // O handshake e o logout do Access precisam chegar à rede, sem fallback SPA.
   for (const path of [

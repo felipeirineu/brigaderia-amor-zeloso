@@ -43,6 +43,7 @@ export function PushSettings() {
       setBusy(false);
     }
   }
+  const device = view.data?.subscriptions.find((s) => s.id === current);
   return (
     <section className="panel" id="avisos">
       <h2>
@@ -59,9 +60,13 @@ export function PushSettings() {
         ) : (
           <>
             <p>
-              {current
-                ? 'Avisos ativados neste aparelho.'
+              {device
+                ? `Avisos ativos neste aparelho até ${dateTime(new Date(device.valid_until * 1000).toISOString())}.`
                 : 'Avisos desativados neste aparelho.'}
+            </p>
+            <p>
+              Sair da conta ou vencer a sessão interrompe os avisos deste
+              aparelho. Entre novamente e confira a ativação.
             </p>
             {!current ? (
               <Button

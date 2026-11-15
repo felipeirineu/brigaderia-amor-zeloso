@@ -81,6 +81,16 @@ try {
   status = await call('p1/push', undefined, 'GET');
   assert.equal(status.subscriptions.length, 1);
   assert.equal(status.subscriptions[0].current, 1);
+  const sessionExpiry = await t.db
+    .prepare(
+      'SELECT expires_at FROM sessions WHERE organization_id=? AND token_hash=(SELECT session_hash FROM push_subscriptions WHERE organization_id=? AND id=?)',
+    )
+    .bind(t.org, t.org, registration.id)
+    .first();
+  assert.equal(status.subscriptions[0].valid_until, sessionExpiry.expires_at);
+  assert.ok(status.subscriptions[0].valid_until > Date.now() / 1000);
+  assert.ok(!JSON.stringify(status).includes('session_hash'));
+
   assert.ok(!JSON.stringify(status).includes(device.subscription.endpoint));
   for (const endpoint of [
     'http://127.0.0.1:80/x',

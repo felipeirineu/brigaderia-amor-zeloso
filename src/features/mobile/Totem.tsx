@@ -1,3 +1,6 @@
+import { useContext, useMemo } from 'react';
+import { OrderDraftScope } from './order-draft-scope';
+import { readDraft, storeDraft, clearDraft } from './order-draft';
 import {
   customerType,
   occasionLabel,
@@ -157,6 +160,9 @@ export function Totem({
   metadata?: boolean;
   kitOrders?: boolean;
 }) {
+  const draftScope = useContext(OrderDraftScope);
+  const [resumeDraft, setResumeDraft] = useState(() => readDraft(draftScope));
+  const [resumeNotice, setResumeNotice] = useState('');
   const kitCatalog = useKitCatalog(financial && kitOrders);
   const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
     [kitSnapshots, setKitSnapshots] = useState<KitItemSnapshot[]>([]),
@@ -206,6 +212,72 @@ export function Totem({
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [success, setSuccess] = useState('');
+  const suppressedDraft = useRef(''),
+    editBaseline = useRef<string | null>(null),
+    baselineOrder = useRef('');
+  const draftPayload = useMemo(
+    () =>
+      customer
+        ? {
+            customer_id: customer.id,
+            order_id: id ?? null,
+            items: [
+              ...Object.entries(counts)
+                .filter(([, n]) => n > 0)
+                .map(([variant_id, quantity]) => ({ variant_id, quantity })),
+              ...mixes.map((m) => ({
+                variant_id: m.base,
+                quantity: m.qty,
+                ...(m.item_id ? { item_id: m.item_id } : {}),
+                components: Object.entries(m.comp)
+                  .filter(([, n]) => n > 0)
+                  .map(([variant_id, units]) => ({ variant_id, units })),
+              })),
+            ],
+            kit_items: kitItems.map((k) => ({
+              kit_id: k.kit_id,
+              quantity: k.quantity,
+              ...(k.item_id ? { item_id: k.item_id } : {}),
+              components: k.components.map((c) => ({
+                product_id: c.product_id,
+                units: c.units,
+              })),
+            })),
+          }
+        : null,
+    [customer, id, counts, mixes, kitItems],
+  );
+  useEffect(() => {
+    if (
+      !draftPayload ||
+      busy ||
+      success ||
+      (id ? editing?.id !== id : !defaults) ||
+      (resumeDraft && resumeDraft.order_id === (id ?? null))
+    )
+      return;
+    const signature = JSON.stringify(draftPayload);
+    if (id && (editBaseline.current === null || baselineOrder.current !== id)) {
+      baselineOrder.current = id;
+      editBaseline.current = signature;
+      return;
+    }
+    if (
+      signature === suppressedDraft.current ||
+      (id && signature === editBaseline.current)
+    )
+      return;
+    storeDraft(draftScope, draftPayload);
+  }, [
+    draftPayload,
+    busy,
+    success,
+    id,
+    editing,
+    defaults,
+    resumeDraft,
+    draftScope,
+  ]);
   const root = useRef<HTMLElement>(null);
   const site = customer
       ? field?.data?.sites.find((x) => x.id === customer.id)
@@ -401,6 +473,7 @@ export function Totem({
     setFee(p.courier_fee_cents);
   }
   async function select(c: { id: string; name: string }) {
+    setResumeDraft(null);
     const serial = ++choice.current;
     setKitEditing(false);
     setCustomer(c);
@@ -418,7 +491,7 @@ export function Totem({
     setError('');
     try {
       const d = await api<Defaults>('mobile/defaults/' + c.id + '?kits=1');
-      if (serial !== choice.current) return;
+      if (serial !== choice.current) return false;
       setDefaults(d);
       setAddress(
         deliveryAddress(
@@ -448,8 +521,10 @@ export function Totem({
         const hour = windowStart(d.profile.delivery_window);
         if (hour) setDue(fortalezaDay() + 'T' + hour);
       }
+      return true;
     } catch (e) {
       setError((e as Error).message);
+      return false;
     } finally {
       if (serial === choice.current) setBusy(false);
     }
@@ -642,11 +717,123 @@ export function Totem({
             'Pedido salvo, mas o endereço não foi gravado no cadastro. Edite em Clientes.',
           );
         }
+      clearDraft(draftScope);
       setSuccess(result.id);
     } catch (e) {
       setError((e as Error).message);
     } finally {
       pending.current = false;
+      setBusy(false);
+    }
+  }
+  async function restoreSelection() {
+    const d = resumeDraft;
+    if (
+      !d ||
+      d.order_id !== (id ?? null) ||
+      !products.data ||
+      kitCatalog.loading ||
+      (id && editing?.id !== id)
+    )
+      return;
+    setBusy(true);
+    setError('');
+    try {
+      const c = await api<{ id: string; name: string; active: number }>(
+        'customers/' + d.customer_id,
+      );
+      if (!c.active || (editing && editing.customer_id !== c.id))
+        throw Error('Cliente indisponível para esta seleção.');
+      const variants = new Map(options.map((v) => [v.id, v]));
+      const valid = d.items.every((i) => {
+        const base = variants.get(i.variant_id);
+        if (
+          !base ||
+          (i.item_id && id && !editing?.items.some((x) => x.id === i.item_id))
+        )
+          return false;
+        if (!i.components) return true;
+        return (
+          mixed &&
+          new Set(i.components.map((c) => c.variant_id)).size ===
+            i.components.length &&
+          i.components.some((c) => c.variant_id === i.variant_id) &&
+          i.components.every((c) => {
+            const v = variants.get(c.variant_id);
+            return (
+              v &&
+              v.units_per_box === base.units_per_box &&
+              v.weight_grams === base.weight_grams
+            );
+          }) &&
+          i.components.reduce((n, c) => n + c.units, 0) === base.units_per_box
+        );
+      });
+      const validKits = d.kit_items.every((i) => {
+        const k = kitCatalog.kits.find((k) => k.id === i.kit_id && k.active);
+        return (
+          kitOrders &&
+          k &&
+          (!i.item_id || !id || kitSnapshots.some((x) => x.id === i.item_id)) &&
+          new Set(i.components.map((c) => c.product_id)).size ===
+            i.components.length &&
+          i.components.reduce((n, c) => n + c.units, 0) === k.units_per_kit &&
+          (!kitCatalog.limit || i.components.length <= k.max_flavors) &&
+          i.components.every((c) =>
+            products.data!.some((p) => p.id === c.product_id),
+          )
+        );
+      });
+      if (!valid || !validKits)
+        throw Error(
+          'A seleção contém sabores ou kits indisponíveis. Descarte e monte novamente com o cadastro atual.',
+        );
+      if (!id && !(await select(c))) {
+        setResumeDraft(d);
+        return;
+      }
+      setCounts(
+        Object.fromEntries(
+          d.items
+            .filter((i) => !i.components?.length)
+            .map((i) => [i.variant_id, i.quantity]),
+        ),
+      );
+      setMixes(
+        d.items
+          .filter((i) => i.components?.length)
+          .map((i) => {
+            const comp = Object.fromEntries(
+              i.components!.map((c) => [c.variant_id, c.units]),
+            );
+            return {
+              key: mixSig(comp),
+              base: i.variant_id,
+              qty: i.quantity,
+              comp,
+              item_id: i.item_id,
+            };
+          }),
+      );
+      setKitItems(d.kit_items);
+      // Snapshots do pedido editado foram relidos do servidor; não vêm do storage.
+      if (!id) setKitSnapshots([]);
+      setDue('');
+      setPlanDue('');
+      if (!id) {
+        setNotes('');
+        setOccasion('');
+      }
+      setDupAckKey('');
+      setDupFound(null);
+      setStep(1);
+      setResumeDraft(null);
+      setResumeNotice(
+        'Seleção recuperada. Confira quantidades, data, entrega e pagamento. Textos e valores não foram guardados.',
+      );
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
       setBusy(false);
     }
   }
@@ -687,6 +874,38 @@ export function Totem({
     );
   return (
     <section className="totem order-focus" ref={root}>
+      {resumeDraft && resumeDraft.order_id === (id ?? null) && (
+        <aside className="panel draft-notice" aria-label="Recuperar seleção">
+          <p>
+            Uma seleção anterior foi guardada nesta aba. Recupere e revise antes
+            de enviar.
+          </p>
+          <div className="actions">
+            <Button
+              disabled={
+                busy ||
+                !products.data ||
+                kitCatalog.loading ||
+                (!!id && editing?.id !== id)
+              }
+              onClick={() => void restoreSelection()}
+            >
+              Recuperar seleção
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                suppressedDraft.current = JSON.stringify(draftPayload);
+                clearDraft(draftScope);
+                setResumeDraft(null);
+              }}
+            >
+              Descartar seleção
+            </Button>
+          </div>
+        </aside>
+      )}
+      {resumeNotice && <p role="status">{resumeNotice}</p>}
       <div className="section-heading totem-heading">
         <h1>{id ? 'Ajustar pedido' : 'Novo pedido'}</h1>
         <Button to="/gestao/pedidos" variant="ghost">

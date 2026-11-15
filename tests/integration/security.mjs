@@ -454,6 +454,21 @@ try {
   const subscription = (await receiver()).subscription;
   const subscriptionPath = 'p1/push/subscriptions';
   const subscribed = await call(subscriptionPath, { subscription });
+  const pushState = await call('p1/push', undefined, 'GET');
+  ok(
+    pushState.subscriptions[0].valid_until > Date.now() / 1000,
+    'validade do aparelho vem da sessão ativa',
+  );
+  ok(
+    !JSON.stringify(pushState).includes('session_hash') &&
+      !JSON.stringify(pushState).includes(subscription.endpoint),
+    'validade não expõe hash de sessão ou endpoint',
+  );
+  ok(
+    (await call('p1/push', undefined, 'GET', operator)).subscriptions.length ===
+      0,
+    'outro usuário da organização não lê validade ou aparelho alheio',
+  );
   for (const [path, method, data] of [
     [subscriptionPath, 'POST', { subscription }],
     [subscriptionPath + '/' + subscribed.id, 'DELETE', { version: 1 }],
@@ -542,6 +557,7 @@ try {
   const kit = await call('p1/kits', kitData);
   for (const [path, method, data] of [
     ['p1/kits', 'POST', kitData],
+    ['p1/kit-default', 'POST', { kit_id: kit.id }],
     ['p1/kits/' + kit.id, 'GET'],
     ['p1/kits/' + kit.id, 'PUT', { ...kitData, version: 1 }],
     ['p1/kit-settings', 'PUT', { limit_flavors: false, version: 0 }],
@@ -562,7 +578,7 @@ try {
         ).status === 403,
         path + ' escrita só owner',
       );
-    if (path.endsWith(kit.id))
+    if (path.endsWith(kit.id) || path === 'p1/kit-default')
       ok(
         (
           await t.request(path, {
@@ -692,6 +708,18 @@ try {
     (await t.request('p1/costing-settings', { cookie: operator })).status ===
       200,
     'operadora lê configuração de custos',
+  );
+  await t.db
+    .prepare(
+      'UPDATE sessions SET expires_at=unixepoch()-1 WHERE organization_id=? AND token_hash=(SELECT session_hash FROM push_subscriptions WHERE organization_id=? AND id=?)',
+    )
+    .bind(t.org, t.org, subscribed.id)
+    .run();
+  const freshOwner = await t.login('owner@example.test');
+  ok(
+    (await call('p1/push', undefined, 'GET', freshOwner)).subscriptions
+      .length === 0,
+    'aparelho sem sessão válida não aparece ativo após novo login',
   );
   console.log(
     `OK segurança: ${checks} verificações (sessão, JWT, CSRF, IDOR, papéis, catálogo, cabeçalhos).`,
