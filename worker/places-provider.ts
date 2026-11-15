@@ -1,6 +1,7 @@
 import type { Place } from '../shared/field';
 import { emptyPlace } from '../shared/field';
 import { HttpError, hash } from './security';
+import { serviceRegion } from '../shared/region';
 
 type Feature = {
   geometry?: { coordinates?: number[] };
@@ -19,6 +20,7 @@ function toPlace(f: Feature): Place[] {
     Math.abs(longitude) > 180
   )
     return [];
+  if (p.state && p.state !== serviceRegion.state) return [];
   return [
     {
       ...emptyPlace(),
@@ -35,7 +37,12 @@ function toPlace(f: Feature): Place[] {
         .filter(Boolean)
         .join(', ')
         .slice(0, 1000),
-      street: cut(p.street, 200),
+      // Quando o ponto achado é a própria rua, o nome dela vem em "name".
+      street: cut(
+        p.street ||
+          (p.osm_key === 'highway' || p.type === 'street' ? p.name : ''),
+        200,
+      ),
       number: cut(p.housenumber, 20),
       neighborhood: cut(p.district ?? p.locality, 150),
       city: cut(p.city, 120),
@@ -126,7 +133,9 @@ export async function searchPlaces(
 ): Promise<Place[]> {
   const u = new URL('https://photon.komoot.io/api/');
   u.searchParams.set('q', query);
-  u.searchParams.set('limit', '6');
+  // Pede mais resultados porque os de fora da região são descartados.
+  u.searchParams.set('limit', '10');
+  u.searchParams.set('bbox', serviceRegion.bbox.join(','));
   let bias = '';
   try {
     const row = await db
@@ -149,7 +158,16 @@ export async function searchPlaces(
   } catch {
     // Sem base legível, busca sem prioridade de proximidade.
   }
-  return photon(db, org, query.toLowerCase() + bias, u, 6, userAgent);
+  return (
+    await photon(
+      db,
+      org,
+      query.toLowerCase() + bias + '#' + serviceRegion.state,
+      u,
+      10,
+      userAgent,
+    )
+  ).slice(0, 6);
 }
 
 /**
@@ -169,14 +187,16 @@ export async function reversePlace(
   const u = new URL('https://photon.komoot.io/reverse');
   u.searchParams.set('lat', lat);
   u.searchParams.set('lon', lon);
-  u.searchParams.set('limit', '1');
-  const [found] = await photon(
+  u.searchParams.set('limit', '5');
+  const found = await photon(
     db,
     org,
-    'reverse:' + lat + ',' + lon,
+    'reverse5:' + lat + ',' + lon,
     u,
-    1,
+    5,
     userAgent,
   );
-  return found ?? null;
+  // O mais próximo pode ser um ponto sem rua (praça, lote): usa o primeiro
+  // que tiver rua.
+  return found.find((p) => p.street) ?? found[0] ?? null;
 }

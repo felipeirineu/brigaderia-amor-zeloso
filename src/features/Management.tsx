@@ -433,12 +433,12 @@ function Customers({
               <CustomerCapture
                 key={draft}
                 onLocate={async (coordinates) => {
-                  const found = await reverseLookup(coordinates);
+                  const { found, status } = await reverseLookup(coordinates);
                   setSite((s) =>
                     mergeLocated(s ?? emptyPlace(), coordinates, found),
                   );
                   setAddressOpen(true);
-                  return locatedNotice(!!found);
+                  return locatedNotice(status);
                 }}
                 onPhoto={setPhoto}
                 onBusy={setCaptureBusy}

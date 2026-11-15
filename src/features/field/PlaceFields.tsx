@@ -111,9 +111,9 @@ export function PlaceFields({
           latitude: p.coords.latitude,
           longitude: p.coords.longitude,
         };
-        const found = await reverseLookup(coords);
+        const { found, status } = await reverseLookup(coords);
         onChange(mergeLocated(value, coords, found));
-        setNotice(locatedNotice(!!found));
+        setNotice(locatedNotice(status));
         setBusy(false);
       },
       () => {
