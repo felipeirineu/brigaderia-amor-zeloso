@@ -38,7 +38,11 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { api, money, nextWeeklyTime } from '../api';
-import { Failure, useRemote } from '../operations/common';
+import {
+  Failure,
+  useRemote,
+  type OperationalOrder,
+} from '../operations/common';
 import { MoneyInput, QuantityInput } from '../../components/NumericInputs';
 import { photoURL } from '../../../shared/flavors';
 import { emptyPlace } from '../../../shared/field';
@@ -229,6 +233,44 @@ export function Totem({
   useEffect(() => {
     if (typeof window !== 'undefined') window.scrollTo(0, 0);
   }, [step]);
+  // Aviso de pedido repetido: mesmo cliente, mesmo dia, outro pedido ativo.
+  // Não bloqueia (o cliente pode pedir duas vezes), mas exige um toque a mais.
+  // Ao editar um pedido existente, não avisa.
+  const dupKey =
+    step === REVIEW && !id && customer?.id && due
+      ? customer.id + '|' + due.slice(0, 10)
+      : '';
+  const [dupFound, setDupFound] = useState<{
+      key: string;
+      orders: OperationalOrder[];
+    } | null>(null),
+    [dupAckKey, setDupAckKey] = useState('');
+  useEffect(() => {
+    if (!dupKey) return;
+    const [customerId, day] = dupKey.split('|');
+    let alive = true;
+    api<{ orders: OperationalOrder[] }>('today?date=' + day)
+      .then((view) => {
+        if (alive)
+          setDupFound({
+            key: dupKey,
+            orders: view.orders.filter(
+              (o) =>
+                o.customer_id === customerId &&
+                o.status !== 'cancelled' &&
+                fortalezaDay(new Date(o.due_at)) === day,
+            ),
+          });
+      })
+      // Sem a consulta, segue sem aviso: nunca impede o pedido.
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [dupKey]);
+  const sameDay = dupKey && dupFound?.key === dupKey ? dupFound.orders : [],
+    sameDayAck = !!dupKey && dupAckKey === dupKey,
+    sameDayBlocks = sameDay.length > 0 && !sameDayAck;
   const focusBack =
     typeof document !== 'undefined'
       ? document.getElementById('mobile-header-actions')
@@ -516,7 +558,7 @@ export function Totem({
     setMixDraft(null);
   }
   async function confirmOrder() {
-    if (pending.current || !customer || kitEditing) return;
+    if (pending.current || !customer || kitEditing || sameDayBlocks) return;
     pending.current = true;
     setBusy(true);
     setError('');
@@ -1470,6 +1512,38 @@ export function Totem({
         <>
           <h2 className="wizard-question">Revise e confirme</h2>
           <p className="wizard-hint">{customer?.name}</p>
+          {sameDay.length > 0 && (
+            <div className="same-day-warning" role="alert">
+              <p>
+                <strong>
+                  Já existe {sameDay.length === 1 ? 'um pedido' : 'pedidos'}{' '}
+                  para {customer?.name} neste dia
+                </strong>
+              </p>
+              <ul>
+                {sameDay.map((o) => (
+                  <li key={o.id}>
+                    {o.number ? '#' + o.number + ' · ' : ''}
+                    {new Intl.DateTimeFormat('pt-BR', {
+                      timeStyle: 'short',
+                      timeZone: 'America/Fortaleza',
+                    }).format(new Date(o.due_at))}{' '}
+                    · {money(o.total_cents)} ·{' '}
+                    <Button to={'/gestao/pedidos/' + o.id} variant="ghost">
+                      Ver esse pedido
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+              {sameDayAck ? (
+                <p>Ok, este será um pedido a mais.</p>
+              ) : (
+                <Button onClick={() => setDupAckKey(dupKey)}>
+                  É outro pedido, confirmar mesmo assim
+                </Button>
+              )}
+            </div>
+          )}
           {kitItems.map((item, index) => {
             const snapshot = kitSnapshots.find(
                 (s) =>
@@ -1677,6 +1751,7 @@ export function Totem({
               className="primary-action"
               disabled={
                 busy ||
+                sameDayBlocks ||
                 (!!id &&
                   (editing?.id !== id || (financial && termsLoaded !== id))) ||
                 !hasItems ||
