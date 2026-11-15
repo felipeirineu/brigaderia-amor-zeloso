@@ -298,6 +298,7 @@ try {
   assert.equal(reverse.number, '10');
   assert.equal(reverse.neighborhood, 'Bairro DEMONSTRAÇÃO');
   assert.equal(reverse.city, 'Cidade DEMONSTRAÇÃO');
+  assert.equal(reverse.postcode, '00000-000');
   assert.equal(
     (
       await t.request('field/reverse', {
@@ -323,6 +324,7 @@ try {
         complement: 'Loja 1',
         city: 'Cidade DEMONSTRAÇÃO',
         reference: 'Perto da praça DEMONSTRAÇÃO',
+        postcode: '00000111',
       },
       version: fieldsVersion,
     },
@@ -334,7 +336,22 @@ try {
   ).data;
   assert.equal(
     saved.address,
-    'Rua DEMONSTRAÇÃO, S/N, Loja 1, Bairro DEMONSTRAÇÃO, Cidade DEMONSTRAÇÃO',
+    'Rua DEMONSTRAÇÃO, S/N, Loja 1, Bairro DEMONSTRAÇÃO, Cidade DEMONSTRAÇÃO, 00000-111',
+  );
+  assert.equal(
+    (
+      await t.request('field/customers/' + customer, {
+        cookie: owner,
+        method: 'PUT',
+        key: crypto.randomUUID(),
+        data: {
+          data: { ...saved, postcode: '123' },
+          version: structured.version,
+        },
+      })
+    ).status,
+    400,
+    'CEP incompleto é recusado',
   );
   assert.equal(saved.reference, 'Perto da praça DEMONSTRAÇÃO');
   console.log(

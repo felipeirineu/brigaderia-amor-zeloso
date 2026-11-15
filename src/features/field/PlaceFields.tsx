@@ -266,6 +266,22 @@ export function PlaceFields({
         />
       </label>
       <label>
+        CEP (opcional)
+        <input
+          inputMode="numeric"
+          autoComplete="postal-code"
+          placeholder="00000-000"
+          maxLength={9}
+          value={value.postcode ?? ''}
+          onChange={(e) => {
+            const d = e.target.value.replace(/\D/g, '').slice(0, 8);
+            set({
+              postcode: d.length > 5 ? d.slice(0, 5) + '-' + d.slice(5) : d,
+            });
+          }}
+        />
+      </label>
+      <label>
         Ponto de referência (opcional)
         <input
           maxLength={200}

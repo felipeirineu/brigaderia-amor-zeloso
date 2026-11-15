@@ -1,5 +1,5 @@
 import type { Place } from '../shared/field';
-import { emptyPlace } from '../shared/field';
+import { emptyPlace, normalizePostcode } from '../shared/field';
 import { HttpError, hash } from './security';
 import { serviceRegion } from '../shared/region';
 
@@ -8,6 +8,31 @@ type Feature = {
   properties?: Record<string, string>;
 };
 const cut = (v: unknown, n: number) => String(v ?? '').slice(0, n);
+
+/**
+ * Ordem das sugestões: estabelecimentos (loja, shopping, restaurante…) antes
+ * de ruas, e ruas antes de bairros/cidades. Ex.: "Mangabeira" traz o shopping
+ * antes dos bairros com o mesmo nome. Mantém a ordem do Photon dentro de cada
+ * grupo.
+ */
+export function placeRank(p: Record<string, string>) {
+  const key = p.osm_key ?? '';
+  if (['place', 'boundary'].includes(key)) return 2;
+  if (
+    [
+      'city',
+      'district',
+      'locality',
+      'county',
+      'state',
+      'country',
+      'region',
+    ].includes(p.type ?? '')
+  )
+    return 2;
+  if (key === 'highway' || p.type === 'street') return 1;
+  return p.name ? 0 : 1;
+}
 
 /** Converte um resultado do Photon em endereço com campos separados. */
 function toPlace(f: Feature): Place[] {
@@ -46,6 +71,7 @@ function toPlace(f: Feature): Place[] {
       number: cut(p.housenumber, 20),
       neighborhood: cut(p.district ?? p.locality, 150),
       city: cut(p.city, 120),
+      postcode: normalizePostcode(p.postcode),
       latitude,
       longitude,
     },
@@ -63,6 +89,7 @@ async function photon(
   url: URL,
   limit: number,
   userAgent = 'BrigaderiaGestao/1.0',
+  rank = false,
 ): Promise<Place[]> {
   const key = await hash(cacheKey),
     now = Date.now();
@@ -104,7 +131,12 @@ async function photon(
       'Busca indisponível. Preencha o endereço manualmente.',
     );
   const payload = (await res.json()) as { features?: Feature[] };
-  const results = (payload.features ?? []).slice(0, limit).flatMap(toPlace);
+  const features = (payload.features ?? []).slice(0, limit);
+  if (rank)
+    features.sort(
+      (a, b) => placeRank(a.properties ?? {}) - placeRank(b.properties ?? {}),
+    );
+  const results = features.flatMap(toPlace);
   await db.batch([
     db
       .prepare(
@@ -162,10 +194,11 @@ export async function searchPlaces(
     await photon(
       db,
       org,
-      query.toLowerCase() + bias + '#' + serviceRegion.state,
+      query.toLowerCase() + bias + '#' + serviceRegion.state + '#v3',
       u,
       10,
       userAgent,
+      true,
     )
   ).slice(0, 6);
 }
@@ -191,7 +224,7 @@ export async function reversePlace(
   const found = await photon(
     db,
     org,
-    'reverse5:' + lat + ',' + lon,
+    'reverse6:' + lat + ',' + lon,
     u,
     5,
     userAgent,

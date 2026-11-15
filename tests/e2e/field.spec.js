@@ -84,6 +84,9 @@ test('R4 localização por toque, foto privada, perfil e despesa após entrega',
       'Endereço DEMONSTRAÇÃO',
     );
     await expect(p.getByLabel('Número', { exact: true })).toHaveValue('10');
+    await expect(p.getByLabel('CEP (opcional)', { exact: true })).toHaveValue(
+      '00000-000',
+    );
     await expect(p.getByLabel('Cidade', { exact: true })).toHaveValue(
       'Cidade DEMONSTRAÇÃO',
     );
@@ -96,7 +99,7 @@ test('R4 localização por toque, foto privada, perfil e despesa após entrega',
       .getByLabel('Ponto de referência (opcional)', { exact: true })
       .fill('Perto da praça DEMONSTRAÇÃO');
     await expect(p.locator('.place-preview')).toContainText(
-      'Endereço DEMONSTRAÇÃO, S/N, Bairro DEMONSTRAÇÃO, Cidade DEMONSTRAÇÃO · Ref.: Perto da praça DEMONSTRAÇÃO',
+      'Endereço DEMONSTRAÇÃO, S/N, Bairro DEMONSTRAÇÃO, Cidade DEMONSTRAÇÃO, 00000-000 · Ref.: Perto da praça DEMONSTRAÇÃO',
     );
     await expect(p.getByText('📍 Localização guardada')).toBeVisible();
     await p.getByText('Coordenadas (avançado)', { exact: true }).click();

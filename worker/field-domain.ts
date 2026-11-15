@@ -1,5 +1,9 @@
 import { z } from 'zod';
-import { instagramProfile, withAddress } from '../shared/field';
+import {
+  instagramProfile,
+  normalizePostcode,
+  withAddress,
+} from '../shared/field';
 export const placeSchema = z
   .object({
     name: z.string().trim().max(120).default(''),
@@ -10,6 +14,13 @@ export const placeSchema = z
     complement: z.string().trim().max(120).default(''),
     neighborhood: z.string().trim().max(150).default(''),
     city: z.string().trim().max(120).default(''),
+    postcode: z
+      .string()
+      .trim()
+      .max(9)
+      .default('')
+      .refine((v) => v === '' || /^\d{5}-?\d{3}$/.test(v), 'CEP inválido.')
+      .transform((v) => normalizePostcode(v)),
     reference: z.string().trim().max(200).default(''),
     latitude: z.number().min(-90).max(90).nullable().default(null),
     longitude: z.number().min(-180).max(180).nullable().default(null),

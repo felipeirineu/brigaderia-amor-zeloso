@@ -94,6 +94,7 @@ export async function runtime({
                           housenumber: '10',
                           district: 'Bairro DEMONSTRAÇÃO',
                           city: 'Cidade DEMONSTRAÇÃO',
+                          postcode: '00000000',
                         },
                       },
                     ],

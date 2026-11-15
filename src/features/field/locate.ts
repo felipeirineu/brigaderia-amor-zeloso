@@ -38,6 +38,7 @@ export function mergeLocated(
         no_number: false,
         neighborhood: found.neighborhood || located.neighborhood,
         city: found.city || located.city,
+        postcode: found.postcode || located.postcode,
       }
     : located;
 }

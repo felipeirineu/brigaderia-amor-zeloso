@@ -1,5 +1,5 @@
 import { afterEach, it, expect, vi } from 'vitest';
-import { reversePlace, searchPlaces } from './places-provider';
+import { placeRank, reversePlace, searchPlaces } from './places-provider';
 afterEach(() => vi.unstubAllGlobals());
 for (const [label, configured, expected] of [
   ['neutro', undefined, 'BrigaderiaGestao/1.0'],
@@ -108,4 +108,41 @@ it('localização: rua vem de "name" e prefere o resultado com rua', async () =>
   const found = await reversePlace(quietDb(), 'org-demo', -7.12, -34.85);
   expect(found?.street).toBe('Rua DEMONSTRAÇÃO');
   expect(found?.city).toBe('Cidade DEMONSTRAÇÃO');
+});
+
+it('estabelecimentos vêm antes de ruas e bairros com o mesmo nome', async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () =>
+      Response.json({
+        features: [
+          feature({
+            name: 'Bairro X DEMONSTRAÇÃO',
+            osm_key: 'place',
+            type: 'district',
+          }),
+          feature({
+            name: 'Rua X DEMONSTRAÇÃO',
+            osm_key: 'highway',
+            type: 'street',
+          }),
+          feature({
+            name: 'Shopping X DEMONSTRAÇÃO',
+            osm_key: 'shop',
+            type: 'house',
+            postcode: '00000-222',
+          }),
+        ],
+      }),
+    ),
+  );
+  const found = await searchPlaces(quietDb(), 'org-demo', 'X DEMONSTRAÇÃO');
+  expect(found.map((p) => p.name)).toEqual([
+    'Shopping X DEMONSTRAÇÃO',
+    'Rua X DEMONSTRAÇÃO',
+    'Bairro X DEMONSTRAÇÃO',
+  ]);
+  expect(found[0].postcode).toBe('00000-222');
+  expect(placeRank({ osm_key: 'amenity', name: 'Padaria' })).toBe(0);
+  expect(placeRank({ osm_key: 'boundary', type: 'city' })).toBe(2);
 });
