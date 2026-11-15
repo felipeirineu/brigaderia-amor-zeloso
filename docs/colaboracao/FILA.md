@@ -50,8 +50,8 @@ Contador de entregas desde a última revisão: **1/3** (T0 publicada; revisão d
 
 | ID  | Tarefa                                                           | Estado                                                               |
 | --- | ---------------------------------------------------------------- | -------------------------------------------------------------------- |
-| T0  | R17 (sessão, Fase 0, validade dos avisos, ZAP)                   | em andamento no `codex/r17-session-continuity`; abrir PR ao terminar |
-| T1  | 5 ajustes de interface (detalhes abaixo)                         | **próxima** (depois de T0)                                           |
+| T0 | R17 (sessão, Fase 0, validade dos avisos, ZAP) | **publicada** 15/11 (`35f1cd1`, PR #4) |
+| T1 | 5 ajustes de interface (detalhes abaixo) | **vez do Codex** |
 | T2  | Endereço do perfil B2B no mesmo formato em campos (sem migração) | a detalhar pelo Claude                                               |
 | T3  | Acabamento visual tela a tela                                    | a detalhar pelo Claude                                               |
 | T4  | Modo escuro                                                      | a detalhar pelo Claude                                               |
@@ -99,4 +99,5 @@ Regras: use os tokens de `src/theme.css` e não reintroduza `backdrop-filter`. N
 
 | Data  | Ciclo | Tarefa       | Resultado     |
 | ----- | ----- | ------------ | ------------- |
-| 15/11 | —     | fluxo criado | aguardando T0 |
+| 15/11 | — | fluxo criado | — |
+| 15/11 | 1 | T0 — R17 (PR #4) | publicada em `35f1cd1`; 176 E2E nos três navegadores verdes. A Segurança do PR falhou só por permissão do gitleaks na API (corrigida no workflow); gitleaks/npm audit no push e ZAP verdes no mesmo SHA. |
