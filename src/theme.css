@@ -318,6 +318,12 @@ input[type='radio'] {
   width: 44px;
   height: 44px;
 }
+/* No Hoje (tela de boas-vindas) o logo é maior; nas telas de trabalho fica
+   em 44 px para não apertar o cabeçalho. */
+.compact-header--home > a img {
+  width: 56px;
+  height: 56px;
+}
 /* Cabeçalho compacto. */
 .compact-header {
   background: transparent;

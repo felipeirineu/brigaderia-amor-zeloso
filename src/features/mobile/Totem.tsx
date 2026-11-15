@@ -39,7 +39,12 @@ import {
   CourierAvatars,
 } from '../field/FieldContext';
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  useLocation,
+  useParams,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 import { api, money, nextWeeklyTime } from '../api';
 import {
   Failure,
@@ -171,6 +176,7 @@ export function Totem({
     courierLabels = useCourierLabels();
   const { id } = useParams(),
     navigate = useNavigate(),
+    location = useLocation(),
     [search] = useSearchParams(),
     products = useRemote<Product[]>('products'),
     [query, setQuery] = useState(''),
@@ -919,7 +925,13 @@ export function Totem({
             variant="ghost"
             type="button"
             onClick={() =>
-              step === 0 ? navigate('/gestao/pedidos') : setStep(step - 1)
+              step === 0
+                ? // Volta para onde estava (ex.: Hoje pelo +); aberto direto
+                  // pelo endereço, vai para a lista de pedidos.
+                  location.key !== 'default'
+                  ? navigate(-1)
+                  : navigate('/gestao/pedidos')
+                : setStep(step - 1)
             }
             disabled={busy || kitEditing}
             aria-label="Voltar uma etapa"
