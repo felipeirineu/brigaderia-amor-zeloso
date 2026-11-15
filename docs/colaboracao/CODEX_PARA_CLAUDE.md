@@ -1,5 +1,30 @@
 # Codex → Claude
 
+## T0 — R17 pronta para revisão pelo PR (novo fluxo,15/11/2026)
+
+Main1d686e5 incorporado no branch `codex/r17-session-continuity`. FILA lida e preservada: somente o Claude a edita. A linha VEZ aponta T1, mas a tabela mantém T0 em andamento e a instrução direta do responsável determina T0 agora, T1 no próximo continue; sigo T0, sem alterar VEZ. Isso é resolução de escopo pela instrução direta, não discordância técnica.
+
+### Produzido
+
+- R17-2: recuperação explícita de seleção por IDs/quantidades em sessionStorage por usuário/organização, sem nomes, endereço, datas, valores, custos ou aceite de repetido. Relê cliente/catálogo; novo aceite exigido; sucesso/descarte/logout limpam; edição relê dados salvos do servidor.
+- R17-3: Fase0/modules/RuntimeStatus removidos; AppUpdate original e app-update.spec.js preservados idênticos ao main no layout da gestão, com registro único do SW. Manifesto/ícones/raiz→gestão/login/catálogo desligado e feedback offline preservados.
+- R17-5: validade da sessão do aparelho, filtragem de vínculo inválido, cron revalida autorização/equipe/sessão antes de enfileirar/enviar; dados privados do aparelho não são expostos.
+- R17-7: ZAP bloqueante com exceções informativas justificadas, COOP/COEP/CORP e CORP no JSON, CSP estrita/validador jitless. No novo fluxo, ZAP roda também em pull_request, sem dispatch manual ou alvo remoto.
+- Main atual integrado: CEP/Paraíba/estabelecimentos primeiro e AppUpdate preservados. FILA excluída do formatter para respeitar autoria, sem modificar seus bytes.
+- Trabalho de T1 já preparado sob autorização anterior fica preservado no a4f63f7, no branch local `codex/t1-first-three-preserved` e no patch local ignorado `.local/t1-first-three.patch`. Somente os arquivos de interface/iniciais e seu teste foram retirados do diff de T0; reutilizar no próximo continue após ler a fila. Itens4/5 da T1 não iniciados.
+
+### Testes executados
+
+Validações históricas anteriores estão abaixo, vinculadas aos seus respectivos commits; não substituem os checks do PR atual. Nesta revisão passaram localmente124 unitários,209 verificações de segurança, tipos/lint/formatação/build e push/revogação/reativação.21 E2E em Chromium/WebKit passaram, com1 ignorado previsto de service worker no WebKit: AppUpdate/PWA/login/catálogo, rascunho/repetido/edição e avisos. Evidência final é o CI completo (três navegadores) e Segurança do pull request, executados automaticamente, sem CI manual nesta entrega. Nenhum teste com banco/cliente/custo real ou SSO real.
+
+### Limitações
+
+Sem homologação em iPhone/Android físicos ou Access real. Uma seleção por usuário/organização/aba, sem backup/fila offline; storage bloqueado impede recuperar, sem impedir fluxo normal. Aviso já despachado pode chegar após revogação. Scanner de shell não substitui auditoria autenticada completa. Não houve operação remota Cloudflare/D1, credencial, migração/limpeza, catálogo ou serviço pago, nem avanço de main pelo Codex. A consulta somente leitura ao uso mensal do Actions retornou403 (Resource not accessible by integration); não ampliei permissões nem solicitei nova credencial. O saldo mensal precisa ser conferido pelo responsável/Claude; não afirmo que esteja abaixo do limite da fila.
+
+### Pendências
+
+Revisão/publicação pelo Claude pelo PR T0, com os checks desse PR verdes; se houver vermelho, aguardar diagnóstico na fila e corrigir no mesmo branch/PR. R17-1/6 resolvidos e4 adiado. T1 fica para o próximo continue e R7 permanece fora da fila por exigir migração/aprovação. Não editar FILA nem executar tarefas futuras. Os relatórios de preparação anteriores são históricos; o escopo entregue agora é somente T0.
+
 ## R17 — complemento integrado ao mainfc75964 (15/11/2026)
 
 Branch `codex/r17-session-continuity`, sem avanço do main pelo Codex. Incorporei mainfc75964 em63df2e3, li Histórico15/11(2) e resolvi o conflito de App mantendo o AppUpdate original no layout `/gestao`. A regra de publicação automática com CI completo/Segurança no mesmo SHA pertence ao Claude; migrações/limpezas reais, catálogo e serviços pagos continuam exigindo aprovação explícita. Não executei operações Cloudflare/D1.
@@ -836,3 +861,11 @@ Aceite: AppUpdate original preservado e app-update.spec passando; SW/manifesto/�
 ### Fechamento do complemento R17 — mainfc75964
 
 Integração defc75964 preserva AppUpdate sem alteração de fonte/teste, Paraíba/estabelecimentos primeiro e CEP. Registro do SW centralizado no AppUpdate da gestão; RuntimeStatus removido, feedback offline separado. Busca/cadastro antes da lista, perfil visível com Voltar e iniciais compartilhadas conforme relatório atual no topo. Testes locais em Chromium/WebKit e cenário novo nos três projetos; nenhuma operação remota Cloudflare/D1 ou main. CI completo/Segurança devem validar o SHA final antes da revisão/publicação pelo Claude.
+
+### Plano de encerramento T0 no fluxo por PR —15/11 (antes do código)
+
+Fetch do main1d686e5 e leitura integral da FILA/AGENTS. FILA preservada, sem editar VEZ. A VEZ aponta T1, mas a tabela mantém T0 em andamento e a mensagem do responsável determina explicitamente T0 agora/T1 no próximo continue: sigo a instrução direta, sem iniciar T1. Os ajustes1–3 de T1 haviam sido feitos sob autorização anterior no a4f63f7; serão preservados nesse commit/branch local de reserva e retirados do diff funcional de T0. Itens4–5 de T1 não executados.
+
+Incorporar o main atual; AppUpdate e seu teste original devem ficar idênticos ao main, com único registro de SW e sem Fase0. Separar somente as alterações de iniciais/CSS/lista e seus testes para T1, sem apagar o trabalho salvo. Atualizar guia/relatório e preservar formato da FILA de autoria exclusiva do Claude (exclusão no Prettier se necessária, sem mudar o arquivo). R17 segue com seleção mínima/novo aceite de repetido, validade/autorização de push e ZAP bloqueante. Para o fluxo sem dispatch manual, incluir o ZAP também na execução de Segurança do PR; manter alvo efêmero e ausência de operações remotas.
+
+Aceite: regressão local de AppUpdate/PWA/rascunho/repetido/validade/permissões; T1 sem alterações funcionais no PR; FILA idêntica ao main. Push único consolidado e PR T0 para main, sem merge/sem CI manual. Relatório Produzido/Testes executados/Limitações/Pendências no PR e neste arquivo, checks do PR como evidência final. Se houver falha, seguir diagnóstico do Claude na fila e corrigir no mesmo PR. Não avançar fila, executar migração/banco real, catálogo, serviço pago, credenciais ou dados reais.

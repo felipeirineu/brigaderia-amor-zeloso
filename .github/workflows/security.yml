@@ -1,6 +1,6 @@
 name: Segurança
 # Repositório privado: gitleaks e npm audit rodam a cada envio de código (um
-# job curto); ZAP só semanal/manual. CodeQL e dependency-review foram removidos:
+# job curto); ZAP nos PRs e semanal/manual. CodeQL e dependency-review foram removidos:
 # em repositório privado exigem GitHub Advanced Security (pago).
 on:
   push:
@@ -37,9 +37,9 @@ jobs:
 
   zap:
     name: Teste dinâmico (OWASP ZAP, alvo local)
-    # Manual e semanal: sobe o app com D1 efêmero e dados fictícios no próprio
+    # PR, manual e semanal: sobe o app com D1 efêmero e dados fictícios no próprio
     # runner. Não acessa o site publicado nem o banco da Cloudflare.
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'pull_request' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

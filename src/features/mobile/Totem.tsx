@@ -949,17 +949,6 @@ export function Totem({
       {step === 0 && (
         <>
           <h2>Escolha o cliente</h2>
-          <label>
-            Buscar cliente
-            <input
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </label>
-          <Button to="/gestao/clientes" variant="ghost">
-            Cadastrar cliente
-          </Button>
           <div className="customer-tiles">
             {customers.data?.map((c) => (
               <Button
@@ -974,6 +963,17 @@ export function Totem({
               </Button>
             ))}
           </div>
+          <label>
+            Buscar cliente
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </label>
+          <Button to="/gestao/clientes" variant="ghost">
+            Cadastrar cliente
+          </Button>
         </>
       )}
       {step === 1 && (
