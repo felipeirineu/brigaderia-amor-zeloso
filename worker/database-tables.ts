@@ -33,6 +33,8 @@ export const databaseTables = [
   'order_status_events',
   'order_terms',
   'orders',
+  'prospect_details',
+  'prospect_events',
   'organizations',
   'p1_requests',
   'payment_allocations',

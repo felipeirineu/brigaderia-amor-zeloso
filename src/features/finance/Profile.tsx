@@ -12,7 +12,7 @@ import { Button } from '../../components/Button';
 import { CourierAvatars, useCourierLabels } from '../field/FieldContext';
 import { MoneyField } from '../../components/NumericInputs';
 import { useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { api, parsePrice } from '../api';
 import { useRemote, Failure } from '../operations/common';
 import { emptyProfile, type B2BProfile } from '../../../shared/finance';
@@ -22,6 +22,7 @@ export function CustomerProfile() {
   return <Profile key={id} id={id!} />;
 }
 function Profile({ id }: { id: string }) {
+  const [search] = useSearchParams();
   const courierLabels = useCourierLabels();
   const kits = useKitCatalog();
   const view = useRemote<{
@@ -51,6 +52,19 @@ function Profile({ id }: { id: string }) {
           ? 'Dados da pessoa e condições'
           : 'Dados do estabelecimento e condições'}
       </h1>
+      {search.get('convertido') === '1' && (
+        <section className="panel" aria-label="Próximos passos do novo cliente">
+          <h2>Contato convertido em cliente</h2>
+          <p>
+            Confira as condições abaixo. O cadastro, a localização e o histórico
+            do contato foram preservados.
+          </p>
+          {!person && (
+            <Button to="/gestao/recorrentes">Criar pedido padrão</Button>
+          )}
+          <Button to="/gestao/pedidos?novo=1">Criar primeiro pedido</Button>
+        </section>
+      )}
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
       {view.data && (

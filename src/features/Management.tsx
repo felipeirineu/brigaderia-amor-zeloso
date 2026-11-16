@@ -1,3 +1,5 @@
+import { ProspectFields, ProspectPanel } from './prospects/ProspectPanel';
+import { emptyProspect, type ProspectData } from '../../shared/prospects';
 import { formatPhone } from '../../shared/phone';
 import { DraftNotice } from './mobile/OrderDraftContext';
 import { OrderDraftScope } from './mobile/order-draft-scope';
@@ -98,6 +100,7 @@ import {
 import { Mascot } from '../components/Mascot';
 
 interface Session {
+  prospects?: boolean;
   weight_costing?: boolean;
   customer_orders?: boolean;
   kit_orders?: boolean;
@@ -115,6 +118,8 @@ interface Session {
   recurring_mixed?: boolean;
 }
 interface Customer {
+  kind?: string;
+  prospect?: ProspectData;
   customer_type?: CustomerType;
   id: string;
   name: string;
@@ -290,10 +295,14 @@ export function Login() {
 function Customers({
   financial = false,
   metadata = false,
+  prospects = false,
 }: {
   financial?: boolean;
   metadata?: boolean;
+  prospects?: boolean;
 }) {
+  const [kind, setKind] = useState<'customer' | 'prospect'>('customer');
+  const [prospect, setProspect] = useState<ProspectData>(emptyProspect);
   const field = useField(),
     [site, setSite] = useState<Place | null>(null),
     [siteVersion, setSiteVersion] = useState(0),
@@ -308,7 +317,7 @@ function Customers({
   const [query, setQuery] = useState('');
   const [all, setAll] = useState(false);
   const list = useList<Customer>(
-    `customers?q=${encodeURIComponent(query)}${all ? '&active=all' : ''}`,
+    `customers?q=${encodeURIComponent(query)}${all ? '&active=all' : ''}${prospects ? '&kind=' + kind : ''}`,
   );
   const save = useSave(list.reload);
   const [editing, setEditing] = useState<Customer | null>(null);
@@ -340,7 +349,17 @@ function Customers({
     }
     reset();
   }
+  const isContact =
+    prospects && (editing ? editing.kind === 'prospect' : kind === 'prospect');
+  const formTitle = isContact
+    ? editing
+      ? 'Editar contato'
+      : 'Novo contato'
+    : editing
+      ? 'Editar cliente'
+      : 'Novo cliente';
   function reset() {
+    setProspect(emptyProspect());
     setPhoto(null);
     setCaptureBusy(false);
     setNumberFocusRequest(0);
@@ -365,10 +384,11 @@ function Customers({
     void save.save(
       async () => {
         const result = await api<{ id: string }>(
-          `customers${editing ? `/${editing.id}` : ''}`,
+          `${isContact ? 'prospects' : 'customers'}${editing ? `/${editing.id}` : ''}`,
           editing ? 'PUT' : 'POST',
           {
             ...form,
+            ...(isContact ? { prospect } : {}),
             customer_type: metadata ? form.customer_type : undefined,
             ...(editing ? { version: editing.version } : {}),
             ...(field && (site || photo)
@@ -392,7 +412,9 @@ function Customers({
                 base64: photo,
               },
             );
-            setPhotoNotice('Cliente e foto salvos.');
+            setPhotoNotice(
+              isContact ? 'Contato e foto salvos.' : 'Cliente e foto salvos.',
+            );
           } catch {
             setPhotoNotice(
               'Cliente salvo. Não foi possível confirmar a foto. Confira em “Localização, foto e Instagram” antes de tentar novamente.',
@@ -408,6 +430,17 @@ function Customers({
   }
   return (
     <>
+      {prospects && (
+        <ChoiceChips
+          label="Clientes ou contatos"
+          value={kind}
+          options={[
+            ['customer', 'Clientes'],
+            ['prospect', 'Contatos'],
+          ]}
+          onChange={(value) => setKind(value as 'customer' | 'prospect')}
+        />
+      )}
       <div className="page-heading customer-heading">
         <h1 className="mobile-context-title">Clientes</h1>
         <Button
@@ -418,7 +451,8 @@ function Customers({
             sheet.current?.showModal();
           }}
         >
-          <Icon name="novo" size={18} /> Novo cliente
+          <Icon name="novo" size={18} />{' '}
+          {kind === 'prospect' ? 'Novo contato' : 'Novo cliente'}
         </Button>
       </div>
       <ErrorMessage message={list.error || save.error} />
@@ -427,7 +461,7 @@ function Customers({
       <dialog
         ref={sheet}
         className="help-sheet customer-sheet"
-        aria-label={editing ? 'Editar cliente' : 'Novo cliente'}
+        aria-label={formTitle}
         onCancel={(e) => {
           e.preventDefault();
           if (!save.busy) close();
@@ -435,7 +469,7 @@ function Customers({
       >
         <form className="data-form sheet-body" onSubmit={submit}>
           <div className="customer-sheet-heading">
-            <h2>{editing ? 'Editar cliente' : 'Novo cliente'}</h2>
+            <h2>{formTitle}</h2>
             <Button
               type="button"
               variant="ghost"
@@ -504,6 +538,9 @@ function Customers({
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </label>
+            {isContact && (
+              <ProspectFields value={prospect} onChange={setProspect} />
+            )}
             <label>
               Notas operacionais
               <textarea
@@ -567,7 +604,7 @@ function Customers({
                 variant="primary"
                 loading={save.busy}
               >
-                Salvar cliente
+                {isContact ? 'Salvar contato' : 'Salvar cliente'}
               </Button>
               <Button type="button" disabled={save.busy} onClick={close}>
                 Cancelar
@@ -601,7 +638,11 @@ function Customers({
       ) : list.data.length === 0 ? (
         <div className="mascot-empty">
           <Mascot size={72} />
-          <p>Nenhum cliente encontrado.</p>
+          <p>
+            {kind === 'prospect'
+              ? 'Nenhum contato encontrado.'
+              : 'Nenhum cliente encontrado.'}
+          </p>
         </div>
       ) : (
         <div className="customer-tiles customer-records">
@@ -614,6 +655,7 @@ function Customers({
                 onClick={() => {
                   reset();
                   setEditing(c);
+                  setProspect(c.prospect ?? emptyProspect());
                   const existing = field?.data?.sites.find(
                     (s) => s.id === c.id,
                   );
@@ -641,11 +683,19 @@ function Customers({
                   </small>
                 </span>
               </Button>
+              {prospects && c.prospect && (
+                <ProspectPanel
+                  key={`${c.id}:${c.version}`}
+                  customer={c}
+                  financial={financial}
+                  onChanged={list.reload}
+                />
+              )}
               <RouteInfo id={c.id} />
               <details>
                 <DisclosureSummary>Conta e localização</DisclosureSummary>
                 <SiteInfo id={c.id} name={c.name} />
-                {financial && (
+                {financial && c.kind !== 'prospect' && (
                   <>
                     <Button
                       className="button"
@@ -686,7 +736,9 @@ function Customers({
                     onClick={() => {
                       if (
                         confirm(
-                          'Arquivar este cliente? O histórico será preservado.',
+                          c.kind === 'prospect'
+                            ? 'Arquivar este contato? O histórico será preservado.'
+                            : 'Arquivar este cliente? O histórico será preservado.',
                         )
                       )
                         void save.save(() =>
@@ -1891,6 +1943,7 @@ export function Management() {
                   <Customers
                     financial={session.finance}
                     metadata={session.customer_orders}
+                    prospects={session.prospects}
                   />
                 }
               />

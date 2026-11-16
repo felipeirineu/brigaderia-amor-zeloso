@@ -1,3 +1,4 @@
+import { requireCustomer } from './prospects';
 import { customerAddressSQL } from './customer-address';
 import { customerType, occasionLabel } from '../shared/customer-order';
 import { customerOrderFieldsReady, checkPersonTerms } from './customer-order';
@@ -341,6 +342,7 @@ export async function operations(
       )
       .bind(org, data.customer_id)
       .first<Row>();
+    requireCustomer(customer);
     if (!customer) throw new HttpError(400, 'Cliente ativo não encontrado.');
     if ((data.active || !id) && customerType(customer) === 'person')
       throw new HttpError(

@@ -34,6 +34,7 @@ export async function p1Mutation(
     rest: (guard: string, args: string[]) => D1PreparedStatement[];
     response: object;
     table:
+      | 'customers'
       | 'weight_recipes'
       | 'costing_settings'
       | 'kits'

@@ -15,6 +15,7 @@ const t = await runtime({
   mobileEnabled: true,
   mixedEnabled: true,
   fieldEnabled: true,
+  prospectsEnabled: true,
 });
 let checks = 0;
 const ok = (cond, msg) => {
@@ -25,6 +26,59 @@ try {
   const { call, owner, operator, outside, customer, makeOrder } =
     await demoProject(t);
   const order = await makeOrder();
+  // R7a: todas as rotas novas exigem sessão/tenant; operadora pode acompanhar contatos.
+  const contact = await call(
+    'prospects',
+    { name: 'Contato DEMONSTRAÇÃO segurança', prospect: {} },
+    'POST',
+    operator,
+  );
+  const prospectRoutes = [
+    [
+      'prospects',
+      'POST',
+      { name: 'Contato DEMONSTRAÇÃO segurança 2', prospect: {} },
+    ],
+    ['prospects/' + contact.id, 'GET', undefined],
+    [
+      'prospects/' + contact.id,
+      'PUT',
+      { name: 'Contato DEMONSTRAÇÃO segurança', version: 1, prospect: {} },
+    ],
+    [
+      'prospects/' + contact.id + '/stage',
+      'POST',
+      { version: 2, stage: 'follow_up' },
+    ],
+    ['prospects/' + contact.id + '/convert', 'POST', { version: 3 }],
+  ];
+  for (const [path, method, data] of prospectRoutes) {
+    ok(
+      (await t.request(path, { method, data, key: crypto.randomUUID() }))
+        .status === 401,
+      method + ' ' + path + ' exige sessão',
+    );
+    if (path !== 'prospects')
+      ok(
+        (
+          await t.request(path, {
+            cookie: outside,
+            method,
+            data,
+            key: crypto.randomUUID(),
+          })
+        ).status === 404,
+        method + ' ' + path + ' outro tenant',
+      );
+    const result = await t.request(path, {
+      cookie: operator,
+      method,
+      data,
+      key: crypto.randomUUID(),
+    });
+    ok(result.ok, method + ' ' + path + ' permite operadora: ' + result.status);
+  }
+
   ok(
     (await t.request('auth/config')).headers.get(
       'Cross-Origin-Resource-Policy',

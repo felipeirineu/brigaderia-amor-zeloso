@@ -11,6 +11,7 @@ const t = await runtime({
   fieldEnabled: true,
   toolsEnabled: true,
   mixedEnabled: true,
+  prospectsEnabled: true,
 });
 try {
   const { call, customer, owner, operator, outside, makeOrder, variant } =
@@ -29,6 +30,15 @@ try {
     packaging_supply_id: kitPackaging.id,
   });
   await call('p1/kit-settings', { limit_flavors: false, version: 0 }, 'PUT');
+  const prospect = await call('prospects', {
+    name: 'Contato DEMONSTRAÇÃO backup',
+    prospect: { source: 'Origem DEMONSTRAÇÃO' },
+  });
+  await call('prospects/' + prospect.id + '/stage', {
+    version: 1,
+    stage: 'follow_up',
+    next_step_at: '2030-01-07T13:00:00Z',
+  });
   const order = await makeOrder();
   const reminderUser = (await call('session', undefined, 'GET')).user_id;
   await call('p1/reminders', {
@@ -177,7 +187,7 @@ try {
 c=sqlite3.connect(':memory:');c.execute('PRAGMA foreign_keys=ON');c.executescript(sys.stdin.read())
 tables=[r[0] for r in c.execute("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%'")]
 counts={t:c.execute('SELECT COUNT(*) FROM "'+t+'"').fetchone()[0] for t in tables}
-print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check')),'photo':base64.b64encode(c.execute('SELECT photo FROM customer_sites').fetchone()[0]).decode(),'profile_photo':base64.b64encode(c.execute('SELECT photo FROM profile_photos').fetchone()[0]).decode(),'organizations':c.execute('SELECT COUNT(*) FROM organizations').fetchone()[0],'notes':c.execute('SELECT notes FROM customers WHERE phone=?',('+5511900000001',)).fetchone()[0]}))`,
+print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check')),'photo':base64.b64encode(c.execute('SELECT photo FROM customer_sites').fetchone()[0]).decode(),'profile_photo':base64.b64encode(c.execute('SELECT photo FROM profile_photos').fetchone()[0]).decode(),'organizations':c.execute('SELECT COUNT(*) FROM organizations').fetchone()[0],'notes':c.execute('SELECT notes FROM customers WHERE phone=?',('+5511900000001',)).fetchone()[0],'prospect_kind':c.execute('SELECT kind FROM customers c JOIN prospect_details p ON p.organization_id=c.organization_id AND p.customer_id=c.id').fetchone()[0],'prospect_stage':json.loads(c.execute('SELECT data FROM prospect_details').fetchone()[0])['stage']}))`,
       ],
       { input: sql, encoding: 'utf8' },
     ),
@@ -201,7 +211,11 @@ print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check'
   assert.equal(restored.counts.inventory_events, 1);
   assert.equal(restored.counts.payment_events, 2);
   assert.equal(restored.counts.displacements, 2);
-  assert.equal(restored.counts.customers, 2);
+  assert.equal(restored.counts.customers, 3);
+  assert.equal(restored.counts.prospect_details, 1);
+  assert.equal(restored.counts.prospect_events, 2);
+  assert.equal(restored.prospect_kind, 'prospect');
+  assert.equal(restored.prospect_stage, 'follow_up');
   const other = await t.request('p1/backup', { cookie: outside });
   assert.equal(other.status, 200);
   const otherSql = await other.text();

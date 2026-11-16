@@ -1,3 +1,4 @@
+import { prospectsReady, prospectsSchema, requireCustomer } from './prospects';
 import { customerAddressSQL } from './customer-address';
 import { weightCostingReady } from './weight-costing';
 import { kitsReady } from './kits';
@@ -53,6 +54,7 @@ export async function management(req: Request, env: Env, a: Actor) {
   if (resource === 'session' && req.method === 'GET')
     return json({
       role: a.role,
+      prospects: await prospectsReady(env),
       weight_costing: await weightCostingReady(db),
       customer_orders: await customerOrderFieldsReady(db),
       kit_orders: await kitOrdersReady(db),
@@ -124,6 +126,24 @@ export async function management(req: Request, env: Env, a: Actor) {
     throw new HttpError(404, 'Não encontrado.');
   if (req.method === 'GET') {
     const search = (url.searchParams.get('q') || '').slice(0, 120);
+    const hasProspects =
+      resource === 'customers' && (await prospectsSchema(db));
+    const canProspect =
+      resource === 'customers' &&
+      env.PROSPECTS_ENABLED === 'true' &&
+      hasProspects;
+    const kind = resource === 'customers' ? url.searchParams.get('kind') : null;
+    if (kind && !canProspect) throw new HttpError(404, 'Não encontrado.');
+    if (kind && !['customer', 'prospect'].includes(kind))
+      throw new HttpError(400, 'Filtro inválido.');
+    const kindFilter =
+      hasProspects && !id
+        ? ` AND kind='${kind === 'prospect' ? 'prospect' : 'customer'}'`
+        : '';
+    const prospectSelect = canProspect
+      ? ',(SELECT p.data FROM prospect_details p WHERE p.organization_id=customers.organization_id AND p.customer_id=customers.id) AS prospect_data'
+      : '';
+
     // LIKE sempre parametrizado; % e _ são caracteres de busca, não SQL.
     const field = resource === 'orders' ? 'customer_name' : 'name';
     const status =
@@ -131,7 +151,7 @@ export async function management(req: Request, env: Env, a: Actor) {
     const rows = (
       await db
         .prepare(
-          `SELECT *${resource === 'orders' ? ',' + orderNumber('orders') : ''} FROM ${resource} WHERE organization_id=?${id ? ' AND id=?' : ''}${status} AND ${resource === 'customers' ? "(name LIKE ? OR (phone LIKE '+%' AND phone LIKE ?))" : `${field} LIKE ?`} ORDER BY ${resource === 'orders' ? 'due_at DESC' : 'name'} LIMIT 200`,
+          `SELECT *${resource === 'orders' ? ',' + orderNumber('orders') : prospectSelect} FROM ${resource} WHERE organization_id=?${id ? ' AND id=?' : ''}${status}${kindFilter} AND ${resource === 'customers' ? "(name LIKE ? OR (phone LIKE '+%' AND phone LIKE ?))" : `${field} LIKE ?`} ORDER BY ${resource === 'orders' ? 'due_at DESC' : 'name'} LIMIT 200`,
         )
         .bind(
           org,
@@ -144,7 +164,12 @@ export async function management(req: Request, env: Env, a: Actor) {
     // Os 200 pedidos mais recentes, devolvidos em ordem crescente de data.
     if (resource === 'orders') rows.reverse();
     for (const row of rows) {
-      if (resource === 'customers') row.phone = visiblePhone(row.phone);
+      if (resource === 'customers') {
+        row.phone = visiblePhone(row.phone);
+        if (canProspect && row.prospect_data)
+          row.prospect = JSON.parse(String(row.prospect_data));
+        delete row.prospect_data;
+      }
       delete row.mutation_id;
       delete row.request_hash;
       delete row.request_key;
@@ -466,10 +491,11 @@ export async function management(req: Request, env: Env, a: Actor) {
     }
     const customer = await db
       .prepare(
-        'SELECT name FROM customers WHERE organization_id=? AND id=? AND active=1',
+        'SELECT * FROM customers WHERE organization_id=? AND id=? AND active=1',
       )
       .bind(org, d.customer_id)
-      .first<{ name: string }>();
+      .first<{ name: string; kind?: string }>();
+    requireCustomer(customer);
     if (!customer)
       throw new HttpError(
         400,

@@ -70,5 +70,29 @@ class KitExpansionTests(unittest.TestCase):
         db.close()
 
 
+
+
+
+class ProspectMigrationTests(unittest.TestCase):
+    def test_prospects_is_additive_and_tenant_scoped(self):
+        db = sqlite3.connect(':memory:')
+        db.execute('PRAGMA foreign_keys=ON')
+        for migration in sorted(Path('database/migrations').glob('*.sql')):
+            if migration.name.startswith('0024'):
+                break
+            db.executescript(migration.read_text())
+        db.execute("INSERT INTO organizations(id,name) VALUES('demo-org','DEMONSTRAÇÃO')")
+        db.execute("INSERT INTO customers(organization_id,id,name,phone,version) VALUES('demo-org','demo-customer','DEMONSTRAÇÃO','sem:demo-customer',7)")
+        db.executescript(Path('database/migrations/0024_prospects.sql').read_text())
+        self.assertEqual(db.execute("SELECT kind,version,name FROM customers").fetchone(), ('customer',7,'DEMONSTRAÇÃO'))
+        self.assertEqual(db.execute('SELECT COUNT(*) FROM prospect_details').fetchone()[0],0)
+        self.assertEqual(db.execute('SELECT COUNT(*) FROM prospect_events').fetchone()[0],0)
+        with self.assertRaises(sqlite3.IntegrityError):
+            db.execute("INSERT INTO prospect_details VALUES('outra-org','demo-customer','{}')")
+        with self.assertRaises(sqlite3.IntegrityError):
+            db.execute("UPDATE customers SET kind='invalido'")
+        self.assertEqual(list(db.execute('PRAGMA foreign_key_check')), [])
+        db.close()
+
 if __name__ == '__main__':
     unittest.main()

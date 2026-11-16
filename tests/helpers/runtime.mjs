@@ -19,6 +19,7 @@ export async function runtime({
   mobileEnabled = false,
   mixedEnabled = false,
   fieldEnabled = false,
+  prospectsEnabled = false,
   placesProvider = false,
   routingProvider,
   port = 0,
@@ -58,6 +59,7 @@ export async function runtime({
         MOBILE_ENABLED: mobileEnabled ? 'true' : 'false',
         MIXED_BOXES_ENABLED: mixedEnabled ? 'true' : 'false',
         FIELD_ENABLED: fieldEnabled ? 'true' : 'false',
+        PROSPECTS_ENABLED: prospectsEnabled ? 'true' : 'false',
         ...(vapid
           ? {
               VAPID_PUBLIC_KEY: vapid.publicKey,

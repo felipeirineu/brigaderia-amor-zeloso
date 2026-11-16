@@ -767,3 +767,17 @@ body:has(dialog[open]) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.prospect-panel {
+  padding: var(--az-space-3) var(--az-space-4);
+  border-top: 1px solid var(--az-line);
+}
+.prospect-panel p {
+  margin-bottom: var(--az-space-2);
+}
+.prospect-panel .status-tag {
+  display: inline-block;
+}
+.prospect-panel .data-form {
+  margin-block: var(--az-space-3);
+}

@@ -31,6 +31,7 @@ const t = await runtime({
   fieldEnabled: true,
   toolsEnabled: true,
   mixedEnabled: true,
+  prospectsEnabled: true,
 });
 const query = async (sql) => (await t.db.prepare(sql).all()).results;
 const run = async (options) => {
@@ -53,6 +54,14 @@ try {
     price_cents: 4200,
     max_flavors: 3,
     packaging_supply_id: packaging.id,
+  });
+  const contact = await call('prospects', {
+    name: 'Contato DEMONSTRAÇÃO limpeza',
+    prospect: {},
+  });
+  await call('prospects/' + contact.id + '/stage', {
+    version: 1,
+    stage: 'follow_up',
   });
   const order = await makeOrder();
   await makeOrder('2030-01-08T13:00:00.000Z');
@@ -136,7 +145,9 @@ try {
   assert.ok(first.includes('orders') && first.includes('order_items'));
   assert.ok(!first.includes('customers') && !first.includes('products'));
   for (const table of first) assert.equal(await count(table), 0, table);
-  assert.equal(await count('customers'), 1);
+  assert.equal(await count('customers'), 2);
+  assert.equal(await count('prospect_details'), 1);
+  assert.equal(await count('prospect_events'), 2);
   assert.equal(await count('products'), 1);
   assert.equal(await count('recipes'), 1);
   assert.equal(await count('supplies'), 2);
@@ -151,15 +162,19 @@ try {
   assert.equal((await call('customers', undefined, 'GET')).length, 1);
 
   // 2) Cadastro por peso é protegido mesmo vazio: apagar produtos não pode
-  // atravessar suas FKs. Clientes podem ser limpos sem alcançar esse cadastro.
+  // atravessar suas FKs. Contatos/histórico também são cadastros protegidos.
   const schema = await readSchema(query);
   assert.throws(
     () => planCleanup(schema, { customers: true, products: true }),
     /tabelas protegidas.*weight_recipes/,
   );
-  const second = await run({ customers: true });
-  assert.ok(second.includes('customers') && !second.includes('products'));
-  assert.equal(await count('customers'), 0);
+  assert.throws(
+    () => planCleanup(schema, { customers: true }),
+    /tabelas protegidas.*prospect_/,
+  );
+  assert.equal(await count('customers'), 2, 'cadastros não foram apagados');
+  assert.equal(await count('prospect_details'), 1);
+  assert.equal(await count('prospect_events'), 2);
   assert.equal(await count('products'), 1);
   assert.equal(await count('recipes'), 1);
   assert.equal(await count('supplies'), 2, 'insumos ficam');

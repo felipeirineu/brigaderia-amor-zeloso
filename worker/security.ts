@@ -13,6 +13,7 @@ export interface Env {
   MOBILE_ENABLED?: string;
   MIXED_BOXES_ENABLED?: string;
   FIELD_ENABLED?: string;
+  PROSPECTS_ENABLED?: string;
   PLACES_USER_AGENT?: string;
   ROUTING_PROVIDER?: string;
   ORS_API_KEY?: string;

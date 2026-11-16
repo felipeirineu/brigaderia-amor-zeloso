@@ -1,3 +1,4 @@
+import { prospectsSchema, requireCustomer } from './prospects';
 import { customerType, occasionValues } from '../shared/customer-order';
 import {
   customerOrderFieldWrite,
@@ -74,11 +75,14 @@ export async function mobile(req: Request, env: Env, a: Actor) {
   if (resource === 'customers' && req.method === 'GET') {
     const q = (new URL(req.url).searchParams.get('q') || '').slice(0, 120);
     const typed = await customerOrderFieldsReady(db);
+    const prospectFilter = (await prospectsSchema(db))
+      ? " AND c.kind='customer'"
+      : '';
     return json(
       (
         await db
           .prepare(
-            `SELECT c.id,c.name,${typed ? 'c.customer_type' : "'establishment'"} AS customer_type,CASE WHEN c.phone LIKE '+%' THEN c.phone ELSE '' END AS phone,COUNT(o.id) AS frequency FROM customers c LEFT JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id AND o.active=1 AND o.status<>'cancelled' WHERE c.organization_id=? AND c.active=1 AND (c.name LIKE ? OR (c.phone LIKE '+%' AND c.phone LIKE ?)) GROUP BY c.id ORDER BY frequency DESC,c.name LIMIT 200`,
+            `SELECT c.id,c.name,${typed ? 'c.customer_type' : "'establishment'"} AS customer_type,CASE WHEN c.phone LIKE '+%' THEN c.phone ELSE '' END AS phone,COUNT(o.id) AS frequency FROM customers c LEFT JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id AND o.active=1 AND o.status<>'cancelled' WHERE c.organization_id=? AND c.active=1${prospectFilter} AND (c.name LIKE ? OR (c.phone LIKE '+%' AND c.phone LIKE ?)) GROUP BY c.id ORDER BY frequency DESC,c.name LIMIT 200`,
           )
           .bind(org, '%' + q + '%', '%' + q + '%')
           .all()
@@ -94,6 +98,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       )
       .bind(org, id)
       .first<Row>();
+    requireCustomer(customer);
     if (!customer) throw new HttpError(404, 'Cliente não encontrado.');
     const plans = (
       await db
@@ -286,6 +291,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       )
       .bind(org, d.customer_id)
       .first<Row>();
+    requireCustomer(customer);
     if (!customer) throw new HttpError(400, 'Cliente ativo obrigatório.');
     const old = id
       ? (

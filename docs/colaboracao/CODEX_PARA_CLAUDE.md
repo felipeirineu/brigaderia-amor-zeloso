@@ -1,3 +1,25 @@
+## R7a — checkpoint preservado; prioridade mudou para T3c (16/11/2026)
+
+A FILA no main cf4deaf passou a mandar guardar R7a e executar T3c antes. Trabalho preservado em commit local no branch `codex/r7a-prospect-funnel`, sem push/PR/ativação; versão futura ajustada para0.13.0 conforme a fila. Este checkpoint não é uma entrega publicada.
+
+**Produzido:** migração0024 aditiva, flag false/prontidão, contatos/funil/conversão com CAS/idempotência/auditoria, reaproveitamento de local/foto/Instagram, nomes no B2B sem sobrescrever perfil, filtro e guardas de pedidos/modelos, backup/KEEP/pré-checagem e guia FASE_R7A. Sem visitas/amostras financeiras (R7b/c).
+
+**Testes executados:**142 unitários;223 verificações de segurança; integração de contatos/CAS/concorrência/foto/tenant/sem movimentos financeiros e fallback até0023/flagfalse;28 verificações da API base, listagens65/216, kits completos (41 preparações SQL/67 modelos), backup/restauração, limpeza e8 testes SQL.4 E2E Chromium/WebKit de contato→retorno→cliente/fallback passaram; captura adicional Chromium aprovada. Tipos/lint/formatação/build aprovados antes da troca só de versão para0.13.0.
+
+**Limitações:** nada remoto/publicado. Limpeza opcional de clientes agora recusa alcançar cadastros protegidos (documentado/testado). Guia observa que o campo backup_verified do workflow atual exige dados apenas de teste: condições não verdadeiras precisam do Felipe antes de aplicar, sem declaração falsa.
+
+**Pendências:** retomar somente quando liberada novamente, incorporar T3c/main, concluir regressões finais e emitir PR R7a com CI/Segurança automáticos. Migração/ativação reais continuam decisões do Felipe; nenhum CI manual, flag ligada, dado real ou edição de FILA. A próxima entrega será apenas T3c.
+
+## R7a — plano antes do código (16/11/2026)
+
+Base/main4445078, VEZ CODEX/R7a, versão0.12.0. Li seção R7 completa do briefing e regras da FILA. Branch `codex/r7a-prospect-funnel`, somente R7-1/2/8; visitas/amostras/despesas/relatórios ficam nas etapas seguintes.
+
+- Migração0024 apenas aditiva: customers.kind com default customer, detalhes de contato e eventos do funil ligados ao mesmo id/organização. Nenhum seed. PROSPECTS_ENABLED=false em ambas configurações e prontidão de schema; banco até0023/flag desligada mantém gestão e esconde módulo.
+- shared/prospects e worker/prospects: criação/edição/etapas/conversão com tenant, operador autorizado, validação, CAS, idempotência e auditoria. Conversão preserva id, localização/foto/Instagram e histórico; não cria venda, saldo, lembrete, visita, despesa ou WhatsApp. Arquivamento pelo mecanismo existente, sem exclusão irreversível.
+- Clientes/Contatos: filtro e status, pessoa de contato/origem/observações, próximo passo explícito (ou a definir), funil em chips. Reaproveitar captura/local/foto. Converter abre B2B e oferece pedido padrão/primeiro pedido por ação humana. Contatos não aparecem na seleção de vendas; APIs de novos pedidos/modelos também validam.
+- Operação: databaseTables/backup, KEEP e pré-checagem incluem cadastros/histórico novos. Testes de backup/restauração/limpeza e fallback sem0024, matriz de segurança para toda rota nova, integrações CAS/concorrência/idempotência/conversão, E2E móvel de contato→retorno→cliente (visitas reais só R7b).
+- Tipos/lint/unitários/formatação/build e checks adequados. Guia de ativação com backup e ordem código→migração pelo Felipe→conferência→decisão da flag; nenhuma ação no D1 real/Cloudflare. Incorporar main e abrir PR R7a com relatório Produzido/Testes executados/Limitações/Pendências. Nenhum CI manual, edição da FILA ou avanço de main.
+
 ## T3b — entrega para revisão (16/11/2026)
 
 Branch `codex/t3b-heading-wrap`, base/main799fe7c e VEZ CODEX/T3b conferidos. Versão0.11.1 em package/lock. Somente T3b, sem editar FILA/VEZ ou iniciar R7.
