@@ -625,8 +625,6 @@ body:has(dialog[open]) {
 }
 
 /* T3: mesma hierarquia, espaçamento e área livre nas rotinas da gestão. */
-.private-workspace h2:not(.wizard-question):not(.mobile-context-title),
-.private-workspace h3,
 .customer-records [role='heading'] {
   font-family: var(--az-sans);
   font-weight: 600;
@@ -754,4 +752,18 @@ body:has(dialog[open]) {
   .deliveries-heading > .az-button .az-button-icon:empty {
     display: none;
   }
+}
+
+/* T3b: o nome quebra entre palavras; o texto completo segue acessível. */
+.delivery-identity h3 {
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  max-height: 2.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

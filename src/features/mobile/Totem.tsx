@@ -988,7 +988,7 @@ export function Totem({
       )}
       {step === 0 && (
         <>
-          <h2>Escolha o cliente</h2>
+          <h2 className="wizard-question">Escolha o cliente</h2>
           <label>
             Buscar cliente
             <input

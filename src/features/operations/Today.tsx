@@ -532,7 +532,7 @@ export function Today({
                       name={order.customer_name}
                     />
                     <div>
-                      <h3>{order.customer_name}</h3>
+                      <h3 title={order.customer_name}>{order.customer_name}</h3>
                       {occasionLabel(order.occasion) && (
                         <p>Ocasião: {occasionLabel(order.occasion)}</p>
                       )}

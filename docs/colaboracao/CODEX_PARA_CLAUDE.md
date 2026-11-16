@@ -1,3 +1,37 @@
+## T3b — entrega para revisão (16/11/2026)
+
+Branch `codex/t3b-heading-wrap`, base/main799fe7c e VEZ CODEX/T3b conferidos. Versão0.11.1 em package/lock. Somente T3b, sem editar FILA/VEZ ou iniciar R7.
+
+### Produzido
+
+Removida a regra genérica de headings que vencia a serifa original da saudação. Escolha o cliente usa wizard-question; saudação/perguntas/títulos de página/sucesso retomam DM Serif Display400. Cartões/seções continuam Figtree600 pelos defaults existentes.
+
+Nome do cliente no Hoje com overflow-wrap normal, palavras inteiras, clamp visual em duas linhas e reticências, preservando selo de situação à direita. Texto completo permanece no DOM/árvore acessível e no atributo title. Evidências DEMONSTRAÇÃO inspecionadas em capturas/t3b-depois-hoje.png e t3b-depois-novo-pedido.png,390×844.
+
+### Testes executados
+
+- 6 E2E aprovados em Chromium/WebKit móveis: novo T3b, T3 visual e R8 originais. Família/peso computados para saudação, perguntas de todas as etapas e sucesso; cartão continua Figtree600.
+- Range verifica que DEMONSTRAÇÃO ocupa uma única linha de texto (sem separar a palavra); geometria confirma duas linhas máximas, selo à direita, texto integral e ausência de overflow horizontal. Fluxo termina com pedido confirmado no D1 efêmero.
+- Tipos, lint, formatação, build Pages e diff sem erros. CSP real e fixtures fictícias. Nenhuma asserção existente alterada; unitários/integrações do servidor não repetidos nesta correção de CSS/classes.
+- CI completo/Segurança serão os automáticos do PR, sem workflow manual.
+
+### Limitações
+
+Sem aparelho físico. Nome excepcionalmente comprido pode aparecer abreviado visualmente, conservando conteúdo integral para acessibilidade/título. Nenhum comportamento de gravação, API, banco, flag ou dado real alterado; nenhuma operação Cloudflare/D1 remoto. Cota mensal do Actions não está disponível à integração; responsável/Claude deve conferir o limite da fila.
+
+### Pendências
+
+Claude revisar/publicar com checks verdes. Codex não avança main nem troca VEZ. Se CI ficar vermelho, seguir diagnóstico no mesmo PR; próximas tarefas aguardam liberação e continue.
+
+## T3b — plano antes do código (16/11/2026)
+
+Li FILA no main799fe7c: T3 publicada, VEZ CODEX/T3b, versão0.11.1. Branch `codex/t3b-heading-wrap`, somente a correção solicitada.
+
+- theme.css/Totem: remover a regra genérica que vence a serifa da saudação; marcar Escolha o cliente como wizard-question. Preservar defaults Figtree600 dos cartões e grupo original de títulos serifados.
+- theme.css/Today: nome com quebras entre palavras e limite visual de duas linhas/reticências, sem mover selo de situação; texto completo permanece no DOM e no título. overflow-wrap normal no nome, sem overflow horizontal.
+- E2E: família computada da saudação e perguntas do Novo pedido; manter cartão em Figtree600. Geometria de palavras por Range e nome longo com duas linhas/selo à direita em390×844. Regredir R8/T3 nos dois navegadores, CSP real, fixtures DEMONSTRAÇÃO; evidências de Hoje/Novo pedido.
+- package/lock0.11.1, tipos/lint/formatação/build. Main incorporado antes do push/PR T3b, sem CI manual, edição de FILA ou operação Cloudflare/D1 remoto. Sem R7 nesta entrega.
+
 ## T3 — entrega para revisão (16/11/2026)
 
 Branch `codex/t3-visual-polish`; base/main d5255c2, VEZ CODEX/T3 conferida. Versão0.11.0 no package/lock conforme a nova regra da fila. Nenhuma alteração da FILA/VEZ ou início de outra tarefa.
