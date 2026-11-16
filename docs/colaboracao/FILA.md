@@ -225,7 +225,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
-| 0.12.0 | 16/11 | Carregamento com "esqueleto" no Hoje e nas listas, no lugar de "Carregando…". |
+| 0.12.0 | 16/11 | Carregamento com "esqueleto" no Hoje e nas listas, no lugar de "Carregando…". Mais tarde no mesmo dia: as folhas fecham arrastando para baixo (publicado pelo Claude sem trocar o número). |
 | 0.11.1 | 16/11 | Títulos de página com a fonte da marca de novo; nome do cliente não quebra no meio da palavra. |
 | 0.11.0 | 16/11 | Visual mais caprichado: telefones formatados, topo do Hoje mais enxuto, títulos e espaçamentos padronizados. |
 | 0.10.0 | 16/11 | Aviso quando o horário de entrega de hoje já passou (pede confirmação). |
@@ -245,3 +245,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 16/11 | 5 | T3 — acabamento visual (PR #8) | publicada como 0.11.0; 203 E2E e Segurança verdes. Ajustes vistos nas capturas viraram a T3b. |
 | 16/11 | 6 | T3b — correções visuais (PR #9) | publicada como 0.11.1; Validação e Segurança verdes. **Revisão geral 3/3** (T2b, T3, T3b): sem problema real. |
 | 16/11 | 7 | T3c — skeleton (PR #10) | publicada como 0.12.0; 212 E2E e Segurança verdes. |
+| 16/11 | — | Claude: folhas fecham arrastando para baixo | 215 E2E e Segurança verdes; publicado sem subir o número (fica no histórico da 0.12.0). |
