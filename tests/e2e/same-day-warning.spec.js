@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { runtime } from '../helpers/runtime.mjs';
 import { demoProject } from '../helpers/demo-project.mjs';
+import { fortalezaDay } from '../../shared/workday.ts';
 
 // Pedido repetido por engano: mesmo cliente e mesmo dia avisam e pedem um
 // toque a mais; nada é bloqueado de vez.
@@ -22,6 +23,10 @@ test('aviso de pedido repetido no mesmo dia para o mesmo cliente', async ({
   try {
     const { call } = await demoProject(t);
     const p = await c.newPage();
+    // Isola pedido repetido do aviso T2b: 14h ainda é futuro neste relógio.
+    await p.clock.install({
+      time: new Date(fortalezaDay() + 'T08:00:00-03:00'),
+    });
     await p.goto(t.url + '/api/access/start');
     const order = async (day) => {
       await p.goto(t.url + '/gestao/pedidos?novo=1');

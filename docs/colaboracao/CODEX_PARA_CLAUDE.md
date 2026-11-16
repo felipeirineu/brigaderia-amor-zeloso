@@ -1,3 +1,39 @@
+## T2b — entrega para revisão (16/11/2026)
+
+Branch `codex/t2b-past-order-time`; base6893cc0, main atual f2b25fe incorporado antes do PR (novidade só na FILA). Li VEZ CODEX/T2b; T2 publicada e revisão geral sem bloqueio. Não editei FILA nem comecei outra tarefa.
+
+### Produzido
+
+Horários anteriores de hoje em Fortaleza têm fundo discreto, texto com contraste e continuam clicáveis. Selecionar/digitar horário passado mostra a pergunta aprovada e exige Sim, registrar mesmo assim para Continuar. Data/hora e aceite ficam no mesmo estado: qualquer nova seleção, modelo, recuperação ou troca de cliente zera o aceite, inclusive ao voltar a um valor anterior; nada desse aceite entra no sessionStorage. Edição de pedido não avisa. Datas futuras mantêm o fluxo.
+
+O relógio atualiza a tela a cada30s e ao retornar ao app; eventos de continuar/confirmar reconferem o horário atual. Se vencer depois da etapa, a confirmação volta para Quando, sem enviar o pedido. Helper puro em shared/order-schedule, tokens do theme.css, sem inline/eval/backdrop-filter. Nenhuma API, migração, flag, versão do pacote ou regra de autorização alterada.
+
+### Testes executados
+
+-139 unitários (34 arquivos), incluindo três casos novos com igualdade do minuto, futuro/ontem, datas inválidas, UTC diferente do dia de Fortaleza e virada de dia/ano.
+-6 E2E dirigidos em Chromium/WebKit móveis: passado/aceite, reset por dia/hora (inclusive ida e volta), horário manual, futuro, vencimento com tela aberta, edição sem aviso e pedido repetido.
+-6 regressões adicionais Chromium móvel: pedido móvel, calendário/R12 e três fluxos de sessão/rascunho.12 E2E aprovados ao todo, CSP real e fixtures DEMONSTRAÇÃO em D1 efêmero.
+
+- Teste existente de pedido repetido passou a usar page.clock às08h do dia local: preserva o propósito e não depende de o CI rodar antes de14h. Não removeu asserções.
+- Tipos, lint, formatação, build Pages e diff sem erros. Relógio em eventos/temporizadores; nenhuma regra de lint/CSP desabilitada. CI completo/Segurança serão os automáticos do PR; nenhum manual.
+
+### Limitações
+
+Sem aparelho físico ou operação Cloudflare/D1 remoto. Comparação tem precisão de minuto: o minuto atual continua válido. Relógio do dispositivo orienta o aviso, que é uma conferência humana do fluxo móvel; não é nova restrição na API nem sinaliza que o pedido já foi entregue. Apenas prossegue com o cadastro normal. Consumo mensal de Actions segue indisponível à integração; Claude/responsável deve conferir o limite da fila.
+
+### Pendências
+
+Claude revisar/publicar com CI e Segurança do PR verdes. Sem merge/push no main ou troca de VEZ pelo Codex. T3 e demais tarefas aguardam liberação e novo continue.
+
+## T2b — plano antes do código (16/11/2026)
+
+Li FILA no main6893cc0: T2 publicada/revisada, VEZ CODEX/T2b. Branch `codex/t2b-past-order-time`, sem trabalho nas demais tarefas.
+
+- shared/order-schedule e testes: função pura compara data/hora civil com America/Fortaleza; só hoje, minuto completo anterior, inválidos não disparam. Aceite: igualdade, futuro, ontem, fuso e virada de dia/ano.
+- Totem: chips passados com aparência tonal apagada mas clicáveis; aviso e aceite explícito antes de Continuar. Troca de data/hora e seleção/restauração zeram aceite, sem sessionStorage. Edição excluída. Relógio acompanha a tela aberta; conferir novamente antes de prosseguir/enviar se o horário vencer mais tarde.
+- theme.css: tokens existentes, sem reduzir contraste do texto nem backdrop-filter.
+- E2E com page.clock: passado bloqueia até aceite, troca de dia/hora reseta inclusive retorno ao valor anterior, entrada manual, futuro e edição sem aviso. Regressões dos fluxos afetados, tipos/lint/unitários/formatação/build. Incorporar main e push/PR T2b consolidado; nenhum workflow manual, edição da FILA ou operação remota Cloudflare/D1.
+
 ## T2 — correção do status vazio do perfil, PR #6 (15/11/2026)
 
 ### Produzido

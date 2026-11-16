@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useCallback, useContext, useMemo } from 'react';
 import { OrderDraftScope } from './order-draft-scope';
 import { readDraft, storeDraft, clearDraft } from './order-draft';
 import {
@@ -24,6 +24,7 @@ import { kitLabel } from '../../../shared/kits';
 import { alcoholNotice, containsAlcohol } from '../../../shared/alcohol';
 import { DayCalendar } from '../operations/DayCalendar';
 import {
+  isPastToday,
   deliveryDayLabel,
   scheduleDay,
   windowStart,
@@ -154,6 +155,8 @@ interface EditOrder {
     components?: { variant_id: string; units: number }[];
   }[];
 }
+// Relógio consultado só em inicialização, eventos e temporizadores.
+const readTime = () => Date.now();
 export function Totem({
   financial = false,
   mixed = false,
@@ -201,7 +204,7 @@ export function Totem({
     } | null>(null),
     [defaults, setDefaults] = useState<Defaults | null>(null),
     [counts, setCounts] = useState<Record<string, number>>({}),
-    [due, setDue] = useState(''),
+    [schedule, setSchedule] = useState({ due: '', pastConfirmed: false }),
     [planDue, setPlanDue] = useState(''),
     [notes, setNotes] = useState(''),
     [occasion, setOccasion] = useState<Occasion>(''),
@@ -218,6 +221,26 @@ export function Totem({
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false),
     [success, setSuccess] = useState('');
+  const due = schedule.due;
+  const setDue = useCallback(
+    (due: string) => setSchedule({ due, pastConfirmed: false }),
+    [],
+  );
+  const [clock, setClock] = useState(readTime);
+  useEffect(() => {
+    const update = () => setClock(readTime());
+    const timer = setInterval(update, 30000);
+    window.addEventListener('focus', update);
+    document.addEventListener('visibilitychange', update);
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('focus', update);
+      document.removeEventListener('visibilitychange', update);
+    };
+  }, []);
+  const pastDue = !id && isPastToday(due, new Date(clock));
+  const pastBlocks = pastDue && !schedule.pastConfirmed;
+
   const suppressedDraft = useRef(''),
     editBaseline = useRef<string | null>(null),
     baselineOrder = useRef('');
@@ -434,7 +457,7 @@ export function Totem({
     return () => {
       current = false;
     };
-  }, [id, financial]);
+  }, [id, financial, setDue]);
   function applyPlanItems(items: Plan['items'], kits: KitItemInput[] = []) {
     setKitItems(
       kits.map((i) => ({
@@ -642,6 +665,11 @@ export function Totem({
   }
   async function confirmOrder() {
     if (pending.current || !customer || kitEditing || sameDayBlocks) return;
+    if (!id && isPastToday(due) && !schedule.pastConfirmed) {
+      setClock(readTime());
+      setStep(WHEN);
+      return;
+    }
     pending.current = true;
     setBusy(true);
     setError('');
@@ -1489,6 +1517,17 @@ export function Totem({
             {['09:00', '14:00', '18:00'].map((h) => (
               <Button
                 key={h}
+                className={
+                  !id &&
+                  isPastToday(
+                    (due.slice(0, 10) || fortalezaDay(new Date(clock))) +
+                      'T' +
+                      h,
+                    new Date(clock),
+                  )
+                    ? 'past-time-chip'
+                    : undefined
+                }
                 variant="chip"
                 aria-pressed={due.slice(11, 16) === h}
                 onClick={() =>
@@ -1524,6 +1563,26 @@ export function Totem({
               />
             </label>
           </details>
+          {pastDue && (
+            <section
+              className="past-time-notice"
+              aria-label="Horário que já passou"
+            >
+              <p role="alert">
+                Esse horário de hoje já passou. É um pedido que já foi entregue?
+              </p>
+              <Button
+                type="button"
+                variant="chip"
+                aria-pressed={schedule.pastConfirmed}
+                onClick={() =>
+                  setSchedule((s) => ({ ...s, pastConfirmed: true }))
+                }
+              >
+                Sim, registrar mesmo assim
+              </Button>
+            </section>
+          )}
           {due && !validDue && (
             <p role="alert">
               Escolha uma data a partir de hoje e um horário válido.
@@ -1967,12 +2026,23 @@ export function Totem({
                 busy ||
                 kitEditing ||
                 !hasItems ||
-                (step === WHEN && !validDue) ||
+                (step === WHEN && (!validDue || pastBlocks)) ||
                 (step === PAYMENT &&
                   customerType(defaults ?? customer) === 'person' &&
                   !['advance', 'delivery'].includes(terms.mode))
               }
-              onClick={() => setStep(step + 1)}
+              onClick={() => {
+                if (
+                  step === WHEN &&
+                  !id &&
+                  isPastToday(due) &&
+                  !schedule.pastConfirmed
+                ) {
+                  setClock(readTime());
+                  return;
+                }
+                setStep(step + 1);
+              }}
               variant="primary"
               loading={busy}
             >

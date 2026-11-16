@@ -599,3 +599,16 @@ body:has(dialog[open]) {
   margin-block: 0.5rem;
   padding: 0.75rem 1rem;
 }
+
+/* Horários anteriores seguem tocáveis e com texto legível; só o fundo é discreto. */
+.az-button--chip.past-time-chip:not([aria-pressed='true']) {
+  background: var(--az-paper);
+  color: var(--az-muted);
+  box-shadow: none;
+}
+.past-time-notice {
+  padding: 16px;
+  border-radius: var(--az-radius-field);
+  background: var(--az-warn-bg);
+  color: var(--az-warn-ink);
+}
