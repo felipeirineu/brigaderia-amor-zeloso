@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **R7a** (seção R7 abaixo + `CLAUDE_PARA_CODEX.md` §R7). Versão **0.12.0**. Ao terminar, abra o pull request.
+`VEZ: CODEX` — tarefa **T3c** (skeleton de carregamento, abaixo). Versão **0.12.0**. Ao terminar, abra o pull request. **Se você já começou a R7a, guarde no branch dela e faça a T3c antes.**
 
 ## Como funciona
 
@@ -56,7 +56,8 @@ Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 
 | T2b | Aviso de horário de hoje que já passou | **publicada** 16/11 (PR #7) como **0.10.0** |
 | T3 | Acabamento visual tela a tela | **publicada** 16/11 (PR #8) como **0.11.0** |
 | T3b | Correções da T3 | **publicada** 16/11 (PR #9) como **0.11.1** |
-| R7a | Contatos (clientes em potencial), funil e "virou cliente" + **migração 0024** | **vez do Codex** — versão **0.12.0** |
+| T3c | Skeleton de carregamento no Hoje e nas listas (Pedidos, Clientes e outras) | **vez do Codex** — versão **0.12.0** |
+| R7a | Contatos (clientes em potencial), funil e "virou cliente" + **migração 0024** | depois da T3c — versão **0.13.0** |
 | R7b | Visitas: agenda/Hoje, registrar visita com amostras, amostras na produção | depois da R7a |
 | R7c | Custo da prospecção, mensagens de WhatsApp e relatório de conversão | depois da R7b |
 | T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
@@ -160,6 +161,28 @@ No passo "Quando entregar?" do Novo pedido (`src/features/mobile/Totem.tsx`, pas
 6. **Revisão geral de espaçamento:** nas 5 telas principais (Hoje, Pedidos, Novo pedido, Clientes, Mais), usar só os tokens (`--az-radius-*`, sombras de uma camada). Nada de `backdrop-filter`.
 7. **Evidência:** capturas antes/depois das 5 telas em `docs/colaboracao/capturas/t3-*.png`, com dados DEMONSTRAÇÃO. Nenhuma mudança de comportamento: os E2E existentes continuam passando sem afrouxar as verificações.
 
+### T3c — skeleton de carregamento (aprovado pelo Felipe em 16/11)
+
+O Felipe aprovou a simulação do Hoje com skeleton (capturas enviadas a ele em 16/11). Hoje as telas mostram só "Carregando…" sobre uma área vazia.
+
+1. **Componente compartilhado** `src/components/Skeleton.tsx`:
+   - blocos `Skeleton` (linha, círculo, retângulo) e composições prontas: `SkeletonCard`, `SkeletonList`, `SkeletonStats`;
+   - cor `--az-tonal-strong`, raios dos tokens e brilho animado (gradiente que atravessa em ~1,4 s);
+   - com `prefers-reduced-motion`, sem animação;
+   - container com `aria-busy="true"` e um texto acessível "Carregando …" (visualmente oculto). Nada de `role="status"` vazio duplicado: os testes procuram o status por papel.
+2. **Hoje** (`operations/Today.tsx`, onde hoje aparece "Carregando seu dia…"), no formato do conteúdo real:
+   - 4 quadros de valores;
+   - cartão "Produzir hoje e amanhã" (título + 1 linha com miniatura e barra);
+   - 1–2 cartões de entrega (avatar, 2 linhas, selo, 4 atalhos e o botão grande).
+   Ao trocar pelo conteúdo real, nada "pula" (alturas aproximadas iguais).
+3. **Listas:** Pedidos (lista e detalhe), Clientes, Novo pedido (lista de clientes e grade de sabores), Kits, Insumos, Fichas, Lembretes, Financeiro/contas e Relatórios. Use `SkeletonList`/`SkeletonCard` onde hoje há "Carregando…" ou tela vazia esperando dados. Erros continuam aparecendo como hoje.
+4. **Só no primeiro carregamento:** atualizações em segundo plano (voltar ao app, refresh a cada 60 s) **não** trocam o conteúdo já exibido por skeleton.
+5. **Testes:**
+   - E2E com a API segurada (`page.route` sem responder) mostrando o skeleton no Hoje, em Clientes e em Pedidos, e o conteúdo real depois de liberar;
+   - conferir que nenhum `role="status"` vazio extra quebra os testes existentes;
+   - capturas antes/depois em `docs/colaboracao/capturas/t3c-*.png`.
+6. Versão **0.12.0**. Tokens do `theme.css`, sem `backdrop-filter`.
+
 ### R7 — visitas de apresentação e amostras grátis (aprovada pelo Felipe para a 1.0, em 16/11)
 
 O Tiago conquista a maioria dos clientes visitando estabelecimentos com amostras. A especificação completa está em `CLAUDE_PARA_CODEX.md`, seção **R7** (R7-1 a R7-9, Privacidade e Aceite). Dividida assim:
@@ -180,7 +203,7 @@ O Tiago conquista a maioria dos clientes visitando estabelecimentos com amostras
    - E2E do fluxo agendar → registrar → retornar → virar cliente.
 5. **Restrições:** nenhum lembrete, despesa ou mensagem criados sem confirmação humana. Contatos "Não teve interesse" podem ser arquivados ou excluídos (LGPD).
 
-**1.0.0** = T2b + T3 + R7a/b/c + T5 (e T4, se o Felipe mantiver antes da 1.0).
+**1.0.0** = T2b + T3 + T3b + T3c + R7a/b/c + T5 (e T4, se o Felipe mantiver antes da 1.0).
 
 ### T3b — correções da T3 (versão 0.11.1, CORREÇÃO)
 
