@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T2b** (abaixo). Ao terminar, abra o pull request.
+`VEZ: CODEX` — tarefa **T3** (abaixo). Ao terminar, abra o pull request.
 
 ## Como funciona
 
@@ -38,7 +38,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 15/11 após T0, T1 e T2; próxima depois de 3 novas entregas).
+Contador de entregas desde a última revisão: **1/3** (T2b; próxima revisão depois de 2 entregas).
 
 ## Limites
 
@@ -53,8 +53,8 @@ Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 
 | T0 | R17 (sessão, Fase 0, validade dos avisos, ZAP) | **publicada** 15/11 (`35f1cd1`, PR #4) |
 | T1 | 5 ajustes de interface | **publicada** 15/11 (PR #5) |
 | T2 | Endereço único + número ausente + versão 0.9.0 | **publicada** 15/11 (PR #6, `f0f67df`) |
-| T2b | Novo pedido: aviso de horário de hoje que já passou | **vez do Codex** |
-| T3  | Acabamento visual tela a tela                                    | a detalhar pelo Claude                                               |
+| T2b | Aviso de horário de hoje que já passou | **publicada** 16/11 (PR #7) como **0.10.0** |
+| T3 | Acabamento visual tela a tela (detalhes abaixo) | **vez do Codex** — versão **0.11.0** |
 | R7a | Contatos (clientes em potencial), funil e "virou cliente" + **migração 0024** | depois da T3 (detalhes abaixo) |
 | R7b | Visitas: agenda/Hoje, registrar visita com amostras, amostras na produção | depois da R7a |
 | R7c | Custo da prospecção, mensagens de WhatsApp e relatório de conversão | depois da R7b |
@@ -144,10 +144,20 @@ No passo "Quando entregar?" do Novo pedido (`src/features/mobile/Totem.tsx`, pas
 - Trocar o dia ou o horário zera a confirmação. Dias futuros não mudam nada. Na edição de pedido existente, não avisar.
 - Unitário para "já passou" (fuso America/Fortaleza, virada de dia) e E2E com relógio controlado (`page.clock`): horário passado exige o toque extra; horário futuro não.
 
-### T3 — anotações da revisão geral de 15/11
+### T3 — acabamento visual tela a tela (versão 0.11.0)
 
-- Títulos de cartão (`.panel h2`, ex.: "Novo pedido", "Limite de sabores", "Novo kit") aparecem numa serifa genérica (fallback tipo Times). Padronizar: títulos de cartão em Figtree 600 (sem serifa), como definido na seção 8.1 do CLAUDE_PARA_CODEX.
-- Telefone na lista de clientes aparece cru ("+5511900000001"). Exibir formatado "(11) 90000-0001", só na exibição e sem mudar o que é gravado.
+**Regra de versão a partir de agora:** cada tarefa ajusta `version` no `package.json` (e no `package-lock.json`) para o número indicado na fila. Na T3: **0.11.0**.
+
+1. **Fonte dos títulos:** em `src/styles.css` (~67), a regra antiga `h1, h2, .brand { font-family: Georgia… }` faz os títulos de cartão (`.panel h2`, ex.: "Novo pedido", "Limite de sabores", "Novo kit", "Produzir hoje e amanhã") caírem em Georgia.
+   - Padronizar: títulos de página na serifa da marca (`--az-serif`, como já está no `theme.css`); **títulos de cartão e seções em Figtree 600** (`--az-sans`).
+   - Revisar também `.sidebar-note`, `.brand-art` e `.private-brand` (Georgia/system-ui). Remover o que for da Fase 0 e não for mais usado.
+   - Conferir os nomes nos cartões de pedido do Hoje (parecem cair numa fonte do sistema).
+2. **Telefone formatado** em toda exibição: lista de clientes, detalhe e cartões. Exibir "(11) 90000-0001", só na exibição, sem mudar o que é gravado. Placeholders `sem:` continuam ocultos (`visiblePhone`). Teste unitário do formatador.
+3. **Cabeçalho do Hoje:** os botões "Defina seu nome", "Hoje ▾" e "Proximidade" estão grandes demais e quebram a linha. Usar chips compactos (altura mínima de 40 px, texto de 14 a 15 px), sem cortar o texto. O primeiro cartão continua visível sem rolar (teste R8).
+4. **Fim das listas atrás da barra inferior:** o último cartão fica escondido sob a barra e o botão +. Dar `padding-bottom` ao conteúdo, igual à altura da barra mais a área segura (`env(safe-area-inset-bottom)`).
+5. **Clientes:** alinhar o "Calcular rota" e o resumo do cartão (nome, telefone, situação) com espaçamento consistente.
+6. **Revisão geral de espaçamento:** nas 5 telas principais (Hoje, Pedidos, Novo pedido, Clientes, Mais), usar só os tokens (`--az-radius-*`, sombras de uma camada). Nada de `backdrop-filter`.
+7. **Evidência:** capturas antes/depois das 5 telas em `docs/colaboracao/capturas/t3-*.png`, com dados DEMONSTRAÇÃO. Nenhuma mudança de comportamento: os E2E existentes continuam passando sem afrouxar as verificações.
 
 ### R7 — visitas de apresentação e amostras grátis (aprovada pelo Felipe para a 1.0, em 16/11)
 
@@ -183,6 +193,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.10.0 | 16/11 | Aviso quando o horário de entrega de hoje já passou (pede confirmação). |
 | 0.9.0 | 15/11 | Primeira versão numerada: endereço do B2B em campos, aviso de número ausente e versão visível em Mais. |
 
 ## Registro de ciclos
@@ -195,3 +206,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 15/11 | — | T2 (PR #6) | CI vermelho (1ª): orçamento D1 47/45 em generate-week; diagnóstico no FILA, vez devolvida ao Codex. |
 | 15/11 | — | T2 (PR #6) | 2º CI vermelho, ponto diferente: role=status vazio duplicado em Profile (R19). Vez devolvida ao Codex. |
 | 15/11 | 3 | T2 — endereço único, número ausente, versão (PR #6) | publicada em `f0f67df`; 194 E2E nos três navegadores e Segurança verdes. **Revisão geral 3/3:** sem problema real; 2 detalhes visuais anotados na T3. |
+| 15/11 | 4 | T2b — horário que já passou (PR #7) | 200 E2E nos três navegadores e Segurança verdes; publicada com a versão 0.10.0 (bump do Claude, CI completo próprio). |
