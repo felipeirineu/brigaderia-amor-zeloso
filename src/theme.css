@@ -543,6 +543,20 @@ body:has(dialog[open]) {
   margin-top: -4px;
 }
 
+/* Arrastar a folha para baixo: segue o dedo; ao soltar, volta com molinha. */
+@media (max-width: 700px) {
+  .help-sheet {
+    transition: transform 220ms var(--az-ease);
+    touch-action: pan-y;
+  }
+  .help-sheet.sheet-dragging {
+    transition: none;
+  }
+  .help-sheet .sheet-body::before {
+    cursor: grab;
+  }
+}
+
 /* Transição entre telas e etapas. */
 .private-workspace main > *,
 .order-focus > * {
