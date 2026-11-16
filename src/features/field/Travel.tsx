@@ -13,6 +13,7 @@ import { travelModes, travelLegs } from '../../../shared/field';
 import { privateDownload } from '../PrivateDownload';
 interface Trip {
   id: string;
+  visit_id?: string | null;
   mode: keyof typeof travelModes;
   leg: keyof typeof travelLegs;
   occurred_at: string;
@@ -100,6 +101,11 @@ export function Travel() {
             {t.reversed ? '· Estornado' : t.reversal_of ? '· Compensação' : ''}
           </p>
           <p>{t.notes}</p>
+          {t.visit_id && (
+            <Button to={'/gestao/visitas/' + t.visit_id} variant="ghost">
+              Ver visita de prospecção
+            </Button>
+          )}
           {t.orders.map((o) => (
             <p key={o.order_id}>
               <Button to={'/gestao/pedidos/' + o.order_id} variant="ghost">

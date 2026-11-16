@@ -1,3 +1,13 @@
+## R7b — plano antes do código (16/11/2026)
+
+FILA/main90a50ac libera R7-3/4/5, versão0.14.0, em codex/r7b-prospect-visits. R7a publicada,0024/flag ainda dependem do responsável. Li R7 e AGENTS; nenhuma operação remota no Cloudflare/D1, ativação ou edição da FILA.
+
+- Migração0025 apenas aditiva: agendamentos, registro imutável de visita/amostras (snapshots por sabor/unidades; peso só quando informado) e vínculo de corrida. Schema readiness junto a PROSPECTS_ENABLED mantém R7a no banco até0024 e legado até0023. Cadastros/histórico entram no backup/KEEP/pré-checagem.
+- worker/visits.ts/shared/visits: listar/agendar/editar/cancelar/registrar com tenant, operador autorizado, CAS/idempotência/auditoria e validação em lote dos sabores/equipe. Registro preserva histórico do contato e não cria pedido, recebimento, lembrete ou despesa sozinho.
+- Hoje/agenda/ICS: cartões Visita de apresentação com Mapa/WhatsApp/Uber/99 e Registrar visita. Planejamento de amostras separado da produção vendida, em unidades avulsas por sabor/data/peso informado. Canceladas/registradas deixam de demandar produção.
+- Telas/folhas de visitas e acesso por Contatos/agenda/Mais. Registro rápido com fotos/+−, quem foi, observação, data do próximo passo (+3dias sugerida/editável). Ofertas abrem lembrete pré-preenchido ou corrida Prospecção; só Salvar confirma cada criação, usando os módulos existentes. Sem WhatsApp automático, push ou gasto sem confirmação.
+- Critérios: fluxo móvel agendar→Hoje/agenda/produção→registrar→retornar→converter preserva cadastro/registros; nenhum saldo/faturamento alterado; amostras não viram caixas vendidas. Segurança de todas rotas novas, concorrência/idempotência, backup/restauração/KEEP, fallback0023/0024 e flagoff; E2E/CSP, tokens, sem backdrop-filter. Tipos/lint/formatação/build, relatório/guia/capturas fictícias. Main incorporado antes do PR R7b; CI completo/Segurança só automáticos do PR.
+
 ## R7a — entrega para revisão (16/11/2026)
 
 Branch `codex/r7a-prospect-funnel`, versão **0.13.0**. Main `1dc3689` incorporado: T3c/skeletons, AppUpdate e SheetGestures preservados. Retomado checkpoint0054e47. FILA e VEZ sem edição autoral; somente R7-1, R7-2 e R7-8 nesta entrega.

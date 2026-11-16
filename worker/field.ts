@@ -25,7 +25,7 @@ export async function field(req: Request, env: Env, a: Actor) {
     action = parts[5];
   if (resource === 'profile-photos') return profilePhoto(req, db, a, id);
   if (resource === 'trips' || resource === 'travel-report')
-    return travel(req, db, a, resource, id, action);
+    return travel(req, env, a, resource, id, action);
   if (resource === 'routes' && req.method === 'POST') {
     ownerOnly(a);
     if (!routingConfigured(env) || !(await routeSchema(env)))

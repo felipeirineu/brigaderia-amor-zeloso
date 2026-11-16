@@ -9,6 +9,9 @@ export const expectedMigrations = readdirSync(
   .filter((f) => f.endsWith('.sql'))
   .sort();
 const tables = [
+  'prospect_visits',
+  'prospect_visit_records',
+  'prospect_visit_trips',
   'prospect_details',
   'prospect_events',
   'organizations',

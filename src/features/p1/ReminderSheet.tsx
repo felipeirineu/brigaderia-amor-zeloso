@@ -10,10 +10,12 @@ import { api } from '../api';
 import { Failure } from '../operations/common';
 export function ReminderSheet({
   day,
+  initial,
   onClose,
   onSaved,
 }: {
   day: string;
+  initial?: { title: string; due_at: string; customer_id: string };
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -21,12 +23,17 @@ export function ReminderSheet({
     trigger = useRef<HTMLElement | null>(null),
     pending = useRef(false),
     request = useRef({ body: '', key: crypto.randomUUID() });
-  const [title, setTitle] = useState(''),
+  const [title, setTitle] = useState(initial?.title ?? ''),
     [notes, setNotes] = useState(''),
     [alert, setAlert] = useState(emptyAlert),
-    [due, setDue] = useState(
-      () =>
-        day + 'T' + new Date(Date.now() - 10800000).toISOString().slice(11, 16),
+    [due, setDue] = useState(() =>
+      initial?.due_at
+        ? new Date(Date.parse(initial.due_at) - 10800000)
+            .toISOString()
+            .slice(0, 16)
+        : day +
+          'T' +
+          new Date(Date.now() - 10800000).toISOString().slice(11, 16),
     ),
     [busy, setBusy] = useState(false),
     [error, setError] = useState('');
@@ -46,7 +53,7 @@ export function ReminderSheet({
         title,
         notes,
         due_at: new Date(due + ':00-03:00').toISOString(),
-        customer_id: null,
+        customer_id: initial?.customer_id ?? null,
         ...alertPayload(alert, new Date(due + ':00-03:00').toISOString()),
       };
       const body = JSON.stringify(data);

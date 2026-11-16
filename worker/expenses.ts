@@ -10,6 +10,7 @@ export const expenseSchema = z
       'ingredients',
       'packaging',
       'delivery',
+      'prospecting',
       'utilities',
       'labor',
       'other',

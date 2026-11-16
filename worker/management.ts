@@ -1,3 +1,4 @@
+import { visitsReady } from './visits';
 import { prospectsReady, prospectsSchema, requireCustomer } from './prospects';
 import { customerAddressSQL } from './customer-address';
 import { weightCostingReady } from './weight-costing';
@@ -55,6 +56,7 @@ export async function management(req: Request, env: Env, a: Actor) {
     return json({
       role: a.role,
       prospects: await prospectsReady(env),
+      visits: await visitsReady(env),
       weight_costing: await weightCostingReady(db),
       customer_orders: await customerOrderFieldsReady(db),
       kit_orders: await kitOrdersReady(db),

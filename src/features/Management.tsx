@@ -1,3 +1,4 @@
+import { VisitsPage } from './prospects/Visits';
 import { ProspectFields, ProspectPanel } from './prospects/ProspectPanel';
 import { emptyProspect, type ProspectData } from '../../shared/prospects';
 
@@ -97,6 +98,7 @@ import {
 import { Mascot } from '../components/Mascot';
 
 interface Session {
+  visits?: boolean;
   prospects?: boolean;
   weight_costing?: boolean;
   customer_orders?: boolean;
@@ -264,11 +266,13 @@ export function Login() {
 function Customers({
   financial = false,
   metadata = false,
+  visits = false,
   prospects = false,
 }: {
   financial?: boolean;
   metadata?: boolean;
   prospects?: boolean;
+  visits?: boolean;
 }) {
   const [kind, setKind] = useState<'customer' | 'prospect'>('customer');
   const [prospect, setProspect] = useState<ProspectData>(emptyProspect);
@@ -663,6 +667,7 @@ function Customers({
                   key={`${c.id}:${c.version}`}
                   customer={c}
                   financial={financial}
+                  visits={visits}
                   onChanged={list.reload}
                 />
               )}
@@ -1919,6 +1924,7 @@ export function Management() {
                     financial={session.finance}
                     metadata={session.customer_orders}
                     prospects={session.prospects}
+                    visits={session.visits}
                   />
                 }
               />
@@ -1945,6 +1951,12 @@ export function Management() {
                   />
                 }
               />
+              {session.visits && (
+                <>
+                  <Route path="visitas" element={<VisitsPage />} />
+                  <Route path="visitas/:id" element={<VisitsPage />} />
+                </>
+              )}
               {session.mobile && (
                 <Route
                   path="preferencias"
@@ -1985,7 +1997,10 @@ export function Management() {
               )}
               {session.p1 && (
                 <>
-                  <Route path="agenda" element={<Agenda />} />
+                  <Route
+                    path="agenda"
+                    element={<Agenda visits={session.visits} />}
+                  />
                   <Route path="relatorios" element={<Reports />} />
                   <Route path="despesas" element={<Expenses />} />
                   <Route
@@ -2057,6 +2072,7 @@ export function Management() {
                         field={session.field}
                         tools={session.tools}
                         mobile={session.mobile}
+                        visits={session.visits}
                       />
                     }
                   />
@@ -2162,6 +2178,7 @@ export function Management() {
 
 function More({
   role,
+  visits = false,
   financial = false,
   p1 = false,
   field = false,
@@ -2169,6 +2186,7 @@ function More({
   mobile = false,
 }: {
   role: string;
+  visits?: boolean;
   financial?: boolean;
   p1?: boolean;
   field?: boolean;
@@ -2180,6 +2198,7 @@ function More({
       <h1 className="mobile-context-title">Mais</h1>
       <div className="more-grid">
         {[
+          ...(visits ? [['visitas', 'Visitas e amostras', 'clientes']] : []),
           ...(tools
             ? [
                 ['estoque', 'Estoque', 'produtos'],

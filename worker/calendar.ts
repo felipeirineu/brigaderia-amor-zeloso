@@ -1,7 +1,8 @@
+import { visitsReady, visitList } from './visits';
 import { z } from 'zod';
 import { addDays, utcStart } from './operations-domain';
 import { closingPeriod, type B2BProfile } from '../shared/finance';
-import { HttpError, json, type Actor } from './security';
+import { HttpError, json, type Actor, type Env } from './security';
 import { requestRange, fileResponse } from './p1-common';
 import { receivables } from './receivables';
 export interface CalendarEvent {
@@ -9,7 +10,7 @@ export interface CalendarEvent {
   title: string;
   date: string;
   at?: string;
-  kind: 'delivery' | 'production' | 'closing' | 'due' | 'reminder';
+  kind: 'delivery' | 'production' | 'closing' | 'due' | 'reminder' | 'visit';
   href: string;
 }
 export const escapeICS = (s: string) =>
@@ -109,7 +110,12 @@ export function toICS(events: CalendarEvent[]) {
   lines.push('END:VCALENDAR');
   return lines.map(foldICS).join('\r\n') + '\r\n';
 }
-export async function calendar(req: Request, db: D1Database, a: Actor) {
+export async function calendar(
+  req: Request,
+  db: D1Database,
+  a: Actor,
+  env?: Env,
+) {
   const { from, to } = requestRange(req, 44),
     org = a.organization_id,
     events: CalendarEvent[] = [];
@@ -226,6 +232,20 @@ export async function calendar(req: Request, db: D1Database, a: Actor) {
       kind: 'reminder',
       href: '/gestao/lembretes',
     });
+  const visitsEnabled = !!env && (await visitsReady(env));
+  if (visitsEnabled)
+    for (const v of await visitList(db, org, from, to))
+      if (v.status !== 'cancelled')
+        events.push({
+          id: 'visit-' + v.id,
+          title: 'Visita de apresentação · ' + v.customer_name,
+          date: new Date(Date.parse(v.scheduled_at) - 10800000)
+            .toISOString()
+            .slice(0, 10),
+          at: v.scheduled_at,
+          kind: 'visit',
+          href: '/gestao/visitas/' + v.id,
+        });
   events.sort(
     (a, b) =>
       a.date.localeCompare(b.date) ||
@@ -236,7 +256,7 @@ export async function calendar(req: Request, db: D1Database, a: Actor) {
   if (
     kind &&
     !z
-      .enum(['delivery', 'production', 'closing', 'due', 'reminder'])
+      .enum(['delivery', 'production', 'closing', 'due', 'reminder', 'visit'])
       .safeParse(kind).success
   )
     throw new HttpError(400, 'Tipo inválido.');
@@ -247,5 +267,11 @@ export async function calendar(req: Request, db: D1Database, a: Actor) {
         'text/calendar; charset=utf-8',
         'agenda-amor-zeloso.ics',
       )
-    : json({ from, to, events: selected, timezone: 'America/Fortaleza' });
+    : json({
+        from,
+        to,
+        visits_enabled: visitsEnabled,
+        events: selected,
+        timezone: 'America/Fortaleza',
+      });
 }

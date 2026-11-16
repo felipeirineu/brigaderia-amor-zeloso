@@ -1,3 +1,5 @@
+import { VisitCard } from '../prospects/Visits';
+import type { ProspectVisit } from '../../../shared/visits';
 import { SkeletonToday } from '../../components/Skeleton';
 import { occasionLabel } from '../../../shared/customer-order';
 import { useSearchParams } from 'react-router-dom';
@@ -136,6 +138,14 @@ export function Today({
   }, [day]);
 
   const view = useRemote<{
+    visits?: ProspectVisit[];
+    sample_production?: {
+      day: string;
+      name: string;
+      weight_grams: number | null;
+      units: number;
+      photo_key: string | null;
+    }[];
     day: string;
     orders: OperationalOrder[];
     pending_orders: OperationalOrder[];
@@ -470,6 +480,40 @@ export function Today({
               )}
             </section>
           )}
+          {role === 'owner' && !!view.data.sample_production?.length && (
+            <section className="panel">
+              <h2>
+                Amostras para visitas ·{' '}
+                {day === localDay()
+                  ? 'hoje e amanhã'
+                  : `${dayChip(day)} e ${dayChip(shiftDay(day, 1))}`}
+              </h2>
+              <p>Unidades avulsas, separadas das caixas vendidas.</p>
+              <ul className="production-list">
+                {view.data.sample_production.map((s, i) => (
+                  <li key={i}>
+                    {s.photo_key && (
+                      <img
+                        src={photoURL(s.photo_key)}
+                        width={40}
+                        height={40}
+                        alt=""
+                      />
+                    )}
+                    <strong>
+                      {s.name}
+                      {s.weight_grams
+                        ? ' · ' + s.weight_grams + ' g'
+                        : ' · Peso a definir'}
+                    </strong>
+                    <span>
+                      + {s.units} un. para amostras · {dayChip(s.day)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
           {role === 'owner' && (
             <PendingConfirmations
               orders={view.data.pending_orders ?? []}
@@ -727,6 +771,18 @@ export function Today({
               <Button to="/gestao/pedidos?novo=1" variant="primary">
                 Novo pedido
               </Button>
+            </section>
+          )}
+          {!!view.data.visits?.length && (
+            <section aria-label="Visitas do dia">
+              <h2>Visitas de apresentação</h2>
+              {view.data.visits.map((v) => (
+                <VisitCard
+                  key={v.id + ':' + v.version}
+                  visit={v}
+                  onChanged={() => void view.refresh()}
+                />
+              ))}
             </section>
           )}
           {p1 && <TodayReminders day={day} />}

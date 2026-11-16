@@ -7,10 +7,12 @@ import { travelLegs, travelModes } from '../../../shared/field';
 import { useField } from './FieldContext';
 export function TravelSheet({
   orders,
+  visit,
   onClose,
   onSaved,
 }: {
   orders: OperationalOrder[];
+  visit?: { id: string; customer_name: string };
   onClose: () => void;
   onSaved: () => void;
 }) {
@@ -60,7 +62,8 @@ export function TravelSheet({
           courier_name: mode === 'courier' ? courier : '',
           notes,
           method,
-          order_ids: selected,
+          order_ids: visit ? [] : selected,
+          ...(visit ? { visit_id: visit.id } : {}),
         },
         body = JSON.stringify(data);
       if (request.current.body !== body)
@@ -89,8 +92,11 @@ export function TravelSheet({
       <div className="sheet-body">
         <h2>Quanto custou a corrida?</h2>
         <p>
-          Registre somente o que foi pago. Isto cria uma despesa de entrega; não
-          solicita transporte.
+          {visit
+            ? 'Prospecção · ' +
+              visit.customer_name +
+              '. Registre somente o valor pago. Acima de zero cria despesa de prospecção; zero registra só a corrida.'
+            : 'Registre somente o que foi pago. Isto cria uma despesa de entrega; não solicita transporte.'}
         </p>
         <Failure message={error} />
         <div className="chips" aria-label="Meio de transporte">
@@ -204,7 +210,7 @@ export function TravelSheet({
         </label>
         <Button
           className="primary-action"
-          disabled={busy || !selected.length || amount === null}
+          disabled={busy || (!visit && !selected.length) || amount === null}
           onClick={() => void save()}
           variant="primary"
           loading={busy}

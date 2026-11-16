@@ -53,6 +53,6 @@ export async function p1(req: Request, env: Env, a: Actor) {
     return recipes(req, env.DB!, a, resource, id);
   if (resource === 'reminders') return reminders(req, env.DB!, a, id);
   if (['calendar', 'calendar.ics'].includes(resource) && req.method === 'GET')
-    return calendar(req, env.DB!, a);
+    return calendar(req, env.DB!, a, env);
   throw new HttpError(404, 'Não encontrado.');
 }

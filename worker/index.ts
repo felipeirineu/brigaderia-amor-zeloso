@@ -1,3 +1,4 @@
+import { visits } from './visits';
 import { prospects } from './prospects';
 import { pushSchema } from './push-config';
 import { afterPlaceWrite } from './routing';
@@ -140,6 +141,8 @@ export default {
           env,
           user,
         );
+      if (pathname === '/api/visits' || pathname.startsWith('/api/visits/'))
+        return await visits(req, env, user);
       if (pathname.startsWith('/api/mobile/'))
         return await mobile(req, env, user);
       if (pathname.startsWith('/api/p1/')) return await p1(req, env, user);

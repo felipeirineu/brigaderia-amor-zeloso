@@ -6,7 +6,7 @@ import { Toast } from '../../components/Toast';
 import { relativeDateTime } from '../../../shared/workday';
 import { ReminderSheet } from './ReminderSheet';
 import { Button } from '../../components/Button';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { api, dateTime } from '../api';
 import { Failure, useRemote } from '../operations/common';
@@ -41,6 +41,13 @@ export function TodayReminders({ day }: { day: string }) {
     [notice, setNotice] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const refresh = () => {
+      void view.refresh();
+    };
+    window.addEventListener('reminders-changed', refresh);
+    return () => window.removeEventListener('reminders-changed', refresh);
+  }, [view.refresh]);
   return (
     <section className="panel today-reminders">
       {show && (

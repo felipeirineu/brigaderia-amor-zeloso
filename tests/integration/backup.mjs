@@ -39,6 +39,25 @@ try {
     stage: 'follow_up',
     next_step_at: '2030-01-07T13:00:00Z',
   });
+  const visit = await call('visits', {
+    customer_id: prospect.id,
+    scheduled_at: new Date().toISOString(),
+    samples: [],
+  });
+  await call('visits/' + visit.id + '/record', {
+    version: 1,
+    occurred_at: new Date().toISOString(),
+    samples: [],
+  });
+  await call('field/trips', {
+    visit_id: visit.id,
+    order_ids: [],
+    mode: 'walk',
+    leg: 'roundtrip',
+    occurred_at: new Date().toISOString(),
+    amount_cents: 0,
+    method: 'other',
+  });
   const order = await makeOrder();
   const reminderUser = (await call('session', undefined, 'GET')).user_id;
   await call('p1/reminders', {
@@ -210,10 +229,13 @@ print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check'
   assert.equal(restored.fk.length, 0);
   assert.equal(restored.counts.inventory_events, 1);
   assert.equal(restored.counts.payment_events, 2);
-  assert.equal(restored.counts.displacements, 2);
+  assert.equal(restored.counts.displacements, 3);
   assert.equal(restored.counts.customers, 3);
   assert.equal(restored.counts.prospect_details, 1);
-  assert.equal(restored.counts.prospect_events, 2);
+  assert.equal(restored.counts.prospect_events, 3);
+  assert.equal(restored.counts.prospect_visits, 1);
+  assert.equal(restored.counts.prospect_visit_records, 1);
+  assert.equal(restored.counts.prospect_visit_trips, 1);
   assert.equal(restored.prospect_kind, 'prospect');
   assert.equal(restored.prospect_stage, 'follow_up');
   const other = await t.request('p1/backup', { cookie: outside });

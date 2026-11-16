@@ -30,6 +30,7 @@ const titles: Record<string, string> = {
   estoque: 'Estoque',
   relatorios: 'Relatórios',
   lembretes: 'Lembretes',
+  visitas: 'Visitas',
   fichas: 'Fichas técnicas',
   insumos: 'Insumos',
   compras: 'Compras',

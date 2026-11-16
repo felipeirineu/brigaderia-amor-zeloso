@@ -79,6 +79,63 @@ try {
     ok(result.ok, method + ' ' + path + ' permite operadora: ' + result.status);
   }
 
+  // R7b: todas as rotas de visitas; coleções isolam dados por organização.
+  const vc = await call(
+    'prospects',
+    { name: 'Contato DEMONSTRAÇÃO visitas segurança', prospect: {} },
+    'POST',
+    operator,
+  );
+  const vi = {
+    customer_id: vc.id,
+    scheduled_at: new Date().toISOString(),
+    samples: [],
+  };
+  const scheduled = await call('visits', vi, 'POST', operator);
+  const cancellable = await call('visits', vi, 'POST', operator);
+  const visitRoutes = [
+    ['visits', 'GET', undefined],
+    ['visits', 'POST', vi],
+    ['visits/' + scheduled.id, 'GET', undefined],
+    ['visits/' + scheduled.id, 'PUT', { ...vi, version: 1 }],
+    [
+      'visits/' + scheduled.id + '/record',
+      'POST',
+      { version: 2, occurred_at: new Date().toISOString(), samples: [] },
+    ],
+    [
+      'visits/' + cancellable.id + '/cancel',
+      'POST',
+      { version: 1, reason: 'Motivo DEMONSTRAÇÃO' },
+    ],
+  ];
+  for (const [path, method, data] of visitRoutes) {
+    ok(
+      (await t.request(path, { method, data, key: crypto.randomUUID() }))
+        .status === 401,
+      method + ' ' + path + ' exige sessão',
+    );
+    const other = await t.request(path, {
+      cookie: outside,
+      method,
+      data,
+      key: crypto.randomUUID(),
+    });
+    if (path === 'visits' && method === 'GET')
+      ok(
+        other.ok && (await other.json()).length === 0,
+        'coleção visitas isolada',
+      );
+    else ok(other.status === 404, method + ' ' + path + ' outro tenant');
+    const res = await t.request(path, {
+      cookie: operator,
+      method,
+      data,
+      key: crypto.randomUUID(),
+    });
+    ok(res.ok, method + ' ' + path + ' permite operadora: ' + res.status);
+  }
+
   ok(
     (await t.request('auth/config')).headers.get(
       'Cross-Origin-Resource-Policy',

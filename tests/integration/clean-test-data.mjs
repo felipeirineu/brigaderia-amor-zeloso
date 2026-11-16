@@ -63,6 +63,25 @@ try {
     version: 1,
     stage: 'follow_up',
   });
+  const visit = await call('visits', {
+    customer_id: contact.id,
+    scheduled_at: new Date().toISOString(),
+    samples: [],
+  });
+  await call('visits/' + visit.id + '/record', {
+    version: 1,
+    occurred_at: new Date().toISOString(),
+    samples: [],
+  });
+  await call('field/trips', {
+    visit_id: visit.id,
+    order_ids: [],
+    mode: 'walk',
+    leg: 'roundtrip',
+    occurred_at: new Date().toISOString(),
+    amount_cents: 0,
+    method: 'other',
+  });
   const order = await makeOrder();
   await makeOrder('2030-01-08T13:00:00.000Z');
   const me = (await call('session', undefined, 'GET')).user_id;
@@ -147,7 +166,10 @@ try {
   for (const table of first) assert.equal(await count(table), 0, table);
   assert.equal(await count('customers'), 2);
   assert.equal(await count('prospect_details'), 1);
-  assert.equal(await count('prospect_events'), 2);
+  assert.equal(await count('prospect_events'), 3);
+  assert.equal(await count('prospect_visits'), 1);
+  assert.equal(await count('prospect_visit_records'), 1);
+  assert.equal(await count('prospect_visit_trips'), 0);
   assert.equal(await count('products'), 1);
   assert.equal(await count('recipes'), 1);
   assert.equal(await count('supplies'), 2);
@@ -174,7 +196,7 @@ try {
   );
   assert.equal(await count('customers'), 2, 'cadastros não foram apagados');
   assert.equal(await count('prospect_details'), 1);
-  assert.equal(await count('prospect_events'), 2);
+  assert.equal(await count('prospect_events'), 3);
   assert.equal(await count('products'), 1);
   assert.equal(await count('recipes'), 1);
   assert.equal(await count('supplies'), 2, 'insumos ficam');

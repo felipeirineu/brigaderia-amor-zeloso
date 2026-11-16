@@ -1,5 +1,6 @@
+import { visitsReady, visitsSchema } from './visits';
 import { z } from 'zod';
-import { HttpError, json, type Actor } from './security';
+import { HttpError, json, type Actor, type Env } from './security';
 import { businessDay } from './operations-domain';
 import { p1Mutation, requestRange } from './p1-common';
 import { allocateCost } from '../shared/field';
@@ -19,9 +20,14 @@ const schema = z
     method: z
       .enum(['pix', 'cash', 'debit', 'credit', 'transfer', 'other'])
       .default('other'),
-    order_ids: z.array(z.uuid()).min(1).max(30),
+    visit_id: z.uuid().optional(),
+    order_ids: z.array(z.uuid()).max(30),
   })
   .strict()
+  .refine(
+    (d) => (d.visit_id ? d.order_ids.length === 0 : d.order_ids.length > 0),
+    'Escolha pedidos ou uma visita.',
+  )
   .refine(
     (d) => new Set(d.order_ids).size === d.order_ids.length,
     'Pedido repetido.',
@@ -59,13 +65,14 @@ function businessDayAt(s: string) {
 }
 export async function travel(
   req: Request,
-  db: D1Database,
+  env: Env,
   a: Actor,
   resource: string,
   id?: string,
   action?: string,
 ) {
-  const org = a.organization_id;
+  const db = env.DB!,
+    org = a.organization_id;
   if (req.method === 'GET') {
     const { from, to } = requestRange(req);
     if (resource === 'travel-report') {
@@ -157,10 +164,23 @@ export async function travel(
           allocated_cents: number;
         }>()
     ).results;
+    const visitLinks = (await visitsSchema(db))
+      ? (
+          await db
+            .prepare(
+              'SELECT displacement_id,visit_id FROM prospect_visit_trips WHERE organization_id=? AND displacement_id IN(SELECT value FROM json_each(?))',
+            )
+            .bind(org, JSON.stringify(rows.map((r) => r.reversal_of || r.id)))
+            .all<{ displacement_id: string; visit_id: string }>()
+        ).results
+      : [];
     return json(
       rows.map((r) => ({
         ...r,
         mutation_id: undefined,
+        visit_id:
+          visitLinks.find((l) => l.displacement_id === (r.reversal_of || r.id))
+            ?.visit_id ?? null,
         can_reverse: !r.reversal_of && !r.reversed && ownDay(r, a),
         orders: links.filter((l) => l.displacement_id === r.id),
       })),
@@ -242,6 +262,17 @@ export async function travel(
     }
     if (id || action) throw new HttpError(404, 'Não encontrado.');
     const d = schema.parse(raw);
+    if (
+      d.visit_id &&
+      (!(await visitsReady(env)) ||
+        !(await db
+          .prepare(
+            "SELECT 1 FROM prospect_visits WHERE organization_id=? AND id=? AND status='completed'",
+          )
+          .bind(org, d.visit_id)
+          .first()))
+    )
+      throw new HttpError(404, 'Visita não encontrada.');
     if (Date.parse(d.occurred_at) > Date.now() + 60000)
       throw new HttpError(400, 'Data futura não permitida.');
     const performer =
@@ -291,16 +322,26 @@ export async function travel(
           nonce,
         ),
       rest: (g, args) => [
+        ...(d.visit_id
+          ? [
+              db
+                .prepare(
+                  `INSERT INTO prospect_visit_trips(organization_id,displacement_id,visit_id) SELECT ?,?,? WHERE ${g}`,
+                )
+                .bind(org, entity, d.visit_id, ...args),
+            ]
+          : []),
         ...(expense
           ? [
               db
                 .prepare(
-                  `INSERT INTO expense_events(id,organization_id,kind,amount_cents,category,description,method,spent_on,user_id) SELECT ?,?,'expense',?,'delivery',?,?,?,? WHERE ${g}`,
+                  `INSERT INTO expense_events(id,organization_id,kind,amount_cents,category,description,method,spent_on,user_id) SELECT ?,?,'expense',?,?,?,?,?,? WHERE ${g}`,
                 )
                 .bind(
                   expense,
                   org,
                   d.amount_cents,
+                  d.visit_id ? 'prospecting' : 'delivery',
                   `Deslocamento ${d.mode} · ${d.notes}`,
                   d.method,
                   businessDayAt(d.occurred_at),

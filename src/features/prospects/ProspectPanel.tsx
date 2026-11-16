@@ -107,6 +107,7 @@ interface History {
 export function ProspectPanel({
   customer,
   financial,
+  visits = false,
   onChanged,
 }: {
   customer: {
@@ -117,6 +118,7 @@ export function ProspectPanel({
     prospect?: ProspectData;
   };
   financial: boolean;
+  visits?: boolean;
   onChanged: () => Promise<void>;
 }) {
   const navigate = useNavigate();
@@ -178,6 +180,20 @@ export function ProspectPanel({
         </p>
       )}
       <Failure message={error} />
+      {visits && (
+        <div className="prospect-actions">
+          {contact && !!customer.active && (
+            <Button
+              to={'/gestao/visitas?contato=' + customer.id + '&agendar=1'}
+            >
+              Agendar visita
+            </Button>
+          )}
+          <Button to={'/gestao/visitas?contato=' + customer.id} variant="ghost">
+            Visitas e amostras
+          </Button>
+        </div>
+      )}
       {contact && !!customer.active && (
         <>
           <details>

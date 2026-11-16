@@ -73,6 +73,22 @@ class KitExpansionTests(unittest.TestCase):
 
 
 
+class VisitMigrationTests(unittest.TestCase):
+    setUp = IdentityMigrationTests.setUp
+    tearDown = IdentityMigrationTests.tearDown
+
+    def test_visit_record_scope_and_uniqueness(self):
+        self.db.execute("INSERT INTO customers(organization_id,id,name,phone) VALUES('demo-org','demo-customer','Cliente DEMONSTRAÇÃO','sem:demo')")
+        self.db.execute("INSERT INTO prospect_visits(organization_id,id,customer_id,scheduled_at,data) VALUES('demo-org','visit-demo','demo-customer','2030-01-07T13:00:00Z','{}')")
+        self.db.execute("INSERT INTO prospect_visit_records(organization_id,visit_id,user_id,data) VALUES('demo-org','visit-demo','demo-user','{}')")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("INSERT INTO prospect_visit_records(organization_id,visit_id,user_id,data) VALUES('demo-org','visit-demo','demo-user','{}')")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("INSERT INTO prospect_visits(organization_id,id,customer_id,scheduled_at,data) VALUES('demo-other','visit-wrong','demo-customer','2030-01-07T13:00:00Z','{}')")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("INSERT INTO prospect_visit_records(organization_id,visit_id,user_id,data) VALUES('demo-other','visit-demo','demo-user','{}')")
+        self.assertEqual(list(self.db.execute('PRAGMA foreign_key_check')), [])
+
 class ProspectMigrationTests(unittest.TestCase):
     def test_prospects_is_additive_and_tenant_scoped(self):
         db = sqlite3.connect(':memory:')

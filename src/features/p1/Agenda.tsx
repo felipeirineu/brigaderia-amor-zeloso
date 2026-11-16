@@ -6,7 +6,7 @@ import { useRemote, Failure, localDay } from '../operations/common';
 import { civilDate, dateTime } from '../api';
 import { privateDownload } from '../PrivateDownload';
 import { addCivilDays } from '../../../shared/finance';
-export function Agenda() {
+export function Agenda({ visits = false }: { visits?: boolean }) {
   const [day, setDay] = useState(localDay),
     [mode, setMode] = useState<'week' | 'month'>('week'),
     [kind, setKind] = useState(''),
@@ -27,6 +27,7 @@ export function Agenda() {
         : addCivilDays(from, 6),
     query = `from=${from}&to=${to}${kind ? '&kind=' + kind : ''}`;
   const view = useRemote<{
+    visits_enabled?: boolean;
     events: {
       id: string;
       title: string;
@@ -73,6 +74,9 @@ export function Agenda() {
           ['closing', 'Fechamentos'],
           ['due', 'Vencimentos'],
           ['reminder', 'Lembretes'],
+          ...(view.data?.visits_enabled
+            ? [['visit', 'Visitas de apresentação'] as const]
+            : []),
         ]}
       />
       <p>

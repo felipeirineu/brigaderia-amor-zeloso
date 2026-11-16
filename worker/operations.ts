@@ -1,3 +1,4 @@
+import { visitsReady, visitList, sampleProduction } from './visits';
 import { requireCustomer } from './prospects';
 import { customerAddressSQL } from './customer-address';
 import { customerType, occasionLabel } from '../shared/customer-order';
@@ -219,7 +220,14 @@ export async function operations(
             )?.n ?? 0,
           )
         : null;
+    const hasVisits = await visitsReady(env);
     return json({
+      visits: hasVisits
+        ? (await visitList(db, org, day, day)).filter(
+            (v) => v.status !== 'cancelled',
+          )
+        : [],
+      sample_production: hasVisits ? await sampleProduction(db, org, day) : [],
       day,
       role: a.role,
       orders,
