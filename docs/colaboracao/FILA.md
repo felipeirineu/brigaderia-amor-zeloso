@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T3c** (skeleton de carregamento, abaixo). Versão **0.12.0**. Ao terminar, abra o pull request. **Se você já começou a R7a, guarde no branch dela e faça a T3c antes.**
+`VEZ: CODEX` — tarefa **R7a** (seção R7 abaixo + `CLAUDE_PARA_CODEX.md` §R7). Versão **0.13.0**. Ao terminar, abra o pull request.
 
 ## Como funciona
 
@@ -38,7 +38,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 16/11 após T2b, T3 e T3b: sem problema real).
+Contador de entregas desde a última revisão: **1/3** (T3c).
 
 ## Limites
 
@@ -56,8 +56,8 @@ Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 
 | T2b | Aviso de horário de hoje que já passou | **publicada** 16/11 (PR #7) como **0.10.0** |
 | T3 | Acabamento visual tela a tela | **publicada** 16/11 (PR #8) como **0.11.0** |
 | T3b | Correções da T3 | **publicada** 16/11 (PR #9) como **0.11.1** |
-| T3c | Skeleton de carregamento no Hoje e nas listas (Pedidos, Clientes e outras) | **vez do Codex** — versão **0.12.0** |
-| R7a | Contatos (clientes em potencial), funil e "virou cliente" + **migração 0024** | depois da T3c — versão **0.13.0** |
+| T3c | Skeleton de carregamento | **publicada** 16/11 (PR #10) como **0.12.0** |
+| R7a | Contatos (clientes em potencial), funil e "virou cliente" + **migração 0024** | **vez do Codex** — versão **0.13.0** |
 | R7b | Visitas: agenda/Hoje, registrar visita com amostras, amostras na produção | depois da R7a |
 | R7c | Custo da prospecção, mensagens de WhatsApp e relatório de conversão | depois da R7b |
 | T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
@@ -225,6 +225,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.12.0 | 16/11 | Carregamento com "esqueleto" no Hoje e nas listas, no lugar de "Carregando…". |
 | 0.11.1 | 16/11 | Títulos de página com a fonte da marca de novo; nome do cliente não quebra no meio da palavra. |
 | 0.11.0 | 16/11 | Visual mais caprichado: telefones formatados, topo do Hoje mais enxuto, títulos e espaçamentos padronizados. |
 | 0.10.0 | 16/11 | Aviso quando o horário de entrega de hoje já passou (pede confirmação). |
@@ -243,3 +244,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 15/11 | 4 | T2b — horário que já passou (PR #7) | 200 E2E nos três navegadores e Segurança verdes; publicada com a versão 0.10.0 (bump do Claude, CI completo próprio). |
 | 16/11 | 5 | T3 — acabamento visual (PR #8) | publicada como 0.11.0; 203 E2E e Segurança verdes. Ajustes vistos nas capturas viraram a T3b. |
 | 16/11 | 6 | T3b — correções visuais (PR #9) | publicada como 0.11.1; Validação e Segurança verdes. **Revisão geral 3/3** (T2b, T3, T3b): sem problema real. |
+| 16/11 | 7 | T3c — skeleton (PR #10) | publicada como 0.12.0; 212 E2E e Segurança verdes. |
