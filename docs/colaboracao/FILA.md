@@ -63,6 +63,7 @@ Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 
 | R7a | Contatos, funil e "virou cliente" + migração 0024 | **publicada** (0.13.0); 0024 aplicada e conferida 16/11; **ligada** em 0.13.1 |
 | R7b | Visitas, registrar visita, amostras na produção + migração 0025 | **publicada** 16/11 (PR #12) como **0.14.0**; 0025 aguardando o Felipe |
 | R7c | Custo da prospecção, mensagens de WhatsApp e relatório de conversão | **vez do Codex** — versão **0.15.0** |
+| R7d | "Nova visita" no menu do +, visita também para cliente atual e ajuda explicando contatos e visitas | depois da R7c — versão **0.16.0** (detalhes abaixo) |
 | T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
 | T5 | "Novidades" após atualizar + histórico em Mais (ligado a partir da 1.0.0) | a detalhar pelo Claude; última tarefa antes da 1.0 |
 
@@ -206,7 +207,7 @@ O Tiago conquista a maioria dos clientes visitando estabelecimentos com amostras
    - E2E do fluxo agendar → registrar → retornar → virar cliente.
 5. **Restrições:** nenhum lembrete, despesa ou mensagem criados sem confirmação humana. Contatos "Não teve interesse" podem ser arquivados ou excluídos (LGPD).
 
-**1.0.0** = T2b + T3 + T3b + T3c + R7a/b/c + T5 (e T4, se o Felipe mantiver antes da 1.0).
+**1.0.0** = T2b + T3 + T3b + T3c + R7a/b/c/d + T4 + T5 (e T4, se o Felipe mantiver antes da 1.0).
 
 ### T3b — correções da T3 (versão 0.11.1, CORREÇÃO)
 
@@ -215,6 +216,29 @@ Vistas nas capturas antes/depois da própria T3:
 1. **Serifa da marca nos títulos de página:** a T3 trocou a saudação do Hoje ("Boa tarde, …") e a pergunta das etapas do Novo pedido ("Escolha o cliente", `.wizard-question`) para a fonte comum. Eles são títulos de página e voltam a usar `--az-serif` (DM Serif Display), como no `theme.css` original (`h1`, `.today-greeting h2`, `.wizard-question`, `.mobile-context-title`, `.order-success h1`). Títulos de **cartão** continuam em Figtree 600.
 2. **Nome do cliente no cartão do Hoje:** quebra no meio da palavra ("DEMONSTRAÇÃ / O P1"). Usar `overflow-wrap: anywhere` só como último recurso: quebrar entre palavras e, se não couber, reduzir para 2 linhas com reticências, mantendo o selo de situação à direita.
 3. E2E: a saudação e a `.wizard-question` usam a família serifada (`getComputedStyle`), e o nome longo não quebra no meio de uma palavra quando há espaço para quebrar entre palavras.
+
+### R7d — Nova visita no +, visita para cliente atual e ajuda (pedido do Felipe em 16/11)
+
+1. **Menu do + ("O que vamos preparar?")**: novo atalho **"Nova visita"**, ao lado de Novo pedido e Novo cliente. Abre uma folha curta:
+   - **Para quem:** busca única com **Contatos e Clientes**, mais o atalho **"Novo contato"** (cadastro rápido: nome, telefone opcional e endereço com as sugestões já existentes);
+   - **Quando:** data e hora, com os mesmos chips do Novo pedido;
+   - **Objetivo:** "Apresentação" (contato novo) ou **"Novos sabores/opções"** (cliente atual);
+   - Salvar agenda a visita, que aparece no Hoje como as da R7b.
+2. **Visita para cliente atual:** hoje a visita é só para contato (`kind = prospect`). Passa a aceitar também cliente ativo, com o objetivo "Novos sabores/opções".
+   - Para cliente atual, o registro da visita guarda as amostras igual, mas **não mexe no funil** (que é só de contatos) e não converte nada.
+   - Relatórios da R7c devem separar "visitas a contatos" de "visitas a clientes".
+   - Sem migração nova se der para guardar o objetivo no `data` JSON da visita; se precisar de coluna, migração **aditiva** e o mesmo protocolo (código antes, Felipe aplica).
+3. **Ajuda clara** (em Ajuda e no ícone ? da tela de Contatos e da folha Nova visita), em linguagem simples, passo a passo:
+   - **O que é um contato:** estabelecimento que ainda não compra.
+   - **Como cadastrar.**
+   - **Como agendar a visita:** pelo + → Nova visita, ou pelo contato.
+   - **No dia:** a visita aparece no Hoje com Mapa, WhatsApp e Uber/99; as amostras entram na produção.
+   - **Registrar a visita:** amostras deixadas, quem foi, próximo passo.
+   - **Retornar:** lembrete e WhatsApp, sempre com envio humano.
+   - **Virou cliente:** um toque, e o histórico continua.
+   - **Visita a cliente atual:** para mostrar sabores novos.
+   - Incluir no passeio guiado um passo curto "Visitas de apresentação".
+4. **Testes:** E2E do + → Nova visita (contato novo e cliente atual), visita de cliente não altera funil, ajuda visível. Mesma matriz de segurança da R7b.
 
 ## Versões do app
 
