@@ -1,3 +1,36 @@
+## R7a — entrega para revisão (16/11/2026)
+
+Branch `codex/r7a-prospect-funnel`, versão **0.13.0**. Main `1dc3689` incorporado: T3c/skeletons, AppUpdate e SheetGestures preservados. Retomado checkpoint0054e47. FILA e VEZ sem edição autoral; somente R7-1, R7-2 e R7-8 nesta entrega.
+
+### Produzido
+
+- **R7-1 concluído:** filtro Clientes/Contatos no mesmo cadastro; contato com nome, pessoa de contato, telefone opcional, origem/observações e localização/foto/Instagram reaproveitados. Arquivamento/reativação pelo mecanismo existente. Contatos não convertidos ficam fora das seleções de vendas; APIs também recusam novos pedidos/modelos para eles.
+- **R7-2 concluído:** chips A visitar/Amostra entregue/Retornar/Não teve interesse; próximo passo sempre explícito (data ou a definir), motivo opcional e histórico com etapa, autor e data. Etapa Amostra entregue é acompanhamento humano; unidades/visitas/produção pertencem à R7b. Mesmos Button/DisclosureSummary/tokens, skeleton para filtro de contatos, sem novo armazenamento local de dados pessoais.
+- **R7-8 concluído:** Virou cliente mantém o mesmo id, dados/local/foto/Instagram/histórico; abre condições B2B e oferece pedido padrão/primeiro pedido. Nomes são reaproveitados em perfil novo, sem sobrescrever perfil configurado. Pessoa continua pessoa e não recebe oferta de pedido padrão. Conversão não gera pedidos, pagamentos, lembretes, despesas ou mensagens.
+- **Banco/operação:** 0024_prospects.sql aditiva, sem seed, com default customer para cadastros anteriores, detalhes/eventos e índices por organização. Flag PROSPECTS_ENABLED=false em ambas configurações; prontidão do schema esconde a função no banco até0023. Tenant/CAS/idempotência/auditoria nas ações. Tabelas novas em backup/KEEP/pré-checagem.
+- Cadastro de contato reutiliza o processamento de rota já configurado para endereços, com cache/orçamento existentes. Sem chamada ao provedor em mudanças do funil/conversão. Guia docs/FASE_R7A.md e capturas DEMONSTRAÇÃO r7a-contato-retornar.png/r7a-convertido.png atualizados.
+
+### Testes executados
+
+- **144 unitários (36 arquivos)** e **223 verificações de segurança**, com toda rota nova na matriz (sem sessão401, outro tenant404; operadora autorizada).
+- Integração R7a: concorrência/CAS, idempotência, entradas inválidas/tentativa de forjar conversão, bloqueio de vendas, conversão sem finanças/lembretes, pessoa e perfil existente preservados, histórico/local/bytes da foto, arquivamento/reativação, flag desligada e banco até0023.
+- Backup/restauração SQLite com FKs e novos dados; limpeza/KEEP preservando contato/eventos; **8 testes SQL** de migração, default/versão dos clientes anteriores e isolamento.
+- **28 verificações de API**; listagens com65 produtos/pedidos e seleção dos200 mais recentes dentre216. Suíte completa de kits e caixas mistas aprovada;67 modelos com41 preparações SQL (orçamento46). Rotas com provedor simulado: endereço de contato calcula/cacheia; etapas/conversão não fazem chamada extra.
+- **21 E2E aprovados nos três projetos** (Chromium móvel/WebKit móvel/Chromium desktop): R7a, T3c, login/cadastros, AppUpdate com SW e gestos das folhas. **6 E2E R7a finais** após acabamentos, nos três projetos: fluxo contato→amostra (etapa)→retornar→converter, nomes/endereço/histórico/autoria preservados, seleção de vendas antes/depois e fallback0023.
+- Tipos, lint, formatação, build Pages e diff sem erros; build mantém aviso preexistente de chunk grande. D1/SQLite efêmeros e dados fictícios; CSP real do harness. CI completo e Segurança serão os automáticos do PR, sem workflow manual.
+
+### Limitações
+
+Sem aparelho físico. Histórico da tela mostra os50 eventos recentes; banco/backup preservam todos. Arquivamento entregue, exclusão física não. Limpeza padrão preserva contatos/histórico; opção de apagar clientes passa a ser recusada por alcançar tabelas KEEP, mesmo vazias (testado/documentado). Nenhuma visita real, amostra de produção, lembrete, despesa ou WhatsApp automatizado implementados nesta etapa.
+
+Nenhuma operação remota Cloudflare/D1, aplicação de migração, catálogo ou serviço pago. A função permanece desligada. Uso mensal de Actions não está disponível à integração; conferir limite da fila antes de novas entregas.
+
+### Pendências
+
+Claude revisar/publicar código após CI/Segurança verdes, sem merge pelo Codex. **Ativação no banco real precisa do Felipe:** backup/restauração conferidos, procedimento autorizado para0024, pré-checagem posterior e decisão de ligar a flag. O guia alerta que o input backup_verified do workflow atual diz “Somente dados de teste”; se houver dados reais, não marcar uma declaração falsa: responsável precisa revisar o procedimento antes de aplicar. Nenhuma ativação foi tentada.
+
+R7-3/4/5 aguardam R7b; R7-6/7/9 aguardam R7c, sempre pela fila. Se CI falhar, seguir diagnóstico no mesmo PR, respeitando as paradas da FILA.
+
 ## R7a — retomada antes do código (16/11/2026)
 
 FILA/main1dc3689 libera somente R7a, versão0.13.0; T3c publicada pelo PR10. Retomado checkpoint0054e47, comparado com main e incorporados skeletons e SheetGestures/AppUpdate. Conflitos de imports, CSS, versão e histórico resolvidos preservando as duas entregas; nenhuma alteração autoral da FILA.

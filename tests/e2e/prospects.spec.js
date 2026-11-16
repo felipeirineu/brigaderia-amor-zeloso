@@ -12,7 +12,7 @@ const flags = {
 
 test('R7a contato, retorno humano e conversão preservam cadastro e histórico', async ({
   browser,
-}) => {
+}, testInfo) => {
   test.setTimeout(90000);
   const t = await runtime(flags);
   const ctx = await browser.newContext({
@@ -95,13 +95,21 @@ test('R7a contato, retorno humano e conversão preservam cadastro e histórico',
       .getByRole('button', { name: 'Salvar acompanhamento', exact: true })
       .click();
     await expect(card.locator('.status-tag')).toHaveText('Retornar');
-    if (process.env.R7A_CAPTURE === '1')
+    if (
+      process.env.R7A_CAPTURE === '1' &&
+      testInfo.project.name === 'chromium-mobile'
+    ) {
+      await p.evaluate(() => window.scrollTo(0, 0));
       await p.screenshot({
         path: 'docs/colaboracao/capturas/r7a-contato-retornar.png',
         scale: 'css',
       });
+    }
     // Contato não aparece entre clientes do Novo pedido antes da conversão.
     await p.goto(t.url + '/gestao/pedidos?novo=1');
+    await expect(
+      p.getByRole('button', { name: 'Cliente DEMONSTRAÇÃO P1', exact: true }),
+    ).toBeVisible();
     await expect(p.getByRole('button', { name, exact: true })).toHaveCount(0);
     await p.goto(t.url + '/gestao/clientes');
     await p
@@ -132,6 +140,20 @@ test('R7a contato, retorno humano e conversão preservam cadastro e histórico',
     await expect(p.getByLabel('Rua/Avenida', { exact: true })).toHaveValue(
       'Local DEMONSTRAÇÃO',
     );
+    await expect(p.getByLabel('Estabelecimento', { exact: true })).toHaveValue(
+      name,
+    );
+    await expect(p.getByLabel('Responsável', { exact: true })).toHaveValue(
+      'Equipe DEMONSTRAÇÃO',
+    );
+    if (
+      process.env.R7A_CAPTURE === '1' &&
+      testInfo.project.name === 'chromium-mobile'
+    )
+      await p.screenshot({
+        path: 'docs/colaboracao/capturas/r7a-convertido.png',
+        scale: 'css',
+      });
     const current = await call('customers/' + created.id, undefined, 'GET');
     expect(current.kind).toBe('customer');
     expect(current.notes).toBe('Observação DEMONSTRAÇÃO');
@@ -159,6 +181,9 @@ test('R7a contato, retorno humano e conversão preservam cadastro e histórico',
     await card.getByText('Histórico do contato', { exact: true }).click();
     await expect(card.getByRole('list')).toContainText('Retornar');
     await expect(card.getByRole('list')).toContainText('Virou cliente');
+    await expect(card.getByRole('list').locator('.staff-identity')).toHaveCount(
+      4,
+    );
     await p.goto(t.url + '/gestao/pedidos?novo=1');
     await expect(p.getByRole('button', { name, exact: true })).toBeVisible();
   } finally {

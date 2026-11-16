@@ -39,6 +39,20 @@ try {
     created,
   );
   const id = created.id;
+  // Conversão só pela ação dedicada; JSON não pode forjar etapa/data de conversão.
+  for (const prospect of [
+    { stage: 'converted' },
+    { converted_at: '2030-01-01T00:00:00Z' },
+    { next_step_at: 'amanhã' },
+  ]) {
+    const result = await t.request('prospects', {
+      cookie: operator,
+      method: 'POST',
+      key: crypto.randomUUID(),
+      data: { name: 'Entrada inválida DEMONSTRAÇÃO', prospect },
+    });
+    assert.equal(result.status, 400);
+  }
   assert.equal((await call('customers', undefined, 'GET')).length, 1);
   assert.equal(
     (await call('customers?kind=prospect', undefined, 'GET'))[0].id,
@@ -273,6 +287,42 @@ try {
     (await call('customers?kind=prospect', undefined, 'GET'))[0].active,
     1,
   );
+
+  // Um perfil já preenchido sobrevive à conversão; pessoas continuam pessoas.
+  const person = await call(
+    'prospects',
+    {
+      name: 'Pessoa DEMONSTRAÇÃO',
+      customer_type: 'person',
+      prospect: {},
+    },
+    'POST',
+    operator,
+  );
+  const configured = { responsible: 'Responsável DEMONSTRAÇÃO preservado' };
+  await t.db
+    .prepare(
+      'INSERT INTO customer_profiles(organization_id,customer_id,data) VALUES(?,?,?)',
+    )
+    .bind(t.org, person.id, JSON.stringify(configured))
+    .run();
+  await call(
+    'prospects/' + person.id + '/convert',
+    { version: 1 },
+    'POST',
+    operator,
+  );
+  assert.equal(
+    (await call('customers/' + person.id, undefined, 'GET')).customer_type,
+    'person',
+  );
+  const preserved = await t.db
+    .prepare(
+      'SELECT data FROM customer_profiles WHERE organization_id=? AND customer_id=?',
+    )
+    .bind(t.org, person.id)
+    .first();
+  assert.deepEqual(JSON.parse(preserved.data), configured);
 
   console.log(
     'OK R7a: contatos/funil, CAS/concorrência, idempotência, conversão sem finanças/lembretes, histórico/local e arquivamento.',

@@ -301,7 +301,7 @@ export async function afterPlaceWrite(
     const id =
       path.startsWith('/api/field/customers/') && !path.endsWith('/photo')
         ? path.split('/')[4]
-        : /^\/api\/customers(?:\/[^/]+)?$/.test(path)
+        : /^\/api\/(?:customers|prospects)(?:\/[^/]+)?$/.test(path)
           ? ((await res.clone().json()) as { id: string }).id
           : null;
     if (id && (await enqueue(env, a.organization_id, id)))

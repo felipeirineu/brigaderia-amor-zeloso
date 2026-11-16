@@ -921,3 +921,10 @@ body:has(dialog[open]) {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+.prospect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--az-space-2);
+}

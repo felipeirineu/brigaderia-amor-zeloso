@@ -8,6 +8,7 @@ let calls = 0,
   entered;
 const t = await runtime({
   mobileEnabled: true,
+  prospectsEnabled: true,
   fieldEnabled: true,
   financeEnabled: true,
   p1Enabled: true,
@@ -196,6 +197,42 @@ try {
     ).n,
     0,
   );
+  // Contatos reutilizam o cálculo derivado do endereço, sem consulta em mudanças do funil.
+  await reset();
+  const previousCalls = calls;
+  const contact = await call(
+    'prospects',
+    {
+      name: 'Contato DEMONSTRAÇÃO rota',
+      prospect: {},
+      site: { version: 0, data: { ...place, longitude: 4 } },
+    },
+    'POST',
+    operator,
+  );
+  assert.equal(calls, previousCalls + 1);
+  assert.equal(
+    (await context()).routes.find((r) => r.id === contact.id).route_km,
+    6.4,
+  );
+  await call(
+    'prospects/' + contact.id + '/stage',
+    { version: 1, stage: 'follow_up' },
+    'POST',
+    operator,
+  );
+  await call(
+    'prospects/' + contact.id + '/convert',
+    { version: 2 },
+    'POST',
+    operator,
+  );
+  assert.equal(
+    calls,
+    previousCalls + 1,
+    'funil e conversão não consultam o provedor',
+  );
+
   console.log(
     'OK R6-1: cache, snapshots, recálculo, orçamento, concorrência, fallback, privacidade e isolamento.',
   );

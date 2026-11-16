@@ -59,10 +59,12 @@ function Profile({ id }: { id: string }) {
             Confira as condições abaixo. O cadastro, a localização e o histórico
             do contato foram preservados.
           </p>
-          {!person && (
-            <Button to="/gestao/recorrentes">Criar pedido padrão</Button>
-          )}
-          <Button to="/gestao/pedidos?novo=1">Criar primeiro pedido</Button>
+          <div className="prospect-actions">
+            {!person && (
+              <Button to="/gestao/recorrentes">Criar pedido padrão</Button>
+            )}
+            <Button to="/gestao/pedidos?novo=1">Criar primeiro pedido</Button>
+          </div>
         </section>
       )}
       <Failure message={error || view.error} />

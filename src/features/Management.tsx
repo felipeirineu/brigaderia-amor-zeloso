@@ -603,7 +603,13 @@ function Customers({
         <Button onClick={() => void list.reload()}>Atualizar lista</Button>
       </details>
       {list.loading ? (
-        <SkeletonList label="Carregando clientes…" />
+        <SkeletonList
+          label={
+            kind === 'prospect'
+              ? 'Carregando contatos…'
+              : 'Carregando clientes…'
+          }
+        />
       ) : list.data.length === 0 ? (
         <div className="mascot-empty">
           <Mascot size={72} />

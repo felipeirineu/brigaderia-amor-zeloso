@@ -1,3 +1,5 @@
+import { DisclosureSummary } from '../../components/DisclosureSummary';
+import { StaffIdentity } from '../field/FieldContext';
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../../components/Button';
@@ -94,6 +96,7 @@ function FollowUp({
 interface History {
   events: {
     id: string;
+    user_id: string;
     from_stage: string;
     to_stage: keyof typeof prospectLabels;
     next_step_at: string;
@@ -178,7 +181,7 @@ export function ProspectPanel({
       {contact && !!customer.active && (
         <>
           <details>
-            <summary>Atualizar acompanhamento</summary>
+            <DisclosureSummary>Atualizar acompanhamento</DisclosureSummary>
             <form
               className="data-form"
               onSubmit={(e) => {
@@ -213,12 +216,14 @@ export function ProspectPanel({
               .catch((e) => setError(e.message));
         }}
       >
-        <summary>Histórico do contato</summary>
+        <DisclosureSummary>Histórico do contato</DisclosureSummary>
         {history && (
           <ul>
             {history.events.map((e) => (
               <li key={e.id}>
                 {dateTime(e.created_at)} · {prospectLabels[e.to_stage]}
+                {' · '}
+                <StaffIdentity id={e.user_id} />
                 {e.from_stage === e.to_stage ? ' (cadastro atualizado)' : ''}
                 {e.next_step_at
                   ? ' · Próximo passo: ' + dateTime(e.next_step_at)
