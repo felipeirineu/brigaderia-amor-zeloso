@@ -55,9 +55,11 @@ Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 
 | T2 | Endereço único + número ausente + versão 0.9.0 | **publicada** 15/11 (PR #6, `f0f67df`) |
 | T2b | Novo pedido: aviso de horário de hoje que já passou | **vez do Codex** |
 | T3  | Acabamento visual tela a tela                                    | a detalhar pelo Claude                                               |
-| T4  | Modo escuro                                                      | a detalhar pelo Claude                                               |
+| R7a | Contatos (clientes em potencial), funil e "virou cliente" + **migração 0024** | depois da T3 (detalhes abaixo) |
+| R7b | Visitas: agenda/Hoje, registrar visita com amostras, amostras na produção | depois da R7a |
+| R7c | Custo da prospecção, mensagens de WhatsApp e relatório de conversão | depois da R7b |
+| T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
 | T5 | "Novidades" após atualizar + histórico em Mais (ligado a partir da 1.0.0) | a detalhar pelo Claude; última tarefa antes da 1.0 |
-| —   | R7 (visitas e amostras)                                          | **fora da fila**: exige migração → aprovação do Felipe               |
 
 ### T0 — R17
 
@@ -146,6 +148,28 @@ No passo "Quando entregar?" do Novo pedido (`src/features/mobile/Totem.tsx`, pas
 
 - Títulos de cartão (`.panel h2`, ex.: "Novo pedido", "Limite de sabores", "Novo kit") aparecem numa serifa genérica (fallback tipo Times). Padronizar: títulos de cartão em Figtree 600 (sem serifa), como definido na seção 8.1 do CLAUDE_PARA_CODEX.
 - Telefone na lista de clientes aparece cru ("+5511900000001"). Exibir formatado "(11) 90000-0001", só na exibição e sem mudar o que é gravado.
+
+### R7 — visitas de apresentação e amostras grátis (aprovada pelo Felipe para a 1.0, em 16/11)
+
+O Tiago conquista a maioria dos clientes visitando estabelecimentos com amostras. A especificação completa está em `CLAUDE_PARA_CODEX.md`, seção **R7** (R7-1 a R7-9, Privacidade e Aceite). Dividida assim:
+
+- **R7a = R7-1, R7-2 e R7-8:** contato (`kind = prospect` no cadastro de clientes), filtro Clientes/Contatos, funil por chips e conversão em cliente preservando o histórico.
+- **R7b = R7-3, R7-4 e R7-5:** visita agendada no Hoje e na agenda, folha "Registrar visita" (amostras por sabor em unidades) e amostras como unidades avulsas no "Produzir hoje/amanhã".
+- **R7c = R7-6, R7-7 e R7-9:** custo estimado das amostras + corridas, despesa "Amostras e prospecção" só por registro humano, modelos de WhatsApp com envio humano e relatório de prospecção.
+
+**Regras para o banco real (obrigatórias):**
+
+1. **Migração:** `0024_prospects.sql` (e as seguintes, se precisar) **somente aditiva**: tabelas e colunas novas, sem apagar nem converter dados. Nenhum dado de exemplo.
+2. **Código publicável antes da migração:** com a migração ainda não aplicada, o app continua funcionando igual, com a função escondida. Usar verificação de prontidão do schema, como `weightCostingReady`, e uma flag própria `PROSPECTS_ENABLED`, **desligada** em `wrangler.jsonc`.
+3. **Ordem:** o Claude publica o código → o Felipe faz backup e aplica a migração pelo workflow "Homologação D1" (PRE_CHECAGEM → APLICAR_PENDENTES → PRE_CHECAGEM) → o Claude confere → **ligar a flag é decisão do Felipe** (`VEZ: FELIPE`).
+4. **Testes:**
+   - matriz de segurança (401, outro tenant 404, operadora conforme o papel);
+   - backup/restauração e limpeza (KEEP) incluindo as tabelas novas;
+   - teste de banco "até 0023" sem as tabelas, provando que nada quebra;
+   - E2E do fluxo agendar → registrar → retornar → virar cliente.
+5. **Restrições:** nenhum lembrete, despesa ou mensagem criados sem confirmação humana. Contatos "Não teve interesse" podem ser arquivados ou excluídos (LGPD).
+
+**1.0.0** = T2b + T3 + R7a/b/c + T5 (e T4, se o Felipe mantiver antes da 1.0).
 
 ## Versões do app
 
