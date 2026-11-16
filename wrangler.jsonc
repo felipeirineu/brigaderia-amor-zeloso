@@ -4,7 +4,7 @@
   "pages_build_output_dir": "./dist",
   "compatibility_date": "2026-10-30",
   "vars": {
-    "PROSPECTS_ENABLED": "false",
+    "PROSPECTS_ENABLED": "true",
     "PUBLIC_CATALOG_ENABLED": "false",
     "FINANCE_ENABLED": "true",
     "P1_ENABLED": "true",
