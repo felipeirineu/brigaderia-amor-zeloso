@@ -1,3 +1,4 @@
+import { SkeletonList } from '../../components/Skeleton';
 import { useCallback, useContext, useMemo } from 'react';
 import { OrderDraftScope } from './order-draft-scope';
 import { readDraft, storeDraft, clearDraft } from './order-draft';
@@ -1000,6 +1001,9 @@ export function Totem({
           <Button to="/gestao/clientes" variant="ghost">
             Cadastrar cliente
           </Button>
+          {!customers.data && !customers.error && (
+            <SkeletonList label="Carregando clientes…" />
+          )}
           <div className="customer-tiles">
             {customers.data?.map((c) => (
               <Button
@@ -1019,6 +1023,16 @@ export function Totem({
       {step === 1 && (
         <>
           <h2 className="totem-customer">{customer?.name}</h2>
+          {(!products.data || kitCatalog.loading) &&
+            !products.error &&
+            !kitCatalog.error && (
+              <SkeletonList
+                label="Carregando sabores…"
+                kind="flavor"
+                count={4}
+                grid
+              />
+            )}
           <p className="totem-hint">
             {kitCatalog.kits.length
               ? 'Escolha o kit e os sabores'

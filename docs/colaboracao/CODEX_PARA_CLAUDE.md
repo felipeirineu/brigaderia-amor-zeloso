@@ -1,3 +1,9 @@
+## R7a — retomada antes do código (16/11/2026)
+
+FILA/main1dc3689 libera somente R7a, versão0.13.0; T3c publicada pelo PR10. Retomado checkpoint0054e47, comparado com main e incorporados skeletons e SheetGestures/AppUpdate. Conflitos de imports, CSS, versão e histórico resolvidos preservando as duas entregas; nenhuma alteração autoral da FILA.
+
+Plano: revisar worker/prospects.ts/Management/ProspectPanel e migração0024; validar isolamento, CAS/idempotência, conversão sem movimentação e seleção de vendas sem contatos. Conferir preservação do cadastro/local/foto/histórico e oferta de pedido padrão/primeiro pedido no perfil. Reexecutar matriz de segurança, backup/restauração/KEEP, fallback até0023 e flag desligada, integrações de pedidos/modelos/listagens e E2E com CSP real e novos skeletons/gestos. Preservar AppUpdate e suas regressões. Tipos/lint/formatação/build e relatório final; incorporar main novamente e enviar PR R7a consolidado. Sem CI manual, merge em main ou Cloudflare/D1 remoto; PROSPECTS_ENABLED continua false. Banco real e ativação dependem do responsável no fluxo da fila.
+
 ## R7a — checkpoint preservado; prioridade mudou para T3c (16/11/2026)
 
 A FILA no main cf4deaf passou a mandar guardar R7a e executar T3c antes. Trabalho preservado em commit local no branch `codex/r7a-prospect-funnel`, sem push/PR/ativação; versão futura ajustada para0.13.0 conforme a fila. Este checkpoint não é uma entrega publicada.
@@ -19,6 +25,42 @@ Base/main4445078, VEZ CODEX/R7a, versão0.12.0. Li seção R7 completa do briefi
 - Clientes/Contatos: filtro e status, pessoa de contato/origem/observações, próximo passo explícito (ou a definir), funil em chips. Reaproveitar captura/local/foto. Converter abre B2B e oferece pedido padrão/primeiro pedido por ação humana. Contatos não aparecem na seleção de vendas; APIs de novos pedidos/modelos também validam.
 - Operação: databaseTables/backup, KEEP e pré-checagem incluem cadastros/histórico novos. Testes de backup/restauração/limpeza e fallback sem0024, matriz de segurança para toda rota nova, integrações CAS/concorrência/idempotência/conversão, E2E móvel de contato→retorno→cliente (visitas reais só R7b).
 - Tipos/lint/unitários/formatação/build e checks adequados. Guia de ativação com backup e ordem código→migração pelo Felipe→conferência→decisão da flag; nenhuma ação no D1 real/Cloudflare. Incorporar main e abrir PR R7a com relatório Produzido/Testes executados/Limitações/Pendências. Nenhum CI manual, edição da FILA ou avanço de main.
+
+## T3c — entrega para revisão (16/11/2026)
+
+Branch `codex/t3c-loading-skeleton`, main `cf4deaf` incorporado/conferido antes do PR. Somente T3c; FILA/VEZ preservados. Versão **0.12.0** em package/lock. R7a guardada no commit local `0054e47` de `codex/r7a-prospect-funnel` (versão futura0.13.0), sem envio/PR nem operação no banco.
+
+### Produzido
+
+- Skeleton compartilhado (linha/círculo/retângulo), SkeletonCard/List/Stats e composição Hoje por papel: valores/produção antes das entregas para administrador; entregas primeiro para operadora. Quatro atalhos e botão grande representados nos cartões de entrega.
+- Carga inicial em Hoje, Clientes, Produtos, Pedidos/lista/detalhe, Novo pedido/clientes/sabores, Kits, Insumos, Fichas, Lembretes (inclusive Hoje), Financeiro/contas e Relatórios. Listas de gestão reutilizam useRemote, preservando dados já recebidos durante Atualizar; isso inclui resultado vazio. Trocar o filtro pode carregar uma nova lista.
+- Tokens theme.css, brilho1,4s e sem animação com movimento reduzido. Região aria-busy com texto acessível; formas decorativas escondidas da árvore acessível, sem botões falsos, estilos inline, backdrop-filter ou role=status novo. Erros continuam no alerta existente.
+- Capturas t3c-antes-* (base main) e t3c-depois-* em docs/colaboracao/capturas,390×844, somente DEMONSTRAÇÃO. Em Pedidos a lista fica abaixo do formulário completo; captura depois rola até a região da lista para mostrá-la.
+
+### Testes executados
+
+- 144 testes unitários aprovados (36 arquivos), incluindo composições/semântica dos skeletons e ordem por papel.
+- 18 E2E de regressão aprovados em Chromium/WebKit móveis: T3c, gestão privada, operações, agenda/lembretes, T3/T3b, R8 e AppUpdate com service worker real.
+- Bateria final T3c nos três projetos: **6 E2E aprovados (Chromium móvel, WebKit móvel e Chromium desktop)**. Retém API com page.route, verifica loading/reduced-motion e conteúdo após liberar; atualizações mantêm conteúdo e listas vazias. Cobre também auxiliares, sabores, detalhe e erro503. Cada tela principal usa página isolada para não herdar interceptadores; SW bloqueado só nesses testes de interceptação, sem mudar autenticação/CSP de produção.
+- 209 verificações locais de segurança aprovadas. Tipos, lint, format:check, build Pages e git diff --check aprovados. Build conserva o aviso já existente de chunk grande.
+- CI completo/Segurança serão os automáticos do PR; nenhum workflow manual.
+
+### Limitações
+
+Não validado em aparelho físico. Alturas do skeleton aproximam a composição inicial; quantidade de dados e permissões podem alterar a altura final. Não foi adicionado polling novo: o conteúdo permanece durante as recargas já existentes. Servidor, autenticação, flags, migrações e catálogo inalterados; nenhum Cloudflare/D1 remoto. Uso mensal de Actions não está disponível à integração; Claude/responsável deve conferir o limite da fila.
+
+### Pendências
+
+Claude revisar o PR e publicar após checks verdes. Codex não avança main nem altera a VEZ. R7a só continua quando liberada na fila, incorporando esta entrega antes de retomar. Se CI falhar, seguir o diagnóstico da fila no mesmo PR.
+
+## T3c — plano antes do código (16/11/2026)
+
+FILA/main cf4deaf: VEZ CODEX/T3c, versão 0.12.0. R7a preservada apenas no branch local codex/r7a-prospect-funnel (versão futura 0.13.0), sem push/PR, migração ou ativação. A prioridade agora é somente T3c.
+
+- Criar Skeleton/SkeletonCard/SkeletonList/SkeletonStats em src/components/Skeleton.tsx e estilos em theme.css: tokens, brilho 1,4s, reduced-motion, aria-busy e texto acessível, sem role=status extra nem estilos inline.
+- Aplicar em Today, Management (clientes/produtos/pedidos), OrderDetail, Totem (clientes/sabores), Kits, Recipes (insumos/fichas), Reminders, Finance/Account e Reports. Erros preservados. Recarregar mantém conteúdo já recebido, inclusive listas vazias; mudança de filtro pode carregar uma nova lista.
+- E2E com API retida em Hoje/Clientes/Pedidos, liberação exibindo dados DEMONSTRAÇÃO, atualização sem skeleton, movimento reduzido, erros e ausência de status vazio. Capturas antes/depois em390×844. Regressões de navegação, tipografia e atualização PWA.
+- Tipos/lint/formatação/build e testes locais; versão0.12.0 em package/lock. Incorporar main antes do push consolidado/PR T3c. Só CI automático do PR; nenhum workflow manual, edição de FILA, serviço pago, dado real ou operação Cloudflare/D1 remoto.
 
 ## T3b — entrega para revisão (16/11/2026)
 

@@ -1,3 +1,4 @@
+import { SkeletonList } from '../../components/Skeleton';
 import { ChoiceChips } from '../../components/ChoiceChips';
 import { Button } from '../../components/Button';
 import { useState } from 'react';
@@ -135,6 +136,9 @@ export function Reports() {
           Exportar relatório CSV
         </Button>
       </div>
+      {!view.data && !view.error && (
+        <SkeletonList label="Carregando relatórios…" />
+      )}
       {view.data && (
         <>
           <section className="panel">

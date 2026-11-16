@@ -1,3 +1,4 @@
+import { SkeletonList } from '../../components/Skeleton';
 import { occasionLabel } from '../../../shared/customer-order';
 import { OrderCost } from '../p1/OrderCost';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
@@ -537,7 +538,9 @@ export function OrderDetail({
           </div>
         </>
       ) : (
-        !view.error && <p>Carregando pedido…</p>
+        !view.error && (
+          <SkeletonList label="Carregando pedido…" count={1} kind="delivery" />
+        )
       )}
     </>
   );
