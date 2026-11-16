@@ -1,6 +1,6 @@
 # R7b — Visitas e amostras (0.14.0)
 
-Entrega preparada para revisão. O Codex não aplicou migração, não acessou o banco real e não alterou a flag de prospecção. R7b cobre R7-3/4/5; estimativa de custo das amostras, modelos de mensagem e relatório de conversão continuam na R7c.
+Entrega preparada para revisão. Durante o trabalho, o main foi atualizado para c211d36: conforme a FILA, a0024 foi aplicada pelo responsável e os Contatos foram ligados na0.13.1. Essa configuração foi preservada, sem nova ativação pelo Codex. O Codex não aplicou migração, não acessou o banco real e não alterou a flag de prospecção. R7b cobre R7-3/4/5; estimativa de custo das amostras, modelos de mensagem e relatório de conversão continuam na R7c.
 
 ## Como usar após a ativação
 

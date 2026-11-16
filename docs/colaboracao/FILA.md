@@ -7,7 +7,6 @@
 
 `VEZ: CODEX` — tarefa **R7b** (visitas, registrar visita e amostras na produção; seção R7 + `CLAUDE_PARA_CODEX.md` §R7-3/4/5). Versão **0.14.0**. Ao terminar, abra o pull request.
 
-**Pendência do Felipe em paralelo:** aplicar a migração **0024** (backup → PRE_CHECAGEM → APLICAR_PENDENTES → PRE_CHECAGEM). Depois o Claude confere e, com a confirmação do Felipe, liga `PROSPECTS_ENABLED`.
 
 ## Como funciona
 
@@ -59,7 +58,7 @@ Contador de entregas desde a última revisão: **2/3** (T3c, R7a).
 | T3 | Acabamento visual tela a tela | **publicada** 16/11 (PR #8) como **0.11.0** |
 | T3b | Correções da T3 | **publicada** 16/11 (PR #9) como **0.11.1** |
 | T3c | Skeleton de carregamento | **publicada** 16/11 (PR #10) como **0.12.0** |
-| R7a | Contatos, funil e "virou cliente" + migração 0024 | **publicada** 16/11 (PR #11) como **0.13.0**; 0024 aguardando o Felipe aplicar; função desligada |
+| R7a | Contatos, funil e "virou cliente" + migração 0024 | **publicada** (0.13.0); 0024 aplicada e conferida 16/11; **ligada** em 0.13.1 |
 | R7b | Visitas: agenda/Hoje, registrar visita com amostras, amostras na produção | **vez do Codex** — versão **0.14.0** (se precisar de migração, 0025 aditiva e com o mesmo cuidado) |
 | R7c | Custo da prospecção, mensagens de WhatsApp e relatório de conversão | depois da R7b |
 | T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
@@ -227,6 +226,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.13.1 | 16/11 | Contatos ligados (migração 0024 aplicada no banco real). |
 | 0.13.0 | 16/11 | Contatos (clientes em potencial) com funil e "virou cliente" — chega desligado; liga depois da migração 0024. |
 | 0.12.0 | 16/11 | Carregamento com "esqueleto" no Hoje e nas listas, no lugar de "Carregando…". Mais tarde no mesmo dia: as folhas fecham arrastando para baixo (publicado pelo Claude sem trocar o número). |
 | 0.11.1 | 16/11 | Títulos de página com a fonte da marca de novo; nome do cliente não quebra no meio da palavra. |
@@ -250,3 +250,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 16/11 | 7 | T3c — skeleton (PR #10) | publicada como 0.12.0; 212 E2E e Segurança verdes. |
 | 16/11 | — | Claude: folhas fecham arrastando para baixo | 215 E2E e Segurança verdes; publicado sem subir o número (fica no histórico da 0.12.0). |
 | 16/11 | 8 | R7a — contatos e funil (PR #11) | publicada como 0.13.0; 221 E2E e Segurança verdes. Migração 0024 só aditiva; consultas antigas protegidas por checagem de schema; flag desligada. |
+| 16/11 | — | Claude: liga PROSPECTS_ENABLED (0.13.1) | Migração 0024 aplicada pelo Felipe e conferida (24 aplicadas, 0 pendentes, 0 violações, 16 clientes); 221 E2E e Segurança verdes. |

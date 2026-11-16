@@ -4,7 +4,7 @@
   "main": "index.ts",
   "compatibility_date": "2026-10-30",
   "workers_dev": false,
-  "vars": { "PROSPECTS_ENABLED": "false", "PUBLIC_CATALOG_ENABLED": "false" },
+  "vars": { "PROSPECTS_ENABLED": "true", "PUBLIC_CATALOG_ENABLED": "false" },
   "d1_databases": [
     {
       "binding": "DB",
