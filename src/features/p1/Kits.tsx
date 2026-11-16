@@ -1,3 +1,4 @@
+import { SkeletonList } from '../../components/Skeleton';
 import { KitFlavorNotice } from '../../components/KitItemsEditor';
 import { Link } from 'react-router-dom';
 import { ChoiceChips } from '../../components/ChoiceChips';
@@ -372,6 +373,7 @@ export function Kits({ role }: { role: string }) {
           </fieldset>
         </form>
       )}
+      {!view.data && !view.error && <SkeletonList label="Carregando kits…" />}
       {view.data?.length === 0 && (
         <section className="panel">
           <h2>Nenhum kit cadastrado.</h2>

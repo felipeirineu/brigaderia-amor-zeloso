@@ -1,3 +1,5 @@
+import { SkeletonList } from '../components/Skeleton';
+import { useRemote } from './operations/common';
 import { formatPhone } from '../../shared/phone';
 import { DraftNotice } from './mobile/OrderDraftContext';
 import { OrderDraftScope } from './mobile/order-draft-scope';
@@ -68,13 +70,7 @@ import { Finance, PixSettings, type Summary } from './finance/Finance';
 import { Account } from './finance/Account';
 import { CustomerProfile } from './finance/Profile';
 import { type B2BProfile } from '../../shared/finance';
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-} from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   NavLink,
   Route,
@@ -177,41 +173,13 @@ function ErrorMessage({ message }: { message: string }) {
   ) : null;
 }
 function useList<T>(path: string) {
-  const [data, setData] = useState<T[]>([]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-  const reload = useCallback(async () => {
-    try {
-      setError('');
-      setLoading(true);
-      setData(await api<T[]>(path));
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
-  }, [path]);
-  useEffect(() => {
-    let current = true;
-    api<T[]>(path)
-      .then((d) => {
-        if (current) {
-          setData(d);
-          setError('');
-          setLoading(false);
-        }
-      })
-      .catch((e) => {
-        if (current) {
-          setError(e.message);
-          setLoading(false);
-        }
-      });
-    return () => {
-      current = false;
-    };
-  }, [path]);
-  return { data, error, loading, reload };
+  const view = useRemote<T[]>(path);
+  return {
+    data: view.data ?? [],
+    error: view.error,
+    loading: view.data === null && !view.error,
+    reload: view.refresh,
+  };
 }
 function useSave(reload: () => Promise<void>) {
   const [busy, setBusy] = useState(false);
@@ -597,7 +565,7 @@ function Customers({
         <Button onClick={() => void list.reload()}>Atualizar lista</Button>
       </details>
       {list.loading ? (
-        <p role="status">Carregando…</p>
+        <SkeletonList label="Carregando clientes…" />
       ) : list.data.length === 0 ? (
         <div className="mascot-empty">
           <Mascot size={72} />
@@ -956,7 +924,7 @@ function Products({
         />
       </label>
       {list.loading ? (
-        <p>Carregando…</p>
+        <SkeletonList label="Carregando produtos…" />
       ) : !list.data.length ? (
         <p>Nenhum produto cadastrado.</p>
       ) : (
@@ -1495,7 +1463,7 @@ function FullOrders({
       </label>
       <Button onClick={() => void orders.reload()}>Atualizar pedidos</Button>
       {orders.loading ? (
-        <p>Carregando…</p>
+        <SkeletonList label="Carregando pedidos…" />
       ) : !orders.data.length ? (
         <div className="mascot-empty">
           <Mascot size={72} />
@@ -1633,7 +1601,7 @@ function Overview() {
           )}
         </>
       ) : (
-        !error && <p>Carregando…</p>
+        !error && <SkeletonList />
       )}
     </>
   );

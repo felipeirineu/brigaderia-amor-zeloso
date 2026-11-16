@@ -1,3 +1,4 @@
+import { SkeletonList } from '../../components/Skeleton';
 import { ReminderAlerts, ReminderDelivery } from './ReminderAlerts';
 import { emptyAlert, editAlert, alertPayload } from './reminder-form';
 import { Circle, CircleCheck, Plus } from 'lucide-react';
@@ -64,6 +65,9 @@ export function TodayReminders({ day }: { day: string }) {
       <Failure message={view.error || error} />
 
       {view.data?.length === 0 && <p>Nenhum lembrete pendente.</p>}
+      {!view.data && !view.error && (
+        <SkeletonList label="Carregando lembretes…" />
+      )}
       {view.data?.map((r) => (
         <article key={r.id} className="today-reminder-row">
           <Button
@@ -271,6 +275,9 @@ export function Reminders() {
         Avisos são enviados apenas aos responsáveis que ativaram este aparelho.
         Nenhuma mensagem é enviada a clientes.
       </p>
+      {!view.data && !view.error && (
+        <SkeletonList label="Carregando lembretes…" />
+      )}
       {view.data?.map((r) => (
         <article className="panel" key={r.id}>
           <h2>

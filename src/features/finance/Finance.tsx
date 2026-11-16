@@ -1,3 +1,8 @@
+import {
+  SkeletonList,
+  SkeletonRegion,
+  SkeletonStats,
+} from '../../components/Skeleton';
 import { Button } from '../../components/Button';
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -40,6 +45,11 @@ export function FinanceSummary({
         <h2>{compact ? 'Recebimentos e a receber' : 'Resumo financeiro'}</h2>
       )}
       <Failure message={view.error} />
+      {!view.data && !view.error && (
+        <SkeletonRegion label="Carregando resumo financeiro…">
+          <SkeletonStats />
+        </SkeletonRegion>
+      )}
       {view.data && (
         <>
           <div className="finance-kpis">
@@ -148,6 +158,9 @@ export function Finance({ role }: { role: string }) {
       )}
       <Failure message={customers.error} />
       <h2>Contas dos clientes</h2>
+      {!customers.data && !customers.error && (
+        <SkeletonList label="Carregando contas…" />
+      )}
       {customers.data?.map((c) => (
         <p key={c.id}>
           <Button to={`/gestao/financeiro/${c.id}`} variant="ghost">

@@ -767,3 +767,129 @@ body:has(dialog[open]) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* T3c: reserva de espaço só enquanto a primeira resposta ainda não chegou. */
+.skeleton-region {
+  margin-block: var(--az-space-4);
+}
+.skeleton-accessible {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+.skeleton-block {
+  display: block;
+  flex-shrink: 0;
+  background-color: var(--az-tonal-strong);
+  background-image: linear-gradient(
+    100deg,
+    transparent 25%,
+    var(--az-surface) 50%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s linear infinite;
+  border-radius: var(--az-radius-field);
+}
+.skeleton-line {
+  height: 16px;
+}
+.skeleton-full {
+  width: 100%;
+}
+.skeleton-medium {
+  width: 70%;
+}
+.skeleton-short {
+  width: 40%;
+}
+.skeleton-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--az-radius-pill);
+}
+.skeleton-rectangle {
+  height: 48px;
+}
+.skeleton-list {
+  display: grid;
+  gap: var(--az-space-4);
+}
+.skeleton-region .skeleton-card {
+  display: grid;
+  gap: var(--az-space-4);
+  padding: var(--az-space-4);
+  margin: 0;
+}
+.skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: var(--az-space-3);
+}
+.skeleton-copy {
+  display: grid;
+  gap: var(--az-space-2);
+  flex: 1;
+  min-width: 0;
+}
+.skeleton-row > .skeleton-short {
+  width: 64px;
+}
+.skeleton-row > .skeleton-rectangle {
+  width: 40px;
+  height: 40px;
+}
+.skeleton-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--az-space-2);
+}
+.skeleton-card-delivery {
+  min-height: 260px;
+}
+.skeleton-region .skeleton-card-production {
+  min-height: 136px;
+  margin-block: var(--az-space-4);
+}
+.skeleton-grid,
+.skeleton-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--az-space-3);
+}
+.skeleton-stat {
+  display: grid;
+  gap: var(--az-space-3);
+  padding: var(--az-space-4);
+  background: var(--az-surface);
+  border-radius: var(--az-radius-field);
+  min-height: 115px;
+}
+.skeleton-card-flavor > .skeleton-rectangle {
+  height: 128px;
+}
+@keyframes skeleton-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-block {
+    animation: none;
+    background-image: none;
+  }
+}
+@media (min-width: 900px) {
+  .skeleton-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

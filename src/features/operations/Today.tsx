@@ -1,3 +1,4 @@
+import { SkeletonToday } from '../../components/Skeleton';
 import { occasionLabel } from '../../../shared/customer-order';
 import { useSearchParams } from 'react-router-dom';
 import { scheduleDay } from '../../../shared/order-schedule';
@@ -735,7 +736,7 @@ export function Today({
           )}
         </>
       ) : (
-        !view.error && <p role="status">Carregando seu dia…</p>
+        !view.error && <SkeletonToday owner={role === 'owner'} />
       )}
     </div>
   );

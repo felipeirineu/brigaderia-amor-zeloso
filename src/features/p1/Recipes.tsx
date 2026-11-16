@@ -1,3 +1,4 @@
+import { SkeletonList } from '../../components/Skeleton';
 import { Button } from '../../components/Button';
 import { MoneyField, QuantityField } from '../../components/NumericInputs';
 import { priceForMargin } from '../../../shared/costing';
@@ -152,6 +153,9 @@ export function Supplies() {
             {editing ? 'Cancelar edição' : 'Limpar campos'}
           </Button>
         </form>
+      )}
+      {!view.data && !view.error && (
+        <SkeletonList label="Carregando insumos…" />
       )}
       {view.data?.items.map((s) => (
         <article className="panel" key={s.id}>
@@ -427,6 +431,7 @@ export function Recipes({
           salva ficha nem muda preço comercial.
         </p>
       </section>
+      {!view.data && !view.error && <SkeletonList label="Carregando fichas…" />}
       {view.data?.items.map((r) => (
         <article className="panel" key={r.id}>
           <h2>

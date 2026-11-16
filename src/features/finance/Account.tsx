@@ -1,3 +1,4 @@
+import { SkeletonList } from '../../components/Skeleton';
 import type { CustomerType } from '../../../shared/customer-order';
 import { StaffIdentity } from '../field/FieldContext';
 import { Button } from '../../components/Button';
@@ -145,6 +146,7 @@ export function Account() {
       <h1>Conta do cliente</h1>
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
+      {!view.data && !view.error && <SkeletonList label="Carregando conta…" />}
       {data && (
         <>
           <h2>{data.customer.name}</h2>
