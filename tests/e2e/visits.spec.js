@@ -267,6 +267,9 @@ test('R7b agendar, produzir unidades, registrar e escolher lembrete/corrida sem 
       exact: true,
     });
     await expect(trip).toContainText('Prospecção');
+    await expect(
+      trip.getByRole('group', { name: 'Pedidos atendidos', exact: true }),
+    ).toHaveCount(0);
     await trip.getByRole('button', { name: 'Pular', exact: true }).click();
     expect(await count('expense_events')).toBe(0);
     await vcard

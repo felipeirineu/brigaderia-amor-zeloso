@@ -41,13 +41,14 @@ export function TodayReminders({ day }: { day: string }) {
     [notice, setNotice] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
+  const refreshReminders = view.refresh;
   useEffect(() => {
     const refresh = () => {
-      void view.refresh();
+      void refreshReminders();
     };
     window.addEventListener('reminders-changed', refresh);
     return () => window.removeEventListener('reminders-changed', refresh);
-  }, [view.refresh]);
+  }, [refreshReminders]);
   return (
     <section className="panel today-reminders">
       {show && (

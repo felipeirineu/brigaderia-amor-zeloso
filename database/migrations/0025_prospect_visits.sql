@@ -8,6 +8,7 @@ CREATE TABLE prospect_visits (
  FOREIGN KEY(organization_id,customer_id) REFERENCES customers(organization_id,id)
 );
 CREATE INDEX prospect_visits_day ON prospect_visits(organization_id,status,scheduled_at);
+CREATE INDEX prospect_visits_range ON prospect_visits(organization_id,scheduled_at,id);
 CREATE INDEX prospect_visits_customer ON prospect_visits(organization_id,customer_id,scheduled_at);
 CREATE TABLE prospect_visit_records (
  organization_id TEXT NOT NULL,visit_id TEXT NOT NULL,user_id TEXT NOT NULL REFERENCES users(id),

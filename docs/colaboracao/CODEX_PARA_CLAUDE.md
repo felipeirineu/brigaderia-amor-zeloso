@@ -1,3 +1,36 @@
+## R7b — entrega para revisão (16/11/2026)
+
+Branch `codex/r7b-prospect-visits`, versão **0.14.0**. Main **c211d36** incorporado: a ativação dos Contatos/0.13.1 feita pelo fluxo responsável foi preservada. Conforme a FILA,0024 já foi aplicada pelo responsável; o Codex não executou essa operação. Somente R7-3/4/5; nenhuma edição autoral da FILA/VEZ.
+
+### Produzido
+
+- **R7-3 concluído:** agendamento por Contatos, Mais ou Visitas e amostras; data/hora, planejamento por sabor/unidades e observação. Edição/cancelamento com versão/motivo. Cartões no Hoje por papel e eventos/filtro na Agenda/ICS; Mapa (Google/Waze/Apple), WhatsApp abre conversa humana, Uber abre destino e99 copia endereço. Sem pedido ou corrida automáticos.
+- **R7-4 concluído:** folha Registrar visita com unidades/fotos/+−, quem foi, quando aconteceu, observação e próximo passo (+3dias sugerido/editável). Registro imutável separado de vendas, com snapshot de sabor/peso informado, autoria e auditoria. Funil avança por registro humano; Não teve interesse e Virou cliente são preservados. Visitas existentes continuam editáveis/registráveis após conversão e todo histórico permanece no mesmo cliente.
+- Ofertas de **lembrete** e **corrida de prospecção** abrem os módulos existentes. Cancelar/Pular não grava. Só Salvar lembrete cria o lembrete ligado ao contato; controle de aviso no celular mantém opt-in existente. Só Registrar despesa paga cria corrida/vínculo e, acima de zero, despesa Prospecção; zero registra somente deslocamento. Estorno respeita regra existente de autor/dia/administrador. Não há pedido fictício nem rateio por venda para uma visita.
+- **R7-5 concluído:** demanda de amostras em seção separada da produção vendida, somada em unidades por sabor/data/peso informado, para hoje/amanhã ou dias selecionados. Canceladas/registradas e contatos arquivados não demandam produção. Sem peso aparece a definir; não se inventa peso ou custo. Produto desativado não entra em novos planos, mas amostra já planejada pode ser registrada historicamente.
+- **0025 aditiva**, sem exemplos, com visitas/registros/vínculo de corrida, índices por organização/data/cliente e FKs compostas. Schema readiness protege bancos até0023/0024 e flag desligada. Agendamentos/registros em KEEP/backup; vínculo operacional de corrida acompanha limpeza dos deslocamentos de teste. Guia [FASE_R7B](../FASE_R7B.md), capturas `r7b-hoje.png`, `r7b-producao.png`, `r7b-registrar.png` (390×844, DEMONSTRAÇÃO). Tokens, Button/DisclosureSummary, AppUpdate, skeletons e gestos preservados; sem backdrop-filter novo.
+
+### Testes executados
+
+- **144 unitários (36 arquivos),241 verificações de segurança e9 testes SQL** aprovados. Todas as rotas novas na matriz (401 sem sessão,404 outro tenant/coleção isolada, operadora autorizada). Tipos/lint sem erros ou avisos, formatação/build Pages/diff aprovados; permanece aviso preexistente de chunk grande no build.
+- Integração R7b: agendar/editar/cancelar, agenda/ICS, produção em unidades separadas, CAS concorrente/idempotência, quem foi/tenant, bloqueios de entrada, registro sem faturamento/saldo/lembrete/despesa, conversão e desinteresse preservados, histórico de sabor inativo, corrida explícita/estorno e compatibilidade até0023/0024/flagoff.
+- **65 visitas no Hoje:30 preparações SQL no handler** (orçamento45, reserva de5 para autenticação/middleware até o teto50), usando o handler real/D1 efêmero. Sem N+1 de visitas/amostras. Kits continuam com67 modelos/41SQL (orçamento46).
+- Backup/restauração SQLite incluindo3 tabelas novas e FKs, limpeza/KEEP, APIs de gestão/listagens, P1 completo (agenda/relatórios/despesas/receitas), campo/fotos privadas, financeiro/endereço, operações/mensagens, kits e R7a aprovados.
+- **42 E2E de regressão aprovados nos três projetos**: R7b, R7a, campos/financeiro, operações, agenda, push, AppUpdate, skeletons e gestos. **9 E2E finais R7b/campo aprovados após incorporação do main**, incluindo sabor desativado depois do plano, cancelamento das ofertas sem gravação, salvamento separado do lembrete e corrida, conversão preservando registros e fallback0024. Chromium móvel/WebKit móvel/Chromium desktop, CSP real e dados fictícios.
+- CI completo/Segurança são os automáticos do PR. Nenhum workflow manual disparado pelo Codex.
+
+### Limitações
+
+Sem aparelho físico. Consulta limitada a200 visitas; filtro de período disponível inclusive no histórico do contato. Registro concluído não é sobrescrito; ajuste de dados deve ser conferido antes de salvar. Quem foi usa equipe cadastrada/autor. Peso opcional e custo das amostras ainda sem estimativa; R7c fará custos/modelos/relatórios de conversão. A diferença entre unidades planejadas/deixadas não gera perda, baixa de estoque ou despesa implícita. Lembrete sem próxima data não é oferecido. Entrega de avisos depende da autorização do aparelho no módulo existente.
+
+Nenhuma operação Cloudflare/D1 remoto, aplicação de migração, alteração autoral de flags, catálogo ou serviço pago. Uso mensal de Actions indisponível à integração; conferir limite da fila. Limpeza operacional de corridas de teste apaga seus vínculos, mas preserva os registros da visita/amostras; limpeza de clientes permanece bloqueada por KEEP.
+
+### Pendências
+
+Claude revisar/publicar com CI/Segurança verdes, sem merge pelo Codex. **0025 no banco real depende do responsável**: backup/restauração, pré-checagem, aplicação autorizada e nova pré-checagem. Contatos já ligados continuam funcionando sem0025; Visitas só aparece com schema pronto. Input backup_verified ainda diz “Somente dados de teste”; se houver dados reais, revisar o procedimento antes, sem declarar condição falsa. O guia explicita isso; nenhuma ativação foi tentada pelo Codex.
+
+R7c e demais tarefas aguardam liberação da fila. Após a terceira entrega, vale a revisão geral prevista na FILA pelo Claude. Se CI falhar, corrigir no mesmo PR a partir do diagnóstico, respeitando as paradas.
+
 ## R7b — plano antes do código (16/11/2026)
 
 FILA/main90a50ac libera R7-3/4/5, versão0.14.0, em codex/r7b-prospect-visits. R7a publicada,0024/flag ainda dependem do responsável. Li R7 e AGENTS; nenhuma operação remota no Cloudflare/D1, ativação ou edição da FILA.

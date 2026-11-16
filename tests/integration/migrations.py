@@ -87,6 +87,8 @@ class VisitMigrationTests(unittest.TestCase):
             self.db.execute("INSERT INTO prospect_visits(organization_id,id,customer_id,scheduled_at,data) VALUES('demo-other','visit-wrong','demo-customer','2030-01-07T13:00:00Z','{}')")
         with self.assertRaises(sqlite3.IntegrityError):
             self.db.execute("INSERT INTO prospect_visit_records(organization_id,visit_id,user_id,data) VALUES('demo-other','visit-demo','demo-user','{}')")
+        plan = self.db.execute("EXPLAIN QUERY PLAN SELECT * FROM prospect_visits WHERE organization_id=? AND scheduled_at>=? AND scheduled_at<? ORDER BY scheduled_at,id", ('demo-org','2030-01-07','2030-01-09')).fetchall()
+        self.assertTrue(any('prospect_visits_range' in row[-1] for row in plan))
         self.assertEqual(list(self.db.execute('PRAGMA foreign_key_check')), [])
 
 class ProspectMigrationTests(unittest.TestCase):

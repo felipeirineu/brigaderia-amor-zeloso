@@ -27,8 +27,7 @@ const flags = {
 };
 const t = await runtime(flags);
 try {
-  const { call, owner, operator, outside, variant, makeOrder } =
-    await demoProject(t);
+  const { call, operator, outside, makeOrder } = await demoProject(t);
   const day = fortalezaDay(),
     when = day + 'T14:00:00-03:00';
   const product = (await call('products', undefined, 'GET'))[0];

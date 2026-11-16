@@ -185,25 +185,27 @@ export function TravelSheet({
             ))}
           </select>
         </label>
-        <fieldset>
-          <legend>Pedidos atendidos</legend>
-          {orders.map((o) => (
-            <label key={o.id}>
-              <input
-                type="checkbox"
-                checked={selected.includes(o.id)}
-                onChange={(e) =>
-                  setSelected(
-                    e.target.checked
-                      ? [...selected, o.id]
-                      : selected.filter((id) => id !== o.id),
-                  )
-                }
-              />
-              {o.customer_name} · {money(o.total_cents)}
-            </label>
-          ))}
-        </fieldset>
+        {!visit && (
+          <fieldset>
+            <legend>Pedidos atendidos</legend>
+            {orders.map((o) => (
+              <label key={o.id}>
+                <input
+                  type="checkbox"
+                  checked={selected.includes(o.id)}
+                  onChange={(e) =>
+                    setSelected(
+                      e.target.checked
+                        ? [...selected, o.id]
+                        : selected.filter((id) => id !== o.id),
+                    )
+                  }
+                />
+                {o.customer_name} · {money(o.total_cents)}
+              </label>
+            ))}
+          </fieldset>
+        )}
         <label>
           Observação
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />

@@ -74,9 +74,7 @@ export function Agenda({ visits = false }: { visits?: boolean }) {
           ['closing', 'Fechamentos'],
           ['due', 'Vencimentos'],
           ['reminder', 'Lembretes'],
-          ...(view.data?.visits_enabled
-            ? [['visit', 'Visitas de apresentação'] as const]
-            : []),
+          ...(visits ? [['visit', 'Visitas de apresentação'] as const] : []),
         ]}
       />
       <p>
