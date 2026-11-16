@@ -1,3 +1,4 @@
+import { formatPhone } from '../../shared/phone';
 import { DraftNotice } from './mobile/OrderDraftContext';
 import { OrderDraftScope } from './mobile/order-draft-scope';
 import { clearDraft } from './mobile/order-draft';
@@ -635,7 +636,7 @@ function Customers({
                     {c.name}
                   </span>
                   <small>
-                    {c.phone || 'Sem telefone'} ·{' '}
+                    {formatPhone(c.phone) || 'Sem telefone'} ·{' '}
                     {c.active ? 'Ativo' : 'Arquivado'}
                   </small>
                 </span>
@@ -676,7 +677,7 @@ function Customers({
                   </>
                 )}
                 <p>
-                  {c.phone || 'Sem telefone'} ·{' '}
+                  {formatPhone(c.phone) || 'Sem telefone'} ·{' '}
                   {c.active ? 'Ativo' : 'Arquivado'}
                 </p>
                 {!!c.active && (

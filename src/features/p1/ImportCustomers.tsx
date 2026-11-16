@@ -1,3 +1,4 @@
+import { formatPhone } from '../../../shared/phone';
 import { Button } from '../../components/Button';
 import { useRef, useState } from 'react';
 import { api } from '../api';
@@ -122,7 +123,7 @@ export function ImportCustomers() {
                   <th>Importar</th>
                   <th>Linha</th>
                   <th>Nome</th>
-                  <th>Telefone normalizado</th>
+                  <th>Telefone</th>
                   <th>Resultado</th>
                 </tr>
               </thead>
@@ -146,7 +147,7 @@ export function ImportCustomers() {
                     </td>
                     <td>{r.index + 2}</td>
                     <td>{r.data?.name ?? 'Dados inválidos'}</td>
-                    <td>{r.data?.phone ?? ''}</td>
+                    <td>{formatPhone(r.data?.phone)}</td>
                     <td>{r.message}</td>
                   </tr>
                 ))}

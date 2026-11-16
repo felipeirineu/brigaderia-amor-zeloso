@@ -1,3 +1,46 @@
+## T3 — entrega para revisão (16/11/2026)
+
+Branch `codex/t3-visual-polish`; base/main d5255c2, VEZ CODEX/T3 conferida. Versão0.11.0 no package/lock conforme a nova regra da fila. Nenhuma alteração da FILA/VEZ ou início de outra tarefa.
+
+### Produzido
+
+| Item                | Status                                                                                                                                                                                                                         |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| T3-1 tipografia     | Página/marca usam --az-serif; cartões, seções e nomes dos pedidos usam --az-sans600. Removidos sidebar-note e brand-art sem consumidores da Fase0; private-brand e subtítulo usam tokens.                                      |
+| T3-2 telefone       | formatPhone usa visiblePhone, mascara móvel/fixo BR, preserva internacional e oculta marcador/valor inválido. Lista, detalhe e prévia de importação formatados só na exibição; inputs, API, persistência e links mantêm E.164. |
+| T3-3 Hoje           | Data numa linha própria e saudação/chips em grade; controles40px/14px sem cortar seus textos. Mantida saudação em serifa. Primeiro cartão no limite original R8, com e sem nome de exibição.                                   |
+| T3-4 fim das listas | Padding do conteúdo dimensionado por barra/FAB/safe-area; modo foco considera sua própria barra. E2E confirma último cliente e rodapé de Mais acima da navegação ao rolar até o fim.                                           |
+| T3-5 Clientes       | Resumo/rota alinhados, sem espaço de ícone vazio; nome, telefone e situação com espaçamento consistente.                                                                                                                       |
+| T3-6 espaçamento    | Tokens de espaçamento/raio e sombras de uma camada; cartões de pedidos/clientes e Mais padronizados. Retiradas margens duplicadas dos cartões de Mais. Nenhum backdrop-filter.                                                 |
+| T3-7 evidências     | 10 PNG a390×844: capturas/t3-antes-* e t3-depois-* para Hoje, Pedidos, Novo pedido, Clientes e Mais. Inspecionados visualmente, somente DEMONSTRAÇÃO.                                                                          |
+
+### Testes executados
+
+-142 unitários (35 arquivos), incluindo móvel/fixo/internacional/marcador/vazio/inválidos no formatador; tipos, lint, formatação, build Pages e diff sem erros.
+-18 E2E únicos aprovados em Chromium/WebKit móveis: T3, R8, R9, T1, importação CSV/XLSX e AppUpdate. CSP real, D1 efêmero e rede externa bloqueada.
+
+- T3 confere fonte/peso dos títulos, nome do pedido, telefone formatado com input ainda em E.164, alinhamento de rota, chips40px, ausência de overflow horizontal e último cliente/rodapé acima da barra.
+- O R8 detectou espaço excessivo com perfil preenchido na primeira rodada; margem corrigida e R8/T3 repetidos nos dois navegadores, aprovados. Nenhuma asserção existente foi alterada ou relaxada.
+- CI completo e Segurança serão os automáticos do PR no SHA entregue; nenhum workflow manual. Sem nova rota/API/migração, teste de comportamento do servidor não foi repetido para esta alteração de exibição.
+
+### Limitações
+
+Sem aparelho físico ou homologação com dados reais. Safe-area validada por CSS/posições no emulador; Safari/iPhone físico depende de conferência posterior. Capturas são do viewport inicial: listas longas exigem rolagem, com área final livre comprovada no E2E. Consumo mensal de Actions não disponível à integração; responsável/Claude deve conferir o limite da fila.
+
+### Pendências
+
+Claude revisar/publicar com CI e Segurança verdes. Sem main, deploy, banco remoto, catálogo, serviço pago ou dado real pelo Codex. Outras tarefas aguardam liberação da fila e novo continue.
+
+## T3 — plano antes do código (16/11/2026)
+
+Base main d5255c2, VEZ CODEX/T3 conferida. Branch `codex/t3-visual-polish`, somente T3; versão alvo0.11.0 conforme fila.
+
+- Registrar antes/depois Hoje/Pedidos/Novo pedido/Clientes/Mais a390×844 em capturas/t3-*.png com fixtures DEMONSTRAÇÃO, sem dados reais. Conferir visualmente as evidências.
+- styles/theme: retirar estilos de marca da Fase0 sem consumidores; página em --az-serif e cartões/seções em --az-sans600, incluindo nomes dos pedidos; marca privada usa tokens.
+- shared/phone e consumidores: formatador de exibição chama visiblePhone, preserva armazenamento/links/E.164 e números internacionais. Unitários para móvel/fixo/vazio/marcador; aplicar à lista, detalhe e prévia de importação.
+- Hoje: chips40px/14–15px sem corte; proteger primeiro cartão no viewport pelo R8. Conteúdo com espaço para barra/FAB/safe-area; alinhar resumo e rota dos Clientes; revisar raios/sombras/espaçamento nas cinco telas por tokens.
+- Versão package/lock0.11.0. Aceite: capturas antes/depois, tipografia computada, telefone e fim de lista acessível, E2E existentes sem afrouxar. Tipos/lint/unitários/formatação/build e regressões dirigidas. Incorporar main, push conjunto e PR T3; sem manual de CI, edição da FILA, migração ou Cloudflare/D1 remoto.
+
 ## T2b — entrega para revisão (16/11/2026)
 
 Branch `codex/t2b-past-order-time`; base6893cc0, main atual f2b25fe incorporado antes do PR (novidade só na FILA). Li VEZ CODEX/T2b; T2 publicada e revisão geral sem bloqueio. Não editei FILA nem comecei outra tarefa.

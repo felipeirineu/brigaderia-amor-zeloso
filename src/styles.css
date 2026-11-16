@@ -61,10 +61,13 @@ h3,
 p {
   margin-top: 0;
 }
-h1,
+h1 {
+  font-family: var(--az-serif);
+}
 h2,
-.brand {
-  font-family: Georgia, 'Times New Roman', serif;
+h3 {
+  font-family: var(--az-sans);
+  font-weight: 600;
 }
 h1 {
   font-size: clamp(1.9rem, 3vw, 2.7rem);
@@ -74,7 +77,7 @@ h1 {
 }
 h2 {
   font-size: 1.5rem;
-  font-weight: normal;
+  font-weight: 600;
 }
 h3 {
   font-size: 1rem;
@@ -105,7 +108,7 @@ small {
 .brand small {
   display: block;
   letter-spacing: 0.13em;
-  font-family: system-ui;
+  font-family: var(--az-sans);
   font-size: 0.56rem;
   margin-top: 7px;
 }
@@ -156,19 +159,6 @@ small {
 }
 .sidebar nav a:hover:not(.active) {
   background: #eaddcd;
-}
-.sidebar-note {
-  margin-top: auto;
-  padding: 32px 12px 0;
-  color: var(--muted);
-}
-.sidebar-note > span {
-  font-size: 2rem;
-}
-.sidebar-note p {
-  font-family: Georgia;
-  font-size: 1.25rem;
-  margin: 8px 0;
 }
 .workspace {
   margin-left: 245px;
@@ -293,31 +283,6 @@ main {
 .button.secondary {
   background: transparent;
   color: var(--chocolate);
-}
-.brand-art {
-  border: 1px solid #b8915b;
-  outline: 1px solid #d3b994;
-  outline-offset: 10px;
-  background: #3a2219;
-  color: #e6c8a0;
-  border-radius: 50%;
-  width: 180px;
-  aspect-ratio: 1;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  margin: 15px;
-}
-.brand-art span {
-  font-family: Georgia;
-  font-size: 4rem;
-}
-.brand-art small {
-  font-size: 0.55rem;
-  letter-spacing: 0.2em;
-  margin-top: 10px;
 }
 .section-heading {
   display: flex;
@@ -469,9 +434,6 @@ footer {
   .welcome {
     padding: 42px 48px;
   }
-  .brand-art {
-    width: 210px;
-  }
 }
 @media (max-width: 1100px) {
   .sidebar {
@@ -496,12 +458,6 @@ footer {
   .phase {
     display: inline-block;
     margin-top: 16px;
-  }
-  .brand-art {
-    width: 130px;
-  }
-  .brand-art span {
-    font-size: 3rem;
   }
   .welcome {
     padding: 28px;
@@ -544,9 +500,6 @@ footer {
   }
   .welcome {
     padding: 28px 24px;
-  }
-  .brand-art {
-    display: none;
   }
   .welcome h2 {
     font-size: 1.8rem;
@@ -738,16 +691,6 @@ button:disabled {
 .brand-logo {
   object-fit: contain;
   flex-shrink: 0;
-}
-.brand-art {
-  background: transparent;
-  border: 0;
-  outline: 0;
-  border-radius: 0;
-}
-.brand-art img {
-  width: 100%;
-  height: auto;
 }
 .lucide {
   vertical-align: middle;
@@ -998,7 +941,7 @@ button:disabled {
   align-items: center;
   gap: 10px;
   text-decoration: none;
-  font-family: Georgia, serif;
+  font-family: var(--az-serif);
   font-size: 1.2rem;
 }
 .private-brand img {
@@ -1006,7 +949,7 @@ button:disabled {
 }
 .private-brand small {
   display: block;
-  font-family: system-ui;
+  font-family: var(--az-sans);
   font-size: 0.65rem;
   letter-spacing: 0.1em;
 }
@@ -1732,7 +1675,7 @@ button,
 }
 .delivery-identity h3 {
   margin: 0;
-  font: 700 17px var(--font-body, sans-serif);
+  font: 600 17px var(--az-sans);
 }
 .delivery-identity .initial-avatar,
 .delivery-identity .site-avatar {

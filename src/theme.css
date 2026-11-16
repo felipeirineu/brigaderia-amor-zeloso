@@ -21,6 +21,17 @@
   --az-ok-ink: #1f5c36;
   --az-warn-bg: #fbe9da;
   --az-warn-ink: #8a3f10;
+  --az-radius-pill: 999px;
+  --az-space-1: 4px;
+  --az-space-2: 8px;
+  --az-space-3: 12px;
+  --az-space-4: 16px;
+  --az-space-5: 20px;
+  --az-space-6: 24px;
+  --az-bottom-nav-height: 76px;
+  --az-fab-rise: 8px;
+  --az-avatar-size: 44px;
+  --az-order-bar-height: 90px;
   --az-radius-card: 28px;
   --az-radius-field: 16px;
   /* Sombras de uma camada e desfoque curto: leves para desenhar em
@@ -611,4 +622,136 @@ body:has(dialog[open]) {
   border-radius: var(--az-radius-field);
   background: var(--az-warn-bg);
   color: var(--az-warn-ink);
+}
+
+/* T3: mesma hierarquia, espaçamento e área livre nas rotinas da gestão. */
+.private-workspace h2:not(.wizard-question):not(.mobile-context-title),
+.private-workspace h3,
+.customer-records [role='heading'] {
+  font-family: var(--az-sans);
+  font-weight: 600;
+}
+.private-workspace .today-greeting h2 {
+  font-family: var(--az-serif);
+  font-weight: 400;
+}
+.order-card {
+  border-radius: var(--az-radius-card);
+  box-shadow: var(--az-shadow-card);
+  gap: var(--az-space-3);
+}
+.customer-records article.panel {
+  margin: 0;
+}
+.customer-records .customer-edit.az-button {
+  box-shadow: none;
+  border-radius: var(--az-radius-card) var(--az-radius-card) 0 0;
+  padding: var(--az-space-4);
+  gap: var(--az-space-3);
+}
+.customer-records .customer-edit > span {
+  min-width: 0;
+}
+.customer-records .customer-edit small {
+  margin-top: var(--az-space-1);
+  line-height: 1.5;
+}
+.customer-records .route-info,
+.customer-records details {
+  padding: var(--az-space-2) var(--az-space-4);
+}
+.customer-records .initial-avatar,
+.customer-records .site-avatar {
+  width: var(--az-avatar-size);
+  height: var(--az-avatar-size);
+  flex-shrink: 0;
+}
+.customer-records .route-info {
+  padding-inline-start: calc(
+    var(--az-space-4) + var(--az-avatar-size) + var(--az-space-3)
+  );
+}
+.customer-records .route-info .az-button-icon:empty {
+  display: none;
+}
+.customer-records .route-info:empty {
+  display: none;
+}
+.customer-records .route-info .az-button {
+  padding: var(--az-space-2) 0;
+  min-height: 40px;
+  justify-content: flex-start;
+}
+.more-grid {
+  gap: var(--az-space-3);
+}
+.customer-tile.az-button {
+  border-radius: var(--az-radius-card);
+  box-shadow: var(--az-shadow-card);
+}
+.delivery-icon-row .az-button {
+  border-radius: var(--az-radius-field);
+}
+.more-grid .more-link {
+  margin: 0;
+  padding: var(--az-space-4);
+  gap: var(--az-space-2);
+  min-height: 64px;
+  border-radius: var(--az-radius-card);
+  box-shadow: var(--az-shadow-card);
+}
+@media (max-width: 700px) {
+  .private-workspace,
+  .private-workspace:has(.operations-active) {
+    padding-bottom: calc(
+      var(--az-bottom-nav-height) + var(--az-fab-rise) + var(--az-space-6) +
+        env(safe-area-inset-bottom)
+    );
+  }
+  .private-workspace:has(.order-focus) {
+    padding-bottom: calc(
+      var(--az-order-bar-height) + env(safe-area-inset-bottom)
+    );
+  }
+  .private-bottom-nav {
+    min-height: calc(var(--az-bottom-nav-height) + env(safe-area-inset-bottom));
+  }
+  .private-bottom-nav button.az-button {
+    transform: translateY(calc(-1 * var(--az-fab-rise)));
+    border-radius: var(--az-radius-field);
+  }
+  .today-greeting {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--az-space-1) var(--az-space-2);
+    margin-bottom: 0;
+  }
+  .today-greeting:has(.name-tip) {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+  }
+  .today-greeting > div,
+  .today-identity {
+    display: contents;
+  }
+  .today-greeting .eyebrow {
+    grid-column: 1 / -1;
+  }
+  .private-workspace .today-greeting:has(.name-tip) h2 {
+    font-size: 20px;
+  }
+  .today-greeting .name-tip.az-button,
+  .today-greeting .workday-calendar-trigger.az-button,
+  .deliveries-heading > .az-button {
+    min-height: 40px;
+    padding: var(--az-space-2) var(--az-space-3);
+    font-size: 14px;
+    line-height: 1.2;
+    border-radius: var(--az-radius-pill);
+    white-space: nowrap;
+  }
+  .today-greeting .workday-calendar-trigger .az-button-icon,
+  .deliveries-heading > .az-button .az-button-icon:empty {
+    display: none;
+  }
 }
