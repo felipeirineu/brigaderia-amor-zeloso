@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T3b** (abaixo). Ao terminar, abra o pull request.
+`VEZ: CODEX` — tarefa **R7a** (seção R7 abaixo + `CLAUDE_PARA_CODEX.md` §R7). Versão **0.12.0**. Ao terminar, abra o pull request.
 
 ## Como funciona
 
@@ -38,7 +38,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **2/3** (T2b, T3; revisão geral depois da próxima entrega).
+Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 16/11 após T2b, T3 e T3b: sem problema real).
 
 ## Limites
 
@@ -55,8 +55,8 @@ Contador de entregas desde a última revisão: **2/3** (T2b, T3; revisão geral 
 | T2 | Endereço único + número ausente + versão 0.9.0 | **publicada** 15/11 (PR #6, `f0f67df`) |
 | T2b | Aviso de horário de hoje que já passou | **publicada** 16/11 (PR #7) como **0.10.0** |
 | T3 | Acabamento visual tela a tela | **publicada** 16/11 (PR #8) como **0.11.0** |
-| T3b | Correções da T3: serifa nos títulos de página e nome do cliente sem quebrar no meio da palavra | **vez do Codex** — versão **0.11.1** |
-| R7a | Contatos (clientes em potencial), funil e "virou cliente" + **migração 0024** | depois da T3 (detalhes abaixo) |
+| T3b | Correções da T3 | **publicada** 16/11 (PR #9) como **0.11.1** |
+| R7a | Contatos (clientes em potencial), funil e "virou cliente" + **migração 0024** | **vez do Codex** — versão **0.12.0** |
 | R7b | Visitas: agenda/Hoje, registrar visita com amostras, amostras na produção | depois da R7a |
 | R7c | Custo da prospecção, mensagens de WhatsApp e relatório de conversão | depois da R7b |
 | T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
@@ -202,6 +202,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.11.1 | 16/11 | Títulos de página com a fonte da marca de novo; nome do cliente não quebra no meio da palavra. |
 | 0.11.0 | 16/11 | Visual mais caprichado: telefones formatados, topo do Hoje mais enxuto, títulos e espaçamentos padronizados. |
 | 0.10.0 | 16/11 | Aviso quando o horário de entrega de hoje já passou (pede confirmação). |
 | 0.9.0 | 15/11 | Primeira versão numerada: endereço do B2B em campos, aviso de número ausente e versão visível em Mais. |
@@ -218,3 +219,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 15/11 | 3 | T2 — endereço único, número ausente, versão (PR #6) | publicada em `f0f67df`; 194 E2E nos três navegadores e Segurança verdes. **Revisão geral 3/3:** sem problema real; 2 detalhes visuais anotados na T3. |
 | 15/11 | 4 | T2b — horário que já passou (PR #7) | 200 E2E nos três navegadores e Segurança verdes; publicada com a versão 0.10.0 (bump do Claude, CI completo próprio). |
 | 16/11 | 5 | T3 — acabamento visual (PR #8) | publicada como 0.11.0; 203 E2E e Segurança verdes. Ajustes vistos nas capturas viraram a T3b. |
+| 16/11 | 6 | T3b — correções visuais (PR #9) | publicada como 0.11.1; Validação e Segurança verdes. **Revisão geral 3/3** (T2b, T3, T3b): sem problema real. |
