@@ -5,7 +5,9 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **R7a** (seção R7 abaixo + `CLAUDE_PARA_CODEX.md` §R7). Versão **0.13.0**. Ao terminar, abra o pull request.
+`VEZ: CODEX` — tarefa **R7b** (visitas, registrar visita e amostras na produção; seção R7 + `CLAUDE_PARA_CODEX.md` §R7-3/4/5). Versão **0.14.0**. Ao terminar, abra o pull request.
+
+**Pendência do Felipe em paralelo:** aplicar a migração **0024** (backup → PRE_CHECAGEM → APLICAR_PENDENTES → PRE_CHECAGEM). Depois o Claude confere e, com a confirmação do Felipe, liga `PROSPECTS_ENABLED`.
 
 ## Como funciona
 
@@ -38,7 +40,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **1/3** (T3c).
+Contador de entregas desde a última revisão: **2/3** (T3c, R7a).
 
 ## Limites
 
@@ -57,8 +59,8 @@ Contador de entregas desde a última revisão: **1/3** (T3c).
 | T3 | Acabamento visual tela a tela | **publicada** 16/11 (PR #8) como **0.11.0** |
 | T3b | Correções da T3 | **publicada** 16/11 (PR #9) como **0.11.1** |
 | T3c | Skeleton de carregamento | **publicada** 16/11 (PR #10) como **0.12.0** |
-| R7a | Contatos (clientes em potencial), funil e "virou cliente" + **migração 0024** | **vez do Codex** — versão **0.13.0** |
-| R7b | Visitas: agenda/Hoje, registrar visita com amostras, amostras na produção | depois da R7a |
+| R7a | Contatos, funil e "virou cliente" + migração 0024 | **publicada** 16/11 (PR #11) como **0.13.0**; 0024 aguardando o Felipe aplicar; função desligada |
+| R7b | Visitas: agenda/Hoje, registrar visita com amostras, amostras na produção | **vez do Codex** — versão **0.14.0** (se precisar de migração, 0025 aditiva e com o mesmo cuidado) |
 | R7c | Custo da prospecção, mensagens de WhatsApp e relatório de conversão | depois da R7b |
 | T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
 | T5 | "Novidades" após atualizar + histórico em Mais (ligado a partir da 1.0.0) | a detalhar pelo Claude; última tarefa antes da 1.0 |
@@ -225,6 +227,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.13.0 | 16/11 | Contatos (clientes em potencial) com funil e "virou cliente" — chega desligado; liga depois da migração 0024. |
 | 0.12.0 | 16/11 | Carregamento com "esqueleto" no Hoje e nas listas, no lugar de "Carregando…". Mais tarde no mesmo dia: as folhas fecham arrastando para baixo (publicado pelo Claude sem trocar o número). |
 | 0.11.1 | 16/11 | Títulos de página com a fonte da marca de novo; nome do cliente não quebra no meio da palavra. |
 | 0.11.0 | 16/11 | Visual mais caprichado: telefones formatados, topo do Hoje mais enxuto, títulos e espaçamentos padronizados. |
@@ -246,3 +249,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 16/11 | 6 | T3b — correções visuais (PR #9) | publicada como 0.11.1; Validação e Segurança verdes. **Revisão geral 3/3** (T2b, T3, T3b): sem problema real. |
 | 16/11 | 7 | T3c — skeleton (PR #10) | publicada como 0.12.0; 212 E2E e Segurança verdes. |
 | 16/11 | — | Claude: folhas fecham arrastando para baixo | 215 E2E e Segurança verdes; publicado sem subir o número (fica no histórico da 0.12.0). |
+| 16/11 | 8 | R7a — contatos e funil (PR #11) | publicada como 0.13.0; 221 E2E e Segurança verdes. Migração 0024 só aditiva; consultas antigas protegidas por checagem de schema; flag desligada. |
