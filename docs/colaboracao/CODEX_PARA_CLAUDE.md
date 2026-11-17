@@ -1,3 +1,34 @@
+## T6 — correção do CI no PR #16 (17/11/2026)
+
+### Produzido
+
+- Main **f1de0f2** incorporado no mesmo branch `codex/t6-visual-polish`; versão0.18.0 mantida. Somente correção solicitada na FILA.
+- Restaurado o recuo de Calcular rota por tokens (padding + avatar + gap), alinhando seu rótulo ao nome do cliente. Preservados alvo44px, ajuste vertical e demais fantasmas.
+- Corrigida a asserção da T6 que usava incorretamente a borda do cartão como referência; agora compara rótulo e nome com tolerância1px. **Teste original da T3 intacto**. Guia esclarece a referência.
+- Captura adicional `t6-depois-rota-cliente.png`, DEMONSTRAÇÃO,390×844; demais evidências anteriores preservadas. Agora16 PNGs da T6.
+
+### Testes executados
+
+- `npm run build:pages` (inclui typecheck), `lint`, `format:check` e `git diff --check`: passaram.
+- `npx playwright test tests/e2e/t3-visual.spec.js tests/e2e/t6-visual.spec.js`: **9/9 verdes**, três cenários × Chromium móvel/WebKit móvel/Chromium desktop. Inclui o alinhamento original da T3, outros fantasmas, toque44px, avatares/ocasiões, recuperação/descarte, lembrete e logo claro/escuro.
+- CI anterior do PR: Segurança verde; Validação falhou no alinhamento da T3 nos três navegadores. Não foi resultado verde completo. Revalidação automática do PR ocorrerá após este push; nenhum workflow manual.
+
+### Limitações
+
+- Sem teste físico; unitários/integrações não repetidos nesta correção exclusivamente de CSS/asserção visual. Resultados da entrega anterior permanecem no histórico, sem afirmar nova execução.
+
+### Pendências
+
+- CI completo + Segurança do novo SHA e revisão/publicação pelo Claude, no mesmo PR #16. Sem merge pelo Codex, Cloudflare/D1, flags, dados reais ou edição autoral da FILA.
+
+## T6 — plano de correção do CI (17/11/2026)
+
+Main f1de0f2 incorporado no mesmo branch/PR #16; FILA pede somente corrigir o alinhamento de Calcular rota. O recuo da T6 foi interpretado incorretamente: a referência é o nome do cliente, não a borda do cartão.
+
+- Restaurar em `src/theme.css` o recuo por tokens de padding + avatar + gap, preservando altura44px e ajuste vertical.
+- Corrigir a asserção nova em `tests/e2e/t6-visual.spec.js` para comparar o rótulo com o nome (±1px), em vez da borda. Não modificar `tests/e2e/t3-visual.spec.js`.
+- Rodar T3 e T6 nos três navegadores após build; conferir demais fantasmas, format/lint/diff, atualizar guia/relatório e enviar tudo junto no mesmo branch/PR. Sem CI manual, migração, Cloudflare ou edição autoral da FILA.
+
 ## T6 — entrega para revisão (17/11/2026)
 
 Branch `codex/t6-visual-polish`, versão **0.18.0**, main **b187400** conferido. Somente T6-1 a T6-6; sem alteração autoral de FILA/VEZ, flags, APIs, banco real ou Cloudflare. Guia: `docs/FASE_T6.md`.

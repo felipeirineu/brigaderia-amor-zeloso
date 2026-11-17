@@ -269,13 +269,15 @@ test('T6 botões fantasma e avatar de responsável do lembrete preservam ações
     await expect(route).toBeVisible();
     if (!before) {
       const r = await route.boundingBox(),
-        c = await card.boundingBox();
-      expect(r.x - c.x).toBeLessThanOrEqual(20);
+        name = await card.getByRole('heading').first().boundingBox(),
+        label = await route.locator('.az-button-label').boundingBox();
+      expect(Math.abs(label.x - name.x)).toBeLessThanOrEqual(1);
       expect(r.height).toBeGreaterThanOrEqual(44);
       expect(
         await route.evaluate((el) => getComputedStyle(el).paddingLeft),
       ).toBe('0px');
     }
+    await shot(p, 'rota-cliente', info);
     await p.goto(t.url + '/gestao');
     const more = p.getByRole('link', {
       name: 'Ver todos os lembretes',

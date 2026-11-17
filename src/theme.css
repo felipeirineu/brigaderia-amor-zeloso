@@ -686,7 +686,9 @@ body:has(dialog[open]) {
   flex-shrink: 0;
 }
 .customer-records .route-info {
-  padding-inline: var(--az-space-4);
+  padding-inline-start: calc(
+    var(--az-space-4) + var(--az-avatar-size) + var(--az-space-3)
+  );
 }
 .customer-records .route-info .az-button-icon:empty {
   display: none;
