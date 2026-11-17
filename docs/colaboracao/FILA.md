@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T7** (revisões do Felipe antes da 1.0; detalhes abaixo). Versão **0.19.0**. Ao terminar, abra o pull request.
+`VEZ: CODEX` — tarefa **T8** (workflow manual "Ativar lembretes (manual)"; detalhes abaixo). Versão **0.20.0**. Ao terminar, abra o pull request. **Não rode o workflow.**
 
 **Pendências do Felipe (fora do código):** cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: depois da T8, rodar o workflow "Ativar lembretes (manual)".
 
@@ -44,7 +44,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **1/3** (T6).
+Contador de entregas desde a última revisão: **2/3** (T6, T7).
 
 ## Limites
 
@@ -69,8 +69,8 @@ Contador de entregas desde a última revisão: **1/3** (T6).
 | R7d | "Nova visita" no +, visita a cliente atual e ajuda | **publicada** 17/11 (PR #14) como **0.16.0** |
 | T4+T5 | Modo escuro + "Novidades" (ativa na 1.0.0) | **publicada** 17/11 (PR #15) como **0.17.0** |
 | T6 | Ajustes visuais pedidos pelo Felipe | **publicada** 17/11 (PR #16) como **0.18.0** |
-| T7 | Revisões do Felipe antes da 1.0 (abertura com logo, álcool, alinhamentos, telas compridas, menu +) | **vez do Codex** — versão **0.19.0** |
-| T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | aprovada pelo Felipe; **depois da T7** — versão **0.20.0** |
+| T7 | Revisões do Felipe antes da 1.0 (abertura com logo, álcool, alinhamentos, telas compridas, menu +) | **publicada** 17/11 (PR #17) como **0.19.0** |
+| T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | **vez do Codex** — versão **0.20.0** |
 
 ### T0 — R17
 
@@ -370,6 +370,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.19.0 | 17/11 | Abertura com o logo (claro/escuro), selo de álcool numa linha, menu + em grade 2×2, Clientes alinhado, "Gerar pedidos da semana?" alinhado e ações em pares nas telas compridas. |
 | 0.18.0 | 17/11 | Acabamentos: Clientes/Contatos centralizados, avatar de quem leva com espaço e círculo, botões de escolha mais compactos, aviso de pedido em andamento menor e logo visível no modo escuro. |
 | 0.17.0 | 17/11 | Modo escuro (automático, claro ou escuro em Mais → Preferências) e as Novidades prontas para a 1.0. |
 | 0.16.0 | 17/11 | "Nova visita" direto no +, visita também para cliente atual (novos sabores) e ajuda passo a passo sobre contatos e visitas. |
@@ -407,3 +408,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 17/11 | 12 | T4+T5 — modo escuro e Novidades (PR #15) | O CI do PR foi cancelado ao bater 25 min (sem falha). O Claude subiu o limite do job para 40 min e rodou a bateria: 251 E2E e Segurança verdes. Publicada como 0.17.0. **Revisão geral 3/3** (R7c, R7d, T4+T5): sem problema real; logo no escuro foi para a T6. |
 | 17/11 | — | T6 (PR #16) | CI vermelho (1ª): "Calcular rota" desalinhado do nome (teste T3). Diagnóstico no FILA; vez devolvida ao Codex. Verificações pausadas a pedido do Felipe. |
 | 17/11 | 13 | T6 — ajustes visuais (PR #16) | correção do alinhamento de "Calcular rota"; 257 E2E e Segurança verdes. Publicada como 0.18.0. |
+| 17/11 | 14 | T7 — revisões do Felipe antes da 1.0 (PR #17) | seguiu a prévia aprovada; 269 E2E e Segurança verdes. Publicada como 0.19.0. |
