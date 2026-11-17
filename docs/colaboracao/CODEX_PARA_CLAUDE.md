@@ -1,3 +1,48 @@
+## T8 — entrega para revisão (17/11/2026)
+
+Branch `codex/t8-push-activation`, versão **0.20.0**, main **a285ac4** incorporado/conferido. Somente T8. **Workflow não executado; nenhuma chamada real à Cloudflare, D1, credenciais reais ou criação de environment nesta entrega.** Sem edição autoral de FILA/VEZ; T9 fica para a próxima tarefa.
+
+### Produzido
+
+- **T8-1 concluída:** `.github/workflows/push-activation.yml`, nome Ativar lembretes (manual), somente workflow_dispatch/main, environment lembretes-push, contents:read, concorrência serial sem cancelamento, modos VERIFICAR (padrão)/ATIVAR/REPUBLICAR_AGENDADOR. Boolean confirmo obrigatório com padrãofalse; escritas recusadas semtrue também no script. Token/conta nos mesmos nomes da homologação; APP_URL em vars, sem inputs interpolados no shell, upload de artefatos ou execução por push/PR.
+- **T8-2 concluída:** runner lê metadados por GET na API Cloudflare: Pages produção, acesso a Workers, nomes de secrets, existência e cron. Não lê D1 ou devolve corpos/valores em logs. Confirma acesso de leitura; permissão Edit é configurada pelo responsável, sem escrita de teste.
+- **ATIVAR:** recusa VAPID existente em qualquer destino, inclusive configuração parcial ou chave pública em variável comum. ES256/P-256 em memória pelo helper compartilhado com create-push-keys; subject HTTPS de APP_URL, sem e-mail. Mesmo trio por stdin nos bulks do Wrangler, Worker primeiro (rascunho sem cron se necessário), Pages produção depois, deploy do agendador ao final. Nova conferência de metadados; não declara conclusão se incompleta.
+- **REPUBLICAR_AGENDADOR:** exige agendador e três secrets completos nos dois destinos; somente deploy, sem geração/gravação de chaves. Keep-vars/secrets preservados; DB/nome/id vêm do wrangler da aplicação, cron5min, sem URL workers.dev/preview. Pages, flags e banco não são publicados/alterados pelo runner.
+- **T8-3 concluída:** ::add-mask pelo canal oculto do Actions antes dos subprocessos; logs humanos só mensagens fixas, nomes validados e estados. Stdout/stderr/stack do Wrangler nunca são repassados, nem em erro. Config temporária0600 em diretório0700 fora do checkout, sem chaves, removida em finally. Log interno do Wrangler aponta para symlink de /dev/null; métricas desligadas e sanitização forçada. Chaves somente em memória/stdin, nunca arquivo do workflow. Falha parcial interrompe sem retry/rollback/regeneração.
+- **T8-4 concluída:** testes com HTTP e Wrangler simulados, transporte/stdin/mascaramento, falhas sem vazamento, temporários reais privados/cleanup, sem rede ou operações Cloudflare.
+- **T8-5 concluída:** guia **docs/FASE_R6_LEMBRETES.md** passa a orientar pela interface do GitHub: permissões Edit, environment/secret/variables, VERIFICAR→ATIVAR, republicação habitual do Pages, teste por aparelho. Resultado/erro por passo, identidade existente, falha parcial/propagação e REPUBLICAR explicados. Terminal fica alternativa, usando subject HTTPS; migrações antigas não são reaplicadas neste procedimento.
+- **T8-6 concluída:** versão0.20.0 e notas correspondentes; Novidades segue oculta antes de1.0.0. Nenhuma rota de API, migração, flag ou dado comercial alterado.
+
+### Testes executados
+
+- `npm test -- --maxWorkers=2`: **191 testes /41 arquivos**, incluindo **38 novos** do runner/contrato do workflow. Casos de Actions/main/evento/modo/confirmo, config/URL inválidas, GET sem escrita, produção sem preview, nomes em vez de valores, identidade existente/parcial/plaintext, trio igual por stdin, preservação na republicação, 403/404/500 e erros do filho sem vazamento, cron inconclusivo sem retry, env_vars vazio do Pages, secrets do Worker conferidos separadamente dos bindings, cleanup, geração/assinatura P-256 e escape do canal add-mask. O transporte mockado separa comandos de mascaramento do log humano; o adapter padrão também tem teste com execFileSync simulado/stdio pipe.
+- `npm run test:push`: integração local workerd/D1 e provedores fictícios verdes: interoperabilidade aes128gcm/VAPID, cron repetido/concorrente, autorização/sessão,410, SSRF/redirecionamento, falha incerta sem retry, ICS/alarme, aparelhos e logout/backup/ausência de schema.
+- `npm run test:security`: **274 verificações** verdes; sem novas rotas para acrescentar à matriz.
+- `npm run build:pages` (inclui typecheck), `lint`, `format:check` e `git diff --check`: passaram.
+- Não houve E2E local novo nesta entrega sem mudança de tela; CI completo de três navegadores + Segurança serão automáticos do PR. Nenhum workflow manual disparado, incluindo o de ativação.
+
+### Limitações
+
+- Integração real com a API Cloudflare/conta/permissões e recebimento físico não executados. O responsável confere pelo workflow após revisão/publicação. Comandos foram conferidos na versão instalada do Wrangler e simulados; não foi feito deploy ou teste de escrita real.
+- Metadados confirmam nomes/cron, não provam correspondência de valores opacos preexistentes nem entrega no aparelho. Secrets do Pages exigem republicação habitual do Pages. Propagação do cron pode exigir nova VERIFICAR, sem repetir ATIVAR.
+- Pages/Worker não têm transação única. Falha parcial pode deixar configuração em um destino; interrompe e pede revisão humana, sem apagar/regenerar uma identidade. Sem cópia privada em arquivo no workflow; o helper de terminal continua a produzir seu arquivo local privado somente se o administrador escolher essa alternativa.
+
+### Pendências
+
+- Revisão/publicação pelo Claude e CI completo+Segurança automáticos do PR T8, sem merge pelo Codex.
+- Responsável prepara permissões/environment/APP_URL, executa VERIFICAR e ATIVAR, republica Pages e testa cada aparelho. Essas ações remotas **não foram feitas**. Cadastro dos kits e T9 continuam fora da T8.
+
+## T8 — plano antes do código (17/11/2026)
+
+Main **a285ac4** incorporado em `codex/t8-push-activation`; T7 publicada. FILA libera somente T8, versão0.20.0. **Não executar o workflow nem operações Cloudflare/D1**, criar environment ou ler credenciais reais. T9 fica para outra vez.
+
+- `.github/workflows/push-activation.yml`: somente workflow_dispatch/main, environment lembretes-push, contents:read, concurrency sem cancelamento, VERIFICAR/ATIVAR/REPUBLICAR_AGENDADOR e confirmação para escrita. Mesmo token/conta da homologação por secret/var; APP_URL por variável. Sem interpolação de inputs no shell ou artefatos.
+- `scripts/run-push-activation.mjs`: valida entradas/configuração antes de acesso; leituras de metadados Pages produção + Workers/cron sem mostrar valores. ATIVAR recusa VAPID existente, gera ES256 em memória, mascara pelo canal de comandos do Actions, envia o mesmo trio a Pages/Worker por stdin do Wrangler e publica o agendador com DB da aplicação/cron5min. REPUBLICAR publica só o código, sem gerar/gravar chaves. Preservar secrets no deploy; não publicar o Pages nem mudar flags/banco.
+- Extrair geração de chaves para helper compartilhado com create-push-keys.mjs, mantendo o modo local existente. Configuração temporária fora do checkout, permissões restritas e remoção em finally; chave nunca em arquivo. Saída do Wrangler/API nunca repassada crua e erros fixos sem valores; falhas parciais param sem regeneração/retry automático.
+- Testes `scripts/*.test.mjs` com transporte HTTP e Wrangler simulados, sem rede real: somente leitura, confirmação/main, recusa com chaves em qualquer destino, mesmo par nos dois destinos, stdin sem argumentos/arquivos de chaves, nomes/cron, cleanup/falhas sem vazamento, republicação sem secrets e algoritmo. Validar YAML/guardas do workflow por teste de contrato.
+- Guia `docs/FASE_R6_LEMBRETES.md`: caminho principal pela interface do GitHub (permissões do token, environment/APP_URL, VERIFICAR→ATIVAR, republicar Pages, teste em cada aparelho), resultados e erros curtos. Terminal como alternativa; não instruir repetir migrações já aplicadas. Registrar limites de transação/propagação e recuperação humana de falha parcial.
+- Aceite: unidade, lint/format/typecheck/build, segurança e regressão local de push. Sem rota nova de API. Um envio/PR T8 com relatório e CI completo+Segurança automáticos; sem workflow_dispatch, merge/main ou edição autoral da FILA.
+
 ## T7 — entrega para revisão (17/11/2026)
 
 Branch `codex/t7-pre-release`, versão **0.19.0**, main **cf9728d** incorporado/conferido. Somente T7; sem edição autoral de FILA/VEZ, flags, worker/API, banco real, Cloudflare ou T8. Prévia aprovada `previas/t7-abertura-alcool.png` seguida. Guia e auditoria por tela: **docs/FASE_T7.md**.

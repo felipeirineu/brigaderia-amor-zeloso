@@ -1,0 +1,46 @@
+name: Ativar lembretes (manual)
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Ação para as notificações (VERIFICAR não altera nada)
+        type: choice
+        default: VERIFICAR
+        options:
+          - VERIFICAR
+          - ATIVAR
+          - REPUBLICAR_AGENDADOR
+      confirmo:
+        description: Conferi o guia e autorizo esta alteração na Cloudflare (obrigatório para ATIVAR e REPUBLICAR)
+        type: boolean
+        required: true
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: lembretes-push
+  cancel-in-progress: false
+jobs:
+  configure-push:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: lembretes-push
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Verificar ou configurar os lembretes
+        run: node scripts/run-push-activation.mjs
+        env:
+          PUSH_ACTIVATION_MODE: ${{ inputs.mode }}
+          PUSH_ACTIVATION_CONFIRM: ${{ inputs.confirmo }}
+          APP_URL: ${{ vars.APP_URL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          WRANGLER_SEND_METRICS: 'false'
+# Não executa por push/PR; não migra D1, publica Pages ou muda flags.
+# Não criar steps de echo, debug ou upload de logs/artefatos deste workflow.
