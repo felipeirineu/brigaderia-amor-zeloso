@@ -1,7 +1,7 @@
 {
   "name": "brigaderia-amor-zeloso-gestao",
   "private": true,
-  "version": "0.19.0",
+  "version": "0.20.0",
   "type": "module",
   "engines": {
     "node": ">=22.12"

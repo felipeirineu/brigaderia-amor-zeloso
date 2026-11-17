@@ -10,17 +10,79 @@ No iPhone é necessário **iOS 16.4+ e app instalado na Tela de Início**. Andro
 
 **Adicionar ao calendário do celular** baixa um `.ics` privado com o compromisso e o alarme absoluto escolhido. Abra o arquivo no calendário, confira o alarme e salve. O aplicativo de calendário pode pedir confirmação ou ignorar alarmes importados; confira no aparelho. Não há sincronização automática: após editar/concluir o lembrete, substitua/remova também o evento importado. O mesmo UID/SEQUENCE ajuda calendários que suportam atualização. Ao escolher Não avisar, o arquivo não contém alarme.
 
-## Ativação manual, em passos curtos
+## Ativação pelo GitHub, em passos curtos (T8)
 
-Este código não ativou push, cron, migração ou secrets na Cloudflare. Não é preciso mudar as flags existentes; o catálogo continua desligado. Pages não executa Cron Trigger: usa-se um Worker agendador separado, no mesmo plano Free/conta/banco, sem rota pública de API ou serviço pago. Só prossiga se CI e Segurança do main estiverem verdes.
+**O código da T8 não executa a ativação.** O responsável usa o workflow depois da revisão/publicação e com CI e Segurança do main verdes. Não é preciso terminal, ver ou copiar chaves VAPID. Não muda as flags, o catálogo nem as tabelas. Pages não executa Cron Trigger: o agendador separado `amor-zeloso-lembretes` usa a mesma conta e o mesmo banco, com cron de cinco minutos. Não há serviço pago integrado.
 
-1. **Backup e pré-checagem.** Siga [ATIVACAO.md](ATIVACAO.md) para guardar e conferir a restauração do backup privado. GitHub → Actions → **Homologação D1 (manual)** → **Run workflow** → main → **PRE_CHECAGEM**. Esperado: pendências até `0018_reminder_push.sql`, nenhuma violação de FK. Se houver erro, parar; não executar SQL avulso ou mudar flags.
-2. **Migrações.** Nesse workflow, após conferir o backup e a confirmação exigida, escolher **APLICAR_PENDENTES**. Ele aplica a sequência pendente, incluindo 0016/0017 antes de 0018 quando necessário. Esperado: nenhuma pendência, `foreign_key_violations: 0` e `schema_push_ready: true`. Se falhar, voltar a PRE_CHECAGEM, preservar backup e interromper a ativação. Não reaplicar arquivos antigos manualmente.
-3. **Chaves no seu computador.** Na pasta do projeto atualizado, abrir um terminal. Executar `npm ci`. Depois executar `node scripts/create-push-keys.mjs mailto:SEU_EMAIL`, substituindo SEU_EMAIL pelo contato administrativo verdadeiro. Esperado: mensagem dizendo que `.local/push-secrets.json` foi salvo, sem exibir chaves no terminal. O arquivo tem permissão restrita e é ignorado pelo Git. Guardar cópia em local privado. Se aparecer EEXIST, o arquivo já existe: reutilizar, não apagar/regenerar uma identidade em uso. Se o comando falhar, não prosseguir com valores inventados. Não mandar o arquivo ao chat/GitHub.
-4. **Secrets do Pages.** Abrir o arquivo local em editor privado. No projeto Pages → Settings → Variables and Secrets → ambiente de produção, cadastrar os três nomes `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY` com seus respectivos valores, usando Secret. Nunca colocar a chave privada em variável VITE_, wrangler versionado ou campo do app. Solicitar o novo build/republicação pelo fluxo habitual quando estiver pronto; não foi feito pelo agente. Esperado, após publicação: Preferências mostra ativação disponível. Se continuar indisponível, conferir nomes/ambiente e migração, sem expor os valores em logs.
-5. **Configuração local do agendador.** Executar `mkdir -p .local` e `cp worker/push-scheduler.wrangler.example.jsonc .local/push-scheduler.wrangler.jsonc`. Abrir essa cópia no editor. Substituir somente PREENCHER_BANCO/PREENCHER_ID pelos dados do mesmo banco da aplicação, conferir a conta e o nome livre `amor-zeloso-lembretes`. O caminho `../worker/push-scheduler.ts` deve continuar assim. Não alterar o wrangler da aplicação. Executar `npx wrangler deploy --dry-run --config .local/push-scheduler.wrangler.jsonc`. Esperado: bundle gerado e binding DB para o banco conferido, sem publicar. Se indicar caminho/binding errado, corrigir a cópia local antes de prosseguir.
-6. **Publicar agendador — ação do responsável.** Estando na conta correta, executar `npx wrangler deploy --config .local/push-scheduler.wrangler.jsonc`. Depois `npx wrangler secret bulk .local/push-secrets.json --config .local/push-scheduler.wrangler.jsonc`. Esperado: Worker criado, os três secrets gravados e Cron Trigger `*/5 * * * *`. Confirmar em Workers → amor-zeloso-lembretes → Settings → Triggers/Secrets e binding DB. Se qualquer passo falhar, remover/desabilitar o Cron Trigger pelo painel até corrigir. Não criar novo banco/conta/plano pago. O Worker não oferece API pública (fetch responde 404).
-7. **Teste em cada aparelho.** Abrir app na mesma conta de pessoa responsável. Ativar avisos e usar **Enviar aviso de teste**. Conferir recebimento no Android real e no iPhone instalado; depois criar lembrete de demonstração para alguns minutos adiante. Conferir um aviso por aparelho, horário, responsável e abertura no dia correto; testar o `.ics`, concluir/reabrir e sair da conta (novo aviso não deve chegar ao aparelho desconectado). Se falhar, usar calendário e conferir permissões, instalação iPhone, cron/secrets/binding; não reenviar em loop. Estes ensaios físicos ainda são pendentes.
+Este procedimento pressupõe as migrações do recurso já aplicadas e conferidas pelo fluxo de homologação. Ele **não aplica migrações nem consulta dados do D1**. Se a prontidão do banco não estiver confirmada, interrompa e peça a conferência habitual; não rode novamente os SQL antigos.
+
+### 1. Preparar a permissão da Cloudflare (uma vez)
+
+1. Abra a Cloudflare → perfil → **API Tokens**.
+2. No token usado pela homologação, mantenha as permissões existentes e permita, na conta da brigaderia: **Workers Scripts: Edit** e **Cloudflare Pages: Edit**.
+3. Salve. Não publique o token em comentários, capturas, logs ou chat.
+
+**Esperado:** token com acesso à conta correta e às duas permissões. Se a interface não permitir editar o token existente, o administrador deve substituí-lo nos ambientes que o usam; não tente revelar um secret pelo GitHub. A verificação abaixo confirma acesso de leitura aos dois serviços; não faz uma escrita só para provar a permissão Edit.
+
+### 2. Preparar o ambiente do GitHub (uma vez)
+
+1. No repositório, abra **Settings → Environments → New environment**.
+2. Nome: **`lembretes-push`**.
+3. Em **Environment secrets**, cadastre **`CLOUDFLARE_API_TOKEN`**, usando o mesmo token da homologação guardado de forma privada. Se o valor só existe como secret do GitHub, ele não pode ser revelado: peça ao administrador a configuração do novo ambiente. Chaves VAPID não entram aqui.
+4. Em **Environment variables**, cadastre **`CLOUDFLARE_ACCOUNT_ID`**, com o mesmo identificador da conta de homologação.
+5. Ainda em variables, cadastre **`APP_URL`** = `https://brigaderia-amor-zeloso.pages.dev/` (o endereço HTTPS do aplicativo). Não use e-mail, credenciais ou parâmetros nessa URL.
+
+**Esperado:** um secret e duas variables com esses nomes. Se faltar algo, o workflow para com uma mensagem de configuração, antes de gerar chaves.
+
+### 3. Verificar, sem alterar nada
+
+1. Abra **Actions → Ativar lembretes (manual) → Run workflow**.
+2. Branch: **main**. Em **mode**, deixe **VERIFICAR**. A confirmação pode ficar desmarcada.
+3. Clique no botão de execução e abra o resultado da etapa **Verificar ou configurar os lembretes**.
+
+**Esperado:** acesso de leitura a Pages/Workers confirmado, somente os nomes dos secrets de produção e do agendador, existência do Worker/cron e próximo passo. Na primeira ativação é normal o agendador não existir. Nenhuma chave é gerada; não há escrita, publicação ou arquivo de chave.
+
+**Se der erro:** confira conta, nome do projeto, variável APP_URL e permissões. Não prossiga para ATIVAR enquanto a verificação estiver falhando. Se disser que já existe configuração VAPID, não a regenere. Se o trio estiver completo nos dois destinos, a identidade já existe; use apenas VERIFICAR ou REPUBLICAR_AGENDADOR conforme o próximo passo. Configuração incompleta requer revisão humana, sem copiar valores.
+
+### 4. Ativar uma única vez
+
+1. No mesmo workflow, escolha **main → ATIVAR**.
+2. Marque **confirmo** depois de conferir o guia e a conta.
+3. Execute e aguarde o resultado.
+
+**Esperado:** os três nomes `VAPID_SUBJECT`, `VAPID_PUBLIC_KEY` e `VAPID_PRIVATE_KEY` presentes como secrets tanto no Pages (produção) quanto no Worker; agendador e cron `*/5 * * * *` presentes; mensagem de configuração concluída. O subject é a APP_URL HTTPS. As chaves são geradas em memória, mascaradas pelo canal `::add-mask::` do Actions e enviadas por stdin ao Wrangler. Não são argumentos de comando, arquivo de chave, artefato ou mensagem de log. Não é necessário vê-las ou copiá-las.
+
+ATIVAR recusa qualquer nome VAPID já existente, mesmo se houver apenas uma configuração parcial ou a pública estiver em variável comum. Isso evita trocar a identidade de aparelhos já inscritos. Sem confirmação, recusa antes de consultar a conta.
+
+**Se der erro depois de começar:** não repita ATIVAR. O Pages e o Worker são serviços separados, sem uma transação única; uma parte pode ter sido concluída. Rode somente VERIFICAR e peça revisão humana se a configuração estiver incompleta. O workflow não apaga secrets nem faz rollback/regeneração automática. Não copie erros brutos ou chaves. Se a única pendência for propagação do cron, aguarde alguns instantes e rode VERIFICAR novamente.
+
+### 5. Republicar o Pages
+
+Pelo fluxo habitual de publicação do projeto Pages, solicite um novo build de produção. O próximo publish normal do main também serve. O workflow de ativação não publica o aplicativo Pages.
+
+**Esperado:** com banco pronto e nova publicação, **Preferências → Avisos neste aparelho** oferece ativação. Se continuar indisponível, confira o resultado do VERIFICAR, o ambiente de produção e o build publicado; não troque as chaves.
+
+### 6. Testar em cada aparelho
+
+1. Abra o aplicativo com a conta da pessoa responsável.
+2. Em **Perfil → Preferências → Avisos neste aparelho**, ative os avisos.
+3. Toque em **Enviar aviso de teste** e confira o recebimento.
+4. Repita em cada aparelho. No iPhone: iOS16.4+ e aplicativo instalado na Tela de Início.
+
+**Esperado:** aviso no aparelho correto. Depois, crie um lembrete DEMONSTRAÇÃO para alguns minutos adiante e confira título, horário, responsável e abertura no dia certo. Confira também `.ics`, concluir/reabrir e sair da conta. Se falhar, confira permissão do navegador, instalação do iPhone e rede; use o calendário como alternativa. Não reenvie em loop. O cron verifica a cada cinco minutos e não garante entrega pontual. Esses testes físicos são do responsável e continuam pendentes até serem feitos.
+
+### Atualizar somente o agendador depois da ativação
+
+No workflow, escolha **main → REPUBLICAR_AGENDADOR**, marque confirmo e execute. Ele exige o Worker e o trio de secrets já presentes nos dois destinos; publica o código/binding DB/cron configurado, preservando as chaves. Não gera nem grava secrets. Ao final, faz a mesma verificação de metadados. Se houver configuração parcial, pare e peça revisão; não use ATIVAR como reparo.
+
+### Alternativa técnica pelo terminal
+
+Somente para um administrador que prefere o procedimento manual e guarda a identidade em local privado. O caminho principal acima dispensa estes passos. **Não gere outra identidade se já houver VAPID em algum destino.**
+
+1. Na pasta atualizada do projeto, execute `npm ci` e `node scripts/create-push-keys.mjs https://brigaderia-amor-zeloso.pages.dev/`. Esperado: arquivo privado `.local/push-secrets.json`, sem chaves no terminal. EEXIST significa reutilizar a identidade anterior; não apagar/regenerar. Esse helper local grava um arquivo privado por escolha do administrador; o workflow não usa esse arquivo.
+2. Cadastre os três campos como Secret no Pages de produção e republice pelo fluxo habitual, sem colocar a privada em VITE_, código ou variável pública.
+3. Copie `worker/push-scheduler.wrangler.example.jsonc` para `.local/push-scheduler.wrangler.jsonc`; confira nome e id do mesmo DB em `wrangler.jsonc` e preencha a cópia. Preserve o caminho `../worker/push-scheduler.ts` e o cron. Execute `npx wrangler deploy --dry-run --config .local/push-scheduler.wrangler.jsonc`. Esperado: bundle local e binding DB correto, sem publicar. Se houver erro, pare.
+4. Após conferir a conta, execute `npx wrangler deploy --config .local/push-scheduler.wrangler.jsonc` e `npx wrangler secret bulk .local/push-secrets.json --config .local/push-scheduler.wrangler.jsonc`. Confira Worker, secrets e cron no painel e faça o teste em cada aparelho. Se falhar, desabilite o cron pelo painel até a revisão; não regenere as chaves.
 
 Para interromper envios: desabilitar o Cron Trigger, remover os secrets do Pages e revogar os aparelhos. Preservar tabelas/migrações; não apagar dados nem reverter o schema para desativar o recurso. Avisos já aceitos pelo provedor podem chegar depois.
 

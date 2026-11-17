@@ -10,6 +10,12 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.20.0',
+    items: [
+      'Preparação da ativação de avisos pelo GitHub, com conferência antes de ligar.',
+    ],
+  },
+  {
     version: '0.19.0',
     items: [
       'Abertura com a marca e aviso de álcool mais compacto.',
