@@ -54,7 +54,7 @@ export function ImportCustomers() {
       setBusy(false);
     }
   }
-  async function confirm() {
+  async function submitReviewed() {
     if (pending.current) return;
     pending.current = true;
     setBusy(true);
@@ -157,7 +157,7 @@ export function ImportCustomers() {
           <Button
             className="primary-action"
             disabled={busy || !selected.length}
-            onClick={() => void confirm()}
+            onClick={() => void submitReviewed()}
             variant="primary"
             loading={busy}
           >

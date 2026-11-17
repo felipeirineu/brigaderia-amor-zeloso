@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/confirm-context';
 import { SkeletonList } from '../../components/Skeleton';
 import { KitFlavorNotice } from '../../components/KitItemsEditor';
 import { Link } from 'react-router-dom';
@@ -35,6 +36,8 @@ const blank = (weight = 30, units = 12): Draft => ({
   active: true,
 });
 export function Kits({ role }: { role: string }) {
+  const askConfirmation = useConfirm();
+
   const products =
     useRemote<{ id: string; name: string; variants: { active: number }[] }[]>(
       'products',
@@ -83,10 +86,11 @@ export function Kits({ role }: { role: string }) {
   async function defaultAll(k: Kit) {
     if (
       pending.current ||
-      !confirm(
+      !(await askConfirmation(
         `Usar ${kitLabel(k)} como kit padrão de todos os estabelecimentos ativos? ` +
           'Isso troca o padrão de quem já tinha outro kit. Pessoas físicas não mudam.',
-      )
+        'Confirmar',
+      ))
     )
       return;
     pending.current = true;

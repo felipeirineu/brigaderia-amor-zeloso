@@ -85,14 +85,10 @@ test('kits em pedido padrão: montar, gerar rascunho e reutilizar no celular e P
     expect(orders[0].total_cents).toBe(12345);
     // O editor completo também recebe a composição do modelo, sem exigir variante artificial.
     await p.goto(t.url + '/gestao/pedidos');
-    if (
-      await p
-        .getByRole('button', { name: 'Lista completa', exact: true })
-        .count()
-    )
-      await p
-        .getByRole('button', { name: 'Lista completa', exact: true })
-        .click();
+    // Escolha explícita e aguardada: o padrão agora é simples também para owner.
+    await p
+      .getByRole('button', { name: 'Lista completa', exact: true })
+      .click();
     await p
       .getByRole('combobox', { name: 'Cliente', exact: true })
       .selectOption(customer);

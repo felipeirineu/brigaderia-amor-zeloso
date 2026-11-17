@@ -79,7 +79,7 @@ test('gestão privada: login, cadastros, duas sessões, snapshots e logout', asy
       .getByLabel('Data e hora combinadas (João Pessoa)', { exact: true })
       .fill('2030-01-01T10:00');
     await page
-      .getByRole('combobox', { name: 'Variante', exact: true })
+      .getByRole('combobox', { name: 'Sabor', exact: true })
       .selectOption({ index: 1 });
     await page
       .getByLabel('Quantidade de embalagens', { exact: true })

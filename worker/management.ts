@@ -1,3 +1,4 @@
+import { requireProductArchive } from './product-policy';
 import { prospectCostsReady } from './prospect-costs';
 import { visitsReady } from './visits';
 import { prospectsReady, prospectsSchema, requireCustomer } from './prospects';
@@ -262,6 +263,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       throw new HttpError(409, 'Estorne os recebimentos antes de arquivar.');
   }
   if (req.method === 'DELETE') {
+    if (resource === 'products') requireProductArchive(a.role);
     const data = await body(
       req,
       z.object({ version: z.number().int().positive() }).strict(),
@@ -352,6 +354,8 @@ export async function management(req: Request, env: Env, a: Actor) {
       );
   } else if (resource === 'products') {
     const d = await body(req, productSchema);
+    if (!d.active && (!previous || previous.active))
+      requireProductArchive(a.role);
     if (!d.variants.length && (!(await p1Ready(env)) || !(await kitsReady(db))))
       throw new HttpError(
         503,

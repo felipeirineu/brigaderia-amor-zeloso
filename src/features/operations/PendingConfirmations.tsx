@@ -19,7 +19,7 @@ export function PendingConfirmations({
     >([]);
   const pending = useRef(false),
     keys = useRef(new Map<string, string>());
-  async function confirm() {
+  async function submitReviewed() {
     if (pending.current) return;
     pending.current = true;
     setBusy(true);
@@ -107,7 +107,7 @@ export function PendingConfirmations({
             variant="primary"
             loading={busy}
             disabled={busy || !orders.some((o) => selected[o.id])}
-            onClick={() => void confirm()}
+            onClick={() => void submitReviewed()}
           >
             Confirmar todos os revisados (
             {orders.filter((o) => selected[o.id]).length})

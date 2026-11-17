@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/confirm-context';
 import {
   SkeletonList,
   SkeletonRegion,
@@ -178,6 +179,8 @@ interface PixSettings {
   city: string;
 }
 export function PixSettings() {
+  const askConfirmation = useConfirm();
+
   const view = useRemote<{ data: PixSettings; version: number }>(
       'finance/settings',
     ),
@@ -194,13 +197,14 @@ export function PixSettings() {
       {value && (
         <form
           className="panel data-form"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             if (
               busy ||
-              !confirm(
+              !(await askConfirmation(
                 'Salvar estes dados Pix para as próximas cobranças? Confira a chave e o recebedor.',
-              )
+                'Salvar dados Pix',
+              ))
             )
               return;
             setBusy(true);

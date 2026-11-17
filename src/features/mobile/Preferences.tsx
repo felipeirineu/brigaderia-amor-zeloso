@@ -20,9 +20,8 @@ export function Preferences({
       <h2>Como criar pedidos</h2>
       <div className="chips">
         {[
-          ['auto', 'Automático'],
           ['simple', 'Modo simples'],
-          ['full', 'Modo completo'],
+          ['full', 'Lista completa'],
         ].map(([v, label]) => (
           <Button
             key={v}
@@ -34,8 +33,9 @@ export function Preferences({
         ))}
       </div>
       <p>
-        No automático, a operação usa fotos no celular. O computador abre o modo
-        completo. Esta escolha fica apenas neste navegador.
+        Modo simples: escolhe os sabores tocando nas fotos. Lista completa:
+        mostra todos os produtos numa lista, sem fotos. Esta escolha fica só
+        neste aparelho.
       </p>
     </section>
   );

@@ -3,31 +3,24 @@ import {
   writeLocalPreference,
 } from '../../local-preferences';
 import { useEffect, useState } from 'react';
+import { orderMode } from './order-mode';
 export function useOrderMode(role: string) {
   const key = 'az-order-mode-' + role;
-  const [preference, setPreference] = useState(
-      () => readLocalPreference(key) || 'auto',
-    ),
-    [small, setSmall] = useState(() => matchMedia('(max-width:700px)').matches);
+  const [preference, setPreference] = useState(() =>
+    orderMode(readLocalPreference(key)),
+  );
   useEffect(() => {
-    const media = matchMedia('(max-width:700px)'),
-      change = () => setSmall(media.matches),
-      sync = () => setPreference(readLocalPreference(key) || 'auto');
-    media.addEventListener('change', change);
+    const sync = () => setPreference(orderMode(readLocalPreference(key)));
     window.addEventListener('order-mode', sync);
-    return () => {
-      media.removeEventListener('change', change);
-      window.removeEventListener('order-mode', sync);
-    };
+    return () => window.removeEventListener('order-mode', sync);
   }, [key]);
   return {
-    simple:
-      preference === 'simple' ||
-      (preference === 'auto' && small && role === 'operator'),
+    simple: preference === 'simple',
     preference,
     setPreference: (value: string) => {
-      writeLocalPreference(key, value);
-      setPreference(value);
+      const next = orderMode(value);
+      writeLocalPreference(key, next);
+      setPreference(next);
       window.dispatchEvent(new Event('order-mode'));
     },
   };

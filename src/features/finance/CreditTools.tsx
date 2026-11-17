@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/confirm-context';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
@@ -15,6 +16,8 @@ export function CreditTools({
   root: string;
   onSaved: () => Promise<void>;
 }) {
+  const askConfirmation = useConfirm();
+
   const [amount, setAmount] = useState(''),
     [method, setMethod] = useState<keyof typeof paymentMethods>('pix'),
     [day, setDay] = useState(localDay),
@@ -61,13 +64,14 @@ export function CreditTools({
         <DisclosureSummary>Registrar adiantamento sem pedido</DisclosureSummary>
         <form
           className="data-form"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             try {
               const cents = parsePrice(amount);
               if (
-                confirm(
+                await askConfirmation(
                   'Registrar o adiantamento recebido, sem vincular a pedido?',
+                  'Registrar crédito',
                 )
               )
                 void run('credit', {
@@ -117,13 +121,16 @@ export function CreditTools({
       {data.available_credit_cents > 0 && (
         <form
           className="data-form"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
             try {
               const selected = data.orders.find((o) => o.id === order);
               if (
                 selected &&
-                confirm('Usar crédito neste pedido? Não gera novo recebimento.')
+                (await askConfirmation(
+                  'Usar crédito neste pedido? Não gera novo recebimento.',
+                  'Usar crédito',
+                ))
               )
                 void run('use-credit', {
                   credit_event_id: credit,
@@ -198,7 +205,7 @@ export function CreditTools({
           {c.available_cents > 0 && c.can_refund && (
             <Button
               disabled={busy}
-              onClick={() => {
+              onClick={async () => {
                 const value = prompt(
                     'Valor não alocado a estornar (R$):',
                     (c.available_cents / 100).toFixed(2).replace('.', ','),
@@ -209,7 +216,10 @@ export function CreditTools({
                 if (
                   value &&
                   reason?.trim() &&
-                  confirm('Registrar estorno do crédito não alocado?')
+                  (await askConfirmation(
+                    'Registrar estorno do crédito não alocado?',
+                    'Estornar',
+                  ))
                 )
                   try {
                     void run('refund-credit', {
@@ -236,7 +246,7 @@ export function CreditTools({
             {money(p.amount_cents)}{' '}
             <Button
               disabled={busy}
-              onClick={() => {
+              onClick={async () => {
                 const reason = prompt(
                   'Motivo para liberar esta alocação de crédito:',
                 );
@@ -244,9 +254,10 @@ export function CreditTools({
                 if (
                   reason?.trim() &&
                   selected &&
-                  confirm(
+                  (await askConfirmation(
                     'Devolver a alocação ao saldo a favor? O pedido voltará a ter saldo.',
-                  )
+                    'Confirmar',
+                  ))
                 )
                   void run('release-credit', {
                     credit_event_id: p.event_id,

@@ -167,6 +167,10 @@ test('R15-B monta kit25/15g com cinco sabores no celular e PC preserva preço ao
       reason: 'Revisão DEMONSTRAÇÃO de quantidade',
     });
     const desktop = await pc.newPage();
+    // A regressão cobre o editor completo por escolha explícita, mesmo com o novo padrão simples.
+    await desktop.addInitScript(() =>
+      localStorage.setItem('az-order-mode-owner', 'full'),
+    );
     await desktop.goto(t.url + '/api/access/start');
     await desktop.goto(t.url + '/gestao/pedidos');
     await desktop

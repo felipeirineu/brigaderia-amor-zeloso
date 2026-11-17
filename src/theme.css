@@ -1262,3 +1262,109 @@ textarea::placeholder {
   padding-inline: var(--az-space-2);
   font-size: 14px;
 }
+
+/* T9: nomes completos e centralizados, incluindo sabores futuros. */
+.flavor-name,
+.flavor-add strong,
+.kit-flavor-name strong {
+  text-align: center;
+}
+.flavor-name {
+  justify-content: center;
+}
+.customer-filter .chips {
+  gap: var(--az-space-5);
+}
+@media (max-width: 700px) {
+  .desktop-product-archive {
+    display: none;
+  }
+}
+.product-photo-picker .photo-grid {
+  max-width: 26rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--az-space-2);
+  margin-block: var(--az-space-3);
+}
+.product-photo-picker {
+  padding: var(--az-space-2);
+}
+.product-photo-picker .photo-choice {
+  width: 100%;
+  aspect-ratio: 1;
+  position: relative;
+  padding-block: var(--az-space-1);
+  padding-inline: 0;
+  border: 2px solid transparent;
+  border-radius: var(--az-radius-field);
+  box-shadow: none;
+  background: var(--az-tonal);
+}
+.photo-choice .az-button-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--az-space-1);
+  width: 100%;
+}
+.photo-choice img {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.photo-choice .photo-name {
+  white-space: normal;
+  text-align: center;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 600;
+}
+.product-photo-picker .photo-choice[aria-pressed='true'] {
+  border-color: var(--az-gold);
+  background: var(--az-tonal-strong);
+  color: var(--az-ink);
+}
+.photo-choice .photo-selected {
+  position: absolute;
+  top: var(--az-space-1);
+  right: var(--az-space-1);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  background: var(--az-choc);
+  color: var(--az-cream);
+}
+.profile-photo-centered {
+  display: flex;
+  justify-content: center;
+}
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--az-space-3);
+  margin-bottom: var(--az-space-3);
+}
+.panel-heading h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+.help-trigger.help-trigger-labeled {
+  width: auto;
+  height: auto;
+  min-height: 44px;
+  padding: var(--az-space-2) var(--az-space-3);
+  border-radius: var(--az-radius-pill);
+}
+.active-field {
+  display: flex;
+  align-items: center;
+  gap: var(--az-space-2);
+}
+.active-field > label {
+  margin: 0;
+}

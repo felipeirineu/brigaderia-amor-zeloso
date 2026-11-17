@@ -75,14 +75,10 @@ test('modelo misto gera composição e editor completo altera caixas e sabores',
     expect(generated.items[0].components).toHaveLength(2);
     // Lista completa é o editor clássico mesmo quando aberta em dispositivo móvel.
     await p.goto(t.url + '/gestao/pedidos');
-    if (
-      await p
-        .getByRole('button', { name: 'Lista completa', exact: true })
-        .count()
-    )
-      await p
-        .getByRole('button', { name: 'Lista completa', exact: true })
-        .click();
+    // Escolha explícita e aguardada: o padrão agora é simples também para owner.
+    await p
+      .getByRole('button', { name: 'Lista completa', exact: true })
+      .click();
     await p
       .getByRole('button', {
         name: 'Editar pedido de Cliente DEMONSTRAÇÃO P1',

@@ -3,7 +3,13 @@ import { useId, useRef } from 'react';
 import { CircleHelp, X } from 'lucide-react';
 
 import { helpTexts, type HelpTopic } from '../features/help/texts';
-export function HelpTip({ topic }: { topic: HelpTopic }) {
+export function HelpTip({
+  topic,
+  label,
+}: {
+  topic: HelpTopic;
+  label?: string;
+}) {
   const trigger = useRef<HTMLButtonElement>(null),
     dialog = useRef<HTMLDialogElement>(null),
     id = useId();
@@ -12,11 +18,12 @@ export function HelpTip({ topic }: { topic: HelpTopic }) {
     <>
       <Button
         type="button"
-        className="help-trigger"
+        className={'help-trigger' + (label ? ' help-trigger-labeled' : '')}
         ref={trigger}
         aria-label={`Ajuda: ${text.title}`}
         onClick={() => dialog.current?.showModal()}
       >
+        {label && <span>{label}</span>}
         <CircleHelp size={20} aria-hidden="true" />
       </Button>
       <dialog

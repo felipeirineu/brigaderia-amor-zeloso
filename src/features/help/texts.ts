@@ -1,4 +1,12 @@
 export const helpTexts = {
+  customerActive: {
+    title: 'Cliente ativo',
+    text: 'Marcado: o cliente aparece nas listas e em novos pedidos. Desmarcado: fica arquivado (some das listas, mas o histórico e os pedidos continuam guardados). Dá para reativar depois.',
+  },
+  productActive: {
+    title: 'Produto ativo',
+    text: 'Marcado: o produto aparece nas listas e em novos pedidos. Desmarcado: fica arquivado (some das listas, mas o histórico e os pedidos continuam guardados). Dá para reativar depois.',
+  },
   visits: {
     title: 'Contatos e visitas de apresentação',
     text: 'Contato é um estabelecimento que ainda não compra. O cadastro e o histórico são privados.',

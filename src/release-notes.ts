@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.21.0',
+    items: [
+      'Confirmações em uma folha do app e fotos dos produtos em uma grade compacta.',
+      'Modo simples como padrão, com Lista completa disponível em Preferências.',
+    ],
+  },
+  {
     version: '0.20.0',
     items: [
       'Preparação da ativação de avisos pelo GitHub, com conferência antes de ligar.',

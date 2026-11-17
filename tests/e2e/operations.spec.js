@@ -214,12 +214,15 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
         name: 'Revisado: Cliente DEMONSTRAÇÃO operacional',
       })
       .check();
-    page.once('dialog', (d) => d.accept());
     await page
       .getByRole('button', {
         name: 'Confirmar todos os revisados (1)',
         exact: true,
       })
+      .click();
+    await page
+      .getByRole('dialog', { name: 'Tem certeza?', exact: true })
+      .getByRole('button', { name: 'Confirmar', exact: true })
       .click();
     await expect(
       page.getByRole('status').filter({ hasText: 'pedido(s) confirmado(s)' }),

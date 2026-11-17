@@ -154,7 +154,7 @@ export function ImportCatalog() {
     }
   }
 
-  async function confirm() {
+  async function submitReviewed() {
     if (!preview || pending.current) return;
     pending.current = true;
     setBusy(true);
@@ -373,7 +373,7 @@ export function ImportCatalog() {
             variant="primary"
             loading={busy}
             disabled={busy || preview.problems.length > 0 || !total}
-            onClick={() => void confirm()}
+            onClick={() => void submitReviewed()}
           >
             {total
               ? `Confirmar cadastro de ${total} itens`

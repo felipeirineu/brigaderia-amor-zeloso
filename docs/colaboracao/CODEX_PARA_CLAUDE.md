@@ -1,3 +1,55 @@
+## T9 — entrega para revisão (17/11/2026)
+
+Branch `codex/t9-interface-refinements`, versão **0.21.0**, main **e939ec8** incorporado/conferido. Somente T9, prévia de Foto do produto seguida. Guia: **docs/FASE_T9.md**. Sem edição autoral de FILA/VEZ, flags, migração, operações Cloudflare/D1, credenciais reais ou execução do workflow de ativação.
+
+### Produzido
+
+- **T9-1 concluída:** nomes inteiros centralizados em cartões/botões de sabor, inclusive quebra de linha e montagem. Teste com sabor longo DEMONSTRAÇÃO, sem truncar.
+- **T9-2 concluída:** ConfirmSheet/contexto/hook substituem **19 confirm nativos**, mantendo textos, validações, motivos, CAS/idempotência e autorização. Tem certeza?, Cancelar e ação danger. Promise aguardada em cada consumidor; segunda solicitação pendente retornafalse. Escape/gesto/fechar, navegação, pagehide, offline detectado e desmontagem/expiração cancelam. Foco inicial seguro em Cancelar, restaurado ao gatilho conectado. Provider existe na gestão autenticada; prompts de preenchimento de motivos/valores permanecem como antes, fora da substituição solicitada.
+- **T9-3 concluída:** botão Arquivar produto só owner/tela>700px. Servidor exige owner no DELETE e nas tentativas de criar/alterar produto para inativo por POST/PUT, depois do isolamento de tenant. Edição comum de produto ativo continua permitida. Unidade da política e matriz de segurança ampliada com401/404/403, bypass e preservação do registro/histórico.
+- **T9-4 concluída:** ajuda do Ativo de cliente/produto com o texto pedido e reativação; ajuda fora do label preserva o nome acessível do checkbox e evita alternância acidental.
+- **T9-5 concluída:** Cadastrar novo cliente + Lista de clientes antes dos cartões do assistente.
+- **T9-6 concluída:** Clientes/Contatos com gap20px (space5), mesma linha central.
+- **T9-7 concluída:** Agenda/Prospecção dizem no horário local. Timezone de negócio e cálculos não mudaram.
+- **T9-8 concluída:** foto conforme prévia: Sugerir/Sem foto em par, grade3 de cartões quadrados iguais, foto redonda, nome centralizado e inteiro, contorno/visto no selecionado e dica pequena. As nove opções atuais cabem em até2 linhas, sem line-clamp/reticências. Escolha não grava antes de Salvar. Largura limitada da grade no computador.
+- **T9-9 concluída:** Ajuda com texto/ícone; formulário no cartão escolhido em Mensagens, foco no textarea, Cancelar sem salvar e retorno de foco ao botão de edição.
+- **T9-10 concluída:** foto/inicial centralizada; ajuda de Avisos à direita do título, em uma linha.
+- **T9-11 concluída:** simples padrão para ambos os papéis, em qualquer largura; auto antigo/ausente/inválido passa a simples, full persistido preservado como Lista completa. Preferência continua por aparelho/perfil, sem dados de pedido. Automático de Aparência preservado. Seletor de sabor do pedido completo usa Sabor; payload/identificadores permanecem iguais.
+- **T9-12 concluída:** versão0.21.0, notas e **19 capturas** t9-*, só DEMONSTRAÇÃO em390×844:8 pares antes/depois e3 extras depois (confirmação, ajuda de mensagens e avisos). Novidades segue oculta antes de1.0.0.
+
+### Testes executados
+
+- `npm test -- --maxWorkers=2`: **194 testes /44 arquivos**, incluindo política de arquivamento com403 pt-BR, normalização de preferência e contrato AST que recusa confirm nativo/chamada de confirmação sem await.
+- `npm run test:security`: **285 verificações** verdes (+11 da regra de produtos); `test:api`: **28 verificações** verdes de login, CAS, snapshots, auditoria/arquivamento, catálogo bloqueado e sessão.
+- Tipos/build:pages, lint, format:check, diff --check e assets/contraste AA (`test:brand`): verdes.
+- **157 execuções E2E distintas verdes nas rodadas finais correspondentes:**95 cenários no Chromium móvel,31 cenários selecionados no WebKit móvel e os mesmos31 no Chromium desktop. A rodada final selecionada passou **93/93** nos três projetos, incluindo os5 cenários novos da T9 em cada um.
+- A rodada móvel completa inicial passou91/95. Quatro expectativas legadas foram ajustadas: Lista completa é escolhida aguardando o botão (sem consultar count antes de carregar); skeleton define o modo antes de reter a API; rolagem seleciona o corpo direto da folha; geometria considera grupos visíveis, excluindo os diálogos fechados. Todas as quatro repassadas na rodada final93/93, preservando as verificações de fluxo/rolagem/semântica.
+- T9: confirmação Cancelar/Escape/pagehide/expiração =zero DELETE; aprovação =um DELETE e registro inativo no D1 efêmero. Papel/largura, preferência auto/full/default, foco/cancelamento de mensagem, ajuda, grade/nome completo/foto sem salvar e centralização também verificados.
+- Regressões incluem financeiros/recebimento/fechamento/Pix/despesa/estorno com escolha explícita da folha, kit padrão cancelado/aprovado, kits/recorrências/mistos e edição PC, sessão/rascunho, fotos privadas, CSP, AppUpdate, T1/T3/T6/T7/skeleton e pedido móvel. Motivos de prompts nativos continuam simulados nos testes que os exigem.
+
+### Limitações
+
+- Sem conferência física em Android/iPhone. Preenchimentos de motivo/valor via prompt nativo não foram redesenhados; apenas as confirmações foram migradas, conforme escopo.
+- A largura da tela é apresentação, não autorização; o servidor usa o perfil da sessão. A folha não substitui os controles de CAS/idempotência/permissões.
+- Nenhum dado/ação real e nenhum workflow manual nesta sessão. A rodada completa dos três navegadores continua sendo a automática do PR; localmente houve a bateria móvel completa e regressões selecionadas nos demais.
+
+### Pendências
+
+- CI completo+Segurança automáticos do PR T9 e revisão/publicação pelo Claude. Main atual e939ec8 conferido antes do envio consolidado. Sem merge/avanço do main pelo Codex.
+- Cadastro dos kits e ativação/testes reais dos avisos permanecem com o responsável, fora da T9.
+
+## T9 — plano antes do código (17/11/2026)
+
+Main **e939ec8** como base de `codex/t9-interface-refinements`; T8 publicada. Somente T9, versão0.21.0. Prévia `previas/t9-foto-produto.png` lida/aprovada: grade3, nome inteiro centralizado, par de ações, contorno e visto. Sem edição de FILA, flags, migração, Cloudflare/D1 ou ativação do workflow.
+
+- Registrar capturas DEMONSTRAÇÃO antes/depois de foto do produto, sabores com nome longo, clientes, mensagens, preferências, modos e confirmação. Mesmos fixtures locais, sem dados comerciais reais.
+- T9-1/8: tokens/theme para nomes de sabores centralizados e picker de foto seguindo a prévia, sem reticências, imagem redonda e indicação selecionada; manter seleção só ao salvar produto.
+- T9-2: ConfirmSheet/contexto/hook assíncrono compartilhado, diálogo help-sheet com Cancelar e ação danger. Migrar todos os confirm nativos mantendo textos, motivos, validações, CAS/idempotência e sem API antes da escolha positiva. Escape/gesto/fechar/navegação/expiração desmontando a gestão cancelam a pendência; segunda solicitação não duplica. Prompts de motivo existentes não fazem parte da substituição. Adaptar os E2E que aceitavam confirm nativo para escolher a folha explicitamente.
+- T9-3: botão de arquivar produto só owner/tela larga. Política testada no backend para DELETE e tentativa de arquivar por active=false em POST/PUT, após isolamento do tenant; sem restringir edições comuns. Matriz de segurança cobre403 e bypass, mantendo401/404 e CAS.
+- T9-4/5/6/7/9/10: ajuda de ativo para cliente/produto, Cadastrar novo cliente + Lista de clientes, gap20px, horário local nos textos, ajuda rotulada em Mensagens e edição no cartão escolhido com foco/cancelamento; avatar central e ajuda dos avisos no título.
+- T9-11: simple padrão em qualquer papel/tela, auto antigo passa a simple; full preservado como Lista completa, sem alterar a preferência de aparência Automático. Label Sabor somente no seletor do pedido completo. Testes legados que exigem o editor completo passam a escolher esse modo explicitamente.
+- Aceite: unidade da política/modo/contrato sem confirm nativo; E2E confirmação/cancelar sem API/foco/Escape, roles/viewport/bypass, foto sem gravação prematura, textos/ajudas/mensagem e default/migração de modo, além das regressões financeiras/kits. Tipos/lint/format/build/security e testes locais apropriados. Um envio/PR T9, sem CI manual ou merge no main; relatório e revisão pelo Claude.
+
 ## T8 — entrega para revisão (17/11/2026)
 
 Branch `codex/t8-push-activation`, versão **0.20.0**, main **a285ac4** incorporado/conferido. Somente T8. **Workflow não executado; nenhuma chamada real à Cloudflare, D1, credenciais reais ou criação de environment nesta entrega.** Sem edição autoral de FILA/VEZ; T9 fica para a próxima tarefa.

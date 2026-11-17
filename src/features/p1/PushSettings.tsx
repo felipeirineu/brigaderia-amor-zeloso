@@ -46,9 +46,10 @@ export function PushSettings() {
   const device = view.data?.subscriptions.find((s) => s.id === current);
   return (
     <section className="panel" id="avisos">
-      <h2>
-        Avisos neste aparelho <HelpTip topic="push" />
-      </h2>
+      <div className="panel-heading">
+        <h2>Avisos neste aparelho</h2>
+        <HelpTip topic="push" />
+      </div>
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
       {view.data &&

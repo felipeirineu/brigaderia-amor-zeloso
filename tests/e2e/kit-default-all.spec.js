@@ -40,8 +40,11 @@ test('kit padrão em todos os estabelecimentos com confirmação', async ({
       exact: true,
     });
     // Cancelar a confirmação não muda nada.
-    p.once('dialog', (d) => d.dismiss());
     await button.click();
+    await p
+      .getByRole('dialog', { name: 'Tem certeza?', exact: true })
+      .getByRole('button', { name: 'Cancelar', exact: true })
+      .click();
     const kitOf = async () =>
       (
         await call(
@@ -51,8 +54,11 @@ test('kit padrão em todos os estabelecimentos com confirmação', async ({
         )
       ).data.default_kit_id ?? null;
     expect(await kitOf()).toBeNull();
-    p.once('dialog', (d) => d.accept());
     await button.click();
+    await p
+      .getByRole('dialog', { name: 'Tem certeza?', exact: true })
+      .getByRole('button', { name: 'Confirmar', exact: true })
+      .click();
     await expect(
       p.getByText('Kit 12 · 30 g agora é o padrão de 1 estabelecimento.', {
         exact: true,

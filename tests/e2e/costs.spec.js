@@ -55,10 +55,18 @@ test('relatórios CSV, despesa/estorno, ficha/preço e compras privadas', async 
     await page
       .getByRole('button', { name: 'Registrar despesa', exact: true })
       .click();
+    await page
+      .getByRole('dialog', { name: 'Tem certeza?', exact: true })
+      .getByRole('button', { name: 'Registrar despesa', exact: true })
+      .click();
     await expect(
       page.getByRole('heading', { name: /^Despesa · R\$\s2,00$/ }),
     ).toBeVisible();
     await page.getByRole('button', { name: /^Estornar despesa / }).click();
+    await page
+      .getByRole('dialog', { name: 'Tem certeza?', exact: true })
+      .getByRole('button', { name: 'Estornar', exact: true })
+      .click();
     await expect(
       page.getByRole('heading', { name: /^Estorno de despesa · R\$\s2,00$/ }),
     ).toBeVisible();

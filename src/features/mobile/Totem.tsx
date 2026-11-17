@@ -1005,8 +1005,9 @@ export function Totem({
             variant="ghost"
             className="ghost-inline"
           >
-            Cadastrar cliente
+            Cadastrar novo cliente
           </Button>
+          <h2>Lista de clientes</h2>
           {!customers.data && !customers.error && (
             <SkeletonList label="Carregando clientes…" />
           )}

@@ -26,6 +26,97 @@ try {
   const { call, owner, operator, outside, customer, makeOrder } =
     await demoProject(t);
   const order = await makeOrder();
+  // T9: arquivar produto é só do administrador, inclusive pelo campo active.
+  const archived = await call('products', {
+    name: 'Produto DEMONSTRAÇÃO arquivo',
+    variants: [],
+  });
+  const archivePath = 'products/' + archived.id;
+  const archiveData = { version: 1 };
+  for (const [cookie, expected] of [
+    [undefined, 401],
+    [outside, 404],
+    [operator, 403],
+  ]) {
+    const response = await t.request(archivePath, {
+      cookie,
+      method: 'DELETE',
+      data: archiveData,
+      key: crypto.randomUUID(),
+    });
+    ok(
+      response.status === expected,
+      'T9 DELETE produto protegido: ' + expected,
+    );
+    if (expected === 403)
+      ok(
+        (await response.json()).error ===
+          'Somente o administrador pode arquivar produtos.',
+        'T9 erro de arquivamento em pt-BR',
+      );
+  }
+  const inactiveProduct = {
+    name: 'Produto DEMONSTRAÇÃO arquivo',
+    variants: [],
+    version: 1,
+    active: false,
+  };
+  for (const [cookie, expected] of [
+    [undefined, 401],
+    [outside, 404],
+    [operator, 403],
+  ])
+    ok(
+      (
+        await t.request(archivePath, {
+          cookie,
+          method: 'PUT',
+          data: inactiveProduct,
+          key: crypto.randomUUID(),
+        })
+      ).status === expected,
+      'T9 PUT produto protegido: ' + expected,
+    );
+  ok(
+    (
+      await t.request('products', {
+        cookie: operator,
+        method: 'POST',
+        data: {
+          name: 'Produto DEMONSTRAÇÃO inativo',
+          variants: [],
+          active: false,
+        },
+        key: crypto.randomUUID(),
+      })
+    ).status === 403,
+    'T9 POST inativo não contorna permissão',
+  );
+  ok(
+    (await call(archivePath, undefined, 'GET')).active === 1,
+    'T9 tentativas recusadas não arquivaram',
+  );
+  await call(
+    archivePath,
+    { ...inactiveProduct, active: true },
+    'PUT',
+    operator,
+  );
+  ok(
+    (await call(archivePath, undefined, 'GET')).version === 2,
+    'T9 operadora ainda pode editar produto ativo',
+  );
+  await call(archivePath, { version: 2 }, 'DELETE');
+  ok(
+    (
+      await t.db
+        .prepare('SELECT active FROM products WHERE organization_id=? AND id=?')
+        .bind(t.org, archived.id)
+        .first()
+    ).active === 0,
+    'T9 administrador arquiva sem apagar histórico',
+  );
+
   // R7a: todas as rotas novas exigem sessão/tenant; operadora pode acompanhar contatos.
   const contact = await call(
     'prospects',

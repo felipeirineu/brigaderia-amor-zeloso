@@ -86,12 +86,12 @@ test('T6 clientes, chips com avatar/ocasião, seleção em andamento e logo escu
       );
     await p.goto(t.url + '/gestao/pedidos?novo=1');
     await expect(
-      p.getByRole('link', { name: 'Cadastrar cliente', exact: true }),
+      p.getByRole('link', { name: 'Cadastrar novo cliente', exact: true }),
     ).toBeVisible();
     await shot(p, 'novo-pedido', info);
     if (!before) {
       const ghost = p.getByRole('link', {
-        name: 'Cadastrar cliente',
+        name: 'Cadastrar novo cliente',
         exact: true,
       });
       expect(

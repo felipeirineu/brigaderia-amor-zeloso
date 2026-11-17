@@ -49,7 +49,10 @@ test('Novo pedido prioriza busca/cadastro e preserva iniciais com Voltar visíve
         name: 'Buscar cliente',
         exact: true,
       }),
-      create = p.getByRole('link', { name: 'Cadastrar cliente', exact: true }),
+      create = p.getByRole('link', {
+        name: 'Cadastrar novo cliente',
+        exact: true,
+      }),
       tiles = p.locator('.customer-tiles .customer-tile');
     await expect(tiles).toHaveCount(16);
     await expect(search).toBeInViewport();
@@ -238,7 +241,7 @@ test('Folha de cliente contém a rolagem e busca não passa para outro cadastro'
         () => getComputedStyle(document.documentElement).overflowY,
       ),
     ).toBe('hidden');
-    await fresh.locator('.sheet-body').evaluate((el) => {
+    await fresh.locator(':scope > .sheet-body').evaluate((el) => {
       el.scrollTop = el.scrollHeight;
     });
     await fresh.getByRole('button', { name: 'Cancelar', exact: true }).focus();

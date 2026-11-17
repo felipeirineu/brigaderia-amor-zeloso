@@ -47,7 +47,7 @@ export function Agenda({ visits = false }: { visits?: boolean }) {
     <>
       <h1 className="mobile-context-title">Agenda</h1>
       <p>
-        Semana/mês no fuso de Fortaleza. Produção é planejada para o prazo do
+        Semana/mês no horário local. Produção é planejada para o prazo do
         pedido, sem horário de produção inventado.
       </p>
       <Failure message={error || view.error} />

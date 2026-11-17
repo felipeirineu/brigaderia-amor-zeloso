@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/confirm-context';
 import { SkeletonList } from '../../components/Skeleton';
 import type { CustomerType } from '../../../shared/customer-order';
 import { StaffIdentity } from '../field/FieldContext';
@@ -72,6 +73,8 @@ export interface View {
   }[];
 }
 export function Account() {
+  const askConfirmation = useConfirm();
+
   const { id } = useParams(),
     [search] = useSearchParams(),
     view = useRemote<View>(`finance/customers/${id}`);
@@ -180,12 +183,13 @@ export function Account() {
           <form
             id="receive-payment"
             className="panel data-form"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               if (
-                !confirm(
+                !(await askConfirmation(
                   'Registrar este recebimento informado? Isso não consulta o banco nem confirma Pix automaticamente.',
-                )
+                  'Registrar recebimento',
+                ))
               )
                 return;
               void run(async () => {
@@ -382,10 +386,11 @@ export function Account() {
                   !o.closing_id && (
                     <Button
                       disabled={busy}
-                      onClick={() => {
+                      onClick={async () => {
                         if (
-                          confirm(
+                          await askConfirmation(
                             'Gerar fechamento das entregas deste período com a mesma condição? O extrato será preservado.',
+                            'Gerar fechamento',
                           )
                         )
                           void run(async () => {
@@ -466,15 +471,16 @@ export function Account() {
                 {data.actor.role === 'owner' && c.status === 'active' && (
                   <Button
                     disabled={busy}
-                    onClick={() => {
+                    onClick={async () => {
                       const reason = prompt(
                         'Motivo para anular este fechamento:',
                       );
                       if (
                         reason?.trim() &&
-                        confirm(
+                        (await askConfirmation(
                           'Anular e liberar os pedidos para novo fechamento? O extrato será preservado.',
-                        )
+                          'Anular fechamento',
+                        ))
                       )
                         void run(async () => {
                           await api(
@@ -518,15 +524,16 @@ export function Account() {
                   !data.events.some((x) => x.reversal_of === e.id) && (
                     <Button
                       disabled={busy}
-                      onClick={() => {
+                      onClick={async () => {
                         const reason = prompt(
                           'Motivo do estorno integral deste recebimento:',
                         );
                         if (
                           reason?.trim() &&
-                          confirm(
+                          (await askConfirmation(
                             'Registrar estorno? O histórico original será mantido.',
-                          )
+                            'Estornar',
+                          ))
                         )
                           void run(async () => {
                             await api(

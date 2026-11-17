@@ -420,7 +420,7 @@ export function ProspectReportPage() {
   return (
     <>
       <h1>Prospecção</h1>
-      <p>Visitas registradas e conversões, no fuso de Fortaleza.</p>
+      <p>Visitas registradas e conversões, no horário local.</p>
       <div className="prospect-actions">
         <label>
           De

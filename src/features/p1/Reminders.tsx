@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/confirm-context';
 import { SkeletonList } from '../../components/Skeleton';
 import { ReminderAlerts, ReminderDelivery } from './ReminderAlerts';
 import { emptyAlert, editAlert, alertPayload } from './reminder-form';
@@ -158,6 +159,8 @@ export function TodayReminders({ day }: { day: string }) {
   );
 }
 export function Reminders() {
+  const askConfirmation = useConfirm();
+
   const view = useRemote<Reminder[]>('p1/reminders'),
     customers = useRemote<{ id: string; name: string }[]>('customers'),
     [editing, setEditing] = useState<Reminder | null>(null),
@@ -330,8 +333,10 @@ export function Reminders() {
             </Button>
             <Button
               disabled={busy}
-              onClick={() => {
-                if (confirm('Arquivar este lembrete?'))
+              onClick={async () => {
+                if (
+                  await askConfirmation('Arquivar este lembrete?', 'Arquivar')
+                )
                   void save(
                     'p1/reminders/' + r.id,
                     payload(r, !!r.done, false),

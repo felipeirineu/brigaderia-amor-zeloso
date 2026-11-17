@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/confirm-context';
 import { AvatarChip } from '../../components/AvatarChip';
 import { SkeletonList } from '../../components/Skeleton';
 import { occasionLabel } from '../../../shared/customer-order';
@@ -41,6 +42,8 @@ export function OrderDetail({
   mobile?: boolean;
   p1?: boolean;
 }) {
+  const askConfirmation = useConfirm();
+
   const courierLabels = useCourierLabels(),
     field = useField(),
     [trip, setTrip] = useState(false);
@@ -512,15 +515,16 @@ export function OrderDetail({
             {order.status === 'confirmed' && (
               <Button
                 disabled={busy}
-                onClick={() => {
+                onClick={async () => {
                   const reason = prompt(
                     'Motivo para ajustar o pedido confirmado:',
                   );
                   if (
                     reason?.trim() &&
-                    confirm(
+                    (await askConfirmation(
                       'Voltar para aguardando confirmação? Revise os itens em Pedidos e confirme novamente.',
-                    )
+                      'Reabrir pedido',
+                    ))
                   )
                     void advance('awaiting_confirmation', reason.trim());
                 }}
@@ -532,11 +536,14 @@ export function OrderDetail({
             {!final && (
               <Button
                 disabled={busy}
-                onClick={() => {
+                onClick={async () => {
                   const reason = prompt('Motivo do cancelamento:');
                   if (
                     reason?.trim() &&
-                    confirm('Cancelar o pedido? O histórico será preservado.')
+                    (await askConfirmation(
+                      'Cancelar o pedido? O histórico será preservado.',
+                      'Cancelar pedido',
+                    ))
                   )
                     void advance('cancelled', reason.trim());
                 }}

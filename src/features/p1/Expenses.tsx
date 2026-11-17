@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/confirm-context';
 import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
 import { useRef, useState } from 'react';
@@ -15,6 +16,8 @@ const categories = {
   other: 'Outro',
 };
 export function Expenses() {
+  const askConfirmation = useConfirm();
+
   const [from, setFrom] = useState(() => localDay().slice(0, 8) + '01'),
     [to, setTo] = useState(localDay),
     [amount, setAmount] = useState(''),
@@ -133,13 +136,14 @@ export function Expenses() {
           {view.data.role === 'owner' && (
             <form
               className="panel data-form"
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
                 try {
                   const cents = parsePrice(amount);
                   if (
-                    confirm(
+                    await askConfirmation(
                       'Registrar esta despesa já realizada? Isso não paga ou transfere dinheiro.',
+                      'Registrar despesa',
                     )
                   )
                     void run('p1/expenses', {
@@ -258,13 +262,14 @@ export function Expenses() {
                 !e.reversed && (
                   <Button
                     disabled={busy}
-                    onClick={() => {
+                    onClick={async () => {
                       const reason = prompt('Motivo do estorno da despesa:');
                       if (
                         reason?.trim() &&
-                        confirm(
+                        (await askConfirmation(
                           'Registrar estorno integral? O original será mantido.',
-                        )
+                          'Estornar',
+                        ))
                       )
                         void run('p1/expenses/' + e.id, { reason });
                     }}

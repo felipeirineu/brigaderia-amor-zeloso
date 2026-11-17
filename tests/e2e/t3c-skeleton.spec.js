@@ -160,6 +160,10 @@ test('T3c listas auxiliares, detalhes, sabores e erros mantêm sua semântica', 
   try {
     const { customer, makeOrder } = await demoProject(t);
     const order = await makeOrder(fortalezaDay() + 'T14:00:00-03:00');
+    // Exercita o modo simples explicitamente, antes de segurar a API de clientes.
+    await ctx.addInitScript(() =>
+      localStorage.setItem('az-order-mode-owner', 'simple'),
+    );
     const page = await ctx.newPage();
     await page.goto(t.url + '/api/access/start');
     for (const [path, endpoint, label] of [
@@ -187,10 +191,6 @@ test('T3c listas auxiliares, detalhes, sabores e erros mantêm sua semântica', 
         await route.continue();
       });
       await page.goto(t.url + path, { waitUntil: 'domcontentloaded' });
-      if (path.includes('novo=1'))
-        await page
-          .getByRole('button', { name: 'Modo simples', exact: true })
-          .click();
       const skeleton = page.getByRole('region', {
         name: `Carregando ${label}…`,
         exact: true,

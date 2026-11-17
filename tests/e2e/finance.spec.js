@@ -86,7 +86,7 @@ test('B2B, pedido preenchido, sinal, fechamento, Pix assistido e tutorial sem gr
       page.getByLabel('Data e hora combinadas (João Pessoa)'),
     ).toHaveValue('');
     await expect(
-      page.getByRole('combobox', { name: 'Variante', exact: true }),
+      page.getByRole('combobox', { name: 'Sabor', exact: true }),
     ).toHaveValue('');
     await page
       .getByRole('combobox', { name: 'Cliente', exact: true })
@@ -109,6 +109,10 @@ test('B2B, pedido preenchido, sinal, fechamento, Pix assistido e tutorial sem gr
       .getByRole('combobox', { name: 'Tipo', exact: true })
       .selectOption('deposit');
     await page
+      .getByRole('button', { name: 'Registrar recebimento', exact: true })
+      .click();
+    await page
+      .getByRole('dialog', { name: 'Tem certeza?', exact: true })
       .getByRole('button', { name: 'Registrar recebimento', exact: true })
       .click();
     await expect(page.getByRole('status')).toContainText(
@@ -148,6 +152,10 @@ test('B2B, pedido preenchido, sinal, fechamento, Pix assistido e tutorial sem gr
         exact: true,
       })
       .click();
+    await page
+      .getByRole('dialog', { name: 'Tem certeza?', exact: true })
+      .getByRole('button', { name: 'Gerar fechamento', exact: true })
+      .click();
     await expect(page.getByRole('status')).toContainText('Fechamento gerado');
     await page
       .getByRole('button', { name: 'Cobrar fechamento no WhatsApp' })
@@ -166,6 +174,10 @@ test('B2B, pedido preenchido, sinal, fechamento, Pix assistido e tutorial sem gr
     await page.getByLabel('Nome do recebedor').fill('DEMONSTRACAO');
     await page.getByLabel('Cidade do recebedor').fill('CIDADE TESTE');
     await page.getByRole('button', { name: 'Salvar configuração Pix' }).click();
+    await page
+      .getByRole('dialog', { name: 'Tem certeza?', exact: true })
+      .getByRole('button', { name: 'Salvar dados Pix', exact: true })
+      .click();
     await expect(page.getByRole('status')).toContainText('Dados Pix salvos');
     await page.goto(t.url + `/gestao/financeiro/${c.id}`);
     await page

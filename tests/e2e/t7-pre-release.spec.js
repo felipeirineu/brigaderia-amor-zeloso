@@ -241,7 +241,7 @@ test('T7 auditoria das telas e ações, filtros de clientes e menu em grade', as
         ),
       ).toBe(true);
       if (!before)
-        for (const pair of await p.locator('.action-pair').all()) {
+        for (const pair of await p.locator('.action-pair:visible').all()) {
           const buttons = pair.locator(':scope > .az-button');
           if ((await buttons.count()) !== 2) continue;
           const a = await buttons.nth(0).boundingBox(),

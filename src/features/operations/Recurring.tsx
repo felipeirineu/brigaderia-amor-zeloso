@@ -1,3 +1,4 @@
+import { useConfirm } from '../../components/confirm-context';
 import {
   customerType,
   type CustomerType,
@@ -72,6 +73,8 @@ export function Recurring({
   mixed?: boolean;
   kitModels?: boolean;
 }) {
+  const askConfirmation = useConfirm();
+
   const courierLabels = useCourierLabels();
   const kitCatalog = useKitCatalog(kitModels);
   const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
@@ -295,9 +298,14 @@ export function Recurring({
           ))}
           <Button
             disabled={busy || !Object.values(selected).some(Boolean)}
-            onClick={() => {
+            onClick={async () => {
               const chosen = generated.filter((o) => selected[o.id]);
-              if (!confirm(`Confirmar ${chosen.length} pedido(s) revisado(s)?`))
+              if (
+                !(await askConfirmation(
+                  `Confirmar ${chosen.length} pedido(s) revisado(s)?`,
+                  'Confirmar',
+                ))
+              )
                 return;
               void run(async () => {
                 const results: { id: string; ok: boolean; error?: string }[] =

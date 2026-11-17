@@ -60,7 +60,11 @@ export function ProfilePhotos() {
       </p>
       <Failure message={error} />
       <p role="status">{notice}</p>
-      {own && <StaffAvatar id={own.id} className="profile-photo-large" />}
+      {own && (
+        <div className="profile-photo-centered">
+          <StaffAvatar id={own.id} className="profile-photo-large" />
+        </div>
+      )}
       <input
         ref={camera}
         className="profile-photo-input"
