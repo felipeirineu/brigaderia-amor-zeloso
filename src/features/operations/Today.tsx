@@ -481,7 +481,11 @@ export function Today({
               ) : (
                 <p>
                   Nada confirmado para produzir.{' '}
-                  <Button to="/gestao/recorrentes" variant="ghost">
+                  <Button
+                    to="/gestao/recorrentes"
+                    variant="ghost"
+                    className="ghost-inline"
+                  >
                     Gerar pedidos da semana?
                   </Button>
                 </p>

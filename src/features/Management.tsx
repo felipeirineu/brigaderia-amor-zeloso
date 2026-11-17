@@ -1,3 +1,4 @@
+import { AppOpening } from '../components/AppOpening';
 import {
   ReleaseAnnouncement,
   ReleaseHistory,
@@ -1745,6 +1746,7 @@ export function Management() {
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState('');
   const [online, setOnline] = useState(navigator.onLine);
+  const [connectionError, setConnectionError] = useState(false);
   const navigate = useNavigate();
   const quick = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -1754,6 +1756,7 @@ export function Management() {
         .then((s) => {
           if (active) {
             setSession(s);
+            setConnectionError(false);
             if (s.p1) void reconcilePushSession().catch(() => {});
           }
         })
@@ -1763,6 +1766,7 @@ export function Management() {
           // ao app): mantém a gestão aberta e tenta de novo em instantes.
           // Só sai da gestão quando o servidor recusa a sessão.
           if (e instanceof ApiError && e.status === 0) {
+            setConnectionError(true);
             if (retry) clearTimeout(retry);
             retry = setTimeout(check, 4000);
             setSession((current) => {
@@ -1772,6 +1776,7 @@ export function Management() {
             return;
           }
           setSession(null);
+          setConnectionError(false);
           setError(e.message);
         });
     };
@@ -1780,6 +1785,7 @@ export function Management() {
     const timer = setInterval(check, 60000);
     const expired = () => {
       setSession(null);
+      setConnectionError(false);
       setError('Sua sessão expirou. Entre novamente.');
     };
     const offline = () => {
@@ -1818,17 +1824,20 @@ export function Management() {
       setError((e as Error).message);
     }
   }
+  if (!session && !error) return <AppOpening />;
   if (!session)
     return (
       <section className="panel">
         <h1>Gestão restrita</h1>
         <ErrorMessage message={error} />
-        {error ? (
+        {connectionError ? (
+          <Button onClick={() => window.location.reload()}>
+            Tentar novamente
+          </Button>
+        ) : (
           <Button className="button" to="/login" variant="ghost">
             Entrar na gestão
           </Button>
-        ) : (
-          <p role="status">Verificando sessão…</p>
         )}
       </section>
     );
@@ -2204,17 +2213,17 @@ export function Management() {
                     >
                       Novo cliente
                     </Button>
+                    {session.p1 && (
+                      <Button
+                        className="button"
+                        to="/gestao/lembretes"
+                        onClick={() => quick.current?.close()}
+                        variant="ghost"
+                      >
+                        Novo lembrete
+                      </Button>
+                    )}
                   </div>
-                  {session.p1 && (
-                    <Button
-                      className="button"
-                      to="/gestao/lembretes"
-                      onClick={() => quick.current?.close()}
-                      variant="ghost"
-                    >
-                      Novo lembrete
-                    </Button>
-                  )}
                   <p>
                     {session.finance
                       ? 'Recebimentos rápidos ficam no Hoje, no cartão do pedido.'

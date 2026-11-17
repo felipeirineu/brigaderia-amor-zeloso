@@ -1141,3 +1141,124 @@ textarea::placeholder {
   outline-offset: 1px;
   border-radius: 50%;
 }
+
+/* T7: abertura aprovada, respeita o fundo do manifesto e a preferência do aparelho. */
+.app-opening {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  background: var(--az-paper);
+}
+.opening-content {
+  display: grid;
+  justify-items: center;
+  gap: var(--az-space-6);
+}
+.app-opening img {
+  width: min(56vw, 220px);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+:root[data-theme='dark'] .app-opening img {
+  outline: 2px solid var(--az-gold);
+  outline-offset: var(--az-space-1);
+}
+.opening-dots {
+  display: flex;
+  gap: var(--az-space-2);
+}
+.opening-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--az-gold);
+  animation: opening-pulse 1.4s ease-in-out infinite;
+}
+.opening-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.opening-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes opening-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .opening-dots span {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+.alcohol-tag,
+.kit-composition .alcohol-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--az-space-1);
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding: 1px var(--az-space-2);
+  margin: 0;
+  font-size: 12px;
+  border-radius: var(--az-radius-pill);
+}
+.flavor-name,
+.kit-composition .kit-flavor-name .az-button-label {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: inherit;
+  gap: var(--az-space-1);
+  min-width: 0;
+}
+.order-focus .flavor-add .flavor-name {
+  justify-content: center;
+}
+.order-focus .flavor-add .flavor-name strong {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+}
+.mix-row > span .alcohol-tag {
+  display: inline-flex;
+}
+.customer-filter legend {
+  text-align: left;
+}
+.customer-filter .chips {
+  gap: var(--az-space-3);
+}
+.quick-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--az-space-3);
+}
+.quick-links > .az-button {
+  width: 100%;
+  height: 100%;
+  min-height: 64px;
+  padding-inline: var(--az-space-2);
+}
+/* Pares identificados na auditoria; não interfere nos demais grupos de ações. */
+.actions.action-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--az-space-2);
+  align-items: stretch;
+  margin-block: var(--az-space-2);
+}
+.action-pair > .az-button {
+  width: 100%;
+  min-height: 48px;
+  height: 100%;
+  padding-inline: var(--az-space-2);
+  font-size: 14px;
+}
