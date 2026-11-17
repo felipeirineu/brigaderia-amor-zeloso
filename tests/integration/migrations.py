@@ -91,6 +91,23 @@ class VisitMigrationTests(unittest.TestCase):
         self.assertTrue(any('prospect_visits_range' in row[-1] for row in plan))
         self.assertEqual(list(self.db.execute('PRAGMA foreign_key_check')), [])
 
+class SampleExpenseMigrationTests(unittest.TestCase):
+    setUp = IdentityMigrationTests.setUp
+    tearDown = IdentityMigrationTests.tearDown
+
+    def test_sample_expenses_scope_snapshot_and_index(self):
+        self.db.execute("INSERT INTO customers(organization_id,id,name,phone) VALUES('demo-org','demo-customer','DEMONSTRAÇÃO','sem:demo')")
+        self.db.execute("INSERT INTO prospect_visits(organization_id,id,customer_id,scheduled_at,data) VALUES('demo-org','demo-visit','demo-customer','2030-01-07T13:00:00Z','{}')")
+        self.db.execute("INSERT INTO expense_events(organization_id,id,kind,amount_cents,category,description,method,spent_on,user_id) VALUES('demo-org','demo-expense','expense',123,'prospecting','DEMONSTRAÇÃO','cash','2030-01-07','demo-user')")
+        self.db.execute("INSERT INTO prospect_sample_expenses VALUES('demo-org','demo-expense','demo-visit','{}')")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("INSERT INTO prospect_sample_expenses VALUES('demo-other','demo-expense','demo-visit','{}')")
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.db.execute("UPDATE prospect_sample_expenses SET data='invalid'")
+        plan=self.db.execute("EXPLAIN QUERY PLAN SELECT * FROM prospect_sample_expenses WHERE organization_id=? AND visit_id=?",('demo-org','demo-visit')).fetchall()
+        self.assertTrue(any('prospect_sample_expenses_visit' in row[-1] for row in plan))
+        self.assertEqual(list(self.db.execute('PRAGMA foreign_key_check')),[])
+
 class ProspectMigrationTests(unittest.TestCase):
     def test_prospects_is_additive_and_tenant_scoped(self):
         db = sqlite3.connect(':memory:')

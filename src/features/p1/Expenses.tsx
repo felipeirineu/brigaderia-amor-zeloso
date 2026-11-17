@@ -9,7 +9,7 @@ const categories = {
   ingredients: 'Ingredientes',
   packaging: 'Embalagens',
   delivery: 'Entregas',
-  prospecting: 'Prospecção',
+  prospecting: 'Amostras e prospecção',
   utilities: 'Contas e serviços',
   labor: 'Mão de obra',
   other: 'Outro',

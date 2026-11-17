@@ -56,6 +56,7 @@ jobs:
       - run: npm run test:backup
       - run: npm run test:prospects
       - run: npm run test:visits
+      - run: npm run test:prospect-costs
       - run: npm run test:security
       - run: npm run test:cleanup
       - name: Testes de tela (três navegadores)

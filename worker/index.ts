@@ -1,3 +1,4 @@
+import { prospectReport, prospectVisitTools } from './prospect-costs';
 import { visits } from './visits';
 import { prospects } from './prospects';
 import { pushSchema } from './push-config';
@@ -141,6 +142,12 @@ export default {
           env,
           user,
         );
+      if (pathname === '/api/prospecting/report')
+        return await prospectReport(req, env, user);
+      if (
+        /^\/api\/visits\/[^/]+\/(costs|sample-expense|followup)$/.test(pathname)
+      )
+        return await prospectVisitTools(req, env, user);
       if (pathname === '/api/visits' || pathname.startsWith('/api/visits/'))
         return await visits(req, env, user);
       if (pathname.startsWith('/api/mobile/'))

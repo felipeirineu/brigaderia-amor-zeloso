@@ -31,6 +31,7 @@ const titles: Record<string, string> = {
   relatorios: 'Relatórios',
   lembretes: 'Lembretes',
   visitas: 'Visitas',
+  prospeccao: 'Prospecção',
   fichas: 'Fichas técnicas',
   insumos: 'Insumos',
   compras: 'Compras',

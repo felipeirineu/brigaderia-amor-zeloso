@@ -47,7 +47,7 @@ interface Report {
     bucket: string;
   }[];
 }
-export function Reports() {
+export function Reports({ followup = false }: { followup?: boolean }) {
   const [from, setFrom] = useState(() => localDay().slice(0, 8) + '01'),
     [to, setTo] = useState(localDay),
     [condition, setCondition] = useState('all'),
@@ -61,6 +61,11 @@ export function Reports() {
     );
   return (
     <>
+      {followup && (
+        <Button to="/gestao/prospeccao" variant="ghost">
+          Ver relatório de prospecção
+        </Button>
+      )}
       <h1 className="mobile-context-title">Relatórios</h1>
       <Failure message={error || view.error || customers.error} />
       <div className="data-form panel">

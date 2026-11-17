@@ -1,3 +1,4 @@
+import { FollowupSheet, VisitCostPanel } from './Followup';
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Car, MapPin, MessageCircle } from 'lucide-react';
@@ -29,7 +30,13 @@ type Product = {
   photo_key: string | null;
   variants: { active: number; weight_grams: number }[];
 };
-function VisitActions({ visit }: { visit: ProspectVisit }) {
+function VisitActions({
+  visit,
+  followup,
+}: {
+  visit: ProspectVisit;
+  followup: boolean;
+}) {
   const field = useField(),
     sheet = useRef<HTMLDialogElement>(null),
     trigger = useRef<HTMLElement | null>(null);
@@ -37,7 +44,8 @@ function VisitActions({ visit }: { visit: ProspectVisit }) {
       field?.data?.sites.find((s) => s.id === visit.customer_id)?.data ??
       emptyPlace(),
     links = transportLinks(place);
-  const [notice, setNotice] = useState('');
+  const [notice, setNotice] = useState(''),
+    [messageOpen, setMessageOpen] = useState(false);
   const hasPlace = !!place.address || place.latitude !== null;
   const destination =
     place.latitude !== null && place.longitude !== null
@@ -45,6 +53,9 @@ function VisitActions({ visit }: { visit: ProspectVisit }) {
       : place.address;
   return (
     <>
+      {messageOpen && (
+        <FollowupSheet visit={visit} onClose={() => setMessageOpen(false)} />
+      )}
       <div className="delivery-icon-row">
         <Button
           disabled={!hasPlace}
@@ -56,15 +67,22 @@ function VisitActions({ visit }: { visit: ProspectVisit }) {
           <MapPin aria-hidden="true" size={22} />
           Mapa
         </Button>
-        <Button
-          href={'https://wa.me/' + visit.phone.replace(/\D/g, '')}
-          disabled={!visit.phone}
-          target="_blank"
-          rel="noreferrer"
-        >
-          <MessageCircle aria-hidden="true" size={22} />
-          WhatsApp
-        </Button>
+        {followup ? (
+          <Button onClick={() => setMessageOpen(true)}>
+            <MessageCircle aria-hidden="true" size={22} />
+            WhatsApp
+          </Button>
+        ) : (
+          <Button
+            href={'https://wa.me/' + visit.phone.replace(/\D/g, '')}
+            disabled={!visit.phone}
+            target="_blank"
+            rel="noreferrer"
+          >
+            <MessageCircle aria-hidden="true" size={22} />
+            WhatsApp
+          </Button>
+        )}
         <Button
           href={links.uber}
           disabled={!hasPlace}
@@ -469,9 +487,11 @@ export function VisitSheet({
 export function VisitCard({
   visit,
   onChanged,
+  followup = false,
 }: {
   visit: ProspectVisit;
   onChanged: () => void;
+  followup?: boolean;
 }) {
   const field = useField(),
     [sheet, setSheet] = useState<'record' | 'edit' | null>(null),
@@ -540,7 +560,7 @@ export function VisitCard({
               .join('; ')
           : 'Sem amostras informadas.'}
       </p>
-      <VisitActions visit={visit} />
+      <VisitActions visit={visit} followup={followup} />
       {visit.status === 'scheduled' && (
         <>
           <Button
@@ -593,6 +613,9 @@ export function VisitCard({
           </div>
           <p>São ofertas: nada foi criado sem sua confirmação.</p>
         </>
+      )}
+      {followup && visit.record && (
+        <VisitCostPanel visit={visit} onChanged={onChanged} />
       )}
       {sheet && (
         <VisitSheet
@@ -657,7 +680,7 @@ function ContactScheduleButton({
     </Button>
   ) : null;
 }
-export function VisitsPage() {
+export function VisitsPage({ followup = false }: { followup?: boolean }) {
   const { id } = useParams(),
     [search, setSearch] = useSearchParams(),
     customerId = search.get('contato') || undefined,
@@ -748,6 +771,7 @@ export function VisitsPage() {
         <VisitCard
           key={v.id + ':' + v.version}
           visit={v}
+          followup={followup}
           onChanged={() => void view.refresh()}
         />
       ))}

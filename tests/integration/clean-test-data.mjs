@@ -63,15 +63,36 @@ try {
     version: 1,
     stage: 'follow_up',
   });
+  const sampleProduct = (await call('products', undefined, 'GET'))[0];
+  const samples = [
+    { product_id: sampleProduct.id, weight_grams: 30, units: 1 },
+  ];
   const visit = await call('visits', {
     customer_id: contact.id,
     scheduled_at: new Date().toISOString(),
-    samples: [],
+    samples,
   });
   await call('visits/' + visit.id + '/record', {
     version: 1,
     occurred_at: new Date().toISOString(),
-    samples: [],
+    samples,
+  });
+  const sampleCost = await call(
+    'visits/' + visit.id + '/costs',
+    undefined,
+    'GET',
+  );
+  await call('visits/' + visit.id + '/sample-expense', {
+    version: sampleCost.visit_version,
+    estimate_hash: sampleCost.estimate_hash,
+    amount_cents: 123,
+    method: 'cash',
+    spent_on: new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Fortaleza',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date()),
   });
   await call('field/trips', {
     visit_id: visit.id,
@@ -170,6 +191,7 @@ try {
   assert.equal(await count('prospect_visits'), 1);
   assert.equal(await count('prospect_visit_records'), 1);
   assert.equal(await count('prospect_visit_trips'), 0);
+  assert.equal(await count('prospect_sample_expenses'), 0);
   assert.equal(await count('products'), 1);
   assert.equal(await count('recipes'), 1);
   assert.equal(await count('supplies'), 2);

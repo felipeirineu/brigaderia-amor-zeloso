@@ -1,3 +1,4 @@
+import { prospectCostsReady } from './prospect-costs';
 import { visitsReady } from './visits';
 import { prospectsReady, prospectsSchema, requireCustomer } from './prospects';
 import { customerAddressSQL } from './customer-address';
@@ -57,6 +58,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       role: a.role,
       prospects: await prospectsReady(env),
       visits: await visitsReady(env),
+      prospect_followup: await prospectCostsReady(env),
       weight_costing: await weightCostingReady(db),
       customer_orders: await customerOrderFieldsReady(db),
       kit_orders: await kitOrdersReady(db),

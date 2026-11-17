@@ -33,6 +33,7 @@ export const databaseTables = [
   'order_status_events',
   'order_terms',
   'orders',
+  'prospect_sample_expenses',
   'prospect_visits',
   'prospect_visit_records',
   'prospect_visit_trips',

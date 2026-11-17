@@ -71,10 +71,12 @@ function DayTotals({
 }
 export function Today({
   role,
+  followup = false,
   financial = false,
   p1 = false,
 }: {
   role: string;
+  followup?: boolean;
   financial?: boolean;
   p1?: boolean;
 }) {
@@ -780,6 +782,7 @@ export function Today({
                 <VisitCard
                   key={v.id + ':' + v.version}
                   visit={v}
+                  followup={followup}
                   onChanged={() => void view.refresh()}
                 />
               ))}

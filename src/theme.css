@@ -987,3 +987,8 @@ body:has(dialog[open]) {
   display: block;
   color: var(--az-muted);
 }
+
+.prospect-flavor-result {
+  border-top: 1px solid var(--az-line);
+  padding-block: var(--az-space-3);
+}

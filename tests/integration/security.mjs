@@ -136,6 +136,92 @@ try {
     ok(res.ok, method + ' ' + path + ' permite operadora: ' + res.status);
   }
 
+  // R7c: leituras não gravam; custos/WhatsApp isolados e despesa exclusiva do administrador.
+  const sp = (await call('products', undefined, 'GET'))[0];
+  const sv = await call('visits', {
+    ...vi,
+    samples: [{ product_id: sp.id, weight_grams: 30, units: 1 }],
+  });
+  await call('visits/' + sv.id + '/record', {
+    version: 1,
+    occurred_at: new Date().toISOString(),
+    samples: [{ product_id: sp.id, weight_grams: 30, units: 1 }],
+  });
+  for (const suffix of [
+    'costs',
+    'followup?kind=thanks',
+    'followup?kind=feedback',
+    'followup?kind=prices',
+  ]) {
+    const path = 'visits/' + sv.id + '/' + suffix;
+    ok((await t.request(path)).status === 401, path + ' exige sessão');
+    ok(
+      (await t.request(path, { cookie: outside })).status === 404,
+      path + ' outro tenant',
+    );
+    ok(
+      (await t.request(path, { cookie: operator })).ok,
+      path + ' permite leitura pela operadora',
+    );
+  }
+  const cost = await call('visits/' + sv.id + '/costs', undefined, 'GET');
+  const samplePayment = {
+    version: cost.visit_version,
+    estimate_hash: cost.estimate_hash,
+    amount_cents: 123,
+    method: 'cash',
+    spent_on: new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Fortaleza',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date()),
+  };
+  const expensePath = 'visits/' + sv.id + '/sample-expense';
+  ok(
+    (
+      await t.request('visits/' + cancellable.id + '/sample-expense', {
+        cookie: operator,
+        method: 'POST',
+        data: samplePayment,
+        key: crypto.randomUUID(),
+      })
+    ).status === 403,
+    'operadora não registra despesa nem em visita cancelada',
+  );
+  for (const [cookie, status] of [
+    [undefined, 401],
+    [outside, 404],
+    [operator, 403],
+    [owner, 201],
+  ])
+    ok(
+      (
+        await t.request(expensePath, {
+          cookie,
+          method: 'POST',
+          data: samplePayment,
+          key: crypto.randomUUID(),
+        })
+      ).status === status,
+      expensePath + ' papel/tenant ' + status,
+    );
+  ok(
+    (await t.request('prospecting/report')).status === 401,
+    'relatório de prospecção exige sessão',
+  );
+  ok(
+    (await t.request('prospecting/report', { cookie: operator })).ok,
+    'operadora lê relatório de prospecção',
+  );
+  const otherReport = await t.request('prospecting/report', {
+    cookie: outside,
+  });
+  ok(
+    otherReport.ok && (await otherReport.json()).visits === 0,
+    'relatório de outro tenant é vazio',
+  );
+
   ok(
     (await t.request('auth/config')).headers.get(
       'Cross-Origin-Resource-Policy',

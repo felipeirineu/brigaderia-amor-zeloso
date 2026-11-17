@@ -1,3 +1,4 @@
+import { ProspectReportPage } from './prospects/Followup';
 import { VisitsPage } from './prospects/Visits';
 import { ProspectFields, ProspectPanel } from './prospects/ProspectPanel';
 import { emptyProspect, type ProspectData } from '../../shared/prospects';
@@ -98,6 +99,7 @@ import {
 import { Mascot } from '../components/Mascot';
 
 interface Session {
+  prospect_followup?: boolean;
   visits?: boolean;
   prospects?: boolean;
   weight_costing?: boolean;
@@ -1908,6 +1910,7 @@ export function Management() {
                 element={
                   session.operations ? (
                     <Today
+                      followup={session.prospect_followup}
                       role={session.role}
                       financial={session.finance}
                       p1={session.p1}
@@ -1951,10 +1954,23 @@ export function Management() {
                   />
                 }
               />
+              {session.prospect_followup && (
+                <Route path="prospeccao" element={<ProspectReportPage />} />
+              )}
               {session.visits && (
                 <>
-                  <Route path="visitas" element={<VisitsPage />} />
-                  <Route path="visitas/:id" element={<VisitsPage />} />
+                  <Route
+                    path="visitas"
+                    element={
+                      <VisitsPage followup={session.prospect_followup} />
+                    }
+                  />
+                  <Route
+                    path="visitas/:id"
+                    element={
+                      <VisitsPage followup={session.prospect_followup} />
+                    }
+                  />
                 </>
               )}
               {session.mobile && (
@@ -2001,7 +2017,10 @@ export function Management() {
                     path="agenda"
                     element={<Agenda visits={session.visits} />}
                   />
-                  <Route path="relatorios" element={<Reports />} />
+                  <Route
+                    path="relatorios"
+                    element={<Reports followup={session.prospect_followup} />}
+                  />
                   <Route path="despesas" element={<Expenses />} />
                   <Route
                     path="fichas"
@@ -2073,6 +2092,7 @@ export function Management() {
                         tools={session.tools}
                         mobile={session.mobile}
                         visits={session.visits}
+                        followup={session.prospect_followup}
                       />
                     }
                   />
@@ -2178,6 +2198,7 @@ export function Management() {
 
 function More({
   role,
+  followup = false,
   visits = false,
   financial = false,
   p1 = false,
@@ -2186,6 +2207,7 @@ function More({
   mobile = false,
 }: {
   role: string;
+  followup?: boolean;
   visits?: boolean;
   financial?: boolean;
   p1?: boolean;
@@ -2198,6 +2220,7 @@ function More({
       <h1 className="mobile-context-title">Mais</h1>
       <div className="more-grid">
         {[
+          ...(followup ? [['prospeccao', 'Prospecção', 'financeiro']] : []),
           ...(visits ? [['visitas', 'Visitas e amostras', 'clientes']] : []),
           ...(tools
             ? [

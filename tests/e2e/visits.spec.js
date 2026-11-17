@@ -158,10 +158,10 @@ test('R7b agendar, produzir unidades, registrar e escolher lembrete/corrida sem 
     });
     for (const name of ['Mapa', 'WhatsApp', 'Uber', '99'])
       await expect(
-        vcard.getByRole(
-          name === 'WhatsApp' || name === 'Uber' ? 'link' : 'button',
-          { name, exact: true },
-        ),
+        vcard.getByRole(name === 'Uber' ? 'link' : 'button', {
+          name,
+          exact: true,
+        }),
       ).toBeVisible();
     await vcard.getByRole('button', { name: 'Mapa', exact: true }).click();
     const map = page.getByRole('dialog', {

@@ -1,3 +1,46 @@
+## R7c — entrega para revisão (17/11/2026 UTC; 16/11 em Fortaleza)
+
+Branch `codex/r7c-prospect-costs`, versão **0.15.0**, main **f36ffad** incorporado e conferido antes do PR. Somente R7-6/7/9 da FILA; nenhuma edição autoral de FILA/VEZ, flag, Cloudflare ou D1 real. O código da R7a/b e a ativação aprovada dos Contatos foram preservados. A situação da 0025 deve ser conferida pelo responsável; o Codex não a aplicou.
+
+### Produzido
+
+- **R7-6 concluído:** seção de custos consultada só ao expandir o cartão da visita registrada. Estimativa unitária por sabor/peso, R16 prioritária com massa conhecida e P1-4 compatível; forminha/adicional configurados, sem caixa/iFood/opcionais presumidos. Ausência/ambiguidade nunca vira zero. Corridas líquidas somadas uma vez. Despesa de amostras só por administrador, com pagamento efetivo inicialmente vazio, conferência humana, CAS, idempotência e bloqueio de despesa ativa duplicada. Estorno no módulo existente; histórico/cópia da estimativa preservados. Categoria exibida como **Amostras e prospecção**.
+- **R7-7 concluído:** os três modelos solicitados na folha WhatsApp da visita, prévia editável somente em memória e abertura humana. Tabela usa apenas opções ativas/preços cadastrados. Sem nome/telefone, orienta correção; sem campanha, Pix inventado, catálogo público ou registro automático de envio.
+- **R7-9 concluído:** Mais/Relatórios → Prospecção, visitas efetivamente realizadas, unidades por sabor/peso, coorte de contatos únicos com taxa e corte explícitos, conversões no período separadas, tempo desde a primeira visita e custo médio de aquisição incluindo visitas históricas anteriores à conversão. Pagamento substitui a estimativa das mesmas amostras; corridas entram uma vez. Destaque por sabor une contatos distintos entre pesos. Custos incompletos e subtotais conhecidos ficam explícitos.
+- **0026 aditiva preparada localmente:** `prospect_sample_expenses`, vínculo com despesa/visita e cópia da estimativa, tenant/FKs/índice. Backup e restauração incluem a tabela; limpeza operacional acompanha despesas, preservando visitas/registros no KEEP. Sem 0026, R7b continua e os recursos R7c ficam escondidos. Também testado até 0023/24, flag desligada e financeiro pausado.
+- Guia **docs/FASE_R7C.md**, quatro capturas **r7c-*** exclusivamente DEMONSTRAÇÃO, tokens/CSP reais, nenhum estilo inline/recurso externo. Nova bateria `test:prospect-costs` integrada ao CI automático.
+
+### Testes executados
+
+- `npm run typecheck`, `npm run lint`, `npm run format:check`, `npm test` (**144 testes / 36 arquivos**), `npm run build:pages` e `git diff --check`: passaram.
+- `test:prospect-costs`: R16/P1-4, custo ausente/zero, pagamento explícito, concorrência/CAS/repetição, estimativa alterada, estornos, permissões/tenant, ausência de gravação em prévias, coortes entre meses, tempo/CAC, sabores e fallbacks. Com **65 visitas**, relatório **18 SQL**, custos **22 SQL**, sessão **29 SQL**; teto reservado de 45 + autenticação até 50 do D1 Free.
+- `test:security`: **261 verificações**, incluindo todas as rotas novas (401, tenant 404/coleção vazia, operadora 403 para pagamento e leitura autorizada; papel validado também em visita cancelada).
+- `test:backup`, `test:cleanup`, `test:migrations` (**10 testes**), `test:visits`, `test:prospects`, `test:weight-costing`, `test:p1` e `test:field`: passaram, com restauração SQLite/FKs, nova ligação e KEEP.
+- **39 execuções E2E distintas / 13 cenários × Chromium móvel, WebKit móvel e Chromium desktop**: R7a/b/c, cancelamento/registro de pagamento, modelos/preenchimento de WhatsApp, operadora, nomes/telefones ausentes, fallback 0023/24/25, financeiro, agenda, localização/foto, AppUpdate e skeleton. Uma falha inicial no seletor do teste do relatório (duas seções encontradas) foi corrigida restringindo a seção; repetição verde nos três navegadores. A prévia foi ampliada para sete linhas e a bateria R7c repetida verde. A coleta de CSP foi mantida entre navegações: revelou no WebKit dois avisos no seletor nativo de pagamento; a folha nova usa chips de pagamento, como o recebimento rápido, preservando a CSP. Fluxo repetido com coleta contínua sem violações.
+- Nenhum CI manual. O PR dispara **Validação completa + Segurança**; resultado remoto deve ser conferido no SHA do PR antes de publicar. Execuções redundantes de push podem ser canceladas após as do PR começarem, para economizar minutos.
+
+### Limitações
+
+- Estimativa usa ficha atual, não custo histórico. Relatórios usam pagamentos/estornos conhecidos agora; não são extrato de caixa nem posição contábil na data final. Sem conversões, média indisponível. Associação por sabor não afirma causalidade.
+- Massa desconhecida/ambígua, ficha ou insumo sem custo impedem estimativa completa. Até 1.000 visitas/conversões por período e 2.000 visitas históricas de aquisição, com erro explícito ao exceder. Mensagem de preços limitada a 30 opções.
+- Despesa de amostras é valor efetivamente pago informado por humano; a estimativa nunca vira lançamento automático nem deve duplicar ingredientes já registrados.
+
+### Pendências
+
+- **Claude:** revisar o PR e conferir CI completo/Segurança no SHA final antes de publicar; nenhuma mesclagem ou avanço do main pelo Codex.
+- **Responsável:** backup/restauração, conferência da 0025 e autorização/aplicação da 0026 somente após publicação aprovada, seguindo o guia. Nenhuma operação real executada nesta entrega.
+- **R7d** (atalho no +, visita a cliente atual e ajuda) permanece para a próxima tarefa da fila; sem implementação antecipada.
+
+## R7c — plano antes do código (16/11/2026)
+
+FILA/mainf36ffad libera somente R7-6/7/9, versão0.15.0, branch codex/r7c-prospect-costs. R7b publicada;0025 ainda é uma decisão/operação do responsável. R7d permanece para depois. Li R7/AGENTS e a fila; sem edição de FILA, operação Cloudflare/D1, alteração de flags ou serviço pago.
+
+- Cálculo em lote em worker/prospect-costs.ts: custo por unidade/peso via fichas ativas (R16 quando houver massa conhecida em tamanho cadastrado; P1-4 compatível), usando funções existentes, sem embalagem de caixa/iFood ou opcionais presumidos. Ausência/ambiguidade/custo desconhecido é null, nunca zero fictício. Estimativa usa fichas atuais e fica rotulada; catálogo carregado uma vez por consulta.
+- Despesa de amostras somente por confirmação humana, com valor/data/forma de pagamento editáveis. Permissão existente de Despesas: administrador; operadora pode consultar e usar as corridas do módulo já autorizado.0026 aditiva, se necessária, somente vínculo operacional visita↔despesa/snapshot da estimativa; backend com tenant/CAS/idempotência, sem duplicar despesa ativa e com estorno pelo módulo existente. Backup/limpeza operacional incluem o vínculo; visitas/registros permanecem no KEEP. Readiness mantém R7a/b sem0026.
+- WhatsApp: folha com os3 modelos solicitados, prévia editável e abertura humana. Tabela de preços só de kits/embalagens ativos e preços cadastrados; sem inventar lista, Pix ou catálogo público. Sem telefone/nome de exibição, orientar o cadastro; sem envio automático ou campanha.
+- Relatório por período: visitas reais e amostras por sabor, estimativas e pagamentos separados; custo usa pagamento de amostras quando registrado, estimativa nos demais, mais corridas líquidas, sem duplicar ambos. Conversão do grupo visitado com denominador explícito e corte no fim do período; conversões ocorridas no período e média desde a primeira visita registradas separadamente. Custo de aquisição usa histórico anterior à conversão dos convertidos, não mistura denominadores de períodos. Sabores associados às conversões, sem afirmar causalidade. Dados incompletos mantêm custo completo indisponível e subtotal conhecido explícito.
+- UI em visitas/relatórios/Mais e guia/capturas DEMONSTRAÇÃO, tokens/skeleton/gestos/CSP. Toda rota nova na matriz de segurança; testes de custos conhecidos/ausentes/R16, isolamento, CAS/duplicatas/estorno, coortes/tempo/sabores, backup/restauração/limpeza, fallback0023/24/25/flagoff e volume>60 sem N+1. E2E mobile, tipos/lint/formatação/build. Incorporar main antes do PR R7c consolidado; apenas CI/Segurança automáticos do PR, sem merge em main.
+
 ## R7b — entrega para revisão (16/11/2026)
 
 Branch `codex/r7b-prospect-visits`, versão **0.14.0**. Main **c211d36** incorporado: a ativação dos Contatos/0.13.1 feita pelo fluxo responsável foi preservada. Conforme a FILA,0024 já foi aplicada pelo responsável; o Codex não executou essa operação. Somente R7-3/4/5; nenhuma edição autoral da FILA/VEZ.
