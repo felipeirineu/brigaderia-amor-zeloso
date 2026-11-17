@@ -8,7 +8,6 @@
 `VEZ: CODEX` — tarefa **R7d** (Nova visita no +, visita a cliente atual e ajuda; detalhes abaixo). Versão **0.16.0**. Ao terminar, abra o pull request.
 
 
-**Pendência do Felipe em paralelo:** aplicar a migração **0026** (backup → PRE_CHECAGEM → APLICAR_PENDENTES). O custo/relatório de prospecção aparece sozinho depois.
 
 
 ## Como funciona
@@ -63,7 +62,7 @@ Contador de entregas desde a última revisão: **1/3** (R7c).
 | T3c | Skeleton de carregamento | **publicada** 16/11 (PR #10) como **0.12.0** |
 | R7a | Contatos, funil e "virou cliente" + migração 0024 | **publicada** (0.13.0); 0024 aplicada e conferida 16/11; **ligada** em 0.13.1 |
 | R7b | Visitas, registrar visita, amostras na produção + migração 0025 | **publicada** (0.14.0); 0025 aplicada e conferida 16/11 |
-| R7c | Custo da prospecção, WhatsApp e relatório + migração 0026 | **publicada** 17/11 (PR #13) como **0.15.0**; 0026 aguardando o Felipe |
+| R7c | Custo da prospecção, WhatsApp e relatório + migração 0026 | **publicada** (0.15.0); 0026 aplicada e conferida 17/11 |
 | R7d | "Nova visita" no +, visita a cliente atual e ajuda | **vez do Codex** — versão **0.16.0** |
 | T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
 | T5 | "Novidades" após atualizar + histórico em Mais (ligado a partir da 1.0.0) | a detalhar pelo Claude; última tarefa antes da 1.0 |
@@ -282,3 +281,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 16/11 | — | Claude: liga PROSPECTS_ENABLED (0.13.1) | Migração 0024 aplicada pelo Felipe e conferida (24 aplicadas, 0 pendentes, 0 violações, 16 clientes); 221 E2E e Segurança verdes. |
 | 16/11 | 9 | R7b — visitas e amostras (PR #12) | publicada como 0.14.0; 227 E2E e Segurança verdes. Migração 0025 só aditiva. **Revisão geral 3/3** (T3c, R7a, R7b): sem problema real. |
 | 17/11 | 10 | R7c — custo, WhatsApp e relatório (PR #13) | publicada como 0.15.0; 236 E2E e Segurança verdes. Migração 0026 só aditiva; despesa só por confirmação do administrador. |
+| 17/11 | — | Felipe aplicou 0026 | conferida pelo Claude: 26 aplicadas, 0 pendentes, 0 violações, 16 clientes. |
