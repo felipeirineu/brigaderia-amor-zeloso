@@ -71,6 +71,7 @@ Contador de entregas desde a última revisão: **2/3** (T6, T7).
 | T6 | Ajustes visuais pedidos pelo Felipe | **publicada** 17/11 (PR #16) como **0.18.0** |
 | T7 | Revisões do Felipe antes da 1.0 (abertura com logo, álcool, alinhamentos, telas compridas, menu +) | **publicada** 17/11 (PR #17) como **0.19.0** |
 | T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | **vez do Codex** — versão **0.20.0** |
+| T9 | Revisões do Felipe (2ª lista): sabores centralizados, confirmações, textos, Foto do produto, modos de pedido | aprovada; **depois da T8** — versão **0.21.0** |
 
 ### T0 — R17
 
@@ -357,6 +358,39 @@ Objetivo: o Felipe liga as notificações com um clique no GitHub, sem terminal 
    - **(d)** republicar o Pages (o próximo publish na main já serve);
    - **(e)** Preferências → ativar avisos → **Enviar aviso de teste** em cada aparelho.
 6. **Não rodar o workflow.** Quem roda é o Felipe. Versão **0.20.0**.
+
+### T9 — revisões do Felipe, 2ª lista (17/11; fazer depois da T8)
+
+1. **Nomes de sabores centralizados** quando quebram linha: todos os cartões e botões de sabor, inclusive sabores cadastrados no futuro (`text-align: center` no nome dentro de `.flavor-add`/`.flavor-name` e semelhantes). E2E com um nome longo fictício: as duas linhas centralizadas.
+2. **Confirmações com a cara do app.** Todas as ações que arquivam, cancelam, estornam ou apagam já pedem confirmação, mas usam o `confirm()` do navegador: caixa cinza e, no iPhone, com o endereço do site.
+   - Criar um componente `ConfirmSheet`: folha `help-sheet` com título "Tem certeza?", o texto atual, **Cancelar** e o botão da ação em `danger`.
+   - Trocar **todos** os `confirm(` do `src`. Manter os textos e o comportamento: cancelar não faz nada.
+   - E2E: cancelar não chama a API; confirmar chama.
+3. **Produtos:** "Arquivar produto" só aparece no **computador** (tela larga) e só para quem tem perfil de dono (P1). O backend também recusa arquivar produto para outros perfis (403 em pt-BR). Teste unitário do backend e E2E escondendo o botão no celular.
+4. **Clientes → "Ativo":**
+   - colocar um (?) (`HelpTip`) ao lado com o texto: "Marcado: o cliente aparece nas listas e em novos pedidos. Desmarcado: fica arquivado (some das listas, mas o histórico e os pedidos continuam guardados). Dá para reativar depois.";
+   - a mesma explicação vale para "Produto ativo".
+5. **Escolha o cliente (Novo pedido):**
+   - "Cadastrar cliente" → **"Cadastrar novo cliente"**;
+   - antes da lista, um título **"Lista de clientes"**, separando bem as duas partes.
+6. **Clientes:** separar mais os chips Clientes/Contatos: `--az-space-5`, ou um em cada metade da linha. Na T7 ficou `--az-space-3` e ainda está perto.
+7. **Prospecção e Agenda:** trocar "no fuso de Fortaleza" por **"no horário local"** (`Followup.tsx`, `Agenda.tsx` e qualquer outro texto visível; os comentários de código podem ficar).
+8. **Produtos → Foto do produto (celular):** a seção está bagunçada. Reorganizar:
+   - "Sugerir foto pelo nome" e "Sem foto" lado a lado (par);
+   - as fotos numa grade de **3 por linha**, cartões quadrados do mesmo tamanho, foto redonda em cima e nome centralizado embaixo (até 2 linhas);
+   - a escolhida com contorno dourado e ✓;
+   - a dica "só é salva ao salvar o produto" em texto pequeno.
+   Captura antes/depois.
+9. **Mensagens:** o (?) solto vira **"Ajuda (?)"**, um botão/linha com texto. Ao tocar em **"Editar modelo …"**, o formulário de edição abre **logo abaixo do modelo escolhido**, no lugar do cartão, e não no fim da página. Foco no campo de texto.
+10. **Preferências:**
+    - em "Sua foto de perfil", a foto ou a inicial fica **centralizada**;
+    - em "Avisos neste aparelho", o (?) fica na **mesma linha**, à direita do título, sem quebrar.
+11. **Como criar pedidos:** tirar o "Automático". Ficam só duas opções:
+    - **Modo simples** (padrão, com fotos);
+    - **Lista completa**.
+    Quem tinha "auto" salvo passa a ver o simples. Texto novo: "Modo simples: escolhe os sabores tocando nas fotos. Lista completa: mostra todos os produtos numa lista, sem fotos. Esta escolha fica só neste aparelho."
+    Na lista completa, o rótulo visível "variante" vira **"Sabor"** onde se escolhe o sabor no pedido.
+12. Versão **0.21.0**. Capturas antes/depois (`docs/colaboracao/capturas/t9-*.png`), só com dados DEMONSTRAÇÃO.
 
 ## Versões do app
 
