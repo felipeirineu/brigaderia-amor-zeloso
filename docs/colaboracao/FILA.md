@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T9** (revisões do Felipe, 2ª lista; prévia da Foto do produto aprovada; detalhes abaixo). Versão **0.21.0**. Ao terminar, abra o pull request.
+`VEZ: FELIPE` — T9 publicada. Aguardando o Felipe: novas revisões, ativação das notificações (workflow T8), cadastro dos kits e o dia da entrega (1.0.0).
 
 **Pendências do Felipe (fora do código):** cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
 
@@ -44,7 +44,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **3/3** (T6, T7, T8) — revisão geral feita na publicação da T8.
+Contador de entregas desde a última revisão: **1/3** (T9).
 
 ## Limites
 
@@ -71,7 +71,7 @@ Contador de entregas desde a última revisão: **3/3** (T6, T7, T8) — revisão
 | T6 | Ajustes visuais pedidos pelo Felipe | **publicada** 17/11 (PR #16) como **0.18.0** |
 | T7 | Revisões do Felipe antes da 1.0 (abertura com logo, álcool, alinhamentos, telas compridas, menu +) | **publicada** 17/11 (PR #17) como **0.19.0** |
 | T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | **publicada** 17/11 (PR #18) como **0.20.0** |
-| T9 | Revisões do Felipe (2ª lista): sabores centralizados, confirmações, textos, Foto do produto, modos de pedido | **vez do Codex** — versão **0.21.0** |
+| T9 | Revisões do Felipe (2ª lista): sabores centralizados, confirmações, textos, Foto do produto, modos de pedido | **publicada** 17/11 (branch do Codex, sem PR) como **0.21.0** |
 
 ### T0 — R17
 
@@ -404,6 +404,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.21.0 | 17/11 | Confirmações "Tem certeza?" com a cara do app, grade de fotos do produto, só Modo simples / Lista completa, "Sabor" no lugar de variante, arquivar produto só para o dono no computador, textos e alinhamentos da 2ª lista do Felipe. |
 | 0.20.0 | 17/11 | Botão "Ativar lembretes (manual)" no GitHub (VERIFICAR / ATIVAR / REPUBLICAR_AGENDADOR), sem terminal e sem expor chaves. Nada muda no app até o Felipe rodar. |
 | 0.19.0 | 17/11 | Abertura com o logo (claro/escuro), selo de álcool numa linha, menu + em grade 2×2, Clientes alinhado, "Gerar pedidos da semana?" alinhado e ações em pares nas telas compridas. |
 | 0.18.0 | 17/11 | Acabamentos: Clientes/Contatos centralizados, avatar de quem leva com espaço e círculo, botões de escolha mais compactos, aviso de pedido em andamento menor e logo visível no modo escuro. |
@@ -445,3 +446,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 17/11 | 13 | T6 — ajustes visuais (PR #16) | correção do alinhamento de "Calcular rota"; 257 E2E e Segurança verdes. Publicada como 0.18.0. |
 | 17/11 | 14 | T7 — revisões do Felipe antes da 1.0 (PR #17) | seguiu a prévia aprovada; 269 E2E e Segurança verdes. Publicada como 0.19.0. |
 | 17/11 | 15 | T8 — workflow de ativação dos lembretes (PR #18) | CI completo e Segurança verdes. Revisão geral 3/3 (T6, T7, T8): sem problema real. Publicada como 0.20.0. Workflow ainda não executado (passo do Felipe). |
+| 17/11 | 16 | T9 — 2ª lista do Felipe (branch `codex/t9-interface-refinements`) | O Codex não abriu PR (CI rápido vermelho). Claude: teste do menu media durante a animação (corrigido); mapa era instabilidade antiga (12/12 local); grade de fotos não estava centralizada como a prévia (corrigido). CI completo 284 E2E e Segurança verdes. Publicada como 0.21.0. |
