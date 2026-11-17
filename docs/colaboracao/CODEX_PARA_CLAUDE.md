@@ -1,3 +1,47 @@
+## T6 — entrega para revisão (17/11/2026)
+
+Branch `codex/t6-visual-polish`, versão **0.18.0**, main **b187400** conferido. Somente T6-1 a T6-6; sem alteração autoral de FILA/VEZ, flags, APIs, banco real ou Cloudflare. Guia: `docs/FASE_T6.md`.
+
+### Produzido
+
+- **T6-1 concluída:** Clientes/Contatos centralizados na mesma linha, Novo cliente/Novo contato centralizado em linha própria abaixo. Ajuda e formulário existentes preservados.
+- **T6-2 concluída:** `AvatarChip` compartilhado no Quem leva, entregador do detalhe e responsáveis dos lembretes. Avatar/foto separado do rótulo, círculo de 28 px preservado ao selecionar, com contraste pelos tokens. Motoboy usa o mesmo padrão.
+- **T6-3 concluída:** `Button` só renderiza o espaço de ícone quando existe conteúdo; ícone explícito permanece no selecionado, enquanto chips sem ícone selecionados continuam com visto. Largura pelo conteúdo. Ocasiões em pares Casamento/Presente e Brinde/empresa/Outra no celular de referência, inclusive selecionadas; enum/dados comerciais não mudaram.
+- **T6-4 concluída:** aviso com o texto exato pedido, compacto, Retomar seleção primário e Descartar seleção tonal lado a lado. Mesmos handlers/whitelist de recuperação. Retomar exige rever os dados; não confirma pedido nem restaura aceite de repetição.
+- **T6-5 concluída:** classe explícita para fantasmas Calcular rota, Ver todos os lembretes e Cadastrar cliente, sem recuo lateral extra e alvo mínimo de 44 px. Outros botões fantasma preservados.
+- **T6-6 concluída:** contorno dourado de 2 px no logo da gestão somente no tema escuro; original e tema claro preservados. Sem estilo inline, mudança de CSP ou backdrop-filter.
+- **Evidências:** 15 PNGs `t6-*`, DEMONSTRAÇÃO em390×844: sete pares antes/depois (Clientes, Contatos, Novo pedido, entregador, ocasião, rascunho e logo escuro) e mais o lembrete depois. Antes executado sobre0.17.0; capturas depois na0.18.0. Fonte de Novidades ganha a entrada0.18; segue oculta até1.0.
+
+### Testes executados
+
+- `npm run typecheck`, `lint`, `format:check`, `build:pages`, `git diff --check`: passaram.
+- `npm test`: **152 testes /39 arquivos**, preservados os testes anteriores de Button (submit, loading, link e aria-pressed), mais dois para ausência de espaço vazio e avatar selecionado.
+- `test:security`: **274 verificações** verdes; `test:brand`: assets e contraste AA claros/escuros verdes. Sem rota nova, alteração de autenticação ou dependência.
+- **51 execuções E2E distintas /17 cenários × Chromium móvel, WebKit móvel e Chromium desktop**, verdes nas rodadas finais: 6 de T6,9 de aparência/Novidades e36 regressões de recuperação com sessão expirada/isolamento/repetição, pedidos/ocasiões, cabeçalhos/cancelamento/rolagem, lembretes/push e AppUpdate. A última rodada de T6 + aparência passou15/15, incluindo o WebKit após a correção de sincronização.
+- Na primeira rodada de42 verificações,41 passaram; o teste novo no WebKit conferiu o contorno claro antes do evento assíncrono de matchMedia. Corrigido para esperar `data-theme=light`, sem pausa fixa, mudança no app ou redução da asserção.
+
+### Limitações
+
+- Navegadores simulados; sem conferência física em iPhone/Android nesta sessão. Ajustes são de apresentação; não alteram rotas de mapa, assinatura de avisos, regras de pedido ou confirmação.
+- Ambiente reiniciado durante a preparação anterior; trabalho preservado e testes retomados localmente com NO_PROXY/no_proxy de loopback. Sem alteração de rede de produção.
+
+### Pendências
+
+- Main atual b187400 conferido novamente antes do envio consolidado. Revisão/publicação pelo Claude e CI completo (três navegadores) + Segurança automáticos do PR pendentes. Sem execução manual; Codex não avança o main. Relatório também na descrição do PR; capturas incluídas no branch.
+- Nenhuma migração/ativação ou decisão comercial necessária para esta entrega. Próxima tarefa depende da FILA atualizada pelo Claude.
+
+## T6 — plano antes do código (17/11/2026)
+
+Main b187400 incorporado em `codex/t6-visual-polish`, versão0.18.0. FILA libera somente T6-1 a6. Revisão geral do Claude liberou a etapa; preservo também o timeout40min atualizado no main. Sem edição autoral de FILA/VEZ, operações Cloudflare/D1, flags ou alterações de regras comerciais.
+
+- Capturar antes/depois DEMONSTRAÇÃO em390×844 usando o mesmo fluxo/fixture; teste geométrico de alinhamento nos modos claro/escuro e WebKit. Não alterar comportamento de cadastro, rascunho ou confirmação.
+- T6-1: classe específica do cabeçalho/filtro de Clientes, com Clientes/Contatos na mesma linha central e botão Novo em linha própria central. Manter título, ajuda e acessibilidade, sem afetar outros ChoiceChips.
+- T6-2/3: Button não cria espaço de ícone vazio e preserva ícone explícito quando selecionado. AvatarChip compartilhado para seleções de entregador e destinatários de lembretes, avatar/foto separado do texto, círculo legível no selecionado. Chips com largura pelo conteúdo, texto central sem reservar ✓ vazio e espaçamento que permita as ocasiões em pares sem truncar texto/alvo de toque.
+- T6-4: somente o aviso do Hoje em OrderDraftContext recebe o texto solicitado, ações lado a lado (retomar primário/descartar secundário), compacto. Mesmas funções de recuperação/descarte e whitelist de sessionStorage.
+- T6-5: reduzir recuo horizontal/espaco dos botões fantasma soltos em Calcular rota, Ver todos os lembretes e Cadastrar cliente por classe explícita, mantendo alvo44px e foco.
+- T6-6: contorno do logo no tema escuro com token dourado, preservando imagem e geometria; nenhuma alteração do logo claro.
+- Verificação: unidade/SSR do Button/AvatarChip, E2E de avatar antes/depois de selecionar, geometria dos chips/Clientes/rascunho/ghost/logo, ações de retomar/descarte e confirmação do pedido inalteradas; regressões de lembretes, pedidos, aparência, atualização e CSP. Tipos/lint/formatação/build, capturas t6-* e relatório. Envio consolidado/PR T6 com CI completo+Segurança automáticos, sem CI manual/merge no main.
+
 ## T4+T5 — entrega para revisão (17/11/2026)
 
 Branch `codex/t4-t5-appearance-news`, versão **0.17.0**, main **cc771e1** incorporado/conferido antes do PR. Somente T4+T5; T6 continua depois. Sem edição autoral de FILA/VEZ, flag, banco real ou Cloudflare. Trabalho retomado após indisponibilidade do ambiente; arquivos preservados, logs temporários perdidos e validação repetida antes do envio.

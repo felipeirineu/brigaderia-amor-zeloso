@@ -4,14 +4,16 @@ export function ChoiceChips({
   value,
   onChange,
   options,
+  className = '',
 }: {
+  className?: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
   options: readonly (readonly [string, string])[];
 }) {
   return (
-    <fieldset className="choice-chips">
+    <fieldset className={'choice-chips ' + className}>
       <legend>{label}</legend>
       <div className="chips">
         {options.map(([id, text]) => (

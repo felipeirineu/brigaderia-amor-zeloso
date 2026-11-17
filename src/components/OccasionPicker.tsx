@@ -1,8 +1,4 @@
-import {
-  occasionValues,
-  occasionLabels,
-  type Occasion,
-} from '../../shared/customer-order';
+import { occasionLabels, type Occasion } from '../../shared/customer-order';
 import { ChoiceChips } from './ChoiceChips';
 export function OccasionPicker({
   value,
@@ -16,7 +12,17 @@ export function OccasionPicker({
       label="Ocasião (opcional)"
       value={value}
       onChange={(v) => onChange(v as Occasion)}
-      options={occasionValues.map((v) => [v, occasionLabels[v]] as const)}
+      options={(
+        [
+          '',
+          'children_party',
+          'birthday',
+          'wedding',
+          'gift',
+          'corporate',
+          'other',
+        ] as const
+      ).map((v) => [v, occasionLabels[v]] as const)}
     />
   );
 }

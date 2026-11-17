@@ -25,11 +25,12 @@ export function DraftNotice() {
       aria-label="Seleção de pedido guardada"
     >
       <p>
-        Há uma seleção de pedido guardada nesta aba. Retome e confira os dados
-        antes de enviar.
+        Há uma seleção de pedido em andamento. Retome e confira os dados para
+        confirmar o pedido.
       </p>
       <div className="actions">
         <Button
+          variant="primary"
           to={
             draft.order_id
               ? `/gestao/pedidos/${draft.order_id}/editar-simples`
@@ -38,7 +39,7 @@ export function DraftNotice() {
         >
           Retomar seleção
         </Button>
-        <Button variant="ghost" onClick={() => clearDraft(scope)}>
+        <Button variant="tonal" onClick={() => clearDraft(scope)}>
           Descartar seleção
         </Button>
       </div>

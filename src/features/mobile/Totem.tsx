@@ -1,3 +1,4 @@
+import { AvatarChip } from '../../components/AvatarChip';
 import { SkeletonList } from '../../components/Skeleton';
 import { useCallback, useContext, useMemo } from 'react';
 import { OrderDraftScope } from './order-draft-scope';
@@ -998,7 +999,11 @@ export function Totem({
               onChange={(e) => setQuery(e.target.value)}
             />
           </label>
-          <Button to="/gestao/clientes" variant="ghost">
+          <Button
+            to="/gestao/clientes"
+            variant="ghost"
+            className="ghost-inline"
+          >
             Cadastrar cliente
           </Button>
           {!customers.data && !customers.error && (
@@ -1676,20 +1681,22 @@ export function Totem({
           >
             {(['unassigned', 'owner', 'partner', 'courier'] as const).map(
               (c) => (
-                <Button
+                <AvatarChip
                   key={c}
                   aria-pressed={courier === c}
                   onClick={() => setCourier(c)}
+                  avatar={
+                    c === 'owner' || c === 'partner' ? (
+                      <CourierAvatars courier={c} />
+                    ) : c === 'courier' ? (
+                      <span className="courier-initials" aria-hidden="true">
+                        M
+                      </span>
+                    ) : null
+                  }
                 >
-                  {c === 'owner' || c === 'partner' ? (
-                    <CourierAvatars courier={c} />
-                  ) : c === 'courier' ? (
-                    <span className="courier-initials" aria-hidden="true">
-                      M
-                    </span>
-                  ) : null}
                   {courierLabels[c]}
-                </Button>
+                </AvatarChip>
               ),
             )}
           </div>

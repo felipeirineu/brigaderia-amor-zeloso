@@ -66,6 +66,7 @@ export function RouteInfo({
       {!order && c.data.role === 'owner' && (
         <Button
           variant="ghost"
+          className="ghost-inline"
           disabled={busy}
           loading={busy}
           onClick={() => {

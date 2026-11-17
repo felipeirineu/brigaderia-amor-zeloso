@@ -412,6 +412,7 @@ function Customers({
     <>
       {prospects && (
         <ChoiceChips
+          className="customer-filter"
           label="Clientes ou contatos"
           value={kind}
           options={[
@@ -424,17 +425,19 @@ function Customers({
       <div className="page-heading customer-heading">
         <h1 className="mobile-context-title">Clientes</h1>
         {prospects && kind === 'prospect' && <HelpTip topic="visits" />}
-        <Button
-          variant="primary"
-          onClick={() => {
-            reset();
-            setPhotoNotice('');
-            sheet.current?.showModal();
-          }}
-        >
-          <Icon name="novo" size={18} />{' '}
-          {kind === 'prospect' ? 'Novo contato' : 'Novo cliente'}
-        </Button>
+        <div className="customer-create-row">
+          <Button
+            variant="primary"
+            onClick={() => {
+              reset();
+              setPhotoNotice('');
+              sheet.current?.showModal();
+            }}
+          >
+            <Icon name="novo" size={18} />{' '}
+            {kind === 'prospect' ? 'Novo contato' : 'Novo cliente'}
+          </Button>
+        </div>
       </div>
       <ErrorMessage message={list.error || save.error} />
       <p role="status">{save.notice}</p>

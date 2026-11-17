@@ -1,3 +1,4 @@
+import { AvatarChip } from '../../components/AvatarChip';
 import { useState } from 'react';
 import { Button } from '../../components/Button';
 import { HelpTip } from '../../components/HelpTip';
@@ -82,11 +83,11 @@ export function ReminderAlerts({
           <p>Para quem</p>
           <div className="actions">
             {state.staff.map((s) => (
-              <Button
+              <AvatarChip
                 key={s.id}
                 type="button"
-                variant="chip"
                 aria-pressed={recipients.includes(s.id)}
+                avatar={<StaffAvatar id={s.id} name={s.display_name} />}
                 onClick={() =>
                   onChange({
                     ...value,
@@ -96,9 +97,8 @@ export function ReminderAlerts({
                   })
                 }
               >
-                <StaffAvatar id={s.id} name={s.display_name} />
                 {s.display_name}
-              </Button>
+              </AvatarChip>
             ))}
             {state.staff.length === 2 && (
               <Button

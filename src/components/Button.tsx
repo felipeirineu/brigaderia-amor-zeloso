@@ -40,14 +40,14 @@ export function Button(props: Props) {
     classes = `az-button az-button--${kind} az-button--${size} ${className}`,
     content = (
       <>
-        {(loading !== undefined || icon || kind === 'chip') && (
+        {(loading || icon || (selected && kind === 'chip')) && (
           <span className="az-button-icon" aria-hidden="true">
             {loading ? (
               <LoaderCircle className="button-spinner" size={20} />
-            ) : selected && kind === 'chip' ? (
-              <Check size={20} />
-            ) : (
+            ) : icon ? (
               icon
+            ) : (
+              <Check size={20} />
             )}
           </span>
         )}

@@ -686,9 +686,7 @@ body:has(dialog[open]) {
   flex-shrink: 0;
 }
 .customer-records .route-info {
-  padding-inline-start: calc(
-    var(--az-space-4) + var(--az-avatar-size) + var(--az-space-3)
-  );
+  padding-inline: var(--az-space-4);
 }
 .customer-records .route-info .az-button-icon:empty {
   display: none;
@@ -698,7 +696,7 @@ body:has(dialog[open]) {
 }
 .customer-records .route-info .az-button {
   padding: var(--az-space-2) 0;
-  min-height: 40px;
+  min-height: 44px;
   justify-content: flex-start;
 }
 .more-grid {
@@ -1057,4 +1055,87 @@ textarea::placeholder {
 }
 .private-bottom-nav button.az-button {
   color: var(--az-cream);
+}
+
+/* T6: escolhas pelo conteúdo, sem reservar espaço para um ícone ausente. */
+.az-button--chip {
+  width: fit-content;
+  flex: 0 1 auto;
+  padding-inline: var(--az-space-3);
+  font-size: 14px;
+}
+.avatar-chip .az-button-icon {
+  height: auto;
+  width: auto;
+  min-width: 0;
+}
+.avatar-chip :is(.staff-avatar, .courier-initials) {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  min-width: 28px;
+  font-size: 12px;
+  height: 28px;
+  margin: 0;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--az-choc);
+  color: var(--az-cream);
+}
+.avatar-chip[aria-pressed='true'] :is(.staff-avatar, .courier-initials) {
+  background: var(--az-cream);
+  color: var(--az-choc);
+  outline: 2px solid var(--az-gold);
+}
+.customer-filter .chips {
+  justify-content: center;
+  flex-wrap: nowrap;
+}
+.customer-filter legend {
+  width: 100%;
+  text-align: center;
+}
+.customer-heading {
+  position: relative;
+  display: block;
+}
+.customer-create-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.customer-heading > .help-trigger {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+.draft-notice {
+  padding: var(--az-space-4);
+}
+.draft-notice p {
+  margin: 0 0 var(--az-space-3);
+}
+.draft-notice > .actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--az-space-2);
+}
+.draft-notice > .actions .az-button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding-inline: var(--az-space-2);
+  font-size: 14px;
+}
+.az-button--ghost.ghost-inline {
+  justify-content: flex-start;
+  align-self: flex-start;
+  width: fit-content;
+  min-height: 44px;
+  padding-inline: 0;
+  margin-block: 0;
+}
+:root[data-theme='dark'] :is(.compact-header > a img, .private-brand > img) {
+  outline: 2px solid var(--az-gold);
+  outline-offset: 1px;
+  border-radius: 50%;
 }

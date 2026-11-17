@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.18.0',
+    items: [
+      'Cadastros, escolhas com avatar e ações de retomar pedido mais claros no celular.',
+      'Logo com contorno no tema escuro.',
+    ],
+  },
+  {
     version: '0.17.0',
     items: ['Escolha aparência automática, clara ou escura em Preferências.'],
   },

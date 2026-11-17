@@ -1,3 +1,4 @@
+import { AvatarChip } from '../../components/AvatarChip';
 import { SkeletonList } from '../../components/Skeleton';
 import { occasionLabel } from '../../../shared/customer-order';
 import { OrderCost } from '../p1/OrderCost';
@@ -287,13 +288,24 @@ export function OrderDetail({
                 <div className="chips" role="group" aria-label="Entregador">
                   {(['unassigned', 'owner', 'partner', 'courier'] as const).map(
                     (v) => (
-                      <Button
+                      <AvatarChip
                         type="button"
                         key={v}
                         aria-pressed={delivery.courier === v}
                         onClick={() => setDelivery({ ...delivery, courier: v })}
+                        avatar={
+                          v === 'owner' || v === 'partner' ? (
+                            <CourierAvatars courier={v} />
+                          ) : v === 'courier' ? (
+                            <span
+                              className="courier-initials"
+                              aria-hidden="true"
+                            >
+                              M
+                            </span>
+                          ) : undefined
+                        }
                       >
-                        <CourierAvatars courier={v} />
                         {v === 'unassigned'
                           ? 'A definir'
                           : v === 'owner'
@@ -301,7 +313,7 @@ export function OrderDetail({
                             : v === 'partner'
                               ? courierLabels.partner
                               : 'Motoboy'}
-                      </Button>
+                      </AvatarChip>
                     ),
                   )}
                 </div>

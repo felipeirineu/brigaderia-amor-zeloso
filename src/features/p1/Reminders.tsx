@@ -151,7 +151,7 @@ export function TodayReminders({ day }: { day: string }) {
           </Button>
         </div>
       )}
-      <Button to="/gestao/lembretes" variant="ghost">
+      <Button to="/gestao/lembretes" variant="ghost" className="ghost-inline">
         Ver todos os lembretes
       </Button>
     </section>
