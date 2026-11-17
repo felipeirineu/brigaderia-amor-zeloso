@@ -64,8 +64,7 @@ Contador de entregas desde a última revisão: **1/3** (R7c).
 | R7b | Visitas, registrar visita, amostras na produção + migração 0025 | **publicada** (0.14.0); 0025 aplicada e conferida 16/11 |
 | R7c | Custo da prospecção, WhatsApp e relatório + migração 0026 | **publicada** (0.15.0); 0026 aplicada e conferida 17/11 |
 | R7d | "Nova visita" no +, visita a cliente atual e ajuda | **vez do Codex** — versão **0.16.0** |
-| T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
-| T5 | "Novidades" após atualizar + histórico em Mais (ligado a partir da 1.0.0) | a detalhar pelo Claude; última tarefa antes da 1.0 |
+| T4+T5 | Modo escuro + "Novidades" após atualizar (uma entrega só) | depois da R7d — versão **0.17.0** (detalhes abaixo) |
 
 ### T0 — R17
 
@@ -135,13 +134,6 @@ Passa a existir só o primeiro:
 
 Regras de sempre: tokens do `theme.css`, nada de dados reais, nenhuma operação remota.
 
-### T5 — anotações já aprovadas pelo Felipe
-
-- Depois de tocar em **Atualizar** e abrir a versão nova, mostrar **uma vez** uma folha "Novidades da versão X" com no máximo 3 itens, em linguagem de quem usa, e o botão "Entendi".
-- Em **Mais → Novidades**, o histórico de todas as versões.
-- Fonte única: o texto vem do histórico "Versões do app" (o Claude escreve ao publicar). Correções técnicas que não mudam o uso não entram.
-- Só fica ativo a partir da **1.0.0**, para funcionar como boas-vindas no dia da entrega.
-
 ### T2b — horário de hoje que já passou (aprovado pelo Felipe em 15/11)
 
 No passo "Quando entregar?" do Novo pedido (`src/features/mobile/Totem.tsx`, passo WHEN):
@@ -207,7 +199,7 @@ O Tiago conquista a maioria dos clientes visitando estabelecimentos com amostras
    - E2E do fluxo agendar → registrar → retornar → virar cliente.
 5. **Restrições:** nenhum lembrete, despesa ou mensagem criados sem confirmação humana. Contatos "Não teve interesse" podem ser arquivados ou excluídos (LGPD).
 
-**1.0.0** = T2b + T3 + T3b + T3c + R7a/b/c/d + T4 + T5 (e T4, se o Felipe mantiver antes da 1.0).
+**1.0.0** = T2b + T3 + T3b + T3c + R7a/b/c/d + T4+T5 → depois disso, o Felipe decide o dia da entrega e o Claude sobe para 1.0.0 (e T4, se o Felipe mantiver antes da 1.0).
 
 ### T3b — correções da T3 (versão 0.11.1, CORREÇÃO)
 
@@ -239,6 +231,40 @@ Vistas nas capturas antes/depois da própria T3:
    - **Visita a cliente atual:** para mostrar sabores novos.
    - Incluir no passeio guiado um passo curto "Visitas de apresentação".
 4. **Testes:** E2E do + → Nova visita (contato novo e cliente atual), visita de cliente não altera funil, ajuda visível. Mesma matriz de segurança da R7b.
+
+### T4+T5 — modo escuro e Novidades (uma entrega, versão 0.17.0; aprovado pelo Felipe em 16/11)
+
+**T4 — Modo escuro**
+
+1. **Tokens escuros** em `src/theme.css`, em um só lugar:
+   - `@media (prefers-color-scheme: dark)` e `:root[data-theme='dark']`;
+   - base no marrom da marca: fundo ~#1b120c, superfície ~#261a12, tonal ~#3a2a1e;
+   - texto creme ~#f6ead8, muted ~#c9b49f, dourado mais claro para contraste;
+   - verde de sucesso e avisos ajustados para contraste **AA** (≥ 4.5:1 em texto).
+2. **Preferência em Mais → Preferências:** "Aparência: Automático (padrão, segue o celular) / Claro / Escuro".
+   - Guardar em `localStorage`, com try/catch, por aparelho.
+   - Aplicar cedo para não piscar: ler a preferência antes do primeiro paint, sem script inline, por causa da CSP.
+   - Atualizar `theme-color` do manifesto/meta conforme o modo.
+3. **Revisar todas as telas** (Hoje, Pedidos, Novo pedido, Clientes, Contatos/visitas, Kits, Fichas, Financeiro, Mais, folhas, skeleton, avisos):
+   - nada de cor fixa clara;
+   - fotos dos sabores e o logo sem fundo branco estourado;
+   - mascote ok.
+4. **Testes:**
+   - E2E com `colorScheme: 'dark'` nas telas principais: fundo escuro, texto claro e contraste mínimo dos botões principais via `getComputedStyle`;
+   - E2E da preferência manual (Claro em celular escuro e vice-versa);
+   - capturas `docs/colaboracao/capturas/t4-escuro-*.png`.
+
+**T5 — Novidades após atualizar** (fica pronta agora, mas só aparece a partir da **1.0.0**)
+
+1. Arquivo único `src/release-notes.ts` com as versões e até 3 itens cada, em linguagem de quem usa. Copie o histórico "Versões do app" deste FILA, reescrito para o Tiago e a Alda.
+2. Depois de "Atualizar", na primeira abertura da versão nova (comparar `__APP_VERSION__` com a última vista, guardada em `localStorage`), mostrar uma folha **"Novidades da versão X"** com os itens e o botão **"Entendi"**. Uma vez por versão e por aparelho.
+3. **Mais → Novidades:** histórico de todas as versões.
+4. **Só ativa com versão ≥ 1.0.0** (antes disso, nem a folha nem o item em Mais aparecem). Na 1.0.0, a folha funciona como boas-vindas: "Bem-vindos ao app da Brigaderia Amor Zeloso" + 3 destaques.
+5. **Testes:**
+   - unitário da comparação de versões;
+   - E2E simulando versão 1.0.0 (folha aparece uma vez; "Entendi" não volta a mostrar; Mais → Novidades lista o histórico) e 0.17.0 (nada aparece).
+
+Regras: tokens do `theme.css`, sem `backdrop-filter`, sem dados reais. A folha usa o mesmo `help-sheet` (arrastar para fechar já funciona).
 
 ## Versões do app
 
