@@ -5,9 +5,10 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **R7c** (custo da prospecção, mensagens de WhatsApp e relatório; `CLAUDE_PARA_CODEX.md` §R7-6/7/9). Versão **0.15.0**. Ao terminar, abra o pull request.
+`VEZ: CODEX` — tarefa **R7d** (Nova visita no +, visita a cliente atual e ajuda; detalhes abaixo). Versão **0.16.0**. Ao terminar, abra o pull request.
 
-**Pendência do Felipe em paralelo:** aplicar a migração **0025** (backup → PRE_CHECAGEM → APLICAR_PENDENTES → PRE_CHECAGEM). As visitas aparecem sozinhas depois disso (Contatos já ligados).
+
+**Pendência do Felipe em paralelo:** aplicar a migração **0026** (backup → PRE_CHECAGEM → APLICAR_PENDENTES). O custo/relatório de prospecção aparece sozinho depois.
 
 
 ## Como funciona
@@ -41,7 +42,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 16/11 após T3c, R7a e R7b: sem problema real).
+Contador de entregas desde a última revisão: **1/3** (R7c).
 
 ## Limites
 
@@ -61,9 +62,9 @@ Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 
 | T3b | Correções da T3 | **publicada** 16/11 (PR #9) como **0.11.1** |
 | T3c | Skeleton de carregamento | **publicada** 16/11 (PR #10) como **0.12.0** |
 | R7a | Contatos, funil e "virou cliente" + migração 0024 | **publicada** (0.13.0); 0024 aplicada e conferida 16/11; **ligada** em 0.13.1 |
-| R7b | Visitas, registrar visita, amostras na produção + migração 0025 | **publicada** 16/11 (PR #12) como **0.14.0**; 0025 aguardando o Felipe |
-| R7c | Custo da prospecção, mensagens de WhatsApp e relatório de conversão | **vez do Codex** — versão **0.15.0** |
-| R7d | "Nova visita" no menu do +, visita também para cliente atual e ajuda explicando contatos e visitas | depois da R7c — versão **0.16.0** (detalhes abaixo) |
+| R7b | Visitas, registrar visita, amostras na produção + migração 0025 | **publicada** (0.14.0); 0025 aplicada e conferida 16/11 |
+| R7c | Custo da prospecção, WhatsApp e relatório + migração 0026 | **publicada** 17/11 (PR #13) como **0.15.0**; 0026 aguardando o Felipe |
+| R7d | "Nova visita" no +, visita a cliente atual e ajuda | **vez do Codex** — versão **0.16.0** |
 | T4 | Modo escuro | a detalhar pelo Claude (pode ficar para depois da 1.0, se o Felipe preferir) |
 | T5 | "Novidades" após atualizar + histórico em Mais (ligado a partir da 1.0.0) | a detalhar pelo Claude; última tarefa antes da 1.0 |
 
@@ -252,6 +253,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.15.0 | 17/11 | Custo estimado das amostras e corridas, despesa "Amostras e prospecção" só com confirmação, mensagens de retorno por WhatsApp e relatório de conversão (liga depois da migração 0026). |
 | 0.14.0 | 16/11 | Visitas de apresentação: agenda no Hoje, "Registrar visita" com amostras e amostras na produção do dia (liga depois da migração 0025). |
 | 0.13.1 | 16/11 | Contatos ligados (migração 0024 aplicada no banco real). |
 | 0.13.0 | 16/11 | Contatos (clientes em potencial) com funil e "virou cliente" — chega desligado; liga depois da migração 0024. |
@@ -279,3 +281,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 16/11 | 8 | R7a — contatos e funil (PR #11) | publicada como 0.13.0; 221 E2E e Segurança verdes. Migração 0024 só aditiva; consultas antigas protegidas por checagem de schema; flag desligada. |
 | 16/11 | — | Claude: liga PROSPECTS_ENABLED (0.13.1) | Migração 0024 aplicada pelo Felipe e conferida (24 aplicadas, 0 pendentes, 0 violações, 16 clientes); 221 E2E e Segurança verdes. |
 | 16/11 | 9 | R7b — visitas e amostras (PR #12) | publicada como 0.14.0; 227 E2E e Segurança verdes. Migração 0025 só aditiva. **Revisão geral 3/3** (T3c, R7a, R7b): sem problema real. |
+| 17/11 | 10 | R7c — custo, WhatsApp e relatório (PR #13) | publicada como 0.15.0; 236 E2E e Segurança verdes. Migração 0026 só aditiva; despesa só por confirmação do administrador. |
