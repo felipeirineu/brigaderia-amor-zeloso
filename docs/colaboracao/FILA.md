@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T4+T5** (modo escuro + Novidades; detalhes abaixo). Versão **0.17.0**. Ao terminar, abra o pull request.
+`VEZ: CODEX` — tarefa **T6** (ajustes visuais do Felipe; detalhes abaixo). Versão **0.18.0**. Ao terminar, abra o pull request.
 
 
 
@@ -41,7 +41,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **2/3** (R7c, R7d; revisão geral depois da T4+T5).
+Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 17/11 após R7c, R7d e T4+T5: sem problema real; 1 detalhe do modo escuro foi para a T6).
 
 ## Limites
 
@@ -64,8 +64,8 @@ Contador de entregas desde a última revisão: **2/3** (R7c, R7d; revisão geral
 | R7b | Visitas, registrar visita, amostras na produção + migração 0025 | **publicada** (0.14.0); 0025 aplicada e conferida 16/11 |
 | R7c | Custo da prospecção, WhatsApp e relatório + migração 0026 | **publicada** (0.15.0); 0026 aplicada e conferida 17/11 |
 | R7d | "Nova visita" no +, visita a cliente atual e ajuda | **publicada** 17/11 (PR #14) como **0.16.0** |
-| T4+T5 | Modo escuro + "Novidades" após atualizar | **vez do Codex** — versão **0.17.0** |
-| T6 | Ajustes visuais pedidos pelo Felipe em 16/11 (detalhes abaixo) | depois da T4+T5 — versão **0.18.0** |
+| T4+T5 | Modo escuro + "Novidades" (ativa na 1.0.0) | **publicada** 17/11 (PR #15) como **0.17.0** |
+| T6 | Ajustes visuais pedidos pelo Felipe (detalhes abaixo) | **vez do Codex** — versão **0.18.0** |
 
 ### T0 — R17
 
@@ -283,7 +283,8 @@ Mesmo cuidado da T3: capturas antes/depois em `docs/colaboracao/capturas/t6-*.pn
    - texto: "Há uma seleção de pedido em andamento. Retome e confira os dados para confirmar o pedido.";
    - os botões "Retomar seleção" (primário) e "Descartar seleção" (secundário) lado a lado, na mesma linha, com o cartão compacto.
 5. **Botões fantasma soltos** ("Calcular rota" no cartão do cliente, "Ver todos os lembretes", "Cadastrar cliente"): alinhar à esquerda com o texto do cartão, sem espaço vazio grande antes/depois.
-6. O Felipe pode mandar mais itens antes da vez: o Claude acrescenta aqui.
+6. **Logo no modo escuro:** o círculo marrom do logo quase some no fundo escuro (capturas `t4-escuro-*`). Dar um contorno claro (1–2 px `--az-gold` ou creme) ou um fundo creme ao redor, só no tema escuro.
+7. O Felipe pode mandar mais itens antes da vez: o Claude acrescenta aqui.
 
 ## Versões do app
 
@@ -297,6 +298,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.17.0 | 17/11 | Modo escuro (automático, claro ou escuro em Mais → Preferências) e as Novidades prontas para a 1.0. |
 | 0.16.0 | 17/11 | "Nova visita" direto no +, visita também para cliente atual (novos sabores) e ajuda passo a passo sobre contatos e visitas. |
 | 0.15.0 | 17/11 | Custo estimado das amostras e corridas, despesa "Amostras e prospecção" só com confirmação, mensagens de retorno por WhatsApp e relatório de conversão (liga depois da migração 0026). |
 | 0.14.0 | 16/11 | Visitas de apresentação: agenda no Hoje, "Registrar visita" com amostras e amostras na produção do dia (liga depois da migração 0025). |
@@ -329,3 +331,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 17/11 | 10 | R7c — custo, WhatsApp e relatório (PR #13) | publicada como 0.15.0; 236 E2E e Segurança verdes. Migração 0026 só aditiva; despesa só por confirmação do administrador. |
 | 17/11 | — | Felipe aplicou 0026 | conferida pelo Claude: 26 aplicadas, 0 pendentes, 0 violações, 16 clientes. |
 | 17/11 | 11 | R7d — Nova visita no +, cliente atual, ajuda (PR #14) | publicada como 0.16.0; 242 E2E e Segurança verdes; sem migração. |
+| 17/11 | 12 | T4+T5 — modo escuro e Novidades (PR #15) | O CI do PR foi cancelado ao bater 25 min (sem falha). O Claude subiu o limite do job para 40 min e rodou a bateria: 251 E2E e Segurança verdes. Publicada como 0.17.0. **Revisão geral 3/3** (R7c, R7d, T4+T5): sem problema real; logo no escuro foi para a T6. |
