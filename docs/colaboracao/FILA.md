@@ -375,7 +375,7 @@ Objetivo: o Felipe liga as notificações com um clique no GitHub, sem terminal 
    - antes da lista, um título **"Lista de clientes"**, separando bem as duas partes.
 6. **Clientes:** separar mais os chips Clientes/Contatos: `--az-space-5`, ou um em cada metade da linha. Na T7 ficou `--az-space-3` e ainda está perto.
 7. **Prospecção e Agenda:** trocar "no fuso de Fortaleza" por **"no horário local"** (`Followup.tsx`, `Agenda.tsx` e qualquer outro texto visível; os comentários de código podem ficar).
-8. **Produtos → Foto do produto (celular):** a seção está bagunçada. Prévia: `docs/colaboracao/previas/t9-foto-produto.png` (**aguardando aprovação do Felipe**). Reorganizar:
+8. **Produtos → Foto do produto (celular):** a seção está bagunçada. Prévia: `docs/colaboracao/previas/t9-foto-produto.png` — **aprovada pelo Felipe em 17/11: seguir a prévia** (nomes inteiros, sem corte com reticências). Reorganizar:
    - "Sugerir foto pelo nome" e "Sem foto" lado a lado (par);
    - as fotos numa grade de **3 por linha**, cartões quadrados do mesmo tamanho, foto redonda em cima e nome centralizado embaixo (até 2 linhas);
    - a escolhida com contorno dourado e ✓;
