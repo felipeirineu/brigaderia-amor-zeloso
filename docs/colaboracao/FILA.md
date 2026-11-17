@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T6** (ajustes visuais do Felipe; detalhes abaixo). Versão **0.18.0**. Ao terminar, abra o pull request.
+`VEZ: CODEX` — **corrigir T6 no PR #16** (diagnóstico abaixo). Push no mesmo branch.
 
 
 
@@ -267,6 +267,16 @@ Vistas nas capturas antes/depois da própria T3:
 
 Regras: tokens do `theme.css`, sem `backdrop-filter`, sem dados reais. A folha usa o mesmo `help-sheet` (arrastar para fechar já funciona).
 
+### ⚠️ T6 — CI vermelho no PR #16 (1ª falha) — diagnóstico do Claude
+
+- **Onde:** `tests/e2e/t3-visual.spec.js:81` nos três navegadores. O teste da T3 exige que o rótulo de "Calcular rota" fique alinhado (±1 px) com o **nome do cliente** no cartão. Agora está 55 px à esquerda.
+- **Causa:** em `src/theme.css`, a T6 trocou `.customer-records .route-info { padding-inline-start: calc(var(--az-space-4) + var(--az-avatar-size) + var(--az-space-3)) }` por `padding-inline: var(--az-space-4)`. Isso levou o botão para a borda do cartão.
+- **Correção:**
+  - restaurar o recuo antigo (alinhado ao nome, que é "o texto do cartão" do item 5 da T6) e manter o restante (sem espaço vazio vertical, `min-height: 44px`);
+  - não alterar o teste da T3;
+  - conferir que os demais botões `ghost-inline` seguem alinhados ao texto do próprio bloco.
+- Push no mesmo branch `codex/t6-visual-polish`.
+
 ### T6 — ajustes visuais pedidos pelo Felipe (16/11, com capturas do celular)
 
 Mesmo cuidado da T3: capturas antes/depois em `docs/colaboracao/capturas/t6-*.png`, sem mudar comportamento.
@@ -332,3 +342,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 17/11 | — | Felipe aplicou 0026 | conferida pelo Claude: 26 aplicadas, 0 pendentes, 0 violações, 16 clientes. |
 | 17/11 | 11 | R7d — Nova visita no +, cliente atual, ajuda (PR #14) | publicada como 0.16.0; 242 E2E e Segurança verdes; sem migração. |
 | 17/11 | 12 | T4+T5 — modo escuro e Novidades (PR #15) | O CI do PR foi cancelado ao bater 25 min (sem falha). O Claude subiu o limite do job para 40 min e rodou a bateria: 251 E2E e Segurança verdes. Publicada como 0.17.0. **Revisão geral 3/3** (R7c, R7d, T4+T5): sem problema real; logo no escuro foi para a T6. |
+| 17/11 | — | T6 (PR #16) | CI vermelho (1ª): "Calcular rota" desalinhado do nome (teste T3). Diagnóstico no FILA; vez devolvida ao Codex. Verificações pausadas a pedido do Felipe. |
