@@ -293,7 +293,7 @@ Mesmo cuidado da T3: capturas antes/depois em `docs/colaboracao/capturas/t6-*.pn
 
 ### T7 — revisões do Felipe antes da 1.0 (17/11, com captura do menu +)
 
-Prévia da abertura e do aviso de álcool: `docs/colaboracao/previas/t7-abertura-alcool.png` (**aguardando aprovação do Felipe**; se aprovada, seguir a prévia).
+Prévia da abertura e do aviso de álcool: `docs/colaboracao/previas/t7-abertura-alcool.png` — **aprovada pelo Felipe em 17/11: seguir a prévia** (logo centralizado + três pontinhos pulsando, parados com menos animação; contorno dourado no escuro; selo "🍸 Álcool" ao lado do nome, com `aria-label`/texto acessível "Contém álcool", quebrando para baixo só se o nome for longo).
 
 1. **Abertura do app:** hoje aparece "Gestão restrita / Verificando sessão…" (`Management.tsx`, bloco `if (!session)`).
    - Trocar por uma **tela de abertura** com o **logo grande centralizado** sobre o fundo da marca (respeitando claro/escuro), sem texto técnico. Opcional: um indicador discreto de carregamento.
