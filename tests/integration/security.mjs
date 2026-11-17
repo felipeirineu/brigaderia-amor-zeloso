@@ -136,6 +136,75 @@ try {
     ok(res.ok, method + ' ' + path + ' permite operadora: ' + res.status);
   }
 
+  // R7d: as mesmas rotas aceitam cliente atual, sem criar funil; busca unificada segue privada.
+  ok(
+    (await t.request('customers?kind=all')).status === 401,
+    'busca unificada exige sessão',
+  );
+  const allOwn = await call('customers?kind=all', undefined, 'GET', operator);
+  ok(
+    allOwn.some((c) => c.id === customer) && allOwn.some((c) => c.id === vc.id),
+    'busca unificada inclui contato e cliente',
+  );
+  ok(
+    !(await call('customers?kind=all', undefined, 'GET', outside)).some(
+      (c) => c.id === customer || c.id === vc.id,
+    ),
+    'busca unificada isolada por tenant',
+  );
+  const cv = await call(
+    'visits',
+    { ...vi, customer_id: customer },
+    'POST',
+    operator,
+  );
+  for (const [path, method, data] of [
+    ['visits/' + cv.id, 'GET', undefined],
+    ['visits/' + cv.id, 'PUT', { ...vi, customer_id: customer, version: 1 }],
+    [
+      'visits/' + cv.id + '/record',
+      'POST',
+      { version: 2, occurred_at: new Date().toISOString(), samples: [] },
+    ],
+  ]) {
+    ok(
+      (await t.request(path, { method, data, key: crypto.randomUUID() }))
+        .status === 401,
+      path + ' cliente exige sessão',
+    );
+    ok(
+      (
+        await t.request(path, {
+          cookie: outside,
+          method,
+          data,
+          key: crypto.randomUUID(),
+        })
+      ).status === 404,
+      path + ' cliente outro tenant',
+    );
+    ok(
+      (
+        await t.request(path, {
+          cookie: operator,
+          method,
+          data,
+          key: crypto.randomUUID(),
+        })
+      ).ok,
+      path + ' cliente permite operadora',
+    );
+  }
+  ok(
+    !(await t.db
+      .prepare(
+        'SELECT 1 FROM prospect_details WHERE organization_id=? AND customer_id=?',
+      )
+      .bind(t.org, customer)
+      .first()),
+    'visita a cliente não cria funil',
+  );
+
   // R7c: leituras não gravam; custos/WhatsApp isolados e despesa exclusiva do administrador.
   const sp = (await call('products', undefined, 'GET'))[0];
   const sv = await call('visits', {

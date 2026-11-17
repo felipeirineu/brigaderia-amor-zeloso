@@ -238,7 +238,12 @@ export async function calendar(
       if (v.status !== 'cancelled')
         events.push({
           id: 'visit-' + v.id,
-          title: 'Visita de apresentação · ' + v.customer_name,
+          title:
+            (v.data.audience === 'customer'
+              ? 'Visita a cliente'
+              : 'Visita de apresentação') +
+            ' · ' +
+            v.customer_name,
           date: new Date(Date.parse(v.scheduled_at) - 10800000)
             .toISOString()
             .slice(0, 10),

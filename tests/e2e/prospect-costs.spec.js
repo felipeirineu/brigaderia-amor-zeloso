@@ -201,7 +201,7 @@ test('R7c estimativa não é despesa, confirmação humana e prévia editável d
     await page.getByRole('link', { name: 'Prospecção', exact: true }).click();
     await expect(
       page.getByRole('heading', {
-        name: 'Custos das visitas no período',
+        name: 'Custos das visitas a contatos no período',
         exact: true,
       }),
     ).toBeVisible();

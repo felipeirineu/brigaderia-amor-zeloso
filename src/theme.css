@@ -992,3 +992,11 @@ body:has(dialog[open]) {
   border-top: 1px solid var(--az-line);
   padding-block: var(--az-space-3);
 }
+
+.visit-time-chips {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.visit-time-chips .az-button {
+  padding-inline: var(--az-space-2);
+}

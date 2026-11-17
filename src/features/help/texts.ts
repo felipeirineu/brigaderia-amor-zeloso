@@ -1,4 +1,17 @@
 export const helpTexts = {
+  visits: {
+    title: 'Contatos e visitas de apresentação',
+    text: 'Contato é um estabelecimento que ainda não compra. O cadastro e o histórico são privados.',
+    steps: [
+      'Cadastre em Clientes → Contatos ou + → Nova visita → Novo contato. O nome basta; telefone e endereço podem vir depois.',
+      'Em + → Nova visita, busque um contato ou cliente e escolha data, horário e amostras em unidades.',
+      'No Hoje, use Mapa, WhatsApp, Uber ou copie o endereço para 99. As amostras entram na produção separadas das vendas.',
+      'Depois toque em Registrar visita: confira amostras deixadas, quem foi, quando aconteceu e próximo passo.',
+      'Retorne por lembrete ou WhatsApp, sempre por ação sua. Nada envia mensagem, cria despesa ou registra corrida sozinho.',
+      'Quando o contato começar a comprar, toque em Virou cliente. O histórico continua no mesmo cadastro.',
+      'Para cliente atual, escolha uma visita de novos sabores/opções. Isso não altera o funil nem converte novamente.',
+    ],
+  },
   route: {
     title: 'Rota de carro',
     text: 'Estimativa entre a base e o destino, calculada uma vez e salva; não acompanha trânsito em tempo real. A rota no aplicativo de mapas parte do local atual do aparelho e pode levar outro tempo. Sem estimativa válida, a distância em linha reta é identificada. Abertura de telas não consulta o provedor. Confira o destino antes de sair.',

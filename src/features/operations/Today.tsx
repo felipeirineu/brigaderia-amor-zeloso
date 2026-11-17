@@ -167,6 +167,12 @@ export function Today({
     received_available: boolean;
     truncated: boolean;
   }>(`today?date=${day}`);
+  const visitRefresh = view.refresh;
+  useEffect(() => {
+    const update = () => void visitRefresh();
+    window.addEventListener('visits-changed', update);
+    return () => window.removeEventListener('visits-changed', update);
+  }, [visitRefresh]);
   const [actionError, setActionError] = useState('');
   const [busy, setBusy] = useState(false);
   const pending = useRef(false);

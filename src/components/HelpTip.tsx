@@ -38,6 +38,13 @@ export function HelpTip({ topic }: { topic: HelpTopic }) {
           </Button>
           <h2 id={id}>{text.title}</h2>
           <p>{text.text}</p>
+          {'steps' in text && (
+            <ol>
+              {text.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          )}
           <Button
             to="/gestao/ajuda"
             onClick={() => dialog.current?.close()}

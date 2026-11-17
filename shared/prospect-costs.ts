@@ -36,6 +36,9 @@ export interface ProspectReport {
   from: string;
   to: string;
   visits: number;
+  prospect_visits: number;
+  customer_visits: number;
+  customer_cost_used_cents: number | null;
   visited_contacts: number;
   cohort_converted: number;
   cohort_rate: number | null;

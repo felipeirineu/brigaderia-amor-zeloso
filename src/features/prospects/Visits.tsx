@@ -1,3 +1,6 @@
+import { VisitCustomerPicker } from './VisitCustomerPicker';
+import { HelpTip } from '../../components/HelpTip';
+import { DayCalendar } from '../operations/DayCalendar';
 import { FollowupSheet, VisitCostPanel } from './Followup';
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
@@ -155,20 +158,19 @@ export function VisitSheet({
   visit,
   customerId,
   record = false,
+  compact = false,
   onClose,
   onSaved,
 }: {
   visit?: ProspectVisit;
   customerId?: string;
   record?: boolean;
+  compact?: boolean;
   onClose: () => void;
   onSaved: () => void;
 }) {
   const field = useField(),
-    products = useRemote<Product[]>('products'),
-    customers = useRemote<{ id: string; name: string }[]>(
-      'customers?kind=prospect',
-    );
+    products = useRemote<Product[]>('products');
   const dialog = useRef<HTMLDialogElement>(null),
     trigger = useRef<HTMLElement | null>(null),
     pending = useRef(false),
@@ -184,6 +186,7 @@ export function VisitSheet({
     [performer, setPerformer] = useState(field?.data?.user_id ?? ''),
     [next, setNext] = useState(shiftDay(localDay(), 3) + 'T10:00'),
     [busy, setBusy] = useState(false),
+    [creating, setCreating] = useState(false),
     [error, setError] = useState('');
   useEffect(() => {
     trigger.current = document.activeElement as HTMLElement;
@@ -224,11 +227,13 @@ export function VisitSheet({
   }
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (pending.current) return;
+    if (pending.current || creating) return;
     pending.current = true;
     setBusy(true);
     setError('');
     try {
+      if (!record && !visit && !customer)
+        throw Error('Escolha um contato ou cliente antes de agendar.');
       const sampleLines = lines
         .filter((s) => s.units > 0)
         .map(({ product_id, units, weight_grams }) => ({
@@ -293,7 +298,8 @@ export function VisitSheet({
               ? 'Editar visita'
               : 'Agendar visita'}
         </h2>
-        <Failure message={error || products.error || customers.error} />
+        <HelpTip topic="visits" />
+        <Failure message={error || products.error} />
         {error && visit && (
           <Button
             onClick={() => {
@@ -305,25 +311,60 @@ export function VisitSheet({
           </Button>
         )}
         <form className="data-form" onSubmit={(e) => void save(e)}>
-          <fieldset disabled={busy} className="customer-form-fields">
+          <fieldset
+            disabled={busy || creating}
+            className="customer-form-fields"
+          >
             {visit ? (
               <p>{visit.customer_name}</p>
             ) : (
-              <label>
-                Contato
-                <select
-                  required
-                  value={customer}
-                  onChange={(e) => setCustomer(e.target.value)}
-                >
-                  <option value="">Selecione</option>
-                  {customers.data?.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
+              <VisitCustomerPicker
+                value={customer}
+                onChange={setCustomer}
+                onBusy={setCreating}
+              />
+            )}
+            {!record && (
+              <>
+                <div className="chips" role="group" aria-label="Dia da visita">
+                  {[
+                    ['Hoje', localDay()],
+                    ['Amanhã', shiftDay(localDay(), 1)],
+                  ].map(([label, day]) => (
+                    <Button
+                      key={day}
+                      type="button"
+                      variant="chip"
+                      aria-pressed={at.slice(0, 10) === day}
+                      onClick={() => setAt(day + 'T' + at.slice(11, 16))}
+                    >
+                      {label}
+                    </Button>
                   ))}
-                </select>
-              </label>
+                  <DayCalendar
+                    day={at.slice(0, 10)}
+                    label="Escolher data"
+                    onSelect={(day) => setAt(day + 'T' + at.slice(11, 16))}
+                  />
+                </div>
+                <div
+                  className="chips visit-time-chips"
+                  role="group"
+                  aria-label="Horário da visita"
+                >
+                  {['09:00', '14:00', '18:00'].map((time) => (
+                    <Button
+                      type="button"
+                      key={time}
+                      variant="chip"
+                      aria-pressed={at.slice(11, 16) === time}
+                      onClick={() => setAt(at.slice(0, 10) + 'T' + time)}
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              </>
             )}
             <label>
               {record
@@ -362,95 +403,101 @@ export function VisitSheet({
                 </label>
               </>
             )}
-            <h3>{record ? 'Amostras deixadas' : 'Amostras planejadas'}</h3>
-            <p>
-              Unidades avulsas, sem cobrança. Peso é opcional: informe somente o
-              conhecido. Sem amostras, deixe as quantidades em zero.
-            </p>
-            {!products.data && !products.error && (
-              <SkeletonList label="Carregando sabores…" />
-            )}
-            {choices.map((p) => {
-              const line = lines.find((s) => s.product_id === p.id),
-                weights = [
-                  ...new Set(
-                    p.variants
-                      .filter((v) => v.active)
-                      .map((v) => v.weight_grams),
-                  ),
-                ],
-                weight = line
-                  ? line.weight_grams
-                  : weights.length === 1
-                    ? weights[0]
-                    : null;
-              return (
-                <div className="visit-sample-row" key={p.id}>
-                  {p.photo_key && (
-                    <img
-                      src={photoURL(p.photo_key)}
-                      width={48}
-                      height={48}
-                      alt=""
-                    />
-                  )}
-                  <div>
-                    <strong>{p.name}</strong>
-                    {p.historical && (
-                      <small>Produto inativo · amostra planejada</small>
+            <details open={!compact || record}>
+              <DisclosureSummary>
+                {record
+                  ? 'Amostras deixadas'
+                  : 'Amostras planejadas (opcional)'}
+              </DisclosureSummary>
+              <p>
+                Unidades avulsas, sem cobrança. Peso é opcional: informe somente
+                o conhecido. Sem amostras, deixe as quantidades em zero.
+              </p>
+              {!products.data && !products.error && (
+                <SkeletonList label="Carregando sabores…" />
+              )}
+              {choices.map((p) => {
+                const line = lines.find((s) => s.product_id === p.id),
+                  weights = [
+                    ...new Set(
+                      p.variants
+                        .filter((v) => v.active)
+                        .map((v) => v.weight_grams),
+                    ),
+                  ],
+                  weight = line
+                    ? line.weight_grams
+                    : weights.length === 1
+                      ? weights[0]
+                      : null;
+                return (
+                  <div className="visit-sample-row" key={p.id}>
+                    {p.photo_key && (
+                      <img
+                        src={photoURL(p.photo_key)}
+                        width={48}
+                        height={48}
+                        alt=""
+                      />
                     )}
-                    <QuantityInput
-                      label={'Unidades de ' + p.name}
-                      min={0}
-                      max={10000}
-                      value={line?.units ?? 0}
-                      onValueChange={(units) => change(p, units, weight)}
-                    />
-                    {!!line?.units && (
-                      <label>
-                        Peso por amostra de {p.name} (g, opcional)
-                        <input
-                          type="number"
-                          min={1}
-                          max={1000}
-                          step={1}
-                          value={weight ?? ''}
-                          placeholder="A definir"
-                          onChange={(e) =>
-                            change(
-                              p,
-                              line.units,
-                              e.target.value ? Number(e.target.value) : null,
-                            )
-                          }
-                        />
-                      </label>
-                    )}
+                    <div>
+                      <strong>{p.name}</strong>
+                      {p.historical && (
+                        <small>Produto inativo · amostra planejada</small>
+                      )}
+                      <QuantityInput
+                        label={'Unidades de ' + p.name}
+                        min={0}
+                        max={10000}
+                        value={line?.units ?? 0}
+                        onValueChange={(units) => change(p, units, weight)}
+                      />
+                      {!!line?.units && (
+                        <label>
+                          Peso por amostra de {p.name} (g, opcional)
+                          <input
+                            type="number"
+                            min={1}
+                            max={1000}
+                            step={1}
+                            value={weight ?? ''}
+                            placeholder="A definir"
+                            onChange={(e) =>
+                              change(
+                                p,
+                                line.units,
+                                e.target.value ? Number(e.target.value) : null,
+                              )
+                            }
+                          />
+                        </label>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-            {products.data &&
-              !record &&
-              lines
-                .filter(
-                  (s) => !products.data!.some((p) => p.id === s.product_id),
-                )
-                .map((s) => (
-                  <p key={s.product_id} role="alert">
-                    Sabor indisponível: {s.product_name}.{' '}
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        setLines((prev) =>
-                          prev.filter((l) => l.product_id !== s.product_id),
-                        )
-                      }
-                    >
-                      Remover das amostras
-                    </Button>
-                  </p>
-                ))}
+                );
+              })}
+              {products.data &&
+                !record &&
+                lines
+                  .filter(
+                    (s) => !products.data!.some((p) => p.id === s.product_id),
+                  )
+                  .map((s) => (
+                    <p key={s.product_id} role="alert">
+                      Sabor indisponível: {s.product_name}.{' '}
+                      <Button
+                        type="button"
+                        onClick={() =>
+                          setLines((prev) =>
+                            prev.filter((l) => l.product_id !== s.product_id),
+                          )
+                        }
+                      >
+                        Remover das amostras
+                      </Button>
+                    </p>
+                  ))}
+            </details>
             <label>
               Observação da visita
               <textarea
@@ -532,11 +579,21 @@ export function VisitCard({
   return (
     <article
       className="panel visit-card"
-      aria-label={'Visita de apresentação · ' + visit.customer_name}
+      aria-label={
+        (visit.data.audience === 'customer'
+          ? 'Visita a cliente'
+          : 'Visita de apresentação') +
+        ' · ' +
+        visit.customer_name
+      }
     >
       <header className="visit-card-heading">
         <div className="visit-type-row">
-          <strong>Visita de apresentação</strong>
+          <strong>
+            {visit.data.audience === 'customer'
+              ? 'Visita a cliente'
+              : 'Visita de apresentação'}
+          </strong>
           <span className="status-tag">{visitLabels[visit.status]}</span>
         </div>
         <div className="visit-identity-row">
@@ -547,6 +604,12 @@ export function VisitCard({
           </div>
         </div>
       </header>
+      <p>
+        Objetivo:{' '}
+        {visit.data.purpose === 'new_options'
+          ? 'Novos sabores/opções'
+          : 'Apresentação'}
+      </p>
       <Failure message={error} />
       {error && <Button onClick={onChanged}>Atualizar visita</Button>}
       {notice && <p role="status">{notice}</p>}
@@ -674,7 +737,7 @@ function ContactScheduleButton({
   onOpen: () => void;
 }) {
   const view = useRemote<{ kind?: string; active: number }>('customers/' + id);
-  return view.data?.kind === 'prospect' && !!view.data.active ? (
+  return view.data?.active ? (
     <Button variant="primary" onClick={onOpen}>
       Agendar visita
     </Button>
@@ -698,6 +761,12 @@ export function VisitsPage({ followup = false }: { followup?: boolean }) {
               (filterPeriod ? `&from=${from}&to=${to}` : '')
             : `from=${from}&to=${to}`),
   );
+  const visitRefresh = view.refresh;
+  useEffect(() => {
+    const update = () => void visitRefresh();
+    window.addEventListener('visits-changed', update);
+    return () => window.removeEventListener('visits-changed', update);
+  }, [visitRefresh]);
   const list = view.data
     ? Array.isArray(view.data)
       ? view.data

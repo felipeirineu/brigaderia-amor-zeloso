@@ -138,10 +138,10 @@ export async function management(req: Request, env: Env, a: Actor) {
       hasProspects;
     const kind = resource === 'customers' ? url.searchParams.get('kind') : null;
     if (kind && !canProspect) throw new HttpError(404, 'Não encontrado.');
-    if (kind && !['customer', 'prospect'].includes(kind))
+    if (kind && !['customer', 'prospect', 'all'].includes(kind))
       throw new HttpError(400, 'Filtro inválido.');
     const kindFilter =
-      hasProspects && !id
+      hasProspects && !id && kind !== 'all'
         ? ` AND kind='${kind === 'prospect' ? 'prospect' : 'customer'}'`
         : '';
     const prospectSelect = canProspect

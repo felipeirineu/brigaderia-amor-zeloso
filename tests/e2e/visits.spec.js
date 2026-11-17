@@ -67,8 +67,11 @@ test('R7b agendar, produzir unidades, registrar e escolher lembrete/corrida sem 
     });
     await expect(sheet).toBeVisible();
     await expect(
-      sheet.getByRole('combobox', { name: 'Contato', exact: true }),
-    ).toHaveValue(contact.id);
+      sheet.getByRole('region', {
+        name: 'Destinatário da visita',
+        exact: true,
+      }),
+    ).toContainText('Contato DEMONSTRAÇÃO visita móvel');
     await sheet
       .getByLabel('Quando visitar (João Pessoa)', { exact: true })
       .fill(fortalezaDay() + 'T14:00');

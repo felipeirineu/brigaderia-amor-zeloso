@@ -7,7 +7,13 @@ import { useLocation } from 'react-router-dom';
 import { helpTexts } from './texts';
 import { Mascot } from '../../components/Mascot';
 
-export function Tour({ role }: { role: string }) {
+export function Tour({
+  role,
+  visits = false,
+}: {
+  role: string;
+  visits?: boolean;
+}) {
   const [step, setStep] = useState(-1),
     [done, setDone] = useState(
       () => localStorage.getItem(`az-tour-${role}`) === 'done',
@@ -41,8 +47,20 @@ export function Tour({ role }: { role: string }) {
       {
         target: 'new',
         title: 'Cadastro rápido',
-        text: 'O botão + reúne novo pedido e novo cliente. No modo simples, escolha o cliente, toque nas fotos e revise antes de confirmar.',
+        text:
+          'O botão + reúne novo pedido e novo cliente' +
+          (visits ? ' e Nova visita' : '') +
+          '. No modo simples, escolha o cliente, toque nas fotos e revise antes de confirmar.',
       },
+      ...(visits
+        ? [
+            {
+              target: 'new',
+              title: 'Visitas de apresentação',
+              text: 'No +, escolha Nova visita. Busque um contato ou cliente, marque quando ir e as amostras. Registre depois no Hoje; retorno e WhatsApp são sempre feitos por você. Visita a cliente atual não altera o funil.',
+            },
+          ]
+        : []),
       {
         target: 'customers',
         title: 'Seus clientes',
@@ -54,7 +72,7 @@ export function Tour({ role }: { role: string }) {
         text: 'Em Mais ficam pedidos padrão, produtos, ajuda e acessos de administrador. Você pode refazer este passeio.',
       },
     ],
-    [role],
+    [role, visits],
   );
   useEffect(() => {
     if (step < 0) return;
@@ -388,6 +406,13 @@ export function HelpCenter({
         <details className="panel" key={key}>
           <DisclosureSummary>{text.title}</DisclosureSummary>
           <p>{text.text}</p>
+          {'steps' in text && (
+            <ol>
+              {text.steps.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          )}
         </details>
       ))}
       <section className="panel">

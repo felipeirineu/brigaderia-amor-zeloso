@@ -365,10 +365,10 @@ export async function prospectReport(req: Request, env: Env, a: Actor) {
     { from, to } = requestRange(req, 366),
     start = utcStart(from),
     end = utcStart(addDays(to, 1));
-  const selected = (
+  const periodVisits = (
     await db
       .prepare(
-        "SELECT v.id,v.customer_id,r.data,c.name,p.data AS prospect_data FROM prospect_visits v JOIN prospect_visit_records r ON r.organization_id=v.organization_id AND r.visit_id=v.id JOIN customers c ON c.organization_id=v.organization_id AND c.id=v.customer_id JOIN prospect_details p ON p.organization_id=v.organization_id AND p.customer_id=v.customer_id WHERE v.organization_id=? AND json_extract(r.data,'$.occurred_at')>=? AND json_extract(r.data,'$.occurred_at')<? ORDER BY v.id LIMIT 1001",
+        "SELECT v.id,v.customer_id,v.data AS plan_data,r.data,c.name,p.data AS prospect_data FROM prospect_visits v JOIN prospect_visit_records r ON r.organization_id=v.organization_id AND r.visit_id=v.id JOIN customers c ON c.organization_id=v.organization_id AND c.id=v.customer_id LEFT JOIN prospect_details p ON p.organization_id=v.organization_id AND p.customer_id=v.customer_id WHERE v.organization_id=? AND json_extract(r.data,'$.occurred_at')>=? AND json_extract(r.data,'$.occurred_at')<? ORDER BY v.id LIMIT 1001",
       )
       .bind(org, start, end)
       .all<{
@@ -377,8 +377,15 @@ export async function prospectReport(req: Request, env: Env, a: Actor) {
         data: string;
         name: string;
         prospect_data: string;
+        plan_data: string;
       }>()
   ).results;
+  const selected = periodVisits.filter(
+    (v) => JSON.parse(v.plan_data).audience !== 'customer',
+  );
+  const customerVisits = periodVisits.filter(
+    (v) => JSON.parse(v.plan_data).audience === 'customer',
+  );
   const conversions = (
     await db
       .prepare(
@@ -387,7 +394,7 @@ export async function prospectReport(req: Request, env: Env, a: Actor) {
       .bind(org, start, end)
       .all<{ customer_id: string; converted_at: string }>()
   ).results;
-  if (selected.length > 1000 || conversions.length > 1000)
+  if (periodVisits.length > 1000 || conversions.length > 1000)
     throw new HttpError(
       409,
       'Mais de 1000 visitas/conversões; reduza o período.',
@@ -396,7 +403,7 @@ export async function prospectReport(req: Request, env: Env, a: Actor) {
     ? (
         await db
           .prepare(
-            "SELECT v.id,v.customer_id,r.data FROM prospect_visits v JOIN prospect_visit_records r ON r.organization_id=v.organization_id AND r.visit_id=v.id JOIN prospect_details p ON p.organization_id=v.organization_id AND p.customer_id=v.customer_id WHERE v.organization_id=? AND v.customer_id IN(SELECT value FROM json_each(?)) AND json_extract(r.data,'$.occurred_at')<=json_extract(p.data,'$.converted_at') ORDER BY v.id LIMIT 2001",
+            "SELECT v.id,v.customer_id,r.data FROM prospect_visits v JOIN prospect_visit_records r ON r.organization_id=v.organization_id AND r.visit_id=v.id JOIN prospect_details p ON p.organization_id=v.organization_id AND p.customer_id=v.customer_id WHERE v.organization_id=? AND v.customer_id IN(SELECT value FROM json_each(?)) AND coalesce(json_extract(v.data,'$.audience'),'prospect')='prospect' AND json_extract(r.data,'$.occurred_at')<=json_extract(p.data,'$.converted_at') ORDER BY v.id LIMIT 2001",
           )
           .bind(org, JSON.stringify(conversions.map((c) => c.customer_id)))
           .all<{ id: string; customer_id: string; data: string }>()
@@ -409,7 +416,9 @@ export async function prospectReport(req: Request, env: Env, a: Actor) {
     );
   const calculate = await costCatalog(db, org),
     all = [
-      ...new Map([...selected, ...historical].map((v) => [v.id, v])).values(),
+      ...new Map(
+        [...periodVisits, ...historical].map((v) => [v.id, v]),
+      ).values(),
     ],
     payments = await costPayments(
       db,
@@ -437,7 +446,7 @@ export async function prospectReport(req: Request, env: Env, a: Actor) {
   >();
   for (const v of selected) {
     const r = JSON.parse(v.data) as VisitRecord,
-      conv = JSON.parse(v.prospect_data).converted_at || '',
+      conv = JSON.parse(v.prospect_data || '{}').converted_at || '',
       prev = selectedContacts.get(v.customer_id);
     selectedContacts.set(v.customer_id, {
       first: prev && prev.first < r.occurred_at ? prev.first : r.occurred_at,
@@ -479,7 +488,7 @@ export async function prospectReport(req: Request, env: Env, a: Actor) {
   >();
   for (const v of selected) {
     const at = (JSON.parse(v.data) as VisitRecord).occurred_at,
-      conv = JSON.parse(v.prospect_data).converted_at || '';
+      conv = JSON.parse(v.prospect_data || '{}').converted_at || '';
     for (const s of estimates.get(v.id)!.lines) {
       const key = s.product_id + '|' + s.weight_grams;
       const f = flavors.get(key) ?? {
@@ -546,7 +555,17 @@ export async function prospectReport(req: Request, env: Env, a: Actor) {
   return json({
     from,
     to,
-    visits: selected.length,
+    visits: periodVisits.length,
+    prospect_visits: selected.length,
+    customer_visits: customerVisits.length,
+    customer_cost_used_cents: sum(
+      customerVisits.map((v) => {
+        const s = used(v.id);
+        return s === null
+          ? null
+          : safeQuantity(BigInt(s) + BigInt(rides(v.id)));
+      }),
+    ),
     visited_contacts: selectedContacts.size,
     cohort_converted: cohort,
     cohort_rate: selectedContacts.size
@@ -599,7 +618,7 @@ export async function prospectVisitTools(req: Request, env: Env, a: Actor) {
     throw new HttpError(404, 'Não encontrado.');
   const row = await env
     .DB!.prepare(
-      'SELECT v.id,v.customer_id,v.status,v.version,c.name AS customer_name,c.phone,c.active,p.data AS prospect_data,r.data AS record_data FROM prospect_visits v JOIN customers c ON c.organization_id=v.organization_id AND c.id=v.customer_id JOIN prospect_details p ON p.organization_id=c.organization_id AND p.customer_id=c.id LEFT JOIN prospect_visit_records r ON r.organization_id=v.organization_id AND r.visit_id=v.id WHERE v.organization_id=? AND v.id=?',
+      'SELECT v.id,v.customer_id,v.status,v.version,c.name AS customer_name,c.phone,c.active,p.data AS prospect_data,r.data AS record_data FROM prospect_visits v JOIN customers c ON c.organization_id=v.organization_id AND c.id=v.customer_id LEFT JOIN prospect_details p ON p.organization_id=c.organization_id AND p.customer_id=c.id LEFT JOIN prospect_visit_records r ON r.organization_id=v.organization_id AND r.visit_id=v.id WHERE v.organization_id=? AND v.id=?',
     )
     .bind(a.organization_id, id)
     .first<Record<string, unknown>>();
@@ -697,6 +716,6 @@ export async function prospectVisitTools(req: Request, env: Env, a: Actor) {
     phone: visiblePhone(row.phone),
     signature,
     has_name: !!signature,
-    contact_status: JSON.parse(String(row.prospect_data)).stage,
+    contact_status: JSON.parse(String(row.prospect_data || '{}')).stage || '',
   });
 }

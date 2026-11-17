@@ -1,5 +1,5 @@
 import { ProspectReportPage } from './prospects/Followup';
-import { VisitsPage } from './prospects/Visits';
+import { VisitsPage, VisitSheet } from './prospects/Visits';
 import { ProspectFields, ProspectPanel } from './prospects/ProspectPanel';
 import { emptyProspect, type ProspectData } from '../../shared/prospects';
 
@@ -418,6 +418,7 @@ function Customers({
       )}
       <div className="page-heading customer-heading">
         <h1 className="mobile-context-title">Clientes</h1>
+        {prospects && kind === 'prospect' && <HelpTip topic="visits" />}
         <Button
           variant="primary"
           onClick={() => {
@@ -1731,6 +1732,8 @@ function Accesses() {
   );
 }
 export function Management() {
+  const [newVisit, setNewVisit] = useState(false);
+
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState('');
   const [online, setOnline] = useState(navigator.onLine);
@@ -1892,7 +1895,7 @@ export function Management() {
                 </Button>
                 <HelpTip topic="roles" />
               </div>
-              <Tour role={session.role} />
+              <Tour role={session.role} visits={session.visits} />
             </>
           )}
           {!online ? (
@@ -2141,6 +2144,15 @@ export function Management() {
                   Mais
                 </NavLink>
               </nav>
+              {newVisit && session.visits && (
+                <VisitSheet
+                  compact
+                  onClose={() => setNewVisit(false)}
+                  onSaved={() => {
+                    window.dispatchEvent(new Event('visits-changed'));
+                  }}
+                />
+              )}
               <dialog
                 ref={quick}
                 className="help-sheet"
@@ -2149,6 +2161,17 @@ export function Management() {
                 <div className="sheet-body">
                   <h2>O que vamos preparar?</h2>
                   <div className="quick-links">
+                    {session.visits && (
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          quick.current?.close();
+                          setNewVisit(true);
+                        }}
+                      >
+                        Nova visita
+                      </Button>
+                    )}
                     <Button
                       className="button"
                       to={

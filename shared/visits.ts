@@ -6,6 +6,8 @@ export interface VisitSample {
   units: number;
 }
 export interface VisitPlan {
+  audience?: 'prospect' | 'customer';
+  purpose?: 'presentation' | 'new_options';
   cancel_reason?: string;
   notes: string;
   samples: VisitSample[];

@@ -1,3 +1,46 @@
+## R7d — entrega para revisão (17/11/2026)
+
+Branch `codex/r7d-visit-entry`, versão **0.16.0**, main **cc030dc** incorporado antes do PR. A FILA mantém somente R7d liberada. Li as atualizações: **0026 aplicada/conferida pelo responsável** (`0ccdf68`); T4+T5 agrupadas para depois. Nenhuma edição autoral de FILA/VEZ, flag, Cloudflare/D1 ou dados reais. O Codex não aplicou a 0026.
+
+### Produzido
+
+- **Nova visita no +:** mesma folha de agendamento existente, com busca única por nome/telefone entre contatos/clientes ativos; Novo contato rápido (nome, telefone opcional e PlaceFields com endereço/sugestões existentes). Salvar contato e agendar visita são confirmações separadas. Lista recolhe após escolher; amostras opcionais recolhidas no atalho. Hoje/Amanhã/Escolher data e horários 09/14/18, com campo livre de data/hora. Hoje, Agenda e Visitas se atualizam ao salvar pelo +. Botões do calendário explicitamente não submetem o formulário.
+- **Cliente atual:** servidor define e guarda público/objetivo no JSON (`customer`/`new_options` ou `prospect`/`presentation`), sem migração. Cliente ativo pode ser visitado e ter amostras registradas **sem alterar cadastro/versão/funil ou criar conversão/evento de contato**. Cartão/agenda identificam Visita a cliente e Novos sabores/opções. Amostras de ambos os grupos continuam em unidades na produção, sem venda, cobrança ou despesa automática.
+- **Histórico e relatório:** visitas antigas sem campo novo continuam de aquisição; converter depois não reclassifica o passado. Novas visitas ao convertido são relacionamento. Relatório separa contagens/custos e exclui relacionamento da coorte, do sabor associado à aquisição e do CAC; inclusive se uma visita de cliente for registrada com data anterior. Custos/WhatsApp da R7c funcionam para cliente sem prospect_details, preservando autorização, prévia humana, confirmação de pagamento e estorno.
+- **Ajuda:** tópico com passos numerados em Ajuda e no ? dos Contatos/agendamento, do cadastro à visita/retorno/conversão. Passeio inclui Visitas de apresentação quando a capacidade estiver pronta; acesso móvel pelo menu do perfil preservado.
+- Guia **docs/FASE_R7D.md**, quatro capturas **r7d-*** exclusivamente DEMONSTRAÇÃO e bateria `test:visit-entry` no CI automático. Sem tabela ou regra KEEP nova; campos JSON acompanham o backup existente.
+
+### Testes executados
+
+- Tipos/build Pages, lint, formatação e `git diff --check`: passaram. Unitários: **144 testes / 36 arquivos**, SQL: **10 testes**.
+- `test:visit-entry`: público não pode ser forjado pelo formulário; cliente atual sem funil, CAS/repetição, tenant, busca unificada sem mudar filtros padrão, Hoje/agenda, relatório separado, visitas antigas/após conversão e compatibilidade até0025/flag desligada.
+- `test:security`: **274 verificações**, incluindo busca unificada privada, GET/PUT/registro de visita de cliente com 401/404/operadora e ausência de criação de funil. Nenhuma rota nova fora da matriz.
+- `test:visits`, `test:prospect-costs`, `test:backup`, `test:cleanup`, `test:prospects`, `test:p1`, `test:api` (**28 verificações**), `test:listing`: passaram. Orçamentos D1 preservados: Hoje com65 visitas **30 SQL**; relatório **18**, custos **22**, sessão **29**, abaixo de45 reservados de50.
+- **33 execuções E2E distintas / 11 cenários × Chromium móvel, WebKit móvel e Chromium desktop**: R7d (contato rápido/endereço/sem telefone, calendário sem agendamento involuntário, cliente atual/registro sem funil, ajuda e passeio/cancelamento); regressões R7b/c e fallbacks, R12/calendário de pedidos, Agenda/ICS/lembrete e AppUpdate. Rodada final de **30/30** verde; Agenda/ICS/lembrete também verde nos três projetos. Falhas iniciais foram referências incorretas do teste a GET inexistente de localização e ao botão do passeio oculto no celular; corrigidas para field/context e menu do perfil. Nenhuma permissão ou CSP foi afrouxada.
+- Somente CI completo + Segurança automáticos do PR; sem workflow manual. Resultados remotos devem ser conferidos no SHA do PR antes da publicação; duplicatas de push podem ser canceladas para economizar minutos.
+
+### Limitações
+
+- Busca mostra até12 opções de uma vez; refine nome/telefone para outros resultados. Cadastro de contato já confirmado permanece se a visita for cancelada depois; a folha explica isso antes de salvar.
+- Público/objetivo é definido pelo servidor no agendamento. Visitas anteriores sem o campo novo são contatos (único grupo permitido antes). Estimativas continuam usando fichas atuais, não custos históricos; custos/retorno/relatório da R7c dependem de prontidão0026.
+- WhatsApp e lembretes/corridas/despesas permanecem ações humanas. Nenhum serviço pago ou catálogo público ativado.
+
+### Pendências
+
+- **Claude:** revisar o PR e conferir CI completo + Segurança no SHA final; publicar conforme o fluxo aprovado. O Codex não faz merge nem avança main.
+- **T4+T5** permanecem para o próximo “continue” e somente quando a FILA liberar; sem implementação antecipada.
+- Sem migração nova ou outra operação real pendente nesta entrega. Conforme a FILA,0026 já foi aplicada/conferida pelo responsável; a compatibilidade com bancos anteriores foi preservada/testada.
+
+## R7d — plano antes do código (17/11/2026)
+
+Main 4f655e5 incorporado em `codex/r7d-visit-entry`; R7c aprovada/publicada com CI completo e Segurança verdes. FILA libera somente R7d, versão 0.16.0. Nenhuma edição de FILA/VEZ, flag, banco real ou Cloudflare. 0026 permanece com o responsável.
+
+- `shared/visits.ts`, `worker/visits.ts`: guardar público e objetivo no JSON do agendamento (sem migração), definidos pelo servidor a partir do cadastro ativo e preservados no registro/edição. Visitas antigas continuam classificadas como visitas a contatos mesmo após conversão. Cliente atual aceita agendamento/registro sem criar nem alterar funil/eventos de contato. Tenant, CAS/idempotência e histórico preservados.
+- `Management.tsx`, `prospects/Visits.tsx` e componente de seleção/cadastro: Nova visita no +; busca única entre contatos e clientes, Novo contato rápido com nome/telefone opcional/PlaceFields existentes. Chips Hoje/Amanhã/Escolher data e 09/14/18 horas, data/hora editáveis. Amostras continuam opcionais e não criam pedido/despesa.
+- `worker/prospect-costs.ts`, `shared/prospect-costs.ts`, `Followup.tsx`: custos e mensagens também para cliente sem prospect_details; relatório separa visitas a contatos/clientes. Coortes, sabor associado à conversão e CAC só usam visitas a contatos anteriores à conversão, sem inflar aquisição com visitas de relacionamento a clientes.
+- Ajuda em `help/texts.ts`/`HelpCenter.tsx`, ícone ? nos Contatos/Nova visita e passo Visitas de apresentação no passeio, explicando cadastro→visita→amostras→retorno humano→conversão e visita a cliente atual.
+- Aceite: integração/matriz de segurança para cliente/tenant/papéis, ausência de alteração de funil/vendas/pagamentos, separação do relatório com histórico após conversão; E2E +→Nova visita para contato novo/cliente e ajuda, chips, cancelamento, prontidão de schemas anteriores. Tipos/lint/formatação/build, capturas DEMONSTRAÇÃO. Push consolidado/PR R7d, CI completo e Segurança automáticos, sem CI manual/merge no main.
+
 ## R7c — entrega para revisão (17/11/2026 UTC; 16/11 em Fortaleza)
 
 Branch `codex/r7c-prospect-costs`, versão **0.15.0**, main **f36ffad** incorporado e conferido antes do PR. Somente R7-6/7/9 da FILA; nenhuma edição autoral de FILA/VEZ, flag, Cloudflare ou D1 real. O código da R7a/b e a ativação aprovada dos Contatos foram preservados. A situação da 0025 deve ser conferida pelo responsável; o Codex não a aplicou.

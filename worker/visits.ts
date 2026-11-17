@@ -5,7 +5,7 @@ import { p1Mutation, requestRange } from './p1-common';
 import { utcStart, addDays } from './operations-domain';
 import { visiblePhone } from '../shared/phone';
 import type { ProspectVisit, VisitSample } from '../shared/visits';
-import type { ProspectData } from '../shared/prospects';
+import { emptyProspect, type ProspectData } from '../shared/prospects';
 export async function visitsSchema(db: D1Database) {
   const r = await db
     .prepare(
@@ -219,7 +219,7 @@ export async function visits(req: Request, env: Env, a: Actor) {
         throw new HttpError(400, 'A visita ainda não aconteceu.');
       const c = await db
         .prepare(
-          'SELECT c.version,c.kind,p.data FROM customers c JOIN prospect_details p ON p.organization_id=c.organization_id AND p.customer_id=c.id WHERE c.organization_id=? AND c.id=? AND c.active=1',
+          'SELECT c.version,c.kind,p.data FROM customers c LEFT JOIN prospect_details p ON p.organization_id=c.organization_id AND p.customer_id=c.id WHERE c.organization_id=? AND c.id=? AND c.active=1',
         )
         .bind(org, current!.customer_id)
         .first<{ version: number; kind: string; data: string }>();
@@ -240,10 +240,12 @@ export async function visits(req: Request, env: Env, a: Actor) {
           d.samples,
           JSON.parse(String(current!.data)).samples,
         ),
-        prior = JSON.parse(c.data) as ProspectData;
+        prior = (c.data ? JSON.parse(c.data) : emptyProspect()) as ProspectData;
+      const plan = JSON.parse(String(current!.data)),
+        isProspect = c.kind === 'prospect' && plan.audience !== 'customer';
       const next = {
         ...prior,
-        ...(c.kind === 'prospect'
+        ...(isProspect
           ? {
               stage:
                 prior.stage === 'not_interested'
@@ -259,6 +261,8 @@ export async function visits(req: Request, env: Env, a: Actor) {
         ...d,
         performer_id: performer,
         samples: actual,
+        audience: plan.audience ?? 'prospect',
+        purpose: plan.purpose ?? 'presentation',
         version: undefined,
       };
       return {
@@ -285,31 +289,40 @@ export async function visits(req: Request, env: Env, a: Actor) {
               `INSERT INTO prospect_visit_records(organization_id,visit_id,user_id,data) SELECT ?,?,?,? WHERE ${g}`,
             )
             .bind(org, entity, a.user_id, JSON.stringify(record), ...args),
-          db
-            .prepare(
-              `UPDATE customers SET version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND ${g}`,
-            )
-            .bind(nonce, org, current!.customer_id, ...args),
-          db
-            .prepare(
-              `UPDATE prospect_details SET data=? WHERE organization_id=? AND customer_id=? AND ${g}`,
-            )
-            .bind(JSON.stringify(next), org, current!.customer_id, ...args),
-          db
-            .prepare(
-              `INSERT INTO prospect_events(organization_id,id,customer_id,user_id,from_stage,to_stage,next_step_at,reason) SELECT ?,?,?,?,?,?,?,? WHERE ${g}`,
-            )
-            .bind(
-              org,
-              crypto.randomUUID(),
-              current!.customer_id,
-              a.user_id,
-              prior.stage,
-              next.stage,
-              next.next_step_at,
-              'Visita registrada' + (d.notes ? ' · ' + d.notes : ''),
-              ...args,
-            ),
+          ...(isProspect
+            ? [
+                db
+                  .prepare(
+                    `UPDATE customers SET version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND ${g}`,
+                  )
+                  .bind(nonce, org, current!.customer_id, ...args),
+                db
+                  .prepare(
+                    `UPDATE prospect_details SET data=? WHERE organization_id=? AND customer_id=? AND ${g}`,
+                  )
+                  .bind(
+                    JSON.stringify(next),
+                    org,
+                    current!.customer_id,
+                    ...args,
+                  ),
+                db
+                  .prepare(
+                    `INSERT INTO prospect_events(organization_id,id,customer_id,user_id,from_stage,to_stage,next_step_at,reason) SELECT ?,?,?,?,?,?,?,? WHERE ${g}`,
+                  )
+                  .bind(
+                    org,
+                    crypto.randomUUID(),
+                    current!.customer_id,
+                    a.user_id,
+                    prior.stage,
+                    next.stage,
+                    next.next_step_at,
+                    'Visita registrada' + (d.notes ? ' · ' + d.notes : ''),
+                    ...args,
+                  ),
+              ]
+            : []),
         ],
       };
     }
@@ -318,17 +331,20 @@ export async function visits(req: Request, env: Env, a: Actor) {
       throw new HttpError(400, 'Novo agendamento não recebe versão.');
     if (current && (!d.version || d.customer_id !== current.customer_id))
       throw new HttpError(400, 'Confira a versão e o contato da visita.');
-    if (
-      !(await db
-        .prepare(
-          'SELECT 1 FROM customers c JOIN prospect_details p ON p.organization_id=c.organization_id AND p.customer_id=c.id WHERE c.organization_id=? AND c.id=? AND c.active=1' +
-            (current ? '' : " AND c.kind='prospect'"),
-        )
-        .bind(org, d.customer_id)
-        .first())
-    )
-      throw new HttpError(404, 'Contato não encontrado.');
+    const target = await db
+      .prepare(
+        'SELECT kind FROM customers WHERE organization_id=? AND id=? AND active=1',
+      )
+      .bind(org, d.customer_id)
+      .first<{ kind: string }>();
+    if (!target) throw new HttpError(404, 'Contato ou cliente não encontrado.');
+    // Snapshot: converter um contato depois não transforma suas visitas de aquisição em relacionamento.
+    const audience = current
+      ? (JSON.parse(String(current.data)).audience ?? 'prospect')
+      : target.kind;
     const data = {
+      audience,
+      purpose: audience === 'customer' ? 'new_options' : 'presentation',
       notes: d.notes,
       samples: await snapshot(db, org, d.samples),
     };
@@ -354,7 +370,7 @@ export async function visits(req: Request, env: Env, a: Actor) {
             )
         : db
             .prepare(
-              "INSERT INTO prospect_visits(organization_id,id,customer_id,scheduled_at,data,mutation_id) SELECT ?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM customers WHERE organization_id=? AND id=? AND active=1 AND kind='prospect')",
+              'INSERT INTO prospect_visits(organization_id,id,customer_id,scheduled_at,data,mutation_id) SELECT ?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM customers WHERE organization_id=? AND id=? AND active=1 AND kind=?)',
             )
             .bind(
               org,
@@ -365,6 +381,7 @@ export async function visits(req: Request, env: Env, a: Actor) {
               nonce,
               org,
               d.customer_id,
+              target.kind,
             ),
       rest: () => [],
     };

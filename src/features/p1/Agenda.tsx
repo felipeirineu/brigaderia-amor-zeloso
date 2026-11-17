@@ -37,6 +37,12 @@ export function Agenda({ visits = false }: { visits?: boolean }) {
       href: string;
     }[];
   }>(`p1/calendar?${query}`);
+  const visitRefresh = view.refresh;
+  useEffect(() => {
+    const update = () => void visitRefresh();
+    window.addEventListener('visits-changed', update);
+    return () => window.removeEventListener('visits-changed', update);
+  }, [visitRefresh]);
   return (
     <>
       <h1 className="mobile-context-title">Agenda</h1>

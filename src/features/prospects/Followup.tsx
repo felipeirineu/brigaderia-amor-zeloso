@@ -455,6 +455,8 @@ export function ProspectReportPage() {
           <div className="summary-grid">
             {[
               ['Visitas registradas', view.data.visits],
+              ['Visitas a contatos', view.data.prospect_visits],
+              ['Visitas a clientes atuais', view.data.customer_visits],
               ['Contatos visitados', view.data.visited_contacts],
               ['Convertidos deste grupo', view.data.cohort_converted],
               [
@@ -498,7 +500,7 @@ export function ProspectReportPage() {
             )}
           </section>
           <section className="panel">
-            <h2>Custos das visitas no período</h2>
+            <h2>Custos das visitas a contatos no período</h2>
             <p>
               Amostras pela ficha atual:{' '}
               {cost(view.data.estimated_samples_cents)}
@@ -519,6 +521,19 @@ export function ProspectReportPage() {
               vez.
             </p>
             <p>Estimativas sem pagamento registrado não são saída de caixa.</p>
+          </section>
+          <section className="panel">
+            <h2>Relacionamento com clientes atuais</h2>
+            <p>
+              {view.data.customer_visits} visitas para apresentar novos
+              sabores/opções.
+            </p>
+            <p>
+              Custo utilizado: {cost(view.data.customer_cost_used_cents)}.
+              Pagamentos registrados substituem estimativas; corridas líquidas
+              entram uma vez. Estas visitas não entram no funil, na conversão
+              nem no custo de aquisição.
+            </p>
           </section>
           <section className="panel">
             <h2>Custo para conquistar um cliente</h2>

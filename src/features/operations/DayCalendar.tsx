@@ -49,6 +49,7 @@ function CalendarSheet({
       <div className="sheet-body">
         <div className="calendar-month">
           <Button
+            type="button"
             aria-label="Mês anterior"
             disabled={month <= minimum.slice(0, 7)}
             onClick={() => setMonth(shiftMonth(month, -1))}
@@ -57,6 +58,7 @@ function CalendarSheet({
           </Button>
           <h2 aria-live="polite">{monthTitle(month)}</h2>
           <Button
+            type="button"
             aria-label="Próximo mês"
             disabled={month === '2199-12'}
             onClick={() => setMonth(shiftMonth(month, 1))}
@@ -82,6 +84,7 @@ function CalendarSheet({
               count = view.data?.counts.find((c) => c.day === date)?.count;
             return (
               <Button
+                type="button"
                 key={date}
                 className={date === localDay() ? 'calendar-today' : ''}
                 variant="chip"
@@ -100,6 +103,7 @@ function CalendarSheet({
         </div>
         <div className="chips">
           <Button
+            type="button"
             variant="chip"
             disabled={localDay() < minimum}
             onClick={() => onSelect(localDay())}
@@ -107,6 +111,7 @@ function CalendarSheet({
             Hoje
           </Button>
           <Button
+            type="button"
             variant="chip"
             disabled={shiftDay(localDay(), 1) < minimum}
             onClick={() => onSelect(shiftDay(localDay(), 1))}
@@ -125,6 +130,7 @@ function CalendarSheet({
           />
         </label>
         <Button
+          type="button"
           disabled={
             !scheduleDay(manual) || manual < minimum || manual > '2199-12-31'
           }
@@ -132,7 +138,11 @@ function CalendarSheet({
         >
           Ver dia
         </Button>
-        <Button variant="ghost" onClick={() => dialog.current?.close()}>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => dialog.current?.close()}
+        >
           Fechar calendário
         </Button>
       </div>
@@ -161,6 +171,7 @@ export function DayCalendar({
   return (
     <>
       <Button
+        type="button"
         ref={trigger}
         variant={label ? 'chip' : 'tonal'}
         className="workday-calendar-trigger"
