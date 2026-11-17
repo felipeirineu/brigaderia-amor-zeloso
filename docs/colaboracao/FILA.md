@@ -7,7 +7,7 @@
 
 `VEZ: CODEX` — tarefa **T7** (revisões do Felipe antes da 1.0; detalhes abaixo). Versão **0.19.0**. Ao terminar, abra o pull request.
 
-**Pendências do Felipe (fora do código):** cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: ver T8.
+**Pendências do Felipe (fora do código):** cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: depois da T8, rodar o workflow "Ativar lembretes (manual)".
 
 
 
@@ -69,7 +69,7 @@ Contador de entregas desde a última revisão: **1/3** (T6).
 | T4+T5 | Modo escuro + "Novidades" (ativa na 1.0.0) | **publicada** 17/11 (PR #15) como **0.17.0** |
 | T6 | Ajustes visuais pedidos pelo Felipe | **publicada** 17/11 (PR #16) como **0.18.0** |
 | T7 | Revisões do Felipe antes da 1.0 (abertura com logo, álcool, alinhamentos, telas compridas, menu +) | **vez do Codex** — versão **0.19.0** |
-| T8 | Botão "Ativar lembretes no celular" (workflow manual) | proposta, aguardando o Felipe |
+| T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | aprovada pelo Felipe; **depois da T7** — versão **0.20.0** |
 
 ### T0 — R17
 
@@ -311,6 +311,49 @@ Mesmo cuidado da T3: capturas antes/depois em `docs/colaboracao/capturas/t6-*.pn
    - reduzir espaços.
    Listar no relatório o que mudou em cada tela, com capturas antes/depois (`docs/colaboracao/capturas/t7-*.png`). Sem mudar comportamento.
 7. Versão **0.19.0**.
+
+### T8 — workflow "Ativar lembretes (manual)" (aprovada pelo Felipe em 17/11; fazer depois da T7)
+
+Objetivo: o Felipe liga as notificações com um clique no GitHub, sem terminal e sem nunca ver ou copiar chaves. Hoje isso exige os passos 3–6 de `docs/FASE_R6_LEMBRETES.md`.
+
+1. Criar `.github/workflows/push-activation.yml`:
+   - `workflow_dispatch` só na `main`;
+   - `environment: lembretes-push`;
+   - `permissions: contents: read`;
+   - `concurrency` sem cancelamento.
+   Entradas:
+   - `mode`: `VERIFICAR` (padrão) | `ATIVAR` | `REPUBLICAR_AGENDADOR`;
+   - `confirmo`: booleano obrigatório para os modos que mudam algo.
+2. Script `scripts/run-push-activation.mjs`, com o mesmo estilo de `run-homologation.mjs`.
+   - **VERIFICAR** (não muda nada):
+     - confere se o token tem acesso a Pages e Workers;
+     - lista **apenas os nomes** dos secrets do Pages (produção) e do Worker `amor-zeloso-lembretes`;
+     - diz se o Worker e o cron existem;
+     - diz qual seria o próximo passo.
+   - **ATIVAR:**
+     - **recusa** se `VAPID_PUBLIC_KEY` já existir no Pages ou no Worker, porque regenerar invalidaria os aparelhos inscritos;
+     - gera o par de chaves em memória, com o mesmo algoritmo de `create-push-keys.mjs`. `VAPID_SUBJECT` = URL https do app, vinda de `vars.APP_URL`. **Não usar e-mail.**
+     - grava os 3 secrets no Pages (produção) e no Worker, via stdin do wrangler;
+     - publica o agendador com config gerada em arquivo temporário (banco e id lidos do `wrangler.jsonc` da aplicação, cron `*/5 * * * *`);
+     - no fim, roda o mesmo VERIFICAR.
+   - **REPUBLICAR_AGENDADOR:** republica só o código do Worker. Não toca nas chaves.
+3. Segurança:
+   - chaves nunca em log, artefato, arquivo do repositório ou saída: usar `::add-mask::`;
+   - arquivo temporário fora do checkout, apagado no `finally`;
+   - mensagens de erro sem valores;
+   - `CLOUDFLARE_API_TOKEN`/`CLOUDFLARE_ACCOUNT_ID` iguais aos da homologação.
+4. Testes unitários do script com wrangler simulado:
+   - VERIFICAR não grava nada;
+   - ATIVAR recusa sem `confirmo` e quando já existem chaves;
+   - nenhum valor de chave aparece na saída capturada;
+   - REPUBLICAR não grava secrets.
+5. Atualizar `docs/FASE_R6_LEMBRETES.md`: o caminho principal passa a ser o workflow; o terminal fica como alternativa. Passos do Felipe, em pt-BR simples:
+   - **(a)** dar ao token da Cloudflare as permissões *Workers Scripts: Edit* e *Cloudflare Pages: Edit*;
+   - **(b)** criar o environment `lembretes-push` no GitHub e a variável `APP_URL`;
+   - **(c)** VERIFICAR → ATIVAR;
+   - **(d)** republicar o Pages (o próximo publish na main já serve);
+   - **(e)** Preferências → ativar avisos → **Enviar aviso de teste** em cada aparelho.
+6. **Não rodar o workflow.** Quem roda é o Felipe. Versão **0.20.0**.
 
 ## Versões do app
 
