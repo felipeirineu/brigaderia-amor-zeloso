@@ -1301,6 +1301,15 @@ textarea::placeholder {
   box-shadow: none;
   background: var(--az-tonal);
 }
+/* O variante card não tem rótulo interno: centraliza no próprio botão. */
+.product-photo-picker .photo-choice.az-button--card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--az-space-1);
+  text-align: center;
+}
 .photo-choice .az-button-label {
   display: flex;
   flex-direction: column;
@@ -1310,12 +1319,13 @@ textarea::placeholder {
   width: 100%;
 }
 .photo-choice img {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   object-fit: cover;
 }
 .photo-choice .photo-name {
+  width: 100%;
   white-space: normal;
   text-align: center;
   font-size: 12px;
