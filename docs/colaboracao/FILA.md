@@ -5,7 +5,9 @@
 
 ## VEZ
 
-`VEZ: FELIPE` — aguardando a lista de revisões do Felipe antes da 1.0.0 (vira a **T7**).
+`VEZ: CODEX` — tarefa **T7** (revisões do Felipe antes da 1.0; detalhes abaixo). Versão **0.19.0**. Ao terminar, abra o pull request.
+
+**Pendências do Felipe (fora do código):** cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: ver T8.
 
 
 
@@ -66,6 +68,8 @@ Contador de entregas desde a última revisão: **1/3** (T6).
 | R7d | "Nova visita" no +, visita a cliente atual e ajuda | **publicada** 17/11 (PR #14) como **0.16.0** |
 | T4+T5 | Modo escuro + "Novidades" (ativa na 1.0.0) | **publicada** 17/11 (PR #15) como **0.17.0** |
 | T6 | Ajustes visuais pedidos pelo Felipe | **publicada** 17/11 (PR #16) como **0.18.0** |
+| T7 | Revisões do Felipe antes da 1.0 (abertura com logo, álcool, alinhamentos, telas compridas, menu +) | **vez do Codex** — versão **0.19.0** |
+| T8 | Botão "Ativar lembretes no celular" (workflow manual) | proposta, aguardando o Felipe |
 
 ### T0 — R17
 
@@ -285,6 +289,28 @@ Mesmo cuidado da T3: capturas antes/depois em `docs/colaboracao/capturas/t6-*.pn
 5. **Botões fantasma soltos** ("Calcular rota" no cartão do cliente, "Ver todos os lembretes", "Cadastrar cliente"): alinhar à esquerda com o texto do cartão, sem espaço vazio grande antes/depois.
 6. **Logo no modo escuro:** o círculo marrom do logo quase some no fundo escuro (capturas `t4-escuro-*`). Dar um contorno claro (1–2 px `--az-gold` ou creme) ou um fundo creme ao redor, só no tema escuro.
 7. O Felipe pode mandar mais itens antes da vez: o Claude acrescenta aqui.
+
+### T7 — revisões do Felipe antes da 1.0 (17/11, com captura do menu +)
+
+1. **Abertura do app:** hoje aparece "Gestão restrita / Verificando sessão…" (`Management.tsx`, bloco `if (!session)`).
+   - Trocar por uma **tela de abertura** com o **logo grande centralizado** sobre o fundo da marca (respeitando claro/escuro), sem texto técnico. Opcional: um indicador discreto de carregamento.
+   - Ela fica até a sessão carregar e então vai direto para o Hoje. Na 1.0.0, a folha de Novidades/boas-vindas aparece por cima do Hoje.
+   - Se a sessão falhar de verdade (401), aí sim mostrar "Entrar na gestão".
+   - Alinhar o `background_color` do manifesto, que forma a splash nativa do Android, com essa tela, para a transição não piscar.
+   - E2E: com a API de sessão segurada, aparece o logo e não aparece "Gestão restrita".
+2. **Aviso de álcool:** menor, em **uma linha só** (ícone + texto curto, ex.: "🍸 Contém álcool · venda para maiores de 18"; manter o sentido do texto atual em `shared/alcohol.ts`). Mesmo estilo em todos os lugares onde aparece.
+3. **Hoje → cartão "Produzir hoje e amanhã":** o link "Gerar pedidos da semana?" deve ficar alinhado à esquerda com o título do cartão (como "Lembretes"), sem recuo extra.
+4. **Clientes:**
+   - "Clientes ou contatos" alinhado à esquerda;
+   - **mais espaço** entre os chips "Clientes" e "Contatos" (pelo menos `--az-space-3`);
+   - os chips continuam na mesma linha.
+5. **Menu do + ("O que vamos preparar?"):** grade 2×2 — Nova visita | Novo pedido / Novo cliente | Novo lembrete. Botões com o mesmo tamanho e alinhamento.
+6. **Auditoria de telas compridas:** percorrer todas as telas (Hoje, Pedidos, detalhe do pedido, Novo pedido em todas as etapas, Clientes, Contatos, visitas, Kits, Insumos, Fichas, calculadora por peso, Lembretes, Financeiro/contas, Relatórios, Mais, Preferências, Acessos, Backup). Onde houver **botões soltos um por linha**, espaço vazio grande ou ações espalhadas:
+   - agrupar em linha (2 por linha quando couber);
+   - alinhar ao texto;
+   - reduzir espaços.
+   Listar no relatório o que mudou em cada tela, com capturas antes/depois (`docs/colaboracao/capturas/t7-*.png`). Sem mudar comportamento.
+7. Versão **0.19.0**.
 
 ## Versões do app
 
