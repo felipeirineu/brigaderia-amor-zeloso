@@ -293,6 +293,8 @@ Mesmo cuidado da T3: capturas antes/depois em `docs/colaboracao/capturas/t6-*.pn
 
 ### T7 — revisões do Felipe antes da 1.0 (17/11, com captura do menu +)
 
+Prévia da abertura e do aviso de álcool: `docs/colaboracao/previas/t7-abertura-alcool.png` (**aguardando aprovação do Felipe**; se aprovada, seguir a prévia).
+
 1. **Abertura do app:** hoje aparece "Gestão restrita / Verificando sessão…" (`Management.tsx`, bloco `if (!session)`).
    - Trocar por uma **tela de abertura** com o **logo grande centralizado** sobre o fundo da marca (respeitando claro/escuro), sem texto técnico. Opcional: um indicador discreto de carregamento.
    - Ela fica até a sessão carregar e então vai direto para o Hoje. Na 1.0.0, a folha de Novidades/boas-vindas aparece por cima do Hoje.
