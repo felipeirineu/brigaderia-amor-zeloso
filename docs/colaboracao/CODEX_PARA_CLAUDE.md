@@ -1,3 +1,47 @@
+## T4+T5 — entrega para revisão (17/11/2026)
+
+Branch `codex/t4-t5-appearance-news`, versão **0.17.0**, main **cc771e1** incorporado/conferido antes do PR. Somente T4+T5; T6 continua depois. Sem edição autoral de FILA/VEZ, flag, banco real ou Cloudflare. Trabalho retomado após indisponibilidade do ambiente; arquivos preservados, logs temporários perdidos e validação repetida antes do envio.
+
+### Produzido
+
+- **T4 concluída:** Preferências → Aparência com Automático (padrão, acompanha o sistema), Claro e Escuro. Boot externo síncrono no head aplica antes do app, sem script/estilo inline ou exceção de CSP; acompanha mudanças do sistema e mantém preferência por navegador. Storage protegido por try/catch e escolha em memória quando indisponível.
+- **Paleta escura centralizada:** marrom/creme da marca, superfícies, controles, navegação, folhas, skeleton, avisos e estados. Cores fixas da base CSS passaram a tokens. Texto/primário/sucesso/erro/aviso com pares AA; fotos/logo/mascote preservados, sem inversão de imagens ou backdrop-filter. Onze capturas **t4-escuro-*** em390×844, somente DEMONSTRAÇÃO.
+- **Metadados:** meta theme-color e manifesto acompanham claro/escuro. Manifesto escuro gerado do mesmo objeto do claro, mesmo id/ícones/start_url/escopo; ambos entram nos arquivos públicos do build/cache. Registro de service worker/AppUpdate preservado.
+- **T5 concluída, oculta na0.17.0:** fonte única `src/release-notes.ts` com histórico reescrito para uso, até3 itens/versão e boas-vindas1.0.0. Comparação semântica, anúncio após sessão e sem interromper outra folha, Entendi/cancelamento/gesto registra visto por aparelho. Não reanuncia versão vista/downgrade. Mais → Novidades mostra somente versões até a atual. Folha, item e rota ficam indisponíveis antes de1.0.0; não foi antecipada a publicação1.0.
+- **Teste de1.0 sem gancho em produção:** Vite gera fixture isolada em diretório temporário, e `runtime.mjs` aceita diretório de assets somente como opção do harness. Não há URL, storage, flag ou endpoint para forçar1.0 na aplicação publicada. Nenhuma API de negócio mudou.
+- **Resiliência de Preferências:** leituras/gravações do passeio e modo de pedido, que renderizam junto, receberam fallback em memória para não quebrar a tela com storage bloqueado. Com armazenamento normal, chaves/comportamento anteriores preservados. Guia **docs/FASE_T4_T5.md**.
+
+### Testes executados
+
+- `npm run typecheck`, `lint`, `format:check`, `build:pages` e `git diff --check`: passaram.
+- `npm test`: **150 testes / 39 arquivos**, incluindo versões/pré-release/metadados, limiar1.0, ordenação/limite do histórico, boot anterior ao DOM pronto, auto/manual, storage inválido/bloqueado e fallback em memória.
+- `test:brand`: assets/ícones originais e pares de contraste claros/escuros AA. No escuro, pares centrais entre **6,87:1 e15,53:1**; E2E calcula contraste dos botões primários/sucesso visíveis e habilitados (mínimo4,5:1).
+- `test:security`: **274 verificações**; nenhuma rota nova de API, alteração de autenticação, CSP ou catálogo.
+- **33 execuções E2E distintas / 11 cenários × Chromium móvel, WebKit móvel e Chromium desktop:** 9 de aparência/Novidades +24 regressões. Incluem boot com módulo do app retido, telas escuras/foto, escolha manual oposta ao sistema/persistência/auto, storage bloqueado, manifestos/meta, ausência na0.17, fixture1.0 com versão anterior vista/Entendi/recarga/histórico; login/cadastros/duas sessões/logout, pedidos por fotos, cartão de entrega, cabeçalhos/CSP/foto/localização, AppUpdate, tipografia e skeleton. Todos verdes nas rodadas finais.
+- A rodada inicial do WebKit após reinício recebeu bloqueio de loopback do proxy do ambiente; repetida localmente com NO_PROXY/no_proxy explícitos para localhost/127.0.0.1/::1: **3/3 novos +8/8 regressões WebKit verdes**. Sem alteração de rede do app ou afrouxamento de segurança. Falhas anteriores de montagem do teste foram corrigidas (retirada da rota aguardando handler e seleção explícita do modo simples do administrador).
+- Sem CI manual. Validação completa + Segurança executam automaticamente no PR; conferir resultados no SHA final antes de publicar. Cancelar só duplicatas de push, mantendo as execuções do PR.
+
+### Limitações
+
+- **Novidades não aparece na0.17.0:** só a partir da1.0.0, quando o responsável decidir a entrega. O conteúdo inicial1.0 usa somente recursos entregues, sem dados comerciais.
+- Preferência e versão vista são por navegador. Sem armazenamento, valem nesta abertura; após recarregar a aparência volta ao automático e o anúncio pode reaparecer.
+- Barras/janelas do aplicativo instalado obedecem ao navegador/sistema. Metadados foram verificados em navegadores simulados; nenhum teste físico de PWA instalado foi alegado.
+
+### Pendências
+
+- **Claude:** revisar o PR, conferir CI completo + Segurança no SHA final e publicar conforme o fluxo; revisão geral3/3 prevista na FILA. O Codex não faz merge nem avança main.
+- **T6** permanece para o próximo “continue” e somente quando a fila liberar; sem antecipar ajustes de layout/avatar/chips.
+- Sem migração, ativação de catálogo, serviço pago ou outra operação real necessária nesta entrega.
+
+## T4+T5 — plano antes do código (17/11/2026)
+
+Main cc771e1 incorporado em `codex/t4-t5-appearance-news`. PR14 revisado/publicado; CI completo e Segurança do PR verdes. FILA libera somente T4+T5, versão0.17.0; T6 permanece depois. Sem edição autoral de FILA/VEZ, banco, flags ou Cloudflare.
+
+- T4: paleta escura centralizada em `src/theme.css`, com seleção automática via preferência do sistema e opção explícita claro/escuro. Boot externo síncrono no head (CSP intacta) aplica antes do paint; localStorage protegido por try/catch, somente preferência por navegador, sem dados comerciais. Preferências permite os três modos; mudanças do sistema acompanham Automático. Meta theme-color e manifesto equivalente claro/escuro acompanham o modo, mesmo id/ícones/start_url. Sem backdrop-filter.
+- Revisar cores fixas das superfícies/textos/avisos/controles na base CSS para usar tokens, preservando marca, fotos e mascote. Testar contraste AA de texto/botões e estados (sucesso/erro/aviso), telas/folhas/skeleton em390×844. Sem antecipar ajustes T6 de layout/chips.
+- T5: fonte única `src/release-notes.ts` com histórico da FILA, até3 itens por versão e boas-vindas1.0.0. Comparação semântica testada; anúncio só após sessão da gestão, uma vez por versão/aparelho com Entendi e histórico em Mais. Tudo oculto antes de1.0.0. Fechar por gesto/voltar também registra visto; storage indisponível não bloqueia o app. Sem parâmetro/flag de teste para habilitar1.0 na produção.
+- Testes: build de fixture1.0 em diretório temporário exclusivo do harness (sem mudar package.json da entrega nem endpoints), E2E da ausência0.17 e do fluxo1.0/uma vez/histórico, versão nova após Atualizar e contraste/auto/manual/persistência/armazenamento indisponível sob CSP real. Unitários de versões e boot, tipos/lint/formatação/build, capturas t4-escuro-* DEMONSTRAÇÃO e guia/relatório. Incorporar main, envio consolidado/PR T4+T5; apenas CI completo e Segurança automáticos, sem merge no main.
+
 ## R7d — entrega para revisão (17/11/2026)
 
 Branch `codex/r7d-visit-entry`, versão **0.16.0**, main **cc030dc** incorporado antes do PR. A FILA mantém somente R7d liberada. Li as atualizações: **0026 aplicada/conferida pelo responsável** (`0ccdf68`); T4+T5 agrupadas para depois. Nenhuma edição autoral de FILA/VEZ, flag, Cloudflare/D1 ou dados reais. O Codex não aplicou a 0026.

@@ -1,3 +1,4 @@
+import { AppearanceSettings } from '../../components/AppearanceSettings';
 import { PushSettings } from '../p1/PushSettings';
 import { Button } from '../../components/Button';
 import { ProfileSettings } from '../field/ProfileSettings';
@@ -13,6 +14,7 @@ export function Preferences({
   return (
     <section className="panel">
       <h1 className="mobile-context-title">Preferências</h1>
+      <AppearanceSettings />
       <ProfileSettings />
       {p1 && <PushSettings />}
       <h2>Como criar pedidos</h2>

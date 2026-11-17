@@ -8,6 +8,7 @@ import { resolve, extname } from 'node:path';
 
 export async function runtime({
   browserHTTP = false,
+  assetsDirectory = 'dist',
   entryPoint = 'worker/pages.ts',
   vapid,
   pushProvider,
@@ -109,7 +110,7 @@ export async function runtime({
       serviceBindings: {
         ASSETS: async (req) => {
           const path = decodeURIComponent(new URL(req.url).pathname);
-          const root = resolve('dist');
+          const root = resolve(assetsDirectory);
           let file = resolve(root, `.${path}`);
           if (!file.startsWith(root + '/') || path.includes('..'))
             file = root + '/index.html';

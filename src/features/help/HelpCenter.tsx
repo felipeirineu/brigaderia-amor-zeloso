@@ -1,3 +1,7 @@
+import {
+  readLocalPreference,
+  writeLocalPreference,
+} from '../../local-preferences';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { useField } from '../field/FieldContext';
@@ -16,7 +20,7 @@ export function Tour({
 }) {
   const [step, setStep] = useState(-1),
     [done, setDone] = useState(
-      () => localStorage.getItem(`az-tour-${role}`) === 'done',
+      () => readLocalPreference(`az-tour-${role}`) === 'done',
     );
   const location = useLocation();
   const dialog = useRef<HTMLDialogElement>(null),
@@ -87,7 +91,7 @@ export function Tour({
     dialog.current?.close();
     setStep(-1);
     setDone(true);
-    localStorage.setItem(`az-tour-${role}`, 'done');
+    writeLocalPreference(`az-tour-${role}`, 'done');
     const menu = document.querySelector<HTMLButtonElement>(
       '.profile-menu-trigger',
     );

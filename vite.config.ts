@@ -2,7 +2,39 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
+import { VitePWA, type ManifestOptions } from 'vite-plugin-pwa';
+const manifest: Partial<ManifestOptions> = {
+  id: '/',
+  name: 'Brigaderia Amor Zeloso | Gestão',
+  short_name: 'Amor Zeloso',
+  description: 'Gestão de pedidos, entregas e finanças da brigaderia.',
+  lang: 'pt-BR',
+  start_url: '/gestao',
+  scope: '/',
+  display: 'standalone',
+  background_color: '#fcf6ec',
+  theme_color: '#fcf6ec',
+  icons: [
+    {
+      src: '/icons/icon-192.png',
+      sizes: '192x192',
+      type: 'image/png',
+      purpose: 'any',
+    },
+    {
+      src: '/icons/icon-512.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'any',
+    },
+    {
+      src: '/icons/maskable-512.png',
+      sizes: '512x512',
+      type: 'image/png',
+      purpose: 'maskable',
+    },
+  ],
+};
 
 const version = JSON.parse(
   readFileSync(new URL('./package.json', import.meta.url), 'utf8'),
@@ -38,42 +70,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       includeAssets: ['icons/*.png', 'brand/*.webp', 'favicon.ico'],
-      manifest: {
-        id: '/',
-        name: 'Brigaderia Amor Zeloso | Gestão',
-        short_name: 'Amor Zeloso',
-        description: 'Gestão de pedidos, entregas e finanças da brigaderia.',
-        lang: 'pt-BR',
-        start_url: '/gestao',
-        scope: '/',
-        display: 'standalone',
-        background_color: '#F9ECD7',
-        theme_color: '#321D10',
-        icons: [
-          {
-            src: '/icons/icon-192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any',
-          },
-          {
-            src: '/icons/icon-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any',
-          },
-          {
-            src: '/icons/maskable-512.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'maskable',
-          },
-        ],
-      },
+      manifest,
       workbox: {
         cleanupOutdatedCaches: true,
         importScripts: ['/push-worker.js'],
-        globPatterns: ['**/*.{js,css,html,png,webp,ico,woff2}'],
+        globPatterns: ['**/*.{js,css,html,png,webp,ico,woff2,webmanifest}'],
         navigateFallback: '/index.html',
         // Rotas reservadas da Cloudflare, incluindo callback/logout do Access,
         // devem sempre chegar à rede, mesmo quando o shell está em cache.
@@ -85,6 +86,20 @@ export default defineConfig({
         runtimeCaching: [],
       },
     }),
+    {
+      name: 'dark-manifest',
+      generateBundle() {
+        this.emitFile({
+          type: 'asset',
+          fileName: 'manifest-dark.webmanifest',
+          source: JSON.stringify({
+            ...manifest,
+            background_color: '#1b120c',
+            theme_color: '#1b120c',
+          }),
+        });
+      },
+    },
   ],
   test: {
     include: [

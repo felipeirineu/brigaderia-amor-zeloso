@@ -16,6 +16,15 @@ for (const [fg, bg] of [
   ['725D53', 'FBF8F3'],
   ['76532F', 'F9ECD7'],
   ['F9ECD7', '321D10'],
+  ['F6EAD8', '1B120C'],
+  ['F6EAD8', '261A12'],
+  ['C9B49F', '3A2A1E'],
+  ['261A12', 'F6EAD8'],
+  ['12251A', '90D5A6'],
+  ['A2E1B5', '1C3928'],
+  ['FFC6A2', '47291C'],
+  ['FFB4AA', '48241F'],
+  ['E2BD82', '261A12'],
 ]) {
   const ratio =
     (Math.max(luminance(fg), luminance(bg)) + 0.05) /
@@ -36,7 +45,8 @@ for (const [name, size] of [
 }
 const ico = await readFile('public/favicon.ico');
 assert.equal(ico.readUInt16LE(2), 1);
-const css = await readFile('src/styles.css', 'utf8');
-assert(css.includes('--gold: #b8915b'));
-assert(css.includes('--chocolate: #321d10'));
+const css = await readFile('src/theme.css', 'utf8');
+assert(css.includes('--az-gold: #b8915b'));
+assert(css.includes('--az-choc: #321d10'));
+assert(css.includes("[data-theme='dark']"));
 console.log('Assets PWA/touch/favicon e contraste: OK.');

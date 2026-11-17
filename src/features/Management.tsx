@@ -1,3 +1,8 @@
+import {
+  ReleaseAnnouncement,
+  ReleaseHistory,
+} from '../components/ReleaseNotes';
+import { releasesEnabled } from '../release-notes';
 import { ProspectReportPage } from './prospects/Followup';
 import { VisitsPage, VisitSheet } from './prospects/Visits';
 import { ProspectFields, ProspectPanel } from './prospects/ProspectPanel';
@@ -1831,6 +1836,7 @@ export function Management() {
     >
       <OrderDraftScope value={session.organization_id + ':' + session.user_id}>
         <NavigationScroll />
+        {online && <ReleaseAnnouncement />}
         <section
           className={`management ${session.operations ? 'operations-active' : ''}`}
         >
@@ -1908,6 +1914,9 @@ export function Management() {
             </section>
           ) : (
             <Routes key={`${session.user_id}:${session.organization_id}`}>
+              {releasesEnabled(__APP_VERSION__) && (
+                <Route path="novidades" element={<ReleaseHistory />} />
+              )}
               <Route
                 index
                 element={
@@ -2282,6 +2291,9 @@ function More({
           ['recorrentes', 'Pedidos padrão', 'recorrentes'],
           ['produtos', 'Produtos', 'produtos'],
           ['mensagens', 'Modelos de WhatsApp', 'pedidos'],
+          ...(releasesEnabled(__APP_VERSION__)
+            ? [['novidades', 'Novidades', 'ajuda']]
+            : []),
           ['ajuda', 'Ajuda e tutorial', 'ajuda'],
           ...(mobile
             ? [['preferencias', 'Preferências', 'configuracoes']]

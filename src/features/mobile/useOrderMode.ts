@@ -1,14 +1,18 @@
+import {
+  readLocalPreference,
+  writeLocalPreference,
+} from '../../local-preferences';
 import { useEffect, useState } from 'react';
 export function useOrderMode(role: string) {
   const key = 'az-order-mode-' + role;
   const [preference, setPreference] = useState(
-      () => localStorage.getItem(key) || 'auto',
+      () => readLocalPreference(key) || 'auto',
     ),
     [small, setSmall] = useState(() => matchMedia('(max-width:700px)').matches);
   useEffect(() => {
     const media = matchMedia('(max-width:700px)'),
       change = () => setSmall(media.matches),
-      sync = () => setPreference(localStorage.getItem(key) || 'auto');
+      sync = () => setPreference(readLocalPreference(key) || 'auto');
     media.addEventListener('change', change);
     window.addEventListener('order-mode', sync);
     return () => {
@@ -22,7 +26,7 @@ export function useOrderMode(role: string) {
       (preference === 'auto' && small && role === 'operator'),
     preference,
     setPreference: (value: string) => {
-      localStorage.setItem(key, value);
+      writeLocalPreference(key, value);
       setPreference(value);
       window.dispatchEvent(new Event('order-mode'));
     },
