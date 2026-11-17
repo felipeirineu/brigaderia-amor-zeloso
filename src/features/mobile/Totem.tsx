@@ -1,3 +1,4 @@
+import { AlcoholTag } from '../../components/AlcoholTag';
 import { AvatarChip } from '../../components/AvatarChip';
 import { SkeletonList } from '../../components/Skeleton';
 import { useCallback, useContext, useMemo } from 'react';
@@ -23,7 +24,7 @@ import {
   type KitItemSnapshot,
 } from '../../../shared/kit-orders';
 import { kitLabel } from '../../../shared/kits';
-import { alcoholNotice, containsAlcohol } from '../../../shared/alcohol';
+import { containsAlcohol } from '../../../shared/alcohol';
 import { DayCalendar } from '../operations/DayCalendar';
 import {
   isPastToday,
@@ -1163,15 +1164,15 @@ export function Totem({
                             {title.charAt(0)}
                           </span>
                         )}
-                        <strong>{title}</strong>
-                        {containsAlcohol(
-                          key,
-                          p.name,
-                          p.description,
-                          v.label,
-                        ) && (
-                          <small className="alcohol-tag">{alcoholNotice}</small>
-                        )}
+                        <span className="flavor-name">
+                          <strong>{title}</strong>
+                          {containsAlcohol(
+                            key,
+                            p.name,
+                            p.description,
+                            v.label,
+                          ) && <AlcoholTag />}
+                        </span>
                         <span>
                           {money(
                             price({
@@ -1330,13 +1331,9 @@ export function Totem({
                                   className={`mix-dot tone-${mixOptions.indexOf(v) % 5}`}
                                 />
                               )}
-                              <span>
+                              <span className="flavor-name">
                                 {flavorName(v.id)}
-                                {v.alcohol && (
-                                  <small className="alcohol-tag">
-                                    {alcoholNotice}
-                                  </small>
-                                )}
+                                {v.alcohol && <AlcoholTag />}
                               </span>
                               <div className="flavor-stepper">
                                 <Button
@@ -1888,7 +1885,7 @@ export function Totem({
                         products.data?.find((p) => p.id === c.product_id)
                           ?.description,
                       ),
-                  ) && <small className="alcohol-tag">{alcoholNotice}</small>}
+                  ) && <AlcoholTag />}
                   <QuantityInput
                     label="Quantos kits iguais"
                     aria-label={
@@ -1937,9 +1934,7 @@ export function Totem({
                 <h3>
                   {v.product_name} · {v.label}
                 </h3>
-                {v.alcohol && (
-                  <small className="alcohol-tag">{alcoholNotice}</small>
-                )}
+                {v.alcohol && <AlcoholTag />}
                 <QuantityInput
                   aria-label={'Revisar quantidade de ' + v.product_name}
                   value={counts[v.id]}
@@ -1958,7 +1953,7 @@ export function Totem({
                 <p>{mixText(m.comp)}</p>
                 {Object.keys(m.comp).some(
                   (id) => all.find((v) => v.id === id)?.alcohol,
-                ) && <small className="alcohol-tag">{alcoholNotice}</small>}
+                ) && <AlcoholTag />}
               </div>
             </article>
           ))}

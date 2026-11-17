@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.19.0',
+    items: [
+      'Abertura com a marca e aviso de álcool mais compacto.',
+      'Menu de atalhos em grade e ações dos formulários mais próximas.',
+    ],
+  },
+  {
     version: '0.18.0',
     items: [
       'Cadastros, escolhas com avatar e ações de retomar pedido mais claros no celular.',

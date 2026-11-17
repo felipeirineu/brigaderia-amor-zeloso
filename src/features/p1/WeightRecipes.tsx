@@ -269,7 +269,7 @@ export function WeightRecipes() {
   const isOwner = view.data?.role === 'owner';
   return (
     <>
-      <Button to="/gestao/fichas" variant="ghost">
+      <Button to="/gestao/fichas" variant="ghost" className="ghost-inline">
         Fichas anteriores
       </Button>
       <h1 className="mobile-context-title">Calculadora por peso</h1>

@@ -88,7 +88,7 @@ export function ProfilePhotos() {
           e.target.value = '';
         }}
       />
-      <div className="actions">
+      <div className="actions action-pair">
         <Button
           variant="tonal"
           icon={<Camera size={18} aria-hidden="true" />}
@@ -114,7 +114,7 @@ export function ProfilePhotos() {
             width={128}
             height={128}
           />
-          <div className="actions">
+          <div className="actions action-pair">
             <Button
               variant="primary"
               disabled={busy}

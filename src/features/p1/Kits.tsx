@@ -413,40 +413,46 @@ export function Kits({ role }: { role: string }) {
               : 'Embalagem não informada'}
           </p>
           {owner && (
-            <Button
-              disabled={busy}
-              onClick={() => {
-                setEditing(k);
-                setOtherWeight(!kitWeights.some((w) => w === k.weight_grams));
-                setOtherCapacity(
-                  !kitCapacities.some((u) => u === k.units_per_kit),
-                );
-                setDraft({
-                  weight_grams: k.weight_grams,
-                  units_per_kit: k.units_per_kit,
-                  max_flavors: k.max_flavors,
-                  price_cents: k.price_cents,
-                  dough_weight_grams:
-                    k.dough_weight_grams === null
-                      ? ''
-                      : String(k.dough_weight_grams),
-                  packaging_supply_id: k.packaging_supply_id ?? '',
-                  active: !!k.active,
-                });
-              }}
-            >
-              Editar {kitLabel(k)}
-            </Button>
-          )}
-          {owner && !!k.active && (
-            <Button
-              variant="ghost"
-              disabled={busy}
-              aria-label={`Usar ${kitLabel(k)} como padrão em todos os estabelecimentos`}
-              onClick={() => void defaultAll(k)}
-            >
-              Usar como padrão em todos os estabelecimentos
-            </Button>
+            <div className="actions action-pair">
+              {owner && (
+                <Button
+                  disabled={busy}
+                  onClick={() => {
+                    setEditing(k);
+                    setOtherWeight(
+                      !kitWeights.some((w) => w === k.weight_grams),
+                    );
+                    setOtherCapacity(
+                      !kitCapacities.some((u) => u === k.units_per_kit),
+                    );
+                    setDraft({
+                      weight_grams: k.weight_grams,
+                      units_per_kit: k.units_per_kit,
+                      max_flavors: k.max_flavors,
+                      price_cents: k.price_cents,
+                      dough_weight_grams:
+                        k.dough_weight_grams === null
+                          ? ''
+                          : String(k.dough_weight_grams),
+                      packaging_supply_id: k.packaging_supply_id ?? '',
+                      active: !!k.active,
+                    });
+                  }}
+                >
+                  Editar {kitLabel(k)}
+                </Button>
+              )}
+              {owner && !!k.active && (
+                <Button
+                  variant="ghost"
+                  disabled={busy}
+                  aria-label={`Usar ${kitLabel(k)} como padrão em todos os estabelecimentos`}
+                  onClick={() => void defaultAll(k)}
+                >
+                  Usar como padrão em todos os estabelecimentos
+                </Button>
+              )}
+            </div>
           )}
         </article>
       ))}

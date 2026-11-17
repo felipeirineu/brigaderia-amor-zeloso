@@ -272,12 +272,14 @@ export function Reminders() {
             onChange={(e) => setNotes(e.target.value)}
           />
         </label>
-        <Button disabled={busy} variant="primary" loading={busy}>
-          Salvar lembrete
-        </Button>
-        <Button type="button" onClick={reset}>
-          {editing ? 'Cancelar edição' : 'Limpar campos'}
-        </Button>
+        <div className="actions action-pair">
+          <Button disabled={busy} variant="primary" loading={busy}>
+            Salvar lembrete
+          </Button>
+          <Button type="button" onClick={reset}>
+            {editing ? 'Cancelar edição' : 'Limpar campos'}
+          </Button>
+        </div>
       </form>
       <p>
         Avisos são enviados apenas aos responsáveis que ativaram este aparelho.

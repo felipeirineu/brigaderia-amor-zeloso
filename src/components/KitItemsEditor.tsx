@@ -1,3 +1,4 @@
+import { AlcoholTag } from './AlcoholTag';
 import { useState, useRef, type ReactNode } from 'react';
 import { Button } from './Button';
 import { DisclosureSummary } from './DisclosureSummary';
@@ -11,7 +12,7 @@ import {
   type KitItemInput,
   type KitItemSnapshot,
 } from '../../shared/kit-orders';
-import { alcoholNotice, containsAlcohol } from '../../shared/alcohol';
+import { containsAlcohol } from '../../shared/alcohol';
 import { photoURL } from '../../shared/flavors';
 interface Flavor {
   id: string;
@@ -201,7 +202,7 @@ export function KitItemsEditor({
                   name(c.product_id, item),
                   products.find((p) => p.id === c.product_id)?.description,
                 ),
-            ) && <p className="alcohol-tag">{alcoholNotice}</p>}
+            ) && <AlcoholTag />}
             <QuantityInput
               label="Quantos kits iguais"
               aria-label={`Quantos kits iguais de ${display ? kitLabel(display) : 'kit indisponível'}`}
@@ -301,10 +302,14 @@ export function KitItemsEditor({
                           height={120}
                         />
                       )}
-                      <strong>{p.name}</strong>
-                      {containsAlcohol(p.photo_key, p.name, p.description) && (
-                        <small className="alcohol-tag">{alcoholNotice}</small>
-                      )}
+                      <span className="flavor-name">
+                        <strong>{p.name}</strong>
+                        {containsAlcohol(
+                          p.photo_key,
+                          p.name,
+                          p.description,
+                        ) && <AlcoholTag />}
+                      </span>
                       <span>
                         {count} {count === 1 ? 'kit' : 'kits'}
                       </span>
@@ -419,14 +424,14 @@ export function KitItemsEditor({
                         disabled={blocked}
                         onClick={() => setCompleteId(p.id)}
                       >
-                        <strong>{p.name}</strong>
-                        {containsAlcohol(
-                          p.photo_key,
-                          p.name,
-                          p.description,
-                        ) && (
-                          <small className="alcohol-tag">{alcoholNotice}</small>
-                        )}
+                        <span className="flavor-name">
+                          <strong>{p.name}</strong>
+                          {containsAlcohol(
+                            p.photo_key,
+                            p.name,
+                            p.description,
+                          ) && <AlcoholTag />}
+                        </span>
                       </Button>
                       <div className="flavor-stepper">
                         <Button
@@ -459,59 +464,66 @@ export function KitItemsEditor({
                   );
                 })}
               </div>
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={
-                  !completer ||
-                  sum >= kit.units_per_kit ||
-                  (!draft.components.some(
-                    (c) => c.product_id === completer.id,
-                  ) &&
-                    draft.components.length >= max)
-                }
-                onClick={() => {
-                  if (completer)
-                    units(
-                      completer.id,
-                      (draft.components.find(
-                        (c) => c.product_id === completer.id,
-                      )?.units ?? 0) +
-                        kit.units_per_kit -
-                        sum,
-                    );
-                }}
-              >
-                Completar com {completer?.name ?? 'sabor escolhido'}
-              </Button>
               {error && <p role="alert">{error}</p>}
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setDraft({ ...draft, components: [] })}
-              >
-                Limpar sabores
-              </Button>
-              <Button
-                type="button"
-                variant="primary"
-                disabled={
-                  !kit.active ||
-                  sum !== kit.units_per_kit ||
-                  !sum ||
-                  draft.components.length > max
-                }
-                onClick={apply}
-              >
-                {index === null
-                  ? 'Adicionar kit ao pedido'
-                  : 'Salvar sabores do kit'}
-              </Button>
+              <div className="actions action-pair">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={
+                    !completer ||
+                    sum >= kit.units_per_kit ||
+                    (!draft.components.some(
+                      (c) => c.product_id === completer.id,
+                    ) &&
+                      draft.components.length >= max)
+                  }
+                  onClick={() => {
+                    if (completer)
+                      units(
+                        completer.id,
+                        (draft.components.find(
+                          (c) => c.product_id === completer.id,
+                        )?.units ?? 0) +
+                          kit.units_per_kit -
+                          sum,
+                      );
+                  }}
+                >
+                  Completar com {completer?.name ?? 'sabor escolhido'}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setDraft({ ...draft, components: [] })}
+                >
+                  Limpar sabores
+                </Button>
+                <Button
+                  type="button"
+                  variant="primary"
+                  disabled={
+                    !kit.active ||
+                    sum !== kit.units_per_kit ||
+                    !sum ||
+                    draft.components.length > max
+                  }
+                  onClick={apply}
+                >
+                  {index === null
+                    ? 'Adicionar kit ao pedido'
+                    : 'Salvar sabores do kit'}
+                </Button>
+                <Button type="button" variant="ghost" onClick={close}>
+                  Cancelar montagem
+                </Button>
+              </div>
             </>
           )}
-          <Button type="button" variant="ghost" onClick={close}>
-            Cancelar montagem
-          </Button>
+          {!kit && (
+            <Button type="button" variant="ghost" onClick={close}>
+              Cancelar montagem
+            </Button>
+          )}
         </div>
       )}
     </section>

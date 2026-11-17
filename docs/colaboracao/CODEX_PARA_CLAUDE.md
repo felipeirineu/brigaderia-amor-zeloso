@@ -1,3 +1,49 @@
+## T7 — entrega para revisão (17/11/2026)
+
+Branch `codex/t7-pre-release`, versão **0.19.0**, main **cf9728d** incorporado/conferido. Somente T7; sem edição autoral de FILA/VEZ, flags, worker/API, banco real, Cloudflare ou T8. Prévia aprovada `previas/t7-abertura-alcool.png` seguida. Guia e auditoria por tela: **docs/FASE_T7.md**.
+
+### Produzido
+
+- **T7-1 concluída:** `AppOpening` com logo central de220px, fundo da marca, três pontos discretos, contorno dourado no escuro e animação desligada com reduced-motion. Status acessível sem texto técnico visível. Sem atraso artificial: sessão válida abre a rota pedida/Hoje;401 mantém a entrada existente. Falha inicial de conexão oferece Tentar novamente, não login, preservando retry; sessão já aberta continua sendo preservada nas falhas de rede. AppUpdate, ícones e catálogo desligado intactos.
+- **Manifestos:** já tinham fundos claro/escuro corretos; preservados. E2E compara os fundos da abertura com background_color de ambos os manifestos. Sem script/estilo inline, eval, dependência externa ou exceção de CSP.
+- **T7-2 concluída:** `AlcoholTag` compartilhado em Totem e KitItemsEditor (opções, montagem, revisão e embalagens anteriores). Ícone decorativo + Álcool; nome acessível Contém álcool, com papel de imagem no selo. Nome/selo dividem linha quando cabem; nome comprido quebra com selo embaixo, sem truncar ou criar overflow. Detecção de shared/alcohol.ts preservada, sem inferência nova de produtos.
+- **T7-3 concluída:** Gerar pedidos da semana? alinhado ao título do cartão por ghost-inline, sem mudar rota/ação.
+- **T7-4 concluída:** Clientes ou contatos à esquerda; chips na mesma linha central com gap12px (space3). Novo cadastro continua em linha própria.
+- **T7-5 concluída:** menu+ em grade2×2, ordem Nova visita/Novo pedido/Novo cliente/Novo lembrete. Mesma largura/altura, mínimo64px, mesmos condicionais de permissão e ações de fechar/navegar.
+- **T7-6 concluída:** auditoria das telas especificadas, com tabela individual no guia. Insumos/Fichas/Lembretes: Salvar/Limpar ou Cancelar em pares; Fichas: Insumos/Compras em pares; Kits: Editar/Usar padrão em pares, confirmação e owner preservados; Preferências: câmera/galeria e salvar/cancelar foto em pares; montagem do kit: Completar/Limpar e Salvar/Cancelar em duas linhas. Voltar para Fichas (Insumos/Calculadora) alinhado ao texto. Classe action-pair por grupo, tokens, mínimo48px, sem cortar rótulos longos. Outras telas conferidas mantêm os grupos existentes, especialmente confirmações financeiras e ações únicas de Acessos/Backup.
+- **T7-7 concluída:** versão0.19.0 e entrada correspondente na fonte única de Novidades, que segue oculta antes de1.0.0.
+- **Evidências:** **57 PNGs** t7-*, somente DEMONSTRAÇÃO em390×844:27 pares antes/depois, montagem/nome comprido adicionais e uma imagem intermediária da montagem antes de compactar seu rodapé (já com selo novo), identificada como intermediária. Custos e valores são dos fixtures fictícios locais, nunca do banco real.
+
+### Testes executados
+
+- `npm run build:pages` (typecheck incluído), `lint`, `format:check`, `git diff --check`: passaram.
+- `npm test -- --maxWorkers=2`: **153 testes /40 arquivos**, incluindo SSR do selo/nome acessível/ícone decorativo e todos os testes anteriores de Button, iniciais, álcool, aparência e versões.
+- `test:security`: **274 verificações** verdes; `test:brand`: assets e contraste AA verdes. Nenhuma rota nova ou alteração de autenticação/CSP.
+- **48 execuções E2E distintas /16 cenários × Chromium móvel, WebKit móvel e Chromium desktop:**12 da T7 (abertura, auditoria/menu, etapas com álcool e nome longo) +36 regressões de T3/T6, gestão/login/duas sessões/logout, sessão expirada/rascunho/repetição, kits no celular/PC, confirmação do kit padrão em massa, foto privada, CSP e AppUpdate. Rodada48/48 verde. Testes legados intactos, incluindo o alinhamento original de Calcular rota ao nome.
+- Após explicitar o papel acessível de imagem no selo, repetidos os seis casos de etapas/nome comprido nos três navegadores: **6/6 verdes**, incluindo a busca pelo nome acessível Contém álcool. Unidade153/153 e lint repetidos verdes.
+- A auditoria não confirma pedidos nem salva cadastros/recebimentos. Menu Novo cliente foi aberto/cancelado e contagens preservadas. Nos testes de regressão, gravações são apenas em D1 efêmero/local dos fixtures.
+
+### Limitações
+
+- Sem aparelho físico instalado: o sistema controla a splash nativa e a atualização de cor do manifesto. Fundos e estados foram verificados nos navegadores simulados.
+- Auditoria cobre os percursos/estados descritos no guia, sem executar todos os estados possíveis de fechamento financeiro, importação, restore de backup ou outras operações não alteradas. Textos longos podem aumentar a altura dos botões; não são cortados para forçar altura fixa.
+
+### Pendências
+
+- Envio consolidado no PR T7. Aguardar CI completo + Segurança automáticos e revisão/publicação do Claude; sem CI manual/merge pelo Codex. Main atual cf9728d conferido antes do envio.
+- T8 e cadastro dos kits no banco real continuam fora desta entrega. Sem ativação de notificações, nova migração ou decisão comercial necessária para T7.
+
+## T7 — plano antes do código (17/11/2026)
+
+Main cf9728d como base de `codex/t7-pre-release`; T6 publicada com CI/Segurança verdes. FILA libera somente T7, versão0.19.0. Prévia `previas/t7-abertura-alcool.png` lida: seguir logo central/3 pontos/reduced-motion/contorno escuro e selo curto de álcool junto ao nome. Sem edição de FILA, banco real, flags, Cloudflare ou T8.
+
+- Capturar DEMONSTRAÇÃO antes/depois em390×844: abertura clara/escura, menu+, Hoje, Pedidos/detalhe, todas as etapas do Novo pedido, Clientes/Contatos/visitas, Kits, Insumos, Fichas/calculadora, Lembretes, Financeiro/conta, Relatórios, Mais/Preferências, Acessos/Backup. Auditar ações/overflow sem executar operações reais.
+- `Management.tsx` + componente de abertura/theme: logo central com status acessível e pontos discretos até a sessão; preservar erro/login em falha e sessão/offline/retry. Manifestos já usam os fundos claro/escuro; validar correspondência. Sem atraso artificial, texto técnico ou exceção de CSP.
+- Selo AlcoholTag compartilhado em Totem/KitItemsEditor: ícone + Álcool, acessível Contém álcool, ao lado do nome com quebra segura quando comprido; manter detecção em shared/alcohol.ts intacta.
+- Hoje: alinhar Gerar pedidos da semana? ao título por classe ghost-inline. Clientes: legenda à esquerda, gap mínimo space3 e chips na mesma linha. Menu+: quatro atalhos na ordem aprovada, grade2×2 com alvos iguais e condicionais de permissões preservadas.
+- Após capturas, agrupar somente ações dispersas comprovadas na auditoria usando contêiner de ações/tokens, com alvo44px, sem reordenar fluxos ou ocultar conteúdo. Relatório por tela, incluindo telas conferidas sem mudança.
+- Aceite: E2E da sessão retida→logo→Hoje,401→login, claro/escuro e reduced-motion, selo/nome e nome longo, grade/links, geometria e ações de cancelamento; regressões T3/T6, AppUpdate, CSP, pedidos. Unidade/SSR do selo; typecheck/lint/format/build/brand/security. Um envio/PR T7 e CI automático completo+Segurança; sem workflow manual ou merge no main.
+
 ## T6 — correção do CI no PR #16 (17/11/2026)
 
 ### Produzido

@@ -72,7 +72,7 @@ export function Supplies() {
   return (
     <>
       <h1 className="mobile-context-title">Insumos e embalagens</h1>
-      <Button to="/gestao/fichas" variant="ghost">
+      <Button to="/gestao/fichas" variant="ghost" className="ghost-inline">
         Fichas técnicas
       </Button>
       <Failure message={save.error || view.error} />
@@ -146,12 +146,14 @@ export function Supplies() {
             />
             Ativo
           </label>
-          <Button disabled={save.busy} variant="primary" loading={save.busy}>
-            Salvar insumo
-          </Button>
-          <Button type="button" onClick={reset}>
-            {editing ? 'Cancelar edição' : 'Limpar campos'}
-          </Button>
+          <div className="actions action-pair">
+            <Button disabled={save.busy} variant="primary" loading={save.busy}>
+              Salvar insumo
+            </Button>
+            <Button type="button" onClick={reset}>
+              {editing ? 'Cancelar edição' : 'Limpar campos'}
+            </Button>
+          </div>
         </form>
       )}
       {!view.data && !view.error && (
@@ -235,7 +237,7 @@ export function Recipes({
           Calculadora por peso
         </Button>
       )}
-      <div className="actions">
+      <div className="actions action-pair">
         <Button className="button" to="/gestao/insumos" variant="ghost">
           Insumos e embalagens
         </Button>
@@ -411,12 +413,14 @@ export function Recipes({
             zero. Evite contar a mesma embalagem no componente e no custo
             adicional. Margem de 0 a 95%, aplicada sobre o preço, não markup.
           </p>
-          <Button disabled={save.busy} variant="primary" loading={save.busy}>
-            Salvar ficha
-          </Button>
-          <Button type="button" onClick={reset}>
-            {editing ? 'Cancelar edição' : 'Limpar campos'}
-          </Button>
+          <div className="actions action-pair">
+            <Button disabled={save.busy} variant="primary" loading={save.busy}>
+              Salvar ficha
+            </Button>
+            <Button type="button" onClick={reset}>
+              {editing ? 'Cancelar edição' : 'Limpar campos'}
+            </Button>
+          </div>
         </form>
       )}
       <section className="panel">
