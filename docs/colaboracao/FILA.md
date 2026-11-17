@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — **corrigir T6 no PR #16** (diagnóstico abaixo). Push no mesmo branch.
+`VEZ: FELIPE` — aguardando a lista de revisões do Felipe antes da 1.0.0 (vira a **T7**).
 
 
 
@@ -41,7 +41,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 17/11 após R7c, R7d e T4+T5: sem problema real; 1 detalhe do modo escuro foi para a T6).
+Contador de entregas desde a última revisão: **1/3** (T6).
 
 ## Limites
 
@@ -65,7 +65,7 @@ Contador de entregas desde a última revisão: **0/3** (revisão geral feita em 
 | R7c | Custo da prospecção, WhatsApp e relatório + migração 0026 | **publicada** (0.15.0); 0026 aplicada e conferida 17/11 |
 | R7d | "Nova visita" no +, visita a cliente atual e ajuda | **publicada** 17/11 (PR #14) como **0.16.0** |
 | T4+T5 | Modo escuro + "Novidades" (ativa na 1.0.0) | **publicada** 17/11 (PR #15) como **0.17.0** |
-| T6 | Ajustes visuais pedidos pelo Felipe (detalhes abaixo) | **vez do Codex** — versão **0.18.0** |
+| T6 | Ajustes visuais pedidos pelo Felipe | **publicada** 17/11 (PR #16) como **0.18.0** |
 
 ### T0 — R17
 
@@ -267,16 +267,6 @@ Vistas nas capturas antes/depois da própria T3:
 
 Regras: tokens do `theme.css`, sem `backdrop-filter`, sem dados reais. A folha usa o mesmo `help-sheet` (arrastar para fechar já funciona).
 
-### ⚠️ T6 — CI vermelho no PR #16 (1ª falha) — diagnóstico do Claude
-
-- **Onde:** `tests/e2e/t3-visual.spec.js:81` nos três navegadores. O teste da T3 exige que o rótulo de "Calcular rota" fique alinhado (±1 px) com o **nome do cliente** no cartão. Agora está 55 px à esquerda.
-- **Causa:** em `src/theme.css`, a T6 trocou `.customer-records .route-info { padding-inline-start: calc(var(--az-space-4) + var(--az-avatar-size) + var(--az-space-3)) }` por `padding-inline: var(--az-space-4)`. Isso levou o botão para a borda do cartão.
-- **Correção:**
-  - restaurar o recuo antigo (alinhado ao nome, que é "o texto do cartão" do item 5 da T6) e manter o restante (sem espaço vazio vertical, `min-height: 44px`);
-  - não alterar o teste da T3;
-  - conferir que os demais botões `ghost-inline` seguem alinhados ao texto do próprio bloco.
-- Push no mesmo branch `codex/t6-visual-polish`.
-
 ### T6 — ajustes visuais pedidos pelo Felipe (16/11, com capturas do celular)
 
 Mesmo cuidado da T3: capturas antes/depois em `docs/colaboracao/capturas/t6-*.png`, sem mudar comportamento.
@@ -308,6 +298,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.18.0 | 17/11 | Acabamentos: Clientes/Contatos centralizados, avatar de quem leva com espaço e círculo, botões de escolha mais compactos, aviso de pedido em andamento menor e logo visível no modo escuro. |
 | 0.17.0 | 17/11 | Modo escuro (automático, claro ou escuro em Mais → Preferências) e as Novidades prontas para a 1.0. |
 | 0.16.0 | 17/11 | "Nova visita" direto no +, visita também para cliente atual (novos sabores) e ajuda passo a passo sobre contatos e visitas. |
 | 0.15.0 | 17/11 | Custo estimado das amostras e corridas, despesa "Amostras e prospecção" só com confirmação, mensagens de retorno por WhatsApp e relatório de conversão (liga depois da migração 0026). |
@@ -343,3 +334,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 17/11 | 11 | R7d — Nova visita no +, cliente atual, ajuda (PR #14) | publicada como 0.16.0; 242 E2E e Segurança verdes; sem migração. |
 | 17/11 | 12 | T4+T5 — modo escuro e Novidades (PR #15) | O CI do PR foi cancelado ao bater 25 min (sem falha). O Claude subiu o limite do job para 40 min e rodou a bateria: 251 E2E e Segurança verdes. Publicada como 0.17.0. **Revisão geral 3/3** (R7c, R7d, T4+T5): sem problema real; logo no escuro foi para a T6. |
 | 17/11 | — | T6 (PR #16) | CI vermelho (1ª): "Calcular rota" desalinhado do nome (teste T3). Diagnóstico no FILA; vez devolvida ao Codex. Verificações pausadas a pedido do Felipe. |
+| 17/11 | 13 | T6 — ajustes visuais (PR #16) | correção do alinhamento de "Calcular rota"; 257 E2E e Segurança verdes. Publicada como 0.18.0. |
