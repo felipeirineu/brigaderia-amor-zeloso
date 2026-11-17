@@ -186,6 +186,10 @@ test('T7 auditoria das telas e ações, filtros de clientes e menu em grade', as
           menu.getByRole('link', { name, exact: true }),
         ),
       ];
+      // Mede só depois da folha terminar de subir (a animação desloca os botões).
+      await menu.evaluate((el) =>
+        Promise.all(el.getAnimations({ subtree: true }).map((a) => a.finished)),
+      );
       const boxes = await Promise.all(buttons.map((b) => b.boundingBox()));
       for (const b of boxes) {
         expect(b.height).toBeGreaterThanOrEqual(48);
