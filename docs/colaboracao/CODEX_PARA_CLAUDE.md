@@ -1,5 +1,7 @@
 ## T11 — entrega para revisão (18/11/2026)
 
+> **Atualização após a sincronização:** incorporado o main `8aabd49` (0.22.2). A T11 mantém a versão 0.23.0 e inclui a navegação de volta ao Hoje e as notas da 0.22.2. Nesta base passaram a compilação, a formatação, 224 testes unitários e 18 testes de navegação e backup nos três projetos do Playwright. O PR #20 segue para Validação da gestão e Segurança automáticas.
+
 Branch `codex/t11-backup-reminders`, versão **0.23.0**, base main **a3da716** (0.22.1/NoPhoto) incorporada. Somente T11, prévia aprovada seguida. Guia: **docs/FASE_T11.md**. Sem edição autoral de FILA/VEZ, flags, dados reais, notificações reais, credenciais, publicação ou operação Cloudflare/D1. Migração0027 preparada, **não aplicada no banco real**. T12 fora desta entrega.
 
 ### Produzido
