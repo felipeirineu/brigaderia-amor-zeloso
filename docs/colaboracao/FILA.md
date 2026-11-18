@@ -526,7 +526,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
-| 0.22.1 | 18/11 | Sabores sem foto: forminha vazia com "Sem Foto" (opção 6 escolhida pelo Felipe; `src/components/NoPhoto.tsx`, `public/brand/sem-foto.webp`). |
+| 0.22.1 | 18/11 | Sabores sem foto: forminha vazia com "Sem Foto" (opção 6 escolhida pelo Felipe; `src/components/NoPhoto.tsx`, `public/brand/sem-foto.webp`). Sabores voltam para **3 colunas** no celular (pedido do Felipe), com − e + de 36 px dentro do cartão. |
 | 0.22.0 | 18/11 | "Retomar seleção" não perde mais a seleção e abre direto nos sabores; caixa mista com quantidade e contador; revisão com "Cliente:", embalagem embaixo e lixeira em 1; folhas no lugar das caixas do navegador para motivo/valor. |
 | 0.21.0 | 17/11 | Confirmações "Tem certeza?" com a cara do app, grade de fotos do produto, só Modo simples / Lista completa, "Sabor" no lugar de variante, arquivar produto só para o dono no computador, textos e alinhamentos da 2ª lista do Felipe. |
 | 0.20.0 | 17/11 | Botão "Ativar lembretes (manual)" no GitHub (VERIFICAR / ATIVAR / REPUBLICAR_AGENDADOR), sem terminal e sem expor chaves. Nada muda no app até o Felipe rodar. |
@@ -572,3 +572,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 17/11 | 15 | T8 — workflow de ativação dos lembretes (PR #18) | CI completo e Segurança verdes. Revisão geral 3/3 (T6, T7, T8): sem problema real. Publicada como 0.20.0. Workflow ainda não executado (passo do Felipe). |
 | 17/11 | 16 | T9 — 2ª lista do Felipe (branch `codex/t9-interface-refinements`) | O Codex não abriu PR (CI rápido vermelho). Claude: teste do menu media durante a animação (corrigido); mapa era instabilidade antiga (12/12 local); grade de fotos não estava centralizada como a prévia (corrigido). CI completo 284 E2E e Segurança verdes. Publicada como 0.21.0. |
 | 18/11 | 17 | T10 — retomar seleção, caixa mista, revisão, folhas de motivo (PR #19) | Capturas estranhas apontadas pelo Felipe: sabores sem foto viravam "ovo" escuro e nomes passavam da borda (defeito antigo, visível com dados de demonstração). Claude corrigiu; 305 E2E e Segurança verdes. Publicada como 0.22.0. Felipe escolheu a forminha "Sem Foto" para sabores sem foto → 0.22.1. |
+| 18/11 | — | 0.22.1 (Claude) | Forminha "Sem Foto" e volta às 3 colunas na escolha dos sabores; CI completo e Segurança verdes. **Codex: não reintroduzir 2 colunas.** |
