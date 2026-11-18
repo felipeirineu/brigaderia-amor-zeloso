@@ -73,7 +73,7 @@ Contador de entregas desde a última revisão: **1/3** (T9).
 | T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | **publicada** 17/11 (PR #18) como **0.20.0** |
 | T9 | Revisões do Felipe (2ª lista): sabores centralizados, confirmações, textos, Foto do produto, modos de pedido | **publicada** 17/11 (branch do Codex, sem PR) como **0.21.0** |
 | T10 | Novo pedido: retomar seleção, caixa mista e tela de revisão (testes do Felipe no celular) | **vez do Codex** — versão **0.22.0** |
-| T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | prévia **aguardando aprovação do Felipe**; depois da T10 — versão **0.23.0** |
+| T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | prévia **aprovada** 18/11; **depois da T10** — versão **0.23.0** |
 
 ### T0 — R17
 
@@ -442,13 +442,40 @@ Como fazer:
 
 **5.** Versão **0.22.0**. Capturas antes/depois (`t10-*.png`), só com dados DEMONSTRAÇÃO. **Atenção:** as capturas do Felipe mostram clientes reais; não copie nomes reais para testes, capturas ou documentos.
 
-### T11 — Lembrete de backup (ideia do Felipe, 18/11; prévia `previas/t11-lembrete-backup.png` aguardando aprovação)
+### T11 — Lembrete de backup (ideia do Felipe; prévia `previas/t11-lembrete-backup.png` **aprovada em 18/11, padrão "Toda semana"**; fazer depois da T10)
 
-Só depois da T10 e da aprovação da prévia. Detalhes a escrever na aprovação. Resumo:
-- lembrete periódico só para o **dono**, com frequência escolhida na tela de Backup;
-- cartão no Hoje e notificação: **Fazer backup** / **Lembrar mais tarde** (+1 h);
-- o backup feito resolve o lembrete até o próximo período;
-- no computador (Chrome/Edge), uma **pasta fixa** via File System Access; nos outros navegadores e no celular, o arquivo vai para Downloads.
+Seguir a prévia: mesma ordem, textos e agrupamentos. Só o **dono** vê, e o backend valida o papel.
+
+1. **Configuração na tela de Backup:**
+   - "Lembrar de fazer backup": chips **Toda semana** (padrão) | A cada 15 dias | Todo mês | Não lembrar;
+   - dia da semana e hora escolhíveis, padrão **segunda às 9h**, horário local;
+   - guardar no servidor (configuração da organização, migração aditiva se precisar) o período, o dia/hora e a data do último backup, que já sai do evento de auditoria `backup.export_requested`.
+   - **Migração = aprovação do Felipe antes de aplicar no banco real** (fluxo da homologação); o código precisa funcionar sem ela, escondendo o recurso.
+2. **Quando vence:** o período passou desde o último backup e chegou o dia/hora.
+   - **Cartão no Hoje**, no topo para o dono: "Está na hora de fazer o backup!", "Último backup: dd/mm (há N dias)" ou "Nenhum backup feito ainda", e o par **Fazer backup** (primário) | **Lembrar mais tarde**.
+   - **Notificação**, se os avisos estiverem ligados no aparelho: mesmo texto, com as ações **Fazer backup** e **Lembrar em 1 h** (actions do service worker). O agendador da T8 envia **uma vez** por vencimento e por adiamento, sem repetir em loop.
+3. **Lembrar mais tarde:** adia 1 hora o cartão e a notificação, guardando o "adiado até" no servidor para valer em todos os aparelhos do dono.
+4. **Fazer backup:** abre `/gestao/backup`, pela notificação ou pelo cartão. Ao concluir o download:
+   - o lembrete some até o próximo período;
+   - mensagem "✓ … salvo em … Próximo lembrete: dd/mm".
+5. **Pasta fixa no computador:**
+   - `showDirectoryPicker` (Chrome/Edge), com a pasta guardada no IndexedDB;
+   - "Trocar pasta";
+   - se a permissão for pedida de novo, explicar em pt-BR;
+   - sem suporte (celular, Safari, Firefox): manter o download atual e mostrar o texto da prévia.
+   - Nunca enviar o arquivo a outro lugar.
+6. **Quanto tempo guardar** (pedido do Felipe): texto curto na tela de Backup, perto da pasta:
+   - "Guarde pelo menos os **8 backups mais recentes** (cerca de 2 meses). Pode apagar os mais antigos. Os arquivos são pequenos; se quiser, guarde mais."
+   - Uma ajuda (?) que explica:
+     - a Cloudflare já guarda sozinha o histórico dos **últimos 7 dias**;
+     - o backup semanal cobre o que for mais antigo que isso;
+     - os arquivos têm dados de clientes: guarde em pasta privada, nunca em grupo, chat ou link público.
+   - **Não apagar arquivos automaticamente.**
+7. **Testes:**
+   - unidade do cálculo de vencimento (períodos, dia/hora, adiamento, último backup, fuso local);
+   - E2E: cartão aparece para o dono e não para a operadora; Lembrar mais tarde esconde e volta após 1 h (relógio simulado); Fazer backup abre a tela e resolve; sem migração, o recurso fica oculto;
+   - pasta fixa com a API simulada; teste do agendador enviando uma vez.
+8. Versão **0.23.0**. Capturas `t11-*.png`, só com DEMONSTRAÇÃO.
 
 ## Versões do app
 
