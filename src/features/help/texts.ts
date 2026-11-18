@@ -68,6 +68,10 @@ export const helpTexts = {
     title: 'Ficha técnica',
     text: 'Registra ingredientes e rendimento para estimar custos. Com P1 ativado, cadastre insumos e custos informados, sem inferir receitas a partir de fotos. Custo ausente deixa a estimativa pendente. Na Calculadora por peso, cadastre a massa e os custos por receita, confirme o acabamento de cada tamanho e configure forminhas e canal iFood. Opcionais e margem podem ser simulados sem alterar preços, pedidos, despesas ou estoque.',
   },
+  backupRetention: {
+    title: 'Por quanto tempo guardar os backups',
+    text: 'A Cloudflare já guarda sozinha o histórico dos últimos 7 dias. O backup semanal cobre o que for mais antigo que isso. Guarde pelo menos os 8 backups mais recentes (cerca de 2 meses). Os arquivos têm dados de clientes: guarde em pasta privada, nunca em grupo, chat ou link público. O app não apaga arquivos antigos.',
+  },
   push: {
     title: 'Avisos no celular',
     text: 'Ative somente se quiser receber lembretes neste aparelho. No iPhone, é preciso iOS 16.4 ou mais recente e o app instalado na Tela de Início; no Android/Chrome pode funcionar no navegador. A permissão só é pedida ao ativar ou escolher um aviso. O título e horário aparecem na notificação, que pode atrasar alguns minutos. Se não funcionar, use Adicionar ao calendário do celular e confira o alarme na importação. Sair da conta revoga os avisos desta sessão; um aviso já despachado pode chegar.',

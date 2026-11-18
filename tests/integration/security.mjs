@@ -25,6 +25,53 @@ const ok = (cond, msg) => {
 try {
   const { call, owner, operator, outside, customer, makeOrder } =
     await demoProject(t);
+  // T11: cada rota de backup nova valida sessão, tenant e papel owner.
+  const backupConfigPath = 'p1/backup-reminders/' + t.org;
+  const backupFile = await t.request('p1/backup', { cookie: owner });
+  ok(backupFile.ok, 'T11 prepara comprovante local');
+  const backupReceipt = backupFile.headers.get('x-backup-receipt');
+  ok(!!backupReceipt, 'T11 comprovante vinculado à sessão autorizada');
+  for (const [path, method, data] of [
+    [backupConfigPath, 'GET'],
+    [
+      backupConfigPath,
+      'PUT',
+      { version: 1, period: 'weekly', weekday: 1, time: '09:00' },
+    ],
+    [
+      backupConfigPath + '/snooze',
+      'POST',
+      { version: 1, alert_key: 'DEMONSTRACAO' },
+    ],
+    ['p1/backup-exports/' + backupReceipt + '/complete', 'POST', {}],
+  ]) {
+    for (const [cookie, expected] of [
+      [undefined, 401],
+      [outside, 404],
+      [operator, 403],
+    ]) {
+      const response = await t.request(path, {
+        cookie,
+        method,
+        data,
+        key: crypto.randomUUID(),
+      });
+      ok(
+        response.status === expected,
+        `T11 ${method} ${path}: ${expected}, veio ${response.status}`,
+      );
+    }
+    if (method !== 'GET') {
+      const response = await t.request(path, {
+        cookie: owner,
+        method,
+        data,
+        key: crypto.randomUUID(),
+        origin: 'https://fora.example.test',
+      });
+      ok(response.status === 403, 'T11 CSRF em ' + path);
+    }
+  }
   const order = await makeOrder();
   // T9: arquivar produto é só do administrador, inclusive pelo campo active.
   const archived = await call('products', {

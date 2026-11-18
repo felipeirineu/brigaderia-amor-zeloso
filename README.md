@@ -159,3 +159,7 @@ As validações usam dados fictícios DEMONSTRAÇÃO em bases locais separadas. 
 ## R11 — caixa mista e continuação
 
 O estado vigente está no [guia R11](docs/FASE_R11_CAIXA_MISTA.md) e no histórico de colaboração. A montagem mista e a produção por sabor já foram entregues com o Claude; o app foi ativado na conta da brigaderia. **Não reverter flags com base nos relatórios históricos deste README.** Esta continuação entrega relatórios e custos/compras por composição; modelos recorrentes, editor do PC e R12 seguem na ordem registrada. Sem cadastro automático de produtos/preços. A [auditoria de segurança](docs/SEGURANCA_AUDITORIA.md) define a matriz de rotas e os checks antes de publicar.
+
+## T11 — lembrete de backup (código para revisão)
+
+A versão0.23.0 prepara o lembrete do administrador, adiamento compartilhado e pasta fixa em navegadores compatíveis. O [guia T11](docs/FASE_T11.md) explica a confirmação de salvamento e a futura ativação. Sem a migração0027, o backup anterior permanece e o novo recurso fica oculto. A migração no banco real e a republicação do agendador dependem do responsável; não foram executadas pelo Codex. O catálogo continua desligado.

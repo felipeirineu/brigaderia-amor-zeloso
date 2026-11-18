@@ -23,6 +23,10 @@ assert.deepEqual(
   ['x', 'order_items', 'orders'],
 );
 assert.ok(BASE_ROOTS.every((t) => !KEEP.has(t)));
+assert.ok(
+  KEEP.has('backup_reminders'),
+  'T11 configuração precisa sobreviver à limpeza',
+);
 
 const t = await runtime({
   financeEnabled: true,

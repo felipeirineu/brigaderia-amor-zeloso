@@ -1,7 +1,7 @@
 {
   "name": "brigaderia-amor-zeloso-gestao",
   "private": true,
-  "version": "0.22.1",
+  "version": "0.23.0",
   "type": "module",
   "engines": {
     "node": ">=22.12"
@@ -36,7 +36,7 @@
     "test:field": "node tests/integration/field.mjs && node tests/integration/profile-photos.mjs",
     "test:inventory": "node tests/integration/inventory.mjs",
     "test:import": "node tests/integration/customer-import.mjs",
-    "test:backup": "node tests/integration/backup.mjs",
+    "test:backup": "node tests/integration/backup.mjs && node tests/integration/backup-reminders.mjs",
     "test:workday": "node tests/integration/workday.mjs",
     "test:routing": "node tests/integration/routing.mjs",
     "test:mixed": "node tests/integration/mixed.mjs && node tests/integration/recurring-mixed.mjs",

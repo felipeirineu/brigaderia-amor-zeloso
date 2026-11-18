@@ -24,6 +24,11 @@ const t = await runtime({
 });
 try {
   const { call, owner } = await demoProject(t);
+  // Esta suíte isola falhas dos lembretes comuns; backup é exercitado em backup-reminders.mjs.
+  await t.db
+    .prepare("UPDATE backup_reminders SET period='off' WHERE organization_id=?")
+    .bind(t.org)
+    .run();
   const actor = (await call('session', undefined, 'GET')).user_id;
   const alert = await call('p1/reminders', {
     title: 'DEMONSTRAÇÃO não repetir restauração',

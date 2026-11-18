@@ -1,3 +1,4 @@
+import { BackupReminderCard } from '../p1/BackupReminderCard';
 import { VisitCard } from '../prospects/Visits';
 import type { ProspectVisit } from '../../../shared/visits';
 import { SkeletonToday } from '../../components/Skeleton';
@@ -74,8 +75,10 @@ export function Today({
   followup = false,
   financial = false,
   p1 = false,
+  backupOrganizationId,
 }: {
   role: string;
+  backupOrganizationId?: string;
   followup?: boolean;
   financial?: boolean;
   p1?: boolean;
@@ -267,6 +270,9 @@ export function Today({
         </div>
         <DayCalendar day={day} onSelect={setDay} />
       </div>
+      {role === 'owner' && day === localDay() && backupOrganizationId && (
+        <BackupReminderCard organizationId={backupOrganizationId} />
+      )}
       {role === 'owner' &&
         day === localDay() &&
         field?.data &&

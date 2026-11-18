@@ -1,3 +1,4 @@
+import { backupReminders } from './backup-reminders';
 import { weightCosting } from './weight-costing';
 import { kits } from './kits';
 import { push } from './push';
@@ -22,6 +23,11 @@ export async function p1(req: Request, env: Env, a: Actor) {
   if (['kits', 'kit-settings', 'kit-default'].includes(resource))
     return kits(req, env.DB!, a, resource, id);
   if (resource === 'push') return push(req, env, a);
+  if (['backup-reminders', 'backup-exports'].includes(resource)) {
+    if (!(await toolsReady(env)))
+      throw new HttpError(503, 'Exportação ainda não ativada.');
+    return backupReminders(req, env.DB!, a, resource, id);
+  }
   if (resource === 'backup' && req.method === 'GET') {
     if (!(await toolsReady(env)))
       throw new HttpError(503, 'Exportação ainda não ativada.');

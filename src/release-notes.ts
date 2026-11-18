@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.23.0',
+    items: [
+      'Lembrete de backup no Hoje e nos avisos do administrador, com adiamento de uma hora.',
+      'Pasta fixa nos navegadores compatíveis e orientação para guardar os oito backups mais recentes.',
+    ],
+  },
+  {
     version: '0.22.1',
     items: ['Sabores ainda sem foto aparecem com a forminha "Sem Foto".'],
   },

@@ -240,7 +240,13 @@ print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check'
   assert.equal(restored.counts.kit_settings, 1);
   assert.equal(restored.counts.reminder_alerts, 1);
   assert.equal(restored.counts.reminder_recipients, 1);
-  for (const table of ['push_subscriptions', 'push_jobs', 'push_requests'])
+  assert.equal(restored.counts.backup_reminders, 1);
+  for (const table of [
+    'backup_exports',
+    'push_subscriptions',
+    'push_jobs',
+    'push_requests',
+  ])
     assert.equal(restored.counts[table], 0);
   assert.equal(restored.counts.login_attempts, 0);
   assert.equal(restored.organizations, 1);

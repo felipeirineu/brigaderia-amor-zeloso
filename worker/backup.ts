@@ -1,3 +1,4 @@
+import { backupSchema } from './backup-reminders';
 import { HttpError, type Actor } from './security';
 import { ownerOnly, fileResponse } from './p1-common';
 import { databaseTables } from './database-tables';
@@ -175,6 +176,7 @@ export async function backup(db: D1Database, a: Actor) {
           (c) => c.table_name === n && c.name === 'organization_id',
         ) &&
         ![
+          'backup_exports',
           'sessions',
           'place_cache',
           'route_cache',
@@ -218,12 +220,13 @@ export async function backup(db: D1Database, a: Actor) {
   const tree = unionTree(selections, 'export_data');
   const exportSQL =
     'WITH ' + [...users.ctes, ...tree.ctes].join(',') + ' ' + tree.source;
+  const exportId = crypto.randomUUID();
   const result = await db.batch([
     db
       .prepare(
         "INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) VALUES(?,?,?,'backup.export_requested',?)",
       )
-      .bind(crypto.randomUUID(), org, a.user_id, org),
+      .bind(exportId, org, a.user_id, org),
     db.prepare(exportSQL).bind(org),
   ]);
   const exported = result[1].results as {
@@ -268,9 +271,19 @@ export async function backup(db: D1Database, a: Actor) {
   for (const s of schema.filter((s) => s.type !== 'table'))
     out.push(s.sql + ';');
   out.push('PRAGMA foreign_key_check;');
-  return fileResponse(
+  const response = fileResponse(
     out.join('\n') + '\n',
     'application/sql; charset=utf-8',
     'backup-gestao-' + new Date().toISOString().slice(0, 10) + '.sql',
   );
+  if ((await backupSchema(db)).ready) {
+    await db
+      .prepare(
+        "INSERT INTO backup_exports(organization_id,id,user_id,requested_at,expires_at) SELECT organization_id,id,user_id,created_at,strftime('%Y-%m-%dT%H:%M:%fZ','now','+15 minutes') FROM audit_events WHERE organization_id=? AND id=?",
+      )
+      .bind(org, exportId)
+      .run();
+    response.headers.set('X-Backup-Receipt', exportId);
+  }
+  return response;
 }

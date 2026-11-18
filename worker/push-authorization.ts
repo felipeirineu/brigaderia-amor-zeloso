@@ -1,0 +1,3 @@
+// Cron não passa por actor(): revalidar equipe e autorização em cada etapa.
+export const authorizedDevice = `EXISTS(SELECT 1 FROM memberships m JOIN users u ON u.id=m.user_id JOIN authorized_emails a ON a.email=u.email AND a.organization_id=m.organization_id WHERE m.organization_id=s.organization_id AND m.user_id=s.user_id)`;
+export const authorizedOwnerDevice = `EXISTS(SELECT 1 FROM memberships m JOIN users u ON u.id=m.user_id JOIN authorized_emails a ON a.email=u.email AND a.organization_id=m.organization_id WHERE m.organization_id=s.organization_id AND m.user_id=s.user_id AND m.role='owner' AND a.role='owner')`;
