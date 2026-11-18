@@ -1550,3 +1550,88 @@ textarea::placeholder {
   color: var(--az-choc);
   font: 2.25rem var(--az-serif);
 }
+
+/* T11: lembrete de backup e pasta privada, conforme a prévia aprovada. */
+.backup-reminder-card {
+  padding: var(--az-space-5);
+  margin-bottom: var(--az-space-4);
+  border: 1px solid var(--az-control-border);
+  border-radius: var(--az-radius-card);
+  background: var(--az-warn-bg);
+  color: var(--az-warn-ink);
+}
+.backup-reminder-card h2 {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--az-space-2);
+}
+.backup-reminder-card h2 svg {
+  flex: none;
+}
+.backup-reminder-card p {
+  margin-block: var(--az-space-3);
+}
+.backup-page {
+  display: grid;
+  gap: var(--az-space-5);
+}
+.backup-page h2 {
+  margin-top: 0;
+}
+.backup-settings,
+.backup-folder-section {
+  display: grid;
+  gap: var(--az-space-3);
+}
+.backup-schedule-fields {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--az-space-3);
+}
+.backup-folder-choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--az-space-3);
+  padding: var(--az-space-4);
+  border: 1px solid var(--az-control-border);
+  border-radius: var(--az-radius-field);
+  background: var(--az-surface);
+}
+.backup-folder-choice > div {
+  flex: 1;
+  min-width: 8rem;
+}
+.backup-folder-choice p {
+  margin-bottom: 0;
+}
+.backup-folder-choice strong {
+  overflow-wrap: anywhere;
+}
+.backup-now {
+  width: 100%;
+}
+.backup-retention {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--az-space-2);
+}
+.backup-retention p {
+  flex: 1;
+  margin: 0;
+}
+.backup-success {
+  padding: var(--az-space-4);
+  border-radius: var(--az-radius-field);
+  background: var(--az-ok-bg);
+  color: var(--az-ok-ink);
+  overflow-wrap: anywhere;
+}
+.backup-reminder-card h2 {
+  font-family: var(--az-serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+}
+.backup-reminder-card {
+  box-shadow: var(--az-shadow-card);
+}

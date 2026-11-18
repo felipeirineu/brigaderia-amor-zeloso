@@ -1986,6 +1986,9 @@ export function Management() {
                         role={session.role}
                         financial={session.finance}
                         p1={session.p1}
+                        backupOrganizationId={
+                          session.tools ? session.organization_id : undefined
+                        }
                       />
                     ) : (
                       <Overview />
@@ -2068,7 +2071,15 @@ export function Management() {
                   />
                 )}
                 {session.tools && session.role === 'owner' && (
-                  <Route path="backup" element={<Backup />} />
+                  <Route
+                    path="backup"
+                    element={
+                      <Backup
+                        organizationId={session.organization_id}
+                        userId={session.user_id}
+                      />
+                    }
+                  />
                 )}
                 {session.tools && session.role === 'owner' && (
                   <Route

@@ -24,7 +24,7 @@ test('P1-9 administrador baixa SQL privado sem cache offline', async ({
     await p.goto(t.url + '/gestao/backup');
     const [download] = await Promise.all([
       p.waitForEvent('download'),
-      p.getByRole('button', { name: 'Baixar backup privado' }).click(),
+      p.getByRole('button', { name: 'Fazer backup agora' }).click(),
     ]);
     expect(download.suggestedFilename()).toMatch(/^backup-gestao-.*\.sql$/);
     const text = await readFile(await download.path(), 'utf8');

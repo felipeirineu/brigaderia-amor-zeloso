@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.23.0',
+    items: [
+      'Lembrete de backup no Hoje e nos avisos do administrador, com adiamento de uma hora.',
+      'Pasta fixa nos navegadores compatíveis e orientação para guardar os oito backups mais recentes.',
+    ],
+  },
+  {
     version: '0.22.2',
     items: [
       'No Android, o Voltar do celular leva ao Hoje; no Hoje, sai do app.',
