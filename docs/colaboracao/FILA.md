@@ -426,7 +426,20 @@ Corrigir:
 - **(b)** Em cada item, o nome do sabor numa linha e **"Caixa 12 un."** (tamanho/embalagem) na linha de baixo, em texto menor. O seletor **− [n] +** fica numa linha própria, com **largura fixa**, independente do tamanho do nome. Hoje um nome longo alarga o campo de número (ver captura: "Brigadeiro com Amendoim").
 - **(c)** Em **1**, o **−** hoje não faz nada, e não há como desistir de um sabor na revisão. Em 1, o − vira **remover**: ícone de lixeira, rótulo acessível "Remover {sabor}". Ele pede confirmação pelo `ConfirmSheet` ("Remover {sabor} do pedido?") e remove o item. Se for o último item, volta para a escolha dos sabores. Vale também para caixa mista e kit.
 
-**4.** Versão **0.22.0**. Capturas antes/depois (`t10-*.png`), só com dados DEMONSTRAÇÃO. **Atenção:** as capturas do Felipe mostram clientes reais; não copie nomes reais para testes, capturas ou documentos.
+**4. Fim das caixas do navegador (pedido do Felipe):** os campos de texto que ainda usam `prompt()` nativo ganham uma folha com a cara do app. São 9 hoje:
+- motivo de cancelamento do pedido e outro motivo em `OrderDetail.tsx`;
+- motivo de cancelamento da visita em `Visits.tsx`;
+- valor e motivo do estorno de crédito em `CreditTools.tsx`;
+- motivos em `Account.tsx`;
+- motivo do estorno de despesa em `Expenses.tsx`.
+
+Como fazer:
+- Estender o `ConfirmSheet` (ou criar um `PromptSheet` irmão): título, texto atual como rótulo de um campo (`textarea` para motivo, `input` com `inputMode="decimal"` para valor), **Cancelar** e o botão da ação.
+- Manter as mesmas validações: motivo obrigatório, valor > 0, limites atuais, idempotência e "cancelar não chama a API".
+- Contrato AST/unidade que recuse `prompt(` no `src`, como o da T9 para `confirm(`.
+- E2E de cancelar pedido com motivo: cancelar a folha não grava; motivo vazio não deixa confirmar.
+
+**5.** Versão **0.22.0**. Capturas antes/depois (`t10-*.png`), só com dados DEMONSTRAÇÃO. **Atenção:** as capturas do Felipe mostram clientes reais; não copie nomes reais para testes, capturas ou documentos.
 
 ## Versões do app
 
