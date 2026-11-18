@@ -1476,3 +1476,33 @@ textarea::placeholder {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Sabores sem foto: círculo do mesmo tamanho das fotos, nunca oval. */
+.order-focus .flavor-card .flavor-placeholder {
+  width: min(8rem, 100%);
+  height: auto;
+  aspect-ratio: 1;
+  background: var(--az-tonal);
+  color: var(--az-choc);
+  font-family: var(--az-serif);
+  font-size: 2.25rem;
+}
+/* Nomes longos quebram dentro do cartão, sem passar da borda. */
+.order-focus .flavor-card .flavor-name,
+.order-focus .flavor-card .flavor-name strong {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+}
+/* Caixa mista sem fotos disponíveis: círculo com a capacidade da caixa. */
+.flavor-card .mix-mosaic.no-photos {
+  display: grid;
+  place-items: center;
+  width: min(8rem, 100%);
+  height: auto;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--az-tonal);
+  color: var(--az-choc);
+  font: 2.25rem var(--az-serif);
+}

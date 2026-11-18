@@ -1169,14 +1169,24 @@ export function Totem({
                     aria-label="Montar caixa mista com sabores variados"
                     onClick={() => setMixDraft({ comp: {}, qty: 1 })}
                   >
-                    <span className="mix-mosaic" aria-hidden="true">
-                      {mixOptions
-                        .filter((v) => v.photo_key)
-                        .slice(0, 4)
-                        .map((v) => (
-                          <img key={v.id} src={photoURL(v.photo_key!)} alt="" />
-                        ))}
-                    </span>
+                    {mixOptions.some((v) => v.photo_key) ? (
+                      <span className="mix-mosaic" aria-hidden="true">
+                        {mixOptions
+                          .filter((v) => v.photo_key)
+                          .slice(0, 4)
+                          .map((v) => (
+                            <img
+                              key={v.id}
+                              src={photoURL(v.photo_key!)}
+                              alt=""
+                            />
+                          ))}
+                      </span>
+                    ) : (
+                      <span className="mix-mosaic no-photos" aria-hidden="true">
+                        {capacity}
+                      </span>
+                    )}
                     <strong>Caixa mista</strong>
                     <span className="mix-card-hint">
                       Escolha os {capacity} sabores
