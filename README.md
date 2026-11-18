@@ -142,7 +142,7 @@ npm run test:r2
 npm run test:p1
 ```
 
-Todos os exports são privados, por ação humana, e devem ser guardados em destinos autorizados. Arquivos CSV protegem fórmulas e valores em centavos são identificados nos cabeçalhos. Não há estoque, push ou compra automática nesta entrega.
+Os arquivos são privados e devem ser guardados em destinos autorizados. Desde a T12, Relatórios, Despesas e fluxo de caixa e Custo das entregas oferecem Planilha (.xlsx), PDF e Outros formatos (CSV) com o período e os filtros da tela. Planilha e PDF são gerados no aparelho. O CSV mantém a proteção contra fórmulas e usa reais com vírgula decimal. No celular, o PDF pode ser aberto pela folha de compartilhamento quando disponível.
 
 ## Entrega R3/R4 e complemento P1
 

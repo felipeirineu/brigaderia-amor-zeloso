@@ -4,7 +4,7 @@ import { MoneyField } from '../../components/NumericInputs';
 import { useRef, useState } from 'react';
 import { useRemote, Failure, localDay } from '../operations/common';
 import { api, money, parsePrice, civilDate } from '../api';
-import { privateDownload } from '../PrivateDownload';
+import { ExportActions } from '../report-export/ExportActions';
 import { paymentMethods } from '../../../shared/finance';
 const categories = {
   ingredients: 'Ingredientes',
@@ -105,16 +105,15 @@ export function Expenses() {
             }}
           />
         </label>
-        <Button
-          onClick={() =>
-            void privateDownload(
-              'p1/cashflow.csv?' + query,
-              'fluxo-registrado.csv',
-            ).catch((e) => setError(e.message))
-          }
-        >
-          Exportar fluxo CSV
-        </Button>
+        <ExportActions
+          key={query}
+          path={'p1/cashflow.csv?' + query}
+          csvName="fluxo-registrado.csv"
+          title="Fluxo de caixa registrado"
+          slug="fluxo-de-caixa"
+          from={from}
+          to={to}
+        />
       </div>
       {view.data && (
         <>

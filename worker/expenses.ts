@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { HttpError, json, type Actor } from './security';
 import { businessDay } from './operations-domain';
-import { fileResponse, ownerOnly, p1Mutation, requestRange } from './p1-common';
-import { toCSV } from './reports';
+import { ownerOnly, p1Mutation, requestRange } from './p1-common';
+import { exportResponse } from './report-export';
+import { dateColumn, moneyColumn } from '../shared/report-export';
 export const expenseSchema = z
   .object({
     amount_cents: z.number().int().positive().max(1000000000),
@@ -81,22 +82,30 @@ export async function expenses(
       received = payment?.received ?? 0,
       out = spent?.spent ?? 0;
     if (resource === 'cashflow.csv')
-      return fileResponse(
-        toCSV(
-          [
-            'Dia',
-            'Recebido líquido (centavos)',
-            'Despesas líquidas (centavos)',
-            'Fluxo líquido (centavos)',
+      return exportResponse(
+        req,
+        {
+          columns: [
+            dateColumn('Dia'),
+            moneyColumn('Recebido líquido'),
+            moneyColumn('Despesas líquidas'),
+            moneyColumn('Fluxo líquido'),
           ],
-          daily.map((d) => [
+          rows: daily.map((d) => [
             d.day,
             d.received_cents,
             d.spent_cents,
             d.received_cents - d.spent_cents,
           ]),
-        ),
-        'text/csv; charset=utf-8',
+          summary: [
+            { label: 'Acumulado anterior', value: opening, type: 'money' },
+            {
+              label: 'Acumulado registrado',
+              value: opening + received - out,
+              type: 'money',
+            },
+          ],
+        },
         'fluxo-registrado.csv',
       );
     return json({

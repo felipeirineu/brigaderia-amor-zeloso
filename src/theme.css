@@ -1635,3 +1635,25 @@ textarea::placeholder {
 .backup-reminder-card {
   box-shadow: var(--az-shadow-card);
 }
+
+.report-export {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.report-export-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.report-export-csv {
+  justify-self: center;
+  text-decoration: underline;
+}
+
+.report-export-panel h2 {
+  margin: 0;
+  font-family: var(--az-serif);
+  font-weight: 400;
+}

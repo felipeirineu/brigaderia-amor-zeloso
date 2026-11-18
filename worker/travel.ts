@@ -4,8 +4,8 @@ import { HttpError, json, type Actor, type Env } from './security';
 import { businessDay } from './operations-domain';
 import { p1Mutation, requestRange } from './p1-common';
 import { allocateCost } from '../shared/field';
-import { toCSV } from './reports';
-import { fileResponse } from './p1-common';
+import { exportResponse } from './report-export';
+import { label, moneyColumn, countColumn } from '../shared/report-export';
 const schema = z
   .object({
     mode: z.enum(['uber', '99', 'courier', 'car', 'walk', 'other']),
@@ -116,23 +116,27 @@ export async function travel(
             percent: rev ? (100 * cost) / rev : null,
           };
         });
-      if (new URL(req.url).searchParams.get('format') === 'csv')
-        return fileResponse(
-          toCSV(
-            [
-              'Cliente',
-              'Entrega estimada (centavos)',
-              'Pedidos entregues combinados no período (centavos)',
-              'Percentual',
+      if (
+        ['csv', 'json'].includes(
+          new URL(req.url).searchParams.get('format') ?? '',
+        )
+      )
+        return exportResponse(
+          req,
+          {
+            columns: [
+              label('Cliente'),
+              moneyColumn('Entrega estimada'),
+              moneyColumn('Pedidos entregues'),
+              countColumn('Percentual (%)'),
             ],
-            rows.map((r) => [
+            rows: rows.map((r) => [
               r.name,
               r.cost_cents,
               r.revenue_cents,
-              r.percent ?? '',
+              r.percent === null ? null : Number(r.percent.toFixed(2)),
             ]),
-          ),
-          'text/csv; charset=utf-8',
+          },
           'deslocamentos.csv',
         );
       return json({

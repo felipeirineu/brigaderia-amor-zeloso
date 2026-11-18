@@ -58,7 +58,7 @@ test('R11-4 relatório mostra sabores da composição e CSV privado', async ({
       });
     const event = p.waitForEvent('download');
     await p
-      .getByRole('button', { name: 'Exportar relatório CSV', exact: true })
+      .getByRole('button', { name: 'Outros formatos (CSV)', exact: true })
       .click();
     const csv = await readFile(await (await event).path(), 'utf8');
     expect(csv).toContain('2× Mista:');

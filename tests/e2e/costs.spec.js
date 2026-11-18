@@ -44,7 +44,7 @@ test('relatórios CSV, despesa/estorno, ficha/preço e compras privadas', async 
         path: 'docs/colaboracao/capturas/r8-depois-relatorios.png',
       });
     const event = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Exportar relatório CSV' }).click();
+    await page.getByRole('button', { name: 'Outros formatos (CSV)' }).click();
     expect((await event).suggestedFilename()).toBe('relatorio-orders.csv');
     await page.goto(t.url + '/gestao/despesas');
     await page.getByLabel('Valor da despesa (R$)').fill('2,00');

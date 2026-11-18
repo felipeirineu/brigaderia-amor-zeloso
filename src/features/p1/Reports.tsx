@@ -4,7 +4,7 @@ import { Button } from '../../components/Button';
 import { useState } from 'react';
 import { useRemote, Failure, localDay } from '../operations/common';
 import { money, civilDate } from '../api';
-import { privateDownload } from '../PrivateDownload';
+import { ExportActions } from '../report-export/ExportActions';
 interface Report {
   comparison: {
     from: string;
@@ -47,13 +47,31 @@ interface Report {
     bucket: string;
   }[];
 }
+const kinds = {
+  orders: ['Pedidos vendidos', 'pedidos-vendidos'],
+  customers: ['Vendas por cliente', 'vendas-por-cliente'],
+  products: ['Vendas por produto/sabor', 'vendas-por-sabor'],
+  aging: ['Contas a receber atual', 'contas-a-receber'],
+  weeks: ['Semana a semana', 'semana-a-semana'],
+  without_deliveries: [
+    'Clientes sem entregas no período',
+    'clientes-sem-entregas',
+  ],
+} as const;
+const conditions = [
+  ['all', 'Todas'],
+  ['unset', 'A definir'],
+  ['advance', 'Adiantado'],
+  ['delivery', 'Na entrega'],
+  ['credit', 'A prazo'],
+] satisfies [string, string][];
+
 export function Reports({ followup = false }: { followup?: boolean }) {
   const [from, setFrom] = useState(() => localDay().slice(0, 8) + '01'),
     [to, setTo] = useState(localDay),
     [condition, setCondition] = useState('all'),
     [customer, setCustomer] = useState(''),
-    [kind, setKind] = useState('orders'),
-    [error, setError] = useState('');
+    [kind, setKind] = useState<keyof typeof kinds>('orders');
   const query = `from=${from}&to=${to}&condition=${condition}${customer ? '&customer=' + customer : ''}`,
     view = useRemote<Report>('p1/reports?' + query),
     customers = useRemote<{ id: string; name: string }[]>(
@@ -67,7 +85,7 @@ export function Reports({ followup = false }: { followup?: boolean }) {
         </Button>
       )}
       <h1 className="mobile-context-title">Relatórios</h1>
-      <Failure message={error || view.error || customers.error} />
+      <Failure message={view.error || customers.error} />
       <div className="data-form panel">
         <label>
           Vendas de
@@ -95,13 +113,7 @@ export function Reports({ followup = false }: { followup?: boolean }) {
           label="Condição das vendas"
           value={condition}
           onChange={setCondition}
-          options={[
-            ['all', 'Todas'],
-            ['unset', 'A definir'],
-            ['advance', 'Adiantado'],
-            ['delivery', 'Na entrega'],
-            ['credit', 'A prazo'],
-          ]}
+          options={conditions}
         />
         <label>
           Cliente do relatório
@@ -117,30 +129,44 @@ export function Reports({ followup = false }: { followup?: boolean }) {
             ))}
           </select>
         </label>
+      </div>
+      <section className="panel data-form report-export-panel">
+        <h2>Exportar</h2>
         <label>
-          Exportar dados
-          <select value={kind} onChange={(e) => setKind(e.target.value)}>
-            <option value="orders">Pedidos vendidos</option>
-            <option value="customers">Vendas por cliente</option>
-            <option value="products">Vendas por produto/sabor</option>
-            <option value="aging">Contas a receber atual</option>
-            <option value="weeks">Semana a semana</option>
-            <option value="without_deliveries">
-              Clientes sem entregas no período
-            </option>
+          Relatório
+          <select
+            value={kind}
+            onChange={(e) => setKind(e.target.value as keyof typeof kinds)}
+          >
+            {Object.entries(kinds).map(([value, [title]]) => (
+              <option key={value} value={value}>
+                {title}
+              </option>
+            ))}
           </select>
         </label>
-        <Button
-          onClick={() =>
-            void privateDownload(
-              'p1/reports.csv?' + query + '&kind=' + kind,
-              'relatorio-' + kind + '.csv',
-            ).catch((e) => setError(e.message))
-          }
-        >
-          Exportar relatório CSV
-        </Button>
-      </div>
+        <ExportActions
+          key={query + kind}
+          path={'p1/reports.csv?' + query + '&kind=' + kind}
+          csvName={'relatorio-' + kind + '.csv'}
+          title={kinds[kind][0]}
+          slug={kinds[kind][1]}
+          from={from}
+          to={to}
+          filters={[
+            customer
+              ? (customers.data?.find((c) => c.id === customer)?.name ??
+                'Cliente selecionado')
+              : 'Todos os clientes',
+            condition === 'all'
+              ? ''
+              : conditions.find(([value]) => value === condition)?.[1],
+            kind === 'aging' ? 'Saldo atual, independente do período' : '',
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        />
+      </section>
       {!view.data && !view.error && (
         <SkeletonList label="Carregando relatórios…" />
       )}

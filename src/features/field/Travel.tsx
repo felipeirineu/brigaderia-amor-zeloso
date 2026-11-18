@@ -10,7 +10,7 @@ import {
 } from '../operations/common';
 import { TravelSheet } from './TravelSheet';
 import { travelModes, travelLegs } from '../../../shared/field';
-import { privateDownload } from '../PrivateDownload';
+import { ExportActions } from '../report-export/ExportActions';
 interface Trip {
   id: string;
   visit_id?: string | null;
@@ -65,12 +65,20 @@ export function Travel() {
         <input
           type="date"
           value={from}
-          onChange={(e) => setFrom(e.target.value)}
+          onChange={(e) => {
+            if (e.target.value) setFrom(e.target.value);
+          }}
         />
       </label>
       <label>
         Até
-        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+        <input
+          type="date"
+          value={to}
+          onChange={(e) => {
+            if (e.target.value) setTo(e.target.value);
+          }}
+        />
       </label>
       <Failure message={error || view.error || orders.error} />
       <Button
@@ -148,20 +156,19 @@ export function Travel() {
 }
 export function TravelReport({ from, to }: { from: string; to: string }) {
   const view = useRemote<{
-      total_cents: number;
-      customers: {
-        id: string;
-        name: string;
-        cost_cents: number;
-        revenue_cents: number;
-        percent: number | null;
-      }[];
-    }>(`field/travel-report?from=${from}&to=${to}`),
-    [error, setError] = useState('');
+    total_cents: number;
+    customers: {
+      id: string;
+      name: string;
+      cost_cents: number;
+      revenue_cents: number;
+      percent: number | null;
+    }[];
+  }>(`field/travel-report?from=${from}&to=${to}`);
   return (
     <section className="panel">
       <h2>Custo das entregas</h2>
-      <Failure message={view.error || error} />
+      <Failure message={view.error} />
       <p>
         Rateio estimado, proporcional ao valor dos pedidos em cada corrida.
         Custos pela data do deslocamento; faturamento dos pedidos
@@ -169,16 +176,15 @@ export function TravelReport({ from, to }: { from: string; to: string }) {
         distorcer o percentual. Não representa lucro líquido.
       </p>
       <p>Total de deslocamentos ativos: {money(view.data?.total_cents ?? 0)}</p>
-      <Button
-        onClick={() =>
-          void privateDownload(
-            `field/travel-report?from=${from}&to=${to}&format=csv`,
-            'deslocamentos.csv',
-          ).catch((e) => setError(e.message))
-        }
-      >
-        Exportar custo de entrega CSV
-      </Button>
+      <ExportActions
+        key={from + ':' + to}
+        path={`field/travel-report?from=${from}&to=${to}`}
+        csvName="deslocamentos.csv"
+        title="Custo das entregas"
+        slug="custo-das-entregas"
+        from={from}
+        to={to}
+      />
       {view.data?.customers.map((c) => (
         <p key={c.id}>
           {c.name}: {money(c.cost_cents)} de corrida / {money(c.revenue_cents)}{' '}
