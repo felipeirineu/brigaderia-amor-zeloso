@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.24.0',
+    items: [
+      'Exporte relatórios, fluxo de caixa e custo das entregas como planilha ou PDF.',
+      'O CSV continua disponível em Outros formatos e apresenta os valores em reais.',
+    ],
+  },
+  {
     version: '0.23.0',
     items: [
       'Lembrete de backup no Hoje e nos avisos do administrador, com adiamento de uma hora.',

@@ -1,3 +1,37 @@
+## T12 — entrega para revisão (18/11/2026)
+
+### Produzido
+
+- Versão **0.24.0** com Planilha, PDF e Outros formatos (CSV) nos seis relatórios, no fluxo de caixa e no custo das entregas. Os formatos compartilham o conjunto de dados, o período, os filtros e as permissões existentes. Backup SQL e agenda ICS seguem pelos fluxos atuais.
+- Excel com aba nomeada, cabeçalho chocolate, largura ajustada, datas e valores numéricos, formato de reais e totais com SUM. Textos do cadastro são armazenados como texto. O valor calculado do total acompanha a fórmula para visualizadores sem recálculo.
+- PDF com logo, Figtree e DM Serif Display incorporadas, período e filtro, resumo de valores, tabela paginada e rodapé com data/hora do aparelho. Abre a folha de compartilhamento nos celulares compatíveis, com download disponível nos demais.
+- CSV com BOM UTF-8, separador ponto e vírgula, proteção contra fórmulas e valores em reais com vírgula decimal. A resposta de dados tipados reaproveita as rotas autenticadas e usa `Cache-Control: no-store`.
+- Geradores locais fora do precache. Na build, a planilha acrescenta cerca de 15 kB gzip sob demanda e o PDF, cerca de 506 kB gzip mais fontes e logo. Dependências de geração sob licença MIT e fontes sob OFL, com licenças no repositório. Capturas `t12-*` registram a interface e os arquivos com dados de DEMONSTRAÇÃO.
+
+### Testes executados
+
+- Compilação, tipos, lint, formatação e verificação de marca passaram. Foram verificados 227 testes unitários, incluindo leitura do XLSX com `read-excel-file`, extração de texto acentuado e paginação do PDF e centavos positivos e negativos no CSV.
+- Integrações P1 passaram. A matriz de Segurança passou 317 verificações, incluindo 401 sem sessão, isolamento por organização e ausência de cache para os dados dos novos formatos.
+- 15 testes de tela selecionados passaram em Chromium móvel, WebKit móvel e Chromium desktop. Cobriram os downloads nas três telas, filtros, compartilhamento simulado, permissão da operadora e regressões de custos, caixa mista e atualização do app.
+- `npm audit --omit=dev --audit-level=high` encontrou zero vulnerabilidades na árvore de produção. A auditoria completa no limiar crítico passou, com avisos preexistentes na árvore de desenvolvimento.
+
+### Limitações
+
+- O compartilhamento nativo foi simulado nos testes. A disponibilidade e as opções da folha dependem do celular e do navegador. Exportar exige conexão para consultar dados e carregar o gerador.
+- O PDF usa as fontes latinas do app. O XLSX e o CSV preservam o texto original. O limite de datas e linhas segue o das consultas existentes.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas no PR, seguidas da revisão e publicação pelo Claude. A T12 dispensa migração e configuração da Cloudflare.
+
+## T12 — plano antes do código (18/11/2026)
+
+Base `2c30e16`, prévia aprovada e fila lidas. Usar as consultas existentes em `worker/reports.ts`, `worker/expenses.ts` e `worker/travel.ts` para os três formatos, com os mesmos filtros, autorização e limites. Backup e ICS seguem pelas rotas atuais.
+
+O componente de exportação atende Relatórios, Despesas e Custo das entregas. Os geradores de planilha e PDF carregam sob demanda e usam dados em memória. A planilha tem números, datas e fórmulas de total. O PDF inclui marca, fontes locais, filtros, resumo e paginação. O CSV mantém a proteção contra fórmulas e exporta valores em reais com vírgula decimal.
+
+Aceite: conferir conteúdo e tipos dos arquivos, acentos e paginação do PDF, download nos três formatos, permissões e capturas com dados de demonstração. Enviar uma entrega ao PR, com Validação e Segurança automáticas.
+
 ## T11 — entrega para revisão (18/11/2026)
 
 > **Atualização após a sincronização:** incorporado o main `8aabd49` (0.22.2). A T11 mantém a versão 0.23.0 e inclui a navegação de volta ao Hoje e as notas da 0.22.2. Nesta base passaram a compilação, a formatação, 224 testes unitários e 18 testes de navegação e backup nos três projetos do Playwright. O PR #20 segue para Validação da gestão e Segurança automáticas.

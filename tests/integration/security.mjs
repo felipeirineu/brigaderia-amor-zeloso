@@ -489,10 +489,12 @@ try {
     'field/search?q=teste',
     'field/trips',
     'field/travel-report',
+    'field/travel-report?format=json',
     'p1/backup',
     'p1/calendar',
     'p1/calendar.ics',
     'p1/cashflow.csv',
+    'p1/cashflow.csv?format=json',
     'p1/expenses',
     'p1/inventory',
     'p1/recipes',
@@ -505,6 +507,7 @@ try {
     'p1/push',
     'p1/reports',
     'p1/reports.csv',
+    'p1/reports.csv?format=json',
     'p1/shopping',
     'p1/supplies',
     'rota-inexistente/' + fake,
@@ -635,6 +638,23 @@ try {
     ok(
       Array.isArray(list) && list.length === 0,
       `outra organização listou ${path}`,
+    );
+  }
+  // Os formatos locais usam as mesmas rotas e o mesmo isolamento das listagens.
+  for (const path of [
+    'p1/reports.csv?format=json',
+    'p1/cashflow.csv?format=json',
+    'field/travel-report?format=json',
+  ]) {
+    const response = await t.request(path, { cookie: outside });
+    ok(response.ok, `${path} deveria listar só a organização da sessão`);
+    ok(
+      (await response.json()).rows.length === 0,
+      `${path} vazou linhas de outra organização`,
+    );
+    ok(
+      response.headers.get('cache-control') === 'no-store',
+      `${path} permite cache privado`,
     );
   }
   for (const [path, method, data] of [

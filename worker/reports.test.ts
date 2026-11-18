@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { csvCell, toCSV } from './reports';
+import { csvCell, toCSV } from './report-export';
 it('CSV impede fórmula mesmo com espaços/tabs e preserva delimitadores/aspas/newlines', () => {
   for (const text of [
     '=DEMONSTRAÇÃO',
@@ -11,5 +11,7 @@ it('CSV impede fórmula mesmo com espaços/tabs e preserva delimitadores/aspas/n
     expect(csvCell(text)).toMatch(/^"'/);
   expect(csvCell('DEMO; "teste"\nlinha')).toBe('"DEMO; ""teste""\nlinha"');
   expect(csvCell(-123)).toBe('"-123"');
-  expect(toCSV(['DEMO'], [['valor']])).toContain('\uFEFF"DEMO"\r\n');
+  expect(toCSV({ columns: [{ label: 'DEMO' }], rows: [['valor']] })).toContain(
+    '\uFEFF"DEMO"\r\n',
+  );
 });

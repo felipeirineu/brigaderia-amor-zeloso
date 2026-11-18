@@ -94,8 +94,8 @@ try {
   ).text();
   assert.match(csv, /Unidades em caixas mistas/);
   assert.match(csv, /Vendas atribuídas/);
-  assert.ok(csv.includes(';"1.33";'));
-  assert.ok(csv.includes(';"1.50";'));
+  assert.ok(csv.includes(';"1,3333";'));
+  assert.ok(csv.includes(';"1,5";'));
   assert.ok(!csv.includes('1.333333'));
   const orderCSV = await (
     await t.request('p1/reports.csv' + query + '&kind=orders', {

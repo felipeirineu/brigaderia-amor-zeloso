@@ -3,24 +3,15 @@ import { z } from 'zod';
 import { receivables } from './receivables';
 import { businessDay, addDays } from './operations-domain';
 import { HttpError, json, type Actor } from './security';
-import { requestRange, fileResponse } from './p1-common';
-/** Campos textuais não podem virar fórmulas ao importar no Excel/Sheets. Números são dados numéricos. */
-export function csvCell(value: unknown) {
-  let text = String(value ?? '').replace(/\0/g, '');
-  if (
-    typeof value === 'string' &&
-    (/^[\s\uFEFF]*[=+\-@]/.test(text) || /^[\t\r\n]/.test(text))
-  )
-    text = "'" + text;
-  return '"' + text.replaceAll('"', '""') + '"';
-}
-export function toCSV(headers: string[], rows: unknown[][]) {
-  return (
-    '\uFEFF' +
-    [headers, ...rows].map((r) => r.map(csvCell).join(';')).join('\r\n') +
-    '\r\n'
-  );
-}
+import { requestRange } from './p1-common';
+import { exportResponse } from './report-export';
+import {
+  label,
+  dateColumn,
+  countColumn,
+  moneyColumn,
+  type ExportTable,
+} from '../shared/report-export';
 export async function reports(req: Request, db: D1Database, a: Actor) {
   const { from, to } = requestRange(req),
     url = new URL(req.url),
@@ -243,18 +234,18 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
       'without_deliveries',
     ])
     .parse(url.searchParams.get('kind') || 'orders');
-  const datasets = {
+  const datasets: Record<typeof kind, ExportTable> = {
     orders: {
-      headers: [
-        'Pedido',
-        'Cliente',
-        'Data efetiva',
-        'Itens e composição',
-        'Total (centavos)',
-        'Recebido atual (centavos)',
-        'Saldo atual (centavos)',
-        'Condição',
-        'Periodicidade',
+      columns: [
+        label('Pedido'),
+        label('Cliente'),
+        dateColumn('Data efetiva'),
+        label('Itens e composição'),
+        moneyColumn('Total'),
+        moneyColumn('Recebido atual'),
+        moneyColumn('Saldo atual'),
+        label('Condição'),
+        label('Periodicidade'),
       ],
       rows: orders.map((o) => [
         o.id,
@@ -269,20 +260,24 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
       ]),
     },
     customers: {
-      headers: ['Cliente', 'Pedidos', 'Vendas (centavos)'],
+      columns: [
+        label('Cliente'),
+        countColumn('Pedidos', true),
+        moneyColumn('Vendas'),
+      ],
       rows: result.customers.map((c) => [c.name, c.orders, c.total_cents]),
     },
     products: {
-      headers: [
-        'Produto/sabor (snapshot)',
-        'Variante',
-        'Peso g',
-        'Unidades por embalagem',
-        'Caixas de um sabor',
-        'Unidades',
-        'Unidades em caixas mistas',
-        'Caixas equivalentes (unidades/capacidade)',
-        'Vendas atribuídas por unidades (centavos)',
+      columns: [
+        label('Produto/sabor (snapshot)'),
+        label('Variante'),
+        countColumn('Peso g'),
+        countColumn('Unidades por embalagem'),
+        countColumn('Caixas de um sabor', true),
+        countColumn('Unidades', true),
+        countColumn('Unidades em caixas mistas', true),
+        countColumn('Caixas equivalentes (unidades/capacidade)', true),
+        moneyColumn('Vendas atribuídas por unidades'),
       ],
       rows: result.products.map((p) => [
         p.name,
@@ -292,28 +287,33 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         p.boxes,
         p.units,
         p.mixed_units,
-        p.units % p.units_per_box === 0
-          ? p.units / p.units_per_box
-          : (p.units / p.units_per_box).toFixed(2),
+        Number((p.units / p.units_per_box).toFixed(4)),
         p.total_cents,
       ]),
     },
     weeks: {
-      headers: ['Segunda-feira da semana', 'Pedidos', 'Vendas (centavos)'],
+      columns: [
+        dateColumn('Segunda-feira da semana'),
+        countColumn('Pedidos', true),
+        moneyColumn('Vendas'),
+      ],
       rows: result.weekly.map((w) => [w.week, w.orders, w.total_cents]),
     },
     without_deliveries: {
-      headers: ['Cliente', 'Última entrega antes do período'],
+      columns: [
+        label('Cliente'),
+        dateColumn('Última entrega antes do período'),
+      ],
       rows: result.without_deliveries.map((c) => [c.name, c.last_delivery]),
     },
     aging: {
-      headers: [
-        'Pedido',
-        'Cliente',
-        'Vencimento',
-        'Saldo (centavos)',
-        'Dias vencidos',
-        'Faixa',
+      columns: [
+        label('Pedido'),
+        label('Cliente'),
+        dateColumn('Vencimento'),
+        moneyColumn('Saldo'),
+        countColumn('Dias vencidos'),
+        label('Faixa'),
       ],
       rows: ageing.map((o) => [
         o.order_id,
@@ -325,9 +325,10 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
       ]),
     },
   };
-  return fileResponse(
-    toCSV(datasets[kind].headers, datasets[kind].rows),
-    'text/csv; charset=utf-8',
-    `relatorio-${kind}.csv`,
-  );
+  const table = datasets[kind];
+  if (kind === 'orders')
+    table.summary = [{ label: 'Pedidos', value: table.rows.length }];
+  if (kind === 'customers')
+    table.summary = [{ label: 'Clientes', value: table.rows.length }];
+  return exportResponse(req, table, `relatorio-${kind}.csv`);
 }

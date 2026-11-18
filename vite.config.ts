@@ -75,6 +75,11 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         importScripts: ['/push-worker.js'],
         globPatterns: ['**/*.{js,css,html,png,webp,ico,woff2,webmanifest}'],
+        // Exports require the live API. Fetch their generators only on demand.
+        globIgnores: [
+          '**/node_modules/**/*',
+          'assets/report-{spreadsheet,pdf,logo}-*',
+        ],
         navigateFallback: '/index.html',
         // Rotas reservadas da Cloudflare, incluindo callback/logout do Access,
         // devem sempre chegar à rede, mesmo quando o shell está em cache.
