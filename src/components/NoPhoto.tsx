@@ -1,7 +1,7 @@
 /**
  * Sabor ainda sem foto: forminha vazia com "Sem Foto" escrito pelo próprio app
  * (texto nítido em qualquer tamanho). Em tamanhos pequenos fica só a forminha.
- * Prévia aprovada pelo Felipe em 18/11 (opção 6).
+ * Prévia aprovada em 18/11 (opção 6).
  */
 export function NoPhoto({ small = false }: { small?: boolean }) {
   return (
