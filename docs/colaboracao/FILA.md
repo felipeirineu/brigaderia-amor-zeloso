@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: FELIPE` — T9 publicada. Aguardando o Felipe: novas revisões, ativação das notificações (workflow T8), cadastro dos kits e o dia da entrega (1.0.0).
+`VEZ: CODEX` — tarefa **T10** (testes do Felipe no Novo pedido: seleção recuperada, caixa mista e revisão; detalhes abaixo). Versão **0.22.0**. Ao terminar, abra o pull request.
 
 **Pendências do Felipe (fora do código):** cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
 
@@ -72,6 +72,7 @@ Contador de entregas desde a última revisão: **1/3** (T9).
 | T7 | Revisões do Felipe antes da 1.0 (abertura com logo, álcool, alinhamentos, telas compridas, menu +) | **publicada** 17/11 (PR #17) como **0.19.0** |
 | T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | **publicada** 17/11 (PR #18) como **0.20.0** |
 | T9 | Revisões do Felipe (2ª lista): sabores centralizados, confirmações, textos, Foto do produto, modos de pedido | **publicada** 17/11 (branch do Codex, sem PR) como **0.21.0** |
+| T10 | Novo pedido: retomar seleção, caixa mista e tela de revisão (testes do Felipe no celular) | **vez do Codex** — versão **0.22.0** |
 
 ### T0 — R17
 
@@ -391,6 +392,41 @@ Objetivo: o Felipe liga as notificações com um clique no GitHub, sem terminal 
     Quem tinha "auto" salvo passa a ver o simples. Texto novo: "Modo simples: escolhe os sabores tocando nas fotos. Lista completa: mostra todos os produtos numa lista, sem fotos. Esta escolha fica só neste aparelho."
     Na lista completa, o rótulo visível "variante" vira **"Sabor"** onde se escolhe o sabor no pedido.
 12. Versão **0.21.0**. Capturas antes/depois (`docs/colaboracao/capturas/t9-*.png`), só com dados DEMONSTRAÇÃO.
+
+### T10 — Novo pedido: testes do Felipe no Android (18/11, com 2 capturas)
+
+**1. Prioridade: "Retomar seleção" perde a seleção (defeito sério).** Como reproduzir:
+- Novo pedido → escolher cliente → escolher sabores e **montar uma caixa mista**;
+- usar o **Voltar do celular** (não o do app): volta ao Hoje com "Há uma seleção de pedido em andamento";
+- tocar em **Retomar seleção**.
+
+Na 1ª vez, o app abriu a escolha do cliente **sem** o aviso "Recuperar seleção". Depois de escolher o cliente, os sabores estavam vazios: a seleção guardada foi perdida, provavelmente sobrescrita pelo rascunho novo vazio. Na 2ª e na 3ª vez, o aviso apareceu e a recuperação funcionou.
+
+Suspeitas a confirmar:
+- `resumeDraft` em `Totem.tsx` é lido **uma vez** no `useState` inicial (`readDraft(draftScope)`). Se o componente monta antes de o escopo/sessão ou os dados ficarem prontos, ou se já estava montado, ele fica `null`. Aí o efeito que chama `storeDraft` grava o rascunho novo por cima.
+- Há também a interação com a limpeza de `?novo` (`Management.tsx` ~l.326–332) e com a troca de modo simples/completo da T9.
+
+Corrigir:
+- **(a)** Ler o rascunho de forma reativa (`useSyncExternalStore`/evento `order-draft-changed`, como no `DraftNotice`) e **nunca** sobrescrever um rascunho guardado que ainda não foi recuperado nem descartado.
+- **(b)** Quem chega por **"Retomar seleção"** não precisa responder de novo. Recuperar automaticamente, com cliente, sabores, **caixas mistas** e kits, e abrir direto na **escolha dos sabores** com o aviso "Seleção recuperada…". O aviso "Recuperar seleção" continua só para quem abre um Novo pedido comum com rascunho guardado.
+- **(c)** E2E reproduzindo exatamente o caminho:
+  - Voltar do navegador (`page.goBack()`) com caixa mista;
+  - Retomar na **primeira** tentativa, logo após login/abrir o app e com dados lentos (rota com atraso);
+  - os sabores e a caixa mista voltam;
+  - repetir com o app recém-aberto (sem visita anterior ao Novo pedido).
+
+**2. Caixa mista (tela "Escolha os sabores"):**
+- **(a)** "Escolha os 12 sabores" **centralizado** no cartão da Caixa mista.
+- **(b)** Ao montar a caixa mista, antes de confirmar: ao lado de **Limpar**, um seletor **− 1 +** de quantas caixas iguais a essa. Padrão 1, mínimo 1.
+- **(c)** Depois de confirmar, o cartão "Caixa mista" mostra o **contador** (badge) de caixas mistas já adicionadas, como os outros sabores. Tocar de novo monta outra caixa mista.
+- **(d)** O círculo do **+** (e do −) está saindo da borda do cartão do sabor (ver captura: o + passa da borda direita). Os botões precisam ficar **dentro** do cartão em qualquer largura, de 320 a 430 px. E2E medindo que os botões ficam dentro da caixa do cartão.
+
+**3. Tela "Revise e confirme":**
+- **(a)** O nome do cliente vem depois de **"Cliente:"** em negrito, um pouco maior que hoje.
+- **(b)** Em cada item, o nome do sabor numa linha e **"Caixa 12 un."** (tamanho/embalagem) na linha de baixo, em texto menor. O seletor **− [n] +** fica numa linha própria, com **largura fixa**, independente do tamanho do nome. Hoje um nome longo alarga o campo de número (ver captura: "Brigadeiro com Amendoim").
+- **(c)** Em **1**, o **−** hoje não faz nada, e não há como desistir de um sabor na revisão. Em 1, o − vira **remover**: ícone de lixeira, rótulo acessível "Remover {sabor}". Ele pede confirmação pelo `ConfirmSheet` ("Remover {sabor} do pedido?") e remove o item. Se for o último item, volta para a escolha dos sabores. Vale também para caixa mista e kit.
+
+**4.** Versão **0.22.0**. Capturas antes/depois (`t10-*.png`), só com dados DEMONSTRAÇÃO. **Atenção:** as capturas do Felipe mostram clientes reais; não copie nomes reais para testes, capturas ou documentos.
 
 ## Versões do app
 
