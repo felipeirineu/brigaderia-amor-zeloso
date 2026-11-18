@@ -10,6 +10,10 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.22.1',
+    items: ['Sabores ainda sem foto aparecem com a forminha "Sem Foto".'],
+  },
+  {
     version: '0.22.0',
     items: [
       'Retome a seleção do pedido com sabores, caixas mistas e kits preservados.',
