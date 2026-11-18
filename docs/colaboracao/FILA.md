@@ -5,9 +5,9 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T11** (lembrete de backup semanal; prévia aprovada; detalhes abaixo). Versão **0.23.0**. Ao terminar, abra o pull request. Base: main com a 0.22.1 (sabores sem foto: `NoPhoto`).
+`VEZ: CODEX` — tarefa **T12** (exportar como planilha e PDF; prévia aprovada; detalhes abaixo). Versão **0.24.0**. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
-**Pendências do Felipe (fora do código):** cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
+**Pendências do Felipe (fora do código):** aplicar a migração **0027** (lembrete de backup) pela Homologação D1: PRE_CHECAGEM → APLICAR_PENDENTES. cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
 
 
 
@@ -44,7 +44,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **2/3** (T9, T10).
+Contador de entregas desde a última revisão: **3/3** (T9, T10, T11) — revisão geral feita na publicação da T11.
 
 ## Limites
 
@@ -73,8 +73,8 @@ Contador de entregas desde a última revisão: **2/3** (T9, T10).
 | T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | **publicada** 17/11 (PR #18) como **0.20.0** |
 | T9 | Revisões do Felipe (2ª lista): sabores centralizados, confirmações, textos, Foto do produto, modos de pedido | **publicada** 17/11 (branch do Codex, sem PR) como **0.21.0** |
 | T10 | Novo pedido: retomar seleção, caixa mista e tela de revisão (testes do Felipe no celular) | **publicada** 18/11 (PR #19) como **0.22.0** |
-| T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | prévia **aprovada** 18/11; **vez do Codex** — versão **0.23.0** |
-| T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | prévia **aprovada** 18/11; **depois da T11** — versão **0.24.0** |
+| T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | **publicada** 18/11 (PR #20) como **0.23.0** — migração **0027** pendente (Felipe) |
+| T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | prévia **aprovada** 18/11; **vez do Codex** — versão **0.24.0** |
 
 ### T0 — R17
 
@@ -526,6 +526,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.23.0 | 18/11 | Lembrete de backup (Hoje + celular), frequência na tela de Backup (padrão semanal), pasta fixa no computador e dica de quanto guardar. Precisa da migração 0027. |
 | 0.22.2 | 18/11 | Voltar do celular (Android): trocar de aba pelo menu não acumula histórico; de qualquer aba volta ao Hoje; no Hoje sai do app (`useTabHistory`). |
 | 0.22.1 | 18/11 | Sabores sem foto: forminha vazia com "Sem Foto" (opção 6 escolhida pelo Felipe; `src/components/NoPhoto.tsx`, `public/brand/sem-foto.webp`). Sabores voltam para **3 colunas** no celular (pedido do Felipe), com − e + de 36 px dentro do cartão. |
 | 0.22.0 | 18/11 | "Retomar seleção" não perde mais a seleção e abre direto nos sabores; caixa mista com quantidade e contador; revisão com "Cliente:", embalagem embaixo e lixeira em 1; folhas no lugar das caixas do navegador para motivo/valor. |
@@ -575,3 +576,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 18/11 | 17 | T10 — retomar seleção, caixa mista, revisão, folhas de motivo (PR #19) | Capturas estranhas apontadas pelo Felipe: sabores sem foto viravam "ovo" escuro e nomes passavam da borda (defeito antigo, visível com dados de demonstração). Claude corrigiu; 305 E2E e Segurança verdes. Publicada como 0.22.0. Felipe escolheu a forminha "Sem Foto" para sabores sem foto → 0.22.1. |
 | 18/11 | — | 0.22.1 (Claude) | Forminha "Sem Foto" e volta às 3 colunas na escolha dos sabores; CI completo e Segurança verdes. **Codex: não reintroduzir 2 colunas.** |
 | 18/11 | — | 0.22.2 (Claude) | Voltar do celular estilo apps de abas. Minutos grátis do Actions acabaram; Felipe tornou o repositório **público** (Actions sem custo). CI completo 311 E2E (a instalação dos navegadores levou 21 min nesse dia) e Segurança verdes. **Codex: use o e-mail noreply do GitHub como autor dos commits**, não o e-mail pessoal. |
+| 18/11 | 18 | T11 — lembrete de backup (PR #20) | CI completo e Segurança verdes (reexecutados após o fim dos minutos; repositório agora público). Revisão geral 3/3 (T9, T10, T11): sem problema real. Publicada como 0.23.0; migração 0027 aguarda o Felipe. |
