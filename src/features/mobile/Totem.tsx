@@ -58,6 +58,7 @@ import {
 } from '../operations/common';
 import { MoneyInput, QuantityInput } from '../../components/NumericInputs';
 import { photoURL } from '../../../shared/flavors';
+import { NoPhoto } from '../../components/NoPhoto';
 import { deliveryAddress, emptyPlace } from '../../../shared/field';
 import {
   emptyTerms,
@@ -1237,12 +1238,7 @@ export function Totem({
                             height={120}
                           />
                         ) : (
-                          <span
-                            className="flavor-placeholder"
-                            aria-hidden="true"
-                          >
-                            {title.charAt(0)}
-                          </span>
+                          <NoPhoto />
                         )}
                         <span className="flavor-name">
                           <strong>{title}</strong>

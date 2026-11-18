@@ -1477,15 +1477,39 @@ textarea::placeholder {
   }
 }
 
-/* Sabores sem foto: círculo do mesmo tamanho das fotos, nunca oval. */
-.order-focus .flavor-card .flavor-placeholder {
-  width: min(8rem, 100%);
-  height: auto;
+/* Sabores sem foto: forminha vazia com "Sem Foto", no mesmo lugar e tamanho das fotos. */
+.no-photo {
+  position: relative;
+  display: block;
+  container-type: inline-size;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
   aspect-ratio: 1;
-  background: var(--az-tonal);
-  color: var(--az-choc);
-  font-family: var(--az-serif);
-  font-size: 2.25rem;
+}
+.no-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.no-photo-text {
+  position: absolute;
+  inset: 16% 0 auto;
+  text-align: center;
+  font-family: var(--az-sans);
+  font-weight: 650;
+  font-size: 15cqw;
+  line-height: 1.05;
+  color: var(--az-gold-ink);
+}
+.order-focus .flavor-card .no-photo {
+  width: min(8rem, 100%);
+  margin-inline: auto;
+}
+.no-photo--small {
+  width: 44px;
+  height: 44px;
 }
 /* Nomes longos quebram dentro do cartão, sem passar da borda. */
 .order-focus .flavor-card .flavor-name,

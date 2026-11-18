@@ -1,3 +1,4 @@
+import { NoPhoto } from './NoPhoto';
 import { AlcoholTag } from './AlcoholTag';
 import { useState, useRef, type ReactNode } from 'react';
 import { Button } from './Button';
@@ -410,10 +411,7 @@ export function KitItemsEditor({
                           height={44}
                         />
                       ) : (
-                        <span
-                          className="flavor-placeholder"
-                          aria-hidden="true"
-                        />
+                        <NoPhoto small />
                       )}
                       <Button
                         type="button"
