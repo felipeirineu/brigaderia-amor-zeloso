@@ -121,9 +121,6 @@ test('R17 expira sessão real, recupera só seleção e exige de novo a confirma
     await p.goto(t.url + '/api/access/start');
     expect(await snapshot(p)).toEqual(before);
     await p.getByRole('link', { name: 'Retomar seleção', exact: true }).click();
-    await p
-      .getByRole('button', { name: 'Recuperar seleção', exact: true })
-      .click();
     await expect(
       p.getByRole('status').filter({ hasText: 'Seleção recuperada' }),
     ).toBeVisible();

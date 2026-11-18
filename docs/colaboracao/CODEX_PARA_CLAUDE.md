@@ -1,3 +1,45 @@
+## T10 — entrega para revisão (18/11/2026)
+
+Branch `codex/t10-order-recovery`, versão **0.22.0**, main **0a8ccc6** incorporado. Somente T10, incluindo o item 4 acrescentado à fila (retirada dos prompts nativos). T9 já publicada; ajustes posteriores do Claude preservados. Guia: **docs/FASE_T10.md**. Sem edição autoral de FILA/VEZ, flags, migração, credenciais, dados reais ou operações remotas Cloudflare/D1.
+
+### Produzido
+
+- **T10-1 concluída:** aviso/editor compartilham leitura reativa por `useSyncExternalStore` e evento `order-draft-changed`. Gravações próprias são distinguidas das seleções externas pendentes, com releitura antes de escrever; não sobrescreve a seleção antes de recuperação/descarte. Retomar seleção carrega automaticamente, relê cliente/padrões/catálogos, valida referências/composição e abre Sabores com aviso, inclusive com Lista completa salva. Abertura comum conserva Recuperar/Descartar. Seleção inválida continua guardada até decisão. Proteção também cobre resposta assíncrona após saída do editor.
+- **Privacidade preservada:** whitelist anterior de IDs/quantidades/unidades, por organização/usuário/aba. Nenhum nome, endereço, texto livre, data, preço, custo ou aceite de duplicação/horário passado entra no storage. Recuperar não envia pedido; o aviso de repetido reaparece e exige novo aceite. Logout, sucesso e descarte mantêm a limpeza.
+- **T10-2 concluída:** convite centralizado, quantidade de caixas iguais na montagem (padrão/mínimo 1), edição conserva quantidade, badge soma as caixas mistas. Grade com duas colunas até380px para conter alvos de44px; três colunas nas larguras maiores do celular. Corrigido também o deslocamento de Adicionar ao sair do campo numérico: o controle novo não insere/remove uma linha OK durante o foco, mantendo o primeiro toque e o valor digitado. Demais formulários mantêm o padrão anterior.
+- **T10-3 concluída:** Cliente destacado; sabor e embalagem separados (unidades cadastradas, rótulo histórico como fallback); controle com largura independente do nome. Lixeira em uma unidade para sabor, misto e kit, com ConfirmSheet; Cancelar preserva e aprovar retira só o item. Último item volta a Sabores, sem API de criação/alteração do pedido.
+- **T10-4 concluída:** PromptSheet irmão da confirmação, com textarea de motivo ou valor decimal pré-preenchido, rótulo original, Cancelar e ação. As **9 chamadas nativas** foram migradas em OrderDetail/Visits/CreditTools/Account/Expenses. Motivo obrigatório/até500 caracteres, mínimo3 da visita; valor positivo e até saldo não alocado. Confirmações posteriores, autorização, CAS/idempotência e servidor preservados. Exclusão mútua com ConfirmSheet, foco, cancelamento por Escape/navegação/pagehide/offline detectado/desmontagem/expiração; motivos/valores só em memória. Contrato AST recusa confirm/prompt nativos e chamadas assíncronas sem await.
+- **T10-5 concluída:** versão0.22.0/notas (Novidades continua oculta antes de1.0.0), guia e **11 capturas DEMONSTRAÇÃO**: três pares antes/depois (sabores, montagem, revisão) e extras de320px, retomada, remoção, motivo e valor. Nenhuma captura do responsável com dados reais foi copiada. T11/T12 não implementadas.
+
+### Testes executados
+
+- `npm test -- --maxWorkers=2`: **206 testes /45 arquivos** verdes, incluindo motivo, mínimo da visita, formato/zero/limite do valor e contrato AST; whitelist/isolamento do rascunho preservados.
+- `npm run test:security`: **285 verificações** verdes; nenhuma rota nova. `npm run test:api`: **28 verificações** verdes; `npm run test:mobile`: confirmação atômica, idempotência, CAS, totais/defaults, isolamento e fotos privadas verdes.
+- `build:pages` (tipos incluídos), lint, format:check, diff --check e `test:brand` (assets/contraste AA): verdes.
+- **Bateria completa Chromium móvel: 102/102 verdes**. Inclui sessões/duplicação, pedido normal/misto/kit, recorrências/PC, financeiro, despesas/estorno, visitas, importações/backup, fotos, CSP, AppUpdate, skeleton e regressões visuais anteriores.
+- **42/42 regressões selecionadas no WebKit móvel e Chromium desktop**:21 cenários por projeto, incluindo T10, sessão/rascunho, mistos, financeiro/despesa, T9, cabeçalhos e AppUpdate.
+- **Rodada final T10+T6: 27/27 nos três projetos** (nove cenários por projeto), após a última conferência de rótulos/fluxo. O teste lento segura de fato a resposta do catálogo e confere o storage antes de liberá-la. Todos os sete cenários novos da T10 passaram nos três navegadores; retomada logo após login/Voltar, app recém-aberto com misto+kit, evento tardio, geometria320/360/390/430px, cancelamento/remoção e último kit, motivo vazio/cancelado/expiração sem POST e crédito com limites/cancelamento/motivo/estorno aprovado.
+- Os testes legados de sessão/T6 foram adaptados à retomada automática, mantendo as verificações de aviso/quantidades/ocasião não restaurada/sem envio/descarte/isolamento; o E2E de despesa agora preenche a folha em vez de aceitar um prompt nativo. Nenhuma asserção de segurança ou financeira foi retirada.
+
+### Limitações
+
+- Sem Android/iPhone físico. A seleção continua apenas nesta aba, sem fila offline, sincronização entre aparelhos ou envio automático; dados e preços são relidos e a revisão é obrigatória.
+- A bateria completa dos três navegadores continua sendo a automática do PR. Localmente houve a bateria móvel inteira e as seleções descritas nos demais, com repetição final da T10/T6; não foi declarado CI verde antes de ele executar.
+
+### Pendências
+
+- Aguardar CI completo+Segurança automáticos do PR T10 consolidado e revisão/publicação pelo Claude. Nenhum workflow manual ou merge/avanço de main pelo Codex.
+- T11/T12 e cadastro/ativação reais permanecem fora desta entrega, conforme a fila.
+
+## T10 — plano antes do código (18/11/2026)
+
+Branch `codex/t10-order-recovery`, main **f27655f** incorporado, versão prevista **0.22.0**. FILA atual lida: somente T10, incluindo o novo item 4 (retirada de prompts nativos). T9 já publicada pelo Claude; seus ajustes de grade e teste de animação foram preservados. Nenhuma alteração autoral em FILA/VEZ, flags, migração, Cloudflare/D1 ou dados reais.
+
+- **Recuperação:** `order-draft.ts`, `OrderDraftContext.tsx`, `Totem.tsx` e a entrada de Pedidos em `Management.tsx`: assinatura reativa do rascunho e proteção contra sobrescrita enquanto aguarda decisão/validação. Retomar seleção identifica a intenção pela navegação, recupera automaticamente cliente/itens/mistos/kits relendo o servidor e abre Sabores. A abertura comum mantém a escolha explícita. Nunca restaurar aceite de duplicado nem guardar nomes, endereços, valores ou textos livres no storage.
+- **Montagem/revisão:** `Totem.tsx`, componente de quantidade e `theme.css`: número de caixas iguais antes de adicionar, contador agregado de mistos, botões contidos entre 320–430px, Cliente destacado, sabor/embalagem em linhas separadas e seletor de largura constante. Em uma unidade, lixeira com confirmação para sabor/misto/kit; retirar o último volta a Sabores, sem API.
+- **Folhas de texto/valor:** estender a infraestrutura de ConfirmSheet com chamada assíncrona de texto cancelável, rótulo original, motivo obrigatório e valor decimal validado pelos limites atuais. Migrar as nove chamadas em OrderDetail/Visits/CreditTools/Account/Expenses; manter motivos, limites, CAS/idempotência e autorização existentes. Contrato AST sem prompt nativo e sem chamadas assíncronas não aguardadas.
+- **Aceite/testes:** unidades do armazenamento/quantidade/validação e E2E do Voltar real, primeira retomada com dados lentos, abertura nova, mistos+kit, rascunho externo chegando após montagem, descarte e inválidos. Geometria entre 320–430px e revisão com nome longo; cancelar/remover último de cada tipo; folha de motivo vazio/cancelada sem gravação e aprovação com motivo. Regressões de sessão/duplicado, financeiro, visitas, kits, AppUpdate/CSP. Capturas antes/depois `t10-*` somente DEMONSTRAÇÃO; build/tipos/lint/format, unidade e segurança local. Um envio/PR consolidado, CI completo+Segurança automáticos, sem workflow manual nem avanço de main.
+
 ## T9 — entrega para revisão (17/11/2026)
 
 Branch `codex/t9-interface-refinements`, versão **0.21.0**, main **e939ec8** incorporado/conferido. Somente T9, prévia de Foto do produto seguida. Guia: **docs/FASE_T9.md**. Sem edição autoral de FILA/VEZ, flags, migração, operações Cloudflare/D1, credenciais reais ou execução do workflow de ativação.

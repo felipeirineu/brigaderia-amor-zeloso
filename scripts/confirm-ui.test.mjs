@@ -2,7 +2,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import ts from 'typescript';
 import { expect, it } from 'vitest';
-it('gestão não usa confirm nativo e todas as escolhas assíncronas são aguardadas', async () => {
+it('gestão não usa confirm/prompt nativo e todas as escolhas assíncronas são aguardadas', async () => {
   const native = [],
     unawaited = [];
   async function visit(directory) {
@@ -24,17 +24,17 @@ it('gestão não usa confirm nativo e todas as escolhas assíncronas são aguard
         if (ts.isCallExpression(node)) {
           if (
             (ts.isIdentifier(node.expression) &&
-              node.expression.text === 'confirm') ||
+              ['confirm', 'prompt'].includes(node.expression.text)) ||
             (ts.isPropertyAccessExpression(node.expression) &&
               ['window', 'globalThis'].includes(
                 node.expression.expression.getText(source),
               ) &&
-              node.expression.name.text === 'confirm')
+              ['confirm', 'prompt'].includes(node.expression.name.text))
           )
             native.push(path);
           if (
             ts.isIdentifier(node.expression) &&
-            node.expression.text === 'askConfirmation' &&
+            ['askConfirmation', 'askPrompt'].includes(node.expression.text) &&
             !ts.isAwaitExpression(node.parent)
           )
             unawaited.push(path);

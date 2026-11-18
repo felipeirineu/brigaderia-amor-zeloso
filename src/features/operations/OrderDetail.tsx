@@ -1,4 +1,4 @@
-import { useConfirm } from '../../components/confirm-context';
+import { useConfirm, usePrompt } from '../../components/confirm-context';
 import { AvatarChip } from '../../components/AvatarChip';
 import { SkeletonList } from '../../components/Skeleton';
 import { occasionLabel } from '../../../shared/customer-order';
@@ -43,6 +43,7 @@ export function OrderDetail({
   p1?: boolean;
 }) {
   const askConfirmation = useConfirm();
+  const askPrompt = usePrompt();
 
   const courierLabels = useCourierLabels(),
     field = useField(),
@@ -516,7 +517,7 @@ export function OrderDetail({
               <Button
                 disabled={busy}
                 onClick={async () => {
-                  const reason = prompt(
+                  const reason = await askPrompt(
                     'Motivo para ajustar o pedido confirmado:',
                   );
                   if (
@@ -537,7 +538,7 @@ export function OrderDetail({
               <Button
                 disabled={busy}
                 onClick={async () => {
-                  const reason = prompt('Motivo do cancelamento:');
+                  const reason = await askPrompt('Motivo do cancelamento:');
                   if (
                     reason?.trim() &&
                     (await askConfirmation(

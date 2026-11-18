@@ -1,4 +1,4 @@
-import { useConfirm } from '../../components/confirm-context';
+import { useConfirm, usePrompt } from '../../components/confirm-context';
 import { SkeletonList } from '../../components/Skeleton';
 import type { CustomerType } from '../../../shared/customer-order';
 import { StaffIdentity } from '../field/FieldContext';
@@ -74,6 +74,7 @@ export interface View {
 }
 export function Account() {
   const askConfirmation = useConfirm();
+  const askPrompt = usePrompt();
 
   const { id } = useParams(),
     [search] = useSearchParams(),
@@ -472,7 +473,7 @@ export function Account() {
                   <Button
                     disabled={busy}
                     onClick={async () => {
-                      const reason = prompt(
+                      const reason = await askPrompt(
                         'Motivo para anular este fechamento:',
                       );
                       if (
@@ -525,7 +526,7 @@ export function Account() {
                     <Button
                       disabled={busy}
                       onClick={async () => {
-                        const reason = prompt(
+                        const reason = await askPrompt(
                           'Motivo do estorno integral deste recebimento:',
                         );
                         if (

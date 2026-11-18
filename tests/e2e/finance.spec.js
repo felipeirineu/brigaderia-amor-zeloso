@@ -55,7 +55,6 @@ test('B2B, pedido preenchido, sinal, fechamento, Pix assistido e tutorial sem gr
     });
     const page = await context.newPage();
     page.setDefaultTimeout(15000);
-    page.on('dialog', (d) => d.accept('Motivo de DEMONSTRAÇÃO'));
     await page.goto(t.url + '/login');
     await page.getByRole('link', { name: 'Entrar com acesso seguro' }).click();
     await expect(

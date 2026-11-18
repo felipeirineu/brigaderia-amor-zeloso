@@ -1121,7 +1121,11 @@ function Orders({
 }) {
   const [search] = useSearchParams(),
     mode = useOrderMode(role);
-  if (mobile && search.get('novo') && mode.simple)
+  if (
+    mobile &&
+    search.get('novo') &&
+    (mode.simple || search.get('retomar') === '1')
+  )
     return (
       <Totem
         financial={props.financial}

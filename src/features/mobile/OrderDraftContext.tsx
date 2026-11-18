@@ -1,17 +1,10 @@
-import { useContext, useSyncExternalStore } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Button } from '../../components/Button';
-import { clearDraft, draftRaw, parseDraft } from './order-draft';
-import { OrderDraftScope } from './order-draft-scope';
-const subscribe = (fn: () => void) => {
-  window.addEventListener('order-draft-changed', fn);
-  return () => window.removeEventListener('order-draft-changed', fn);
-};
+import { clearDraft } from './order-draft';
+import { useOrderDraft } from './useOrderDraft';
 export function DraftNotice() {
-  const scope = useContext(OrderDraftScope),
+  const { scope, draft } = useOrderDraft(),
     location = useLocation();
-  const raw = useSyncExternalStore(subscribe, () => draftRaw(scope));
-  const draft = parseDraft(raw);
   if (
     !draft ||
     location.pathname.includes('editar-simples') ||
@@ -33,8 +26,8 @@ export function DraftNotice() {
           variant="primary"
           to={
             draft.order_id
-              ? `/gestao/pedidos/${draft.order_id}/editar-simples`
-              : '/gestao/pedidos?novo=1'
+              ? `/gestao/pedidos/${draft.order_id}/editar-simples?retomar=1`
+              : '/gestao/pedidos?novo=1&retomar=1'
           }
         >
           Retomar seleção

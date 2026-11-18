@@ -1,9 +1,10 @@
 import { AlcoholTag } from '../../components/AlcoholTag';
 import { AvatarChip } from '../../components/AvatarChip';
 import { SkeletonList } from '../../components/Skeleton';
-import { useCallback, useContext, useMemo } from 'react';
-import { OrderDraftScope } from './order-draft-scope';
-import { readDraft, storeDraft, clearDraft } from './order-draft';
+import { useCallback, useMemo } from 'react';
+import { useDraftEditor } from './useOrderDraft';
+import { draftRaw, clearDraft } from './order-draft';
+import { useConfirm } from '../../components/confirm-context';
 import {
   customerType,
   occasionLabel,
@@ -42,7 +43,7 @@ import {
   SiteAvatar,
   CourierAvatars,
 } from '../field/FieldContext';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import {
   useLocation,
   useParams,
@@ -171,8 +172,23 @@ export function Totem({
   metadata?: boolean;
   kitOrders?: boolean;
 }) {
-  const draftScope = useContext(OrderDraftScope);
-  const [resumeDraft, setResumeDraft] = useState(() => readDraft(draftScope));
+  const {
+    scope: draftScope,
+    raw: storedRaw,
+    draft: resumeDraft,
+    claim: claimDraft,
+    write: writeDraft,
+  } = useDraftEditor();
+  const askConfirmation = useConfirm();
+  const restoring = useRef(false),
+    autoAttempt = useRef(''),
+    mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const [resumeNotice, setResumeNotice] = useState('');
   const kitCatalog = useKitCatalog(financial && kitOrders);
   const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
@@ -198,6 +214,7 @@ export function Totem({
     [mixDraft, setMixDraft] = useState<{
       comp: Record<string, number>;
       editing?: string;
+      qty: number;
     } | null>(null);
   const [step, setStep] = useState(0),
     [customer, setCustomer] = useState<{
@@ -285,7 +302,7 @@ export function Totem({
       busy ||
       success ||
       (id ? editing?.id !== id : !defaults) ||
-      (resumeDraft && resumeDraft.order_id === (id ?? null))
+      resumeDraft
     )
       return;
     const signature = JSON.stringify(draftPayload);
@@ -299,7 +316,9 @@ export function Totem({
       (id && signature === editBaseline.current)
     )
       return;
-    storeDraft(draftScope, draftPayload);
+    // Releitura antes da gravação protege também eventos entre render e efeito.
+    // Um rascunho externo nunca é sobrescrito antes de recuperar/descartar.
+    writeDraft(draftPayload);
   }, [
     draftPayload,
     busy,
@@ -309,6 +328,7 @@ export function Totem({
     defaults,
     resumeDraft,
     draftScope,
+    writeDraft,
   ]);
   const root = useRef<HTMLElement>(null);
   const site = customer
@@ -505,7 +525,6 @@ export function Totem({
     setFee(p.courier_fee_cents);
   }
   async function select(c: { id: string; name: string }) {
-    setResumeDraft(null);
     const serial = ++choice.current;
     setKitEditing(false);
     setCustomer(c);
@@ -523,7 +542,7 @@ export function Totem({
     setError('');
     try {
       const d = await api<Defaults>('mobile/defaults/' + c.id + '?kits=1');
-      if (serial !== choice.current) return false;
+      if (serial !== choice.current || !mounted.current) return false;
       setDefaults(d);
       const currentSite = field?.data?.sites.find((s) => s.id === c.id);
       setAddress(
@@ -558,7 +577,7 @@ export function Totem({
       setError((e as Error).message);
       return false;
     } finally {
-      if (serial === choice.current) setBusy(false);
+      if (serial === choice.current && mounted.current) setBusy(false);
     }
   }
   const options =
@@ -639,6 +658,10 @@ export function Totem({
         .sort(([, a], [, b]) => b - a)
         .map(([id, u]) => `${u} ${flavorName(id)}`)
         .join(' + ');
+  function packagingName(id: string, fallback: string) {
+    const units = options.find((v) => v.id === id)?.units_per_box;
+    return units ? `Caixa ${units} un.` : fallback;
+  }
   function saveMix() {
     if (!mixDraft) return;
     const comp = Object.fromEntries(
@@ -650,7 +673,9 @@ export function Totem({
     const same = next.find((m) => m.key === key);
     if (same)
       next = next.map((m) =>
-        m.key === key ? { ...m, qty: m.qty + (old?.qty ?? 1) } : m,
+        m.key === key
+          ? { ...m, qty: Math.min(10000, m.qty + mixDraft.qty) }
+          : m,
       );
     else
       next = [
@@ -660,7 +685,7 @@ export function Totem({
           item_id: old?.item_id,
           base: old?.item_id ? old.base : mixBase(comp),
           comp,
-          qty: old?.qty ?? 1,
+          qty: mixDraft.qty,
         },
       ];
     setMixes(next);
@@ -770,15 +795,19 @@ export function Totem({
       d.order_id !== (id ?? null) ||
       !products.data ||
       kitCatalog.loading ||
-      (id && editing?.id !== id)
+      (id && editing?.id !== id) ||
+      restoring.current
     )
       return;
+    restoring.current = true;
+    const sourceRaw = storedRaw;
     setBusy(true);
     setError('');
     try {
       const c = await api<{ id: string; name: string; active: number }>(
         'customers/' + d.customer_id,
       );
+      if (!mounted.current || draftRaw(draftScope) !== sourceRaw) return;
       if (!c.active || (editing && editing.customer_id !== c.id))
         throw Error('Cliente indisponível para esta seleção.');
       const variants = new Map(options.map((v) => [v.id, v]));
@@ -826,9 +855,10 @@ export function Totem({
           'A seleção contém sabores ou kits indisponíveis. Descarte e monte novamente com o cadastro atual.',
         );
       if (!id && !(await select(c))) {
-        setResumeDraft(d);
         return;
       }
+      if (!mounted.current || draftRaw(draftScope) !== sourceRaw) return;
+      claimDraft(sourceRaw);
       setCounts(
         Object.fromEntries(
           d.items
@@ -864,15 +894,42 @@ export function Totem({
       setDupAckKey('');
       setDupFound(null);
       setStep(1);
-      setResumeDraft(null);
       setResumeNotice(
         'Seleção recuperada. Confira quantidades, data, entrega e pagamento. Textos e valores não foram guardados.',
       );
     } catch (e) {
-      setError((e as Error).message);
+      if (mounted.current) setError((e as Error).message);
     } finally {
-      setBusy(false);
+      restoring.current = false;
+      if (mounted.current) setBusy(false);
     }
+  }
+  const restoreReady =
+    !!products.data && !kitCatalog.loading && (!id || editing?.id === id);
+  const autoResume = search.get('retomar') === '1';
+  const restoreAutomatically = useEffectEvent(() => void restoreSelection());
+  useEffect(() => {
+    if (
+      !autoResume ||
+      busy ||
+      !restoreReady ||
+      !resumeDraft ||
+      resumeDraft.order_id !== (id ?? null)
+    )
+      return;
+    const attempt = draftScope + ':' + storedRaw;
+    if (autoAttempt.current === attempt) return;
+    autoAttempt.current = attempt;
+    restoreAutomatically();
+  }, [autoResume, busy, restoreReady, resumeDraft, id, draftScope, storedRaw]);
+  async function removeItem(name: string, update: () => void, last: boolean) {
+    if (
+      busy ||
+      !(await askConfirmation('Remover ' + name + ' do pedido?', 'Remover'))
+    )
+      return;
+    update();
+    if (last) setStep(1);
   }
   if (success)
     return (
@@ -933,8 +990,8 @@ export function Totem({
               variant="ghost"
               onClick={() => {
                 suppressedDraft.current = JSON.stringify(draftPayload);
+                claimDraft('');
                 clearDraft(draftScope);
-                setResumeDraft(null);
               }}
             >
               Descartar seleção
@@ -1103,12 +1160,14 @@ export function Totem({
           >
             <div className="flavor-grid">
               {defaults?.mixed && mixOptions.length > 1 && (
-                <article className="flavor-card mix-card">
+                <article
+                  className={`flavor-card mix-card${mixes.length ? ' is-selected' : ''}`}
+                >
                   <Button
                     className="flavor-add"
                     disabled={busy}
                     aria-label="Montar caixa mista com sabores variados"
-                    onClick={() => setMixDraft({ comp: {} })}
+                    onClick={() => setMixDraft({ comp: {}, qty: 1 })}
                   >
                     <span className="mix-mosaic" aria-hidden="true">
                       {mixOptions
@@ -1119,7 +1178,17 @@ export function Totem({
                         ))}
                     </span>
                     <strong>Caixa mista</strong>
-                    <span>Escolha os {capacity} sabores</span>
+                    <span className="mix-card-hint">
+                      Escolha os {capacity} sabores
+                    </span>
+                    {mixes.length > 0 && (
+                      <b
+                        className="quantity-badge"
+                        aria-label="Caixas mistas adicionadas"
+                      >
+                        {mixes.reduce((n, m) => n + m.qty, 0)}
+                      </b>
+                    )}
                   </Button>
                 </article>
               )}
@@ -1262,7 +1331,11 @@ export function Totem({
                 <Button
                   variant="ghost"
                   onClick={() =>
-                    setMixDraft({ comp: { ...m.comp }, editing: m.key })
+                    setMixDraft({
+                      comp: { ...m.comp },
+                      editing: m.key,
+                      qty: m.qty,
+                    })
                   }
                 >
                   Editar sabores
@@ -1368,7 +1441,7 @@ export function Totem({
                             </div>
                           );
                         })}
-                        <div className="chips">
+                        <div className="mix-draft-actions">
                           <Button
                             variant="chip"
                             onClick={() =>
@@ -1377,6 +1450,16 @@ export function Totem({
                           >
                             Limpar
                           </Button>
+                          <QuantityInput
+                            showCommitButton={false}
+                            aria-label="Caixas mistas iguais"
+                            value={mixDraft.qty}
+                            min={1}
+                            max={10000}
+                            onValueChange={(qty) =>
+                              setMixDraft({ ...mixDraft, qty })
+                            }
+                          />
                           {used > 0 && left > 0 && (
                             <Button
                               variant="chip"
@@ -1453,7 +1536,9 @@ export function Totem({
       {step === WHEN && (
         <>
           <h2 className="wizard-question">Quando entregar?</h2>
-          <p className="wizard-hint">{customer?.name}</p>
+          <p className="review-customer">
+            <strong>Cliente: {customer?.name}</strong>
+          </p>
           <h3 className="order-section-label">Dia</h3>
           <div
             className="chips"
@@ -1822,7 +1907,9 @@ export function Totem({
       {step === REVIEW && (
         <>
           <h2 className="wizard-question">Revise e confirme</h2>
-          <p className="wizard-hint">{customer?.name}</p>
+          <p className="review-customer">
+            <strong>Cliente: {customer?.name}</strong>
+          </p>
           {sameDay.length > 0 && (
             <div className="same-day-warning" role="alert">
               <p>
@@ -1888,12 +1975,28 @@ export function Totem({
                       ),
                   ) && <AlcoholTag />}
                   <QuantityInput
+                    disabled={busy}
+                    showCommitButton={false}
                     label="Quantos kits iguais"
                     aria-label={
                       'Revisar quantidade de ' +
                       (display ? kitLabel(display) : 'kit indisponível')
                     }
                     value={item.quantity}
+                    removeLabel={
+                      'Remover ' +
+                      (display ? kitLabel(display) : 'kit indisponível')
+                    }
+                    onRemove={() =>
+                      void removeItem(
+                        display ? kitLabel(display) : 'kit indisponível',
+                        () =>
+                          setKitItems((current) =>
+                            current.filter((_, n) => n !== index),
+                          ),
+                        selected.length + mixes.length + kitItems.length === 1,
+                      )
+                    }
                     min={1}
                     max={10000}
                     onValueChange={(quantity) =>
@@ -1932,13 +2035,29 @@ export function Totem({
                 />
               )}
               <div>
-                <h3>
-                  {v.product_name} · {v.label}
-                </h3>
+                <h3>{flavorName(v.id)}</h3>
+                <small className="review-packaging">
+                  {packagingName(v.id, v.label)}
+                </small>
                 {v.alcohol && <AlcoholTag />}
                 <QuantityInput
-                  aria-label={'Revisar quantidade de ' + v.product_name}
+                  disabled={busy}
+                  showCommitButton={false}
+                  aria-label={'Revisar quantidade de ' + flavorName(v.id)}
                   value={counts[v.id]}
+                  removeLabel={'Remover ' + flavorName(v.id)}
+                  onRemove={() =>
+                    void removeItem(
+                      flavorName(v.id),
+                      () =>
+                        setCounts((current) => {
+                          const next = { ...current };
+                          delete next[v.id];
+                          return next;
+                        }),
+                      selected.length + mixes.length + kitItems.length === 1,
+                    )
+                  }
                   onValueChange={(n) => setCounts({ ...counts, [v.id]: n })}
                 />
                 <p>{money(price(v) * counts[v.id])}</p>
@@ -1948,10 +2067,34 @@ export function Totem({
           {mixes.map((m) => (
             <article className="review-line" key={m.key}>
               <div>
-                <h3>
-                  {m.qty} cx Caixa mista · {money(m.qty * mixPrice(m))}
-                </h3>
+                <h3>Caixa mista</h3>
+                <small className="review-packaging">
+                  Caixa {Object.values(m.comp).reduce((n, u) => n + u, 0)} un.
+                </small>
                 <p>{mixText(m.comp)}</p>
+                <QuantityInput
+                  disabled={busy}
+                  showCommitButton={false}
+                  aria-label="Revisar quantidade de Caixa mista"
+                  value={m.qty}
+                  removeLabel="Remover Caixa mista"
+                  onRemove={() =>
+                    void removeItem(
+                      'Caixa mista',
+                      () =>
+                        setMixes((current) =>
+                          current.filter((x) => x.key !== m.key),
+                        ),
+                      selected.length + mixes.length + kitItems.length === 1,
+                    )
+                  }
+                  onValueChange={(qty) =>
+                    setMixes(
+                      mixes.map((x) => (x.key === m.key ? { ...x, qty } : x)),
+                    )
+                  }
+                />
+                <p>{money(m.qty * mixPrice(m))}</p>
                 {Object.keys(m.comp).some(
                   (id) => all.find((v) => v.id === id)?.alcohol,
                 ) && <AlcoholTag />}

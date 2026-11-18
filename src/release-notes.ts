@@ -10,6 +10,14 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.22.0',
+    items: [
+      'Retome a seleção do pedido com sabores, caixas mistas e kits preservados.',
+      'Escolha quantas caixas mistas iguais e revise ou remova itens antes de confirmar.',
+      'Motivos e valores são preenchidos em folhas do app.',
+    ],
+  },
+  {
     version: '0.21.0',
     items: [
       'Confirmações em uma folha do app e fotos dos produtos em uma grade compacta.',

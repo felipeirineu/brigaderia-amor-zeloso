@@ -1,4 +1,4 @@
-import { useConfirm } from '../../components/confirm-context';
+import { useConfirm, usePrompt } from '../../components/confirm-context';
 import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
 import { useRef, useState } from 'react';
@@ -17,6 +17,7 @@ const categories = {
 };
 export function Expenses() {
   const askConfirmation = useConfirm();
+  const askPrompt = usePrompt();
 
   const [from, setFrom] = useState(() => localDay().slice(0, 8) + '01'),
     [to, setTo] = useState(localDay),
@@ -263,7 +264,9 @@ export function Expenses() {
                   <Button
                     disabled={busy}
                     onClick={async () => {
-                      const reason = prompt('Motivo do estorno da despesa:');
+                      const reason = await askPrompt(
+                        'Motivo do estorno da despesa:',
+                      );
                       if (
                         reason?.trim() &&
                         (await askConfirmation(

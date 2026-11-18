@@ -8,7 +8,13 @@ import {
 } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Button } from './Button';
-import { ConfirmContext, type AskConfirmation } from './confirm-context';
+import {
+  ConfirmContext,
+  PromptContext,
+  type AskConfirmation,
+  type AskPrompt,
+} from './confirm-context';
+import { PromptSheet, type PromptQuestion } from './PromptSheet';
 interface Question {
   message: string;
   action: string;
@@ -73,31 +79,51 @@ export function ConfirmProvider({
   enabled?: boolean;
 }) {
   const [question, setQuestion] = useState<Question | null>(null);
+  const [promptQuestion, setPromptQuestion] = useState<PromptQuestion | null>(
+    null,
+  );
   const pending = useRef<{
-    resolve: (yes: boolean) => void;
+    resolve: (value: boolean | string | null) => void;
     trigger: HTMLElement | null;
   } | null>(null);
   const location = useLocation();
-  const finish = useCallback((yes: boolean) => {
+  const finish = useCallback((value: boolean | string | null) => {
     const current = pending.current;
     if (!current) return;
     pending.current = null;
     setQuestion(null);
+    setPromptQuestion(null);
     if (current.trigger?.isConnected) current.trigger.focus();
-    current.resolve(yes);
+    current.resolve(value);
   }, []);
   const ask = useCallback<AskConfirmation>(
     (message, action = 'Confirmar') => {
       if (!enabled || pending.current) return Promise.resolve(false);
       return new Promise((resolve) => {
         pending.current = {
-          resolve,
+          resolve: (value) => resolve(value === true),
           trigger:
             document.activeElement instanceof HTMLElement
               ? document.activeElement
               : null,
         };
         setQuestion({ message, action });
+      });
+    },
+    [enabled],
+  );
+  const askPrompt = useCallback<AskPrompt>(
+    (message, options = {}) => {
+      if (!enabled || pending.current) return Promise.resolve(null);
+      return new Promise((resolve) => {
+        pending.current = {
+          resolve: (value) => resolve(typeof value === 'string' ? value : null),
+          trigger:
+            document.activeElement instanceof HTMLElement
+              ? document.activeElement
+              : null,
+        };
+        setPromptQuestion({ ...options, message });
       });
     },
     [enabled],
@@ -120,8 +146,13 @@ export function ConfirmProvider({
   );
   return (
     <ConfirmContext.Provider value={ask}>
-      {children}
-      <ConfirmSheet question={question} onResult={finish} />
+      <PromptContext.Provider value={askPrompt}>
+        {children}
+        <ConfirmSheet question={question} onResult={finish} />
+        {promptQuestion && (
+          <PromptSheet question={promptQuestion} onResult={finish} />
+        )}
+      </PromptContext.Provider>
     </ConfirmContext.Provider>
   );
 }

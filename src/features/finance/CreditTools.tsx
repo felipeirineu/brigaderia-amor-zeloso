@@ -1,4 +1,4 @@
-import { useConfirm } from '../../components/confirm-context';
+import { useConfirm, usePrompt } from '../../components/confirm-context';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
@@ -17,6 +17,7 @@ export function CreditTools({
   onSaved: () => Promise<void>;
 }) {
   const askConfirmation = useConfirm();
+  const askPrompt = usePrompt();
 
   const [amount, setAmount] = useState(''),
     [method, setMethod] = useState<keyof typeof paymentMethods>('pix'),
@@ -206,12 +207,19 @@ export function CreditTools({
             <Button
               disabled={busy}
               onClick={async () => {
-                const value = prompt(
+                const value = await askPrompt(
                     'Valor não alocado a estornar (R$):',
-                    (c.available_cents / 100).toFixed(2).replace('.', ','),
+                    {
+                      title: 'Valor do estorno',
+                      kind: 'money',
+                      initialValue: (c.available_cents / 100)
+                        .toFixed(2)
+                        .replace('.', ','),
+                      maxCents: c.available_cents,
+                    },
                   ),
                   reason = value
-                    ? prompt('Motivo do estorno do crédito:')
+                    ? await askPrompt('Motivo do estorno do crédito:')
                     : null;
                 if (
                   value &&
@@ -247,7 +255,7 @@ export function CreditTools({
             <Button
               disabled={busy}
               onClick={async () => {
-                const reason = prompt(
+                const reason = await askPrompt(
                   'Motivo para liberar esta alocação de crédito:',
                 );
                 const selected = data.orders.find((o) => o.id === p.order_id);

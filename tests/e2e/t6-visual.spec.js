@@ -185,9 +185,6 @@ test('T6 clientes, chips com avatar/ocasião, seleção em andamento e logo escu
     await draft
       .getByRole('link', { name: 'Retomar seleção', exact: true })
       .click();
-    await p
-      .getByRole('button', { name: 'Recuperar seleção', exact: true })
-      .click();
     await expect(
       p.getByText(
         'Seleção recuperada. Confira quantidades, data, entrega e pagamento. Textos e valores não foram guardados.',

@@ -1,4 +1,5 @@
 import { Button } from './Button';
+import { Trash2 } from 'lucide-react';
 import { useId, useRef, useState, type InputHTMLAttributes } from 'react';
 import { centsFromDigits, displayCents, MAX_MONEY, readCents } from './numeric';
 type Base = Omit<
@@ -139,6 +140,9 @@ export function QuantityInput({
   min = 1,
   max = 10000,
   steppers = true,
+  showCommitButton = true,
+  onRemove,
+  removeLabel,
   ...props
 }: Base & {
   value: number | null;
@@ -146,6 +150,9 @@ export function QuantityInput({
   min?: number;
   max?: number;
   steppers?: boolean;
+  showCommitButton?: boolean;
+  onRemove?: () => void;
+  removeLabel?: string;
 }) {
   const [editing, setEditing] = useState(false),
     [digits, setDigits] = useState(''),
@@ -219,14 +226,26 @@ export function QuantityInput({
           <Button
             className="quantity-minus"
             type="button"
-            aria-label={`Diminuir ${name}`}
-            disabled={value === null || value <= min || props.disabled}
-            onClick={() => onValueChange(Math.max(min, (value ?? min) - 1))}
+            aria-label={
+              value === min && onRemove ? removeLabel : `Diminuir ${name}`
+            }
+            disabled={
+              value === null || (value <= min && !onRemove) || props.disabled
+            }
+            onClick={() =>
+              value === min && onRemove
+                ? onRemove()
+                : onValueChange(Math.max(min, (value ?? min) - 1))
+            }
           >
-            −
+            {value === min && onRemove ? (
+              <Trash2 size={18} aria-hidden="true" />
+            ) : (
+              '−'
+            )}
           </Button>
         )}
-        {editing && (
+        {editing && showCommitButton && (
           <Button
             type="button"
             disabled={!!error}

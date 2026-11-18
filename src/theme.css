@@ -1378,3 +1378,101 @@ textarea::placeholder {
 .active-field > label {
   margin: 0;
 }
+
+/* T10: quantidades contidas no cartão, sem reduzir os alvos de toque. */
+.order-focus .flavor-card {
+  min-width: 0;
+}
+.order-focus .flavor-stepper {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  gap: var(--az-space-1);
+  width: 100%;
+}
+.order-focus .flavor-stepper > button {
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+}
+.order-focus .mix-card-hint {
+  width: 100%;
+  text-align: center;
+}
+.mix-draft-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--az-space-3);
+  margin-block: var(--az-space-3);
+}
+.mix-draft-actions .numeric-field,
+.order-focus .review-line .numeric-field {
+  display: block;
+  width: 13rem;
+  max-width: 100%;
+  margin-block: var(--az-space-2);
+}
+.mix-draft-actions .quantity-control,
+.order-focus .review-line .quantity-control {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  gap: var(--az-space-2);
+}
+.mix-draft-actions .quantity-control input,
+.order-focus .review-line .quantity-control input {
+  min-width: 0;
+  width: 100%;
+  grid-column: 2;
+  grid-row: 1;
+  text-align: center;
+}
+.mix-draft-actions .quantity-minus,
+.order-focus .review-line .quantity-minus {
+  grid-column: 1;
+  grid-row: 1;
+}
+.mix-draft-actions .quantity-control small,
+.order-focus .review-line .quantity-control small {
+  grid-column: 1 / -1;
+}
+.order-focus .review-line > div {
+  min-width: 0;
+  flex: 1;
+}
+.order-focus .review-line h3 {
+  overflow-wrap: anywhere;
+  margin-bottom: var(--az-space-1);
+}
+.review-packaging {
+  display: block;
+  color: var(--az-muted);
+}
+.review-customer {
+  font-size: 1.125rem;
+}
+.prompt-sheet textarea {
+  min-height: 8rem;
+}
+.order-focus .flavor-stepper b {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 0.875rem;
+}
+.mix-sheet .mix-row {
+  grid-template-columns: 32px minmax(0, 1fr) 124px;
+  gap: var(--az-space-2);
+}
+.mix-sheet .mix-row > .flavor-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.mix-sheet .mix-row .mix-dot,
+.mix-sheet .mix-row img {
+  width: 32px;
+  height: 32px;
+}
+@media (max-width: 380px) {
+  .order-focus .flavor-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

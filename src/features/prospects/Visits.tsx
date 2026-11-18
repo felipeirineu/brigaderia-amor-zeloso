@@ -1,3 +1,4 @@
+import { usePrompt } from '../../components/confirm-context';
 import { VisitCustomerPicker } from './VisitCustomerPicker';
 import { HelpTip } from '../../components/HelpTip';
 import { DayCalendar } from '../operations/DayCalendar';
@@ -540,6 +541,7 @@ export function VisitCard({
   onChanged: () => void;
   followup?: boolean;
 }) {
+  const askPrompt = usePrompt();
   const field = useField(),
     [sheet, setSheet] = useState<'record' | 'edit' | null>(null),
     [reminder, setReminder] = useState(false),
@@ -551,8 +553,12 @@ export function VisitCard({
     cancelRequest = useRef({ body: '', key: '' });
   async function cancel() {
     if (cancelPending.current) return;
-    const reason = prompt('Motivo do cancelamento da visita');
-    if (!reason) return;
+    const reason = await askPrompt('Motivo do cancelamento da visita', {
+      minLength: 3,
+      title: 'Cancelar visita',
+      action: 'Cancelar visita',
+    });
+    if (!reason?.trim()) return;
     cancelPending.current = true;
     const payload = { version: visit.version, reason },
       signature = JSON.stringify(payload);

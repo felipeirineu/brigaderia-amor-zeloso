@@ -20,7 +20,6 @@ test('relatórios CSV, despesa/estorno, ficha/preço e compras privadas', async 
     await makeOrder();
     const page = await context.newPage();
     page.setDefaultTimeout(15000);
-    page.on('dialog', (d) => d.accept('Correção DEMONSTRAÇÃO'));
     await page.goto(t.url + '/login');
     await page.getByRole('link', { name: 'Entrar com acesso seguro' }).click();
     await page.goto(t.url + '/gestao/relatorios');
@@ -63,6 +62,14 @@ test('relatórios CSV, despesa/estorno, ficha/preço e compras privadas', async 
       page.getByRole('heading', { name: /^Despesa · R\$\s2,00$/ }),
     ).toBeVisible();
     await page.getByRole('button', { name: /^Estornar despesa / }).click();
+    const reasonSheet = page.getByRole('dialog', {
+      name: 'Informe o motivo',
+      exact: true,
+    });
+    await reasonSheet.getByRole('textbox').fill('Correção DEMONSTRAÇÃO');
+    await reasonSheet
+      .getByRole('button', { name: 'Continuar', exact: true })
+      .click();
     await page
       .getByRole('dialog', { name: 'Tem certeza?', exact: true })
       .getByRole('button', { name: 'Estornar', exact: true })
