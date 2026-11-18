@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T10** (testes do Felipe no Novo pedido: seleção recuperada, caixa mista e revisão; detalhes abaixo). Versão **0.22.0**. Ao terminar, abra o pull request.
+`VEZ: CODEX` — tarefa **T11** (lembrete de backup semanal; prévia aprovada; detalhes abaixo). Versão **0.23.0**. Ao terminar, abra o pull request. Base: main com a 0.22.1 (sabores sem foto: `NoPhoto`).
 
 **Pendências do Felipe (fora do código):** cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
 
@@ -44,7 +44,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **1/3** (T9).
+Contador de entregas desde a última revisão: **2/3** (T9, T10).
 
 ## Limites
 
@@ -72,8 +72,8 @@ Contador de entregas desde a última revisão: **1/3** (T9).
 | T7 | Revisões do Felipe antes da 1.0 (abertura com logo, álcool, alinhamentos, telas compridas, menu +) | **publicada** 17/11 (PR #17) como **0.19.0** |
 | T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | **publicada** 17/11 (PR #18) como **0.20.0** |
 | T9 | Revisões do Felipe (2ª lista): sabores centralizados, confirmações, textos, Foto do produto, modos de pedido | **publicada** 17/11 (branch do Codex, sem PR) como **0.21.0** |
-| T10 | Novo pedido: retomar seleção, caixa mista e tela de revisão (testes do Felipe no celular) | **vez do Codex** — versão **0.22.0** |
-| T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | prévia **aprovada** 18/11; **depois da T10** — versão **0.23.0** |
+| T10 | Novo pedido: retomar seleção, caixa mista e tela de revisão (testes do Felipe no celular) | **publicada** 18/11 (PR #19) como **0.22.0** |
+| T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | prévia **aprovada** 18/11; **vez do Codex** — versão **0.23.0** |
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | prévia **aprovada** 18/11; **depois da T11** — versão **0.24.0** |
 
 ### T0 — R17
@@ -526,6 +526,8 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.22.1 | 18/11 | Sabores sem foto: forminha vazia com "Sem Foto" (opção 6 escolhida pelo Felipe; `src/components/NoPhoto.tsx`, `public/brand/sem-foto.webp`). |
+| 0.22.0 | 18/11 | "Retomar seleção" não perde mais a seleção e abre direto nos sabores; caixa mista com quantidade e contador; revisão com "Cliente:", embalagem embaixo e lixeira em 1; folhas no lugar das caixas do navegador para motivo/valor. |
 | 0.21.0 | 17/11 | Confirmações "Tem certeza?" com a cara do app, grade de fotos do produto, só Modo simples / Lista completa, "Sabor" no lugar de variante, arquivar produto só para o dono no computador, textos e alinhamentos da 2ª lista do Felipe. |
 | 0.20.0 | 17/11 | Botão "Ativar lembretes (manual)" no GitHub (VERIFICAR / ATIVAR / REPUBLICAR_AGENDADOR), sem terminal e sem expor chaves. Nada muda no app até o Felipe rodar. |
 | 0.19.0 | 17/11 | Abertura com o logo (claro/escuro), selo de álcool numa linha, menu + em grade 2×2, Clientes alinhado, "Gerar pedidos da semana?" alinhado e ações em pares nas telas compridas. |
@@ -569,3 +571,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 17/11 | 14 | T7 — revisões do Felipe antes da 1.0 (PR #17) | seguiu a prévia aprovada; 269 E2E e Segurança verdes. Publicada como 0.19.0. |
 | 17/11 | 15 | T8 — workflow de ativação dos lembretes (PR #18) | CI completo e Segurança verdes. Revisão geral 3/3 (T6, T7, T8): sem problema real. Publicada como 0.20.0. Workflow ainda não executado (passo do Felipe). |
 | 17/11 | 16 | T9 — 2ª lista do Felipe (branch `codex/t9-interface-refinements`) | O Codex não abriu PR (CI rápido vermelho). Claude: teste do menu media durante a animação (corrigido); mapa era instabilidade antiga (12/12 local); grade de fotos não estava centralizada como a prévia (corrigido). CI completo 284 E2E e Segurança verdes. Publicada como 0.21.0. |
+| 18/11 | 17 | T10 — retomar seleção, caixa mista, revisão, folhas de motivo (PR #19) | Capturas estranhas apontadas pelo Felipe: sabores sem foto viravam "ovo" escuro e nomes passavam da borda (defeito antigo, visível com dados de demonstração). Claude corrigiu; 305 E2E e Segurança verdes. Publicada como 0.22.0. Felipe escolheu a forminha "Sem Foto" para sabores sem foto → 0.22.1. |
