@@ -74,6 +74,7 @@ Contador de entregas desde a última revisão: **1/3** (T9).
 | T9 | Revisões do Felipe (2ª lista): sabores centralizados, confirmações, textos, Foto do produto, modos de pedido | **publicada** 17/11 (branch do Codex, sem PR) como **0.21.0** |
 | T10 | Novo pedido: retomar seleção, caixa mista e tela de revisão (testes do Felipe no celular) | **vez do Codex** — versão **0.22.0** |
 | T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | prévia **aprovada** 18/11; **depois da T10** — versão **0.23.0** |
+| T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | prévia **aguardando aprovação do Felipe**; depois da T11 — versão **0.24.0** |
 
 ### T0 — R17
 
@@ -476,6 +477,20 @@ Seguir a prévia: mesma ordem, textos e agrupamentos. Só o **dono** vê, e o ba
    - E2E: cartão aparece para o dono e não para a operadora; Lembrar mais tarde esconde e volta após 1 h (relógio simulado); Fazer backup abre a tela e resolve; sem migração, o recurso fica oculto;
    - pasta fixa com a API simulada; teste do agendador enviando uma vez.
 8. Versão **0.23.0**. Capturas `t11-*.png`, só com DEMONSTRAÇÃO.
+
+### T12 — Exportar como planilha e PDF (ideia do Felipe, 18/11; prévia `previas/t12-exportar-planilha-pdf.png` aguardando aprovação)
+
+Resumo, a detalhar na aprovação:
+- **Onde:** todas as exportações de dados (Relatórios, fluxo de caixa, custo de entrega).
+- **Botões:** o par **Planilha** (primário) | **PDF**, e o link "Outros formatos (CSV)".
+- **Planilha .xlsx** gerada no aparelho (`write-excel-file`, irmã da `read-excel-file`):
+  - cabeçalho destacado e larguras ajustadas;
+  - valores em **R$ como número**, datas dd/mm/aaaa e linha de total.
+- **PDF:**
+  - logo, título, período/filtros, resumo, tabela com total e rodapé "Gerado em … · página x de y";
+  - abre para ver ou compartilhar no celular.
+- **CSV:** passa a trazer valores em reais, sem a coluna "(centavos)".
+- Nada de serviço pago; os dados não saem do app.
 
 ## Versões do app
 
