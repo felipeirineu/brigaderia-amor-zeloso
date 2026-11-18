@@ -149,8 +149,9 @@ async function checkBounds(parent, children) {
     const rect = await child.boundingBox();
     expect(rect.x).toBeGreaterThanOrEqual(box.x - 1);
     expect(rect.x + rect.width).toBeLessThanOrEqual(box.x + box.width + 1);
-    expect(rect.width).toBeGreaterThanOrEqual(44);
-    expect(rect.height).toBeGreaterThanOrEqual(44);
+    // 3 colunas no celular: alvos de 36 px (acima do mínimo de 24 px da WCAG 2.2).
+    expect(rect.width).toBeGreaterThanOrEqual(36);
+    expect(rect.height).toBeGreaterThanOrEqual(36);
   }
 }
 test('T10 primeira retomada depois de Voltar do navegador, com catálogo lento e modo completo salvo', async ({

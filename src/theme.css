@@ -1471,9 +1471,29 @@ textarea::placeholder {
   width: 32px;
   height: 32px;
 }
-@media (max-width: 380px) {
-  .order-focus .flavor-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+/* Celulares estreitos: mantém 3 colunas; botões de 36 px cabem no cartão. */
+@media (max-width: 400px) {
+  .order-focus .flavor-stepper {
+    grid-template-columns: 36px minmax(0, 1fr) 36px;
+    gap: 2px;
+  }
+  .order-focus .flavor-stepper > button {
+    width: 36px;
+    min-width: 36px;
+    height: 36px;
+    min-height: 36px;
+  }
+  .order-focus .flavor-stepper b {
+    overflow-wrap: normal;
+    white-space: normal;
+    line-height: 1.1;
+    font-size: 0.8125rem;
+    text-align: center;
+  }
+  .order-focus .mix-card .flavor-add strong {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
   }
 }
 
