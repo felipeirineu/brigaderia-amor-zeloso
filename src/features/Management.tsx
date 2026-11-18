@@ -1,6 +1,7 @@
 import { ConfirmProvider } from '../components/ConfirmSheet';
 import { useConfirm } from '../components/confirm-context';
 import { AppOpening } from '../components/AppOpening';
+import { useTabHistory } from './mobile/useTabHistory';
 import {
   ReleaseAnnouncement,
   ReleaseHistory,
@@ -1786,6 +1787,7 @@ export function Management() {
   const [online, setOnline] = useState(navigator.onLine);
   const [connectionError, setConnectionError] = useState(false);
   const navigate = useNavigate();
+  const goTab = useTabHistory();
   const quick = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     let active = true;
@@ -2195,14 +2197,19 @@ export function Management() {
                     to="/gestao/"
                     end
                     data-tour="today"
-                    onClick={() =>
-                      window.dispatchEvent(new Event('reset-workday'))
-                    }
+                    onClick={(e) => {
+                      window.dispatchEvent(new Event('reset-workday'));
+                      goTab('/gestao/', e);
+                    }}
                   >
                     <Icon name="inicio" />
                     Hoje
                   </NavLink>
-                  <NavLink to="/gestao/pedidos" data-tour="orders">
+                  <NavLink
+                    to="/gestao/pedidos"
+                    data-tour="orders"
+                    onClick={(e) => goTab('/gestao/pedidos', e)}
+                  >
                     <Icon name="pedidos" />
                     Pedidos
                   </NavLink>
@@ -2213,11 +2220,19 @@ export function Management() {
                   >
                     <Icon name="novo" />
                   </Button>
-                  <NavLink to="/gestao/clientes" data-tour="customers">
+                  <NavLink
+                    to="/gestao/clientes"
+                    data-tour="customers"
+                    onClick={(e) => goTab('/gestao/clientes', e)}
+                  >
                     <Icon name="clientes" />
                     Clientes
                   </NavLink>
-                  <NavLink to="/gestao/mais" data-tour="more">
+                  <NavLink
+                    to="/gestao/mais"
+                    data-tour="more"
+                    onClick={(e) => goTab('/gestao/mais', e)}
+                  >
                     <Icon name="mais" />
                     Mais
                   </NavLink>

@@ -10,6 +10,12 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.22.2',
+    items: [
+      'No Android, o Voltar do celular leva ao Hoje; no Hoje, sai do app.',
+    ],
+  },
+  {
     version: '0.22.1',
     items: ['Sabores ainda sem foto aparecem com a forminha "Sem Foto".'],
   },
