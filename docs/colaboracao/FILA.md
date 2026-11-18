@@ -73,6 +73,7 @@ Contador de entregas desde a última revisão: **1/3** (T9).
 | T8 | Workflow manual "Ativar lembretes (manual)" — liga as notificações sem terminal | **publicada** 17/11 (PR #18) como **0.20.0** |
 | T9 | Revisões do Felipe (2ª lista): sabores centralizados, confirmações, textos, Foto do produto, modos de pedido | **publicada** 17/11 (branch do Codex, sem PR) como **0.21.0** |
 | T10 | Novo pedido: retomar seleção, caixa mista e tela de revisão (testes do Felipe no celular) | **vez do Codex** — versão **0.22.0** |
+| T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | prévia **aguardando aprovação do Felipe**; depois da T10 — versão **0.23.0** |
 
 ### T0 — R17
 
@@ -440,6 +441,14 @@ Como fazer:
 - E2E de cancelar pedido com motivo: cancelar a folha não grava; motivo vazio não deixa confirmar.
 
 **5.** Versão **0.22.0**. Capturas antes/depois (`t10-*.png`), só com dados DEMONSTRAÇÃO. **Atenção:** as capturas do Felipe mostram clientes reais; não copie nomes reais para testes, capturas ou documentos.
+
+### T11 — Lembrete de backup (ideia do Felipe, 18/11; prévia `previas/t11-lembrete-backup.png` aguardando aprovação)
+
+Só depois da T10 e da aprovação da prévia. Detalhes a escrever na aprovação. Resumo:
+- lembrete periódico só para o **dono**, com frequência escolhida na tela de Backup;
+- cartão no Hoje e notificação: **Fazer backup** / **Lembrar mais tarde** (+1 h);
+- o backup feito resolve o lembrete até o próximo período;
+- no computador (Chrome/Edge), uma **pasta fixa** via File System Access; nos outros navegadores e no celular, o arquivo vai para Downloads.
 
 ## Versões do app
 
