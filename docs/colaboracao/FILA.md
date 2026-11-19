@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T13** (ambiente de teste com cópia do banco real; detalhes abaixo). Versão **0.25.0**. Ao terminar, abra o pull request. **Não rode os workflows.** Commits com o e-mail noreply do GitHub.
+`VEZ: FELIPE` — T13 publicada. Aguardando o Felipe: configurar o ambiente de teste (`docs/AMBIENTE_TESTE.md`), testar, cadastrar os kits, ligar as notificações e escolher o dia da entrega (1.0.0).
 
 **Pendências do Felipe (fora do código):** aplicar a migração **0027** (lembrete de backup) pela Homologação D1: PRE_CHECAGEM → APLICAR_PENDENTES. cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
 
@@ -44,7 +44,7 @@ Resultado:
 - **Problema pequeno** (o Claude resolve sem decisão de negócio): vira a próxima tarefa da fila e segue.
 - **Problema que exige decisão do Felipe** (regra de negócio, dado, segurança ou algo que muda o uso): `VEZ: FELIPE`, com explicação e capturas.
 
-Contador de entregas desde a última revisão: **1/3** (T12).
+Contador de entregas desde a última revisão: **2/3** (T12, T13).
 
 ## Limites
 
@@ -75,7 +75,7 @@ Contador de entregas desde a última revisão: **1/3** (T12).
 | T10 | Novo pedido: retomar seleção, caixa mista e tela de revisão (testes do Felipe no celular) | **publicada** 18/11 (PR #19) como **0.22.0** |
 | T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | **publicada** 18/11 (PR #20) como **0.23.0** — migração **0027** pendente (Felipe) |
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
-| T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **vez do Codex** — versão **0.25.0** |
+| T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
 
 ### T0 — R17
 
@@ -563,6 +563,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.25.0 | 19/11 | Ambiente de teste: prévias usam o banco `brigaderia-amor-zeloso-teste`, faixa "AMBIENTE DE TESTE", avisos desligados e confirmação do WhatsApp no teste; workflow "Ambiente de teste (manual)". |
 | 0.24.0 | 18/11 | Exportar relatórios, fluxo de caixa e custo de entrega como **planilha (.xlsx)** e **PDF** com a marca; CSV continua em "Outros formatos", agora em reais. |
 | 0.23.0 | 18/11 | Lembrete de backup (Hoje + celular), frequência na tela de Backup (padrão semanal), pasta fixa no computador e dica de quanto guardar. Precisa da migração 0027. |
 | 0.22.2 | 18/11 | Voltar do celular (Android): trocar de aba pelo menu não acumula histórico; de qualquer aba volta ao Hoje; no Hoje sai do app (`useTabHistory`). |
@@ -616,3 +617,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 18/11 | — | 0.22.2 (Claude) | Voltar do celular estilo apps de abas. Minutos grátis do Actions acabaram; Felipe tornou o repositório **público** (Actions sem custo). CI completo 311 E2E (a instalação dos navegadores levou 21 min nesse dia) e Segurança verdes. **Codex: use o e-mail noreply do GitHub como autor dos commits**, não o e-mail pessoal. |
 | 18/11 | 18 | T11 — lembrete de backup (PR #20) | CI completo e Segurança verdes (reexecutados após o fim dos minutos; repositório agora público). Revisão geral 3/3 (T9, T10, T11): sem problema real. Publicada como 0.23.0; migração 0027 aguarda o Felipe. |
 | 18/11 | 19 | T12 — planilha e PDF (PR #21) | Seguiu a prévia; geradores carregados só ao tocar no botão; CI completo e Segurança verdes. Publicada como 0.24.0. |
+| 19/11 | 20 | T13 — ambiente de teste (PR #22) | Claude trocou o marcador pelo ID do banco de teste enviado pelo Felipe; CI completo e Segurança verdes. Publicada como 0.25.0. |
