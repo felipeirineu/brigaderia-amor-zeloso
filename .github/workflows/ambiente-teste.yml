@@ -62,5 +62,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           ref: refs/heads/main
+          # Histórico completo: o push precisa enxergar a branch teste para avançar.
+          fetch-depth: 0
       - name: Atualizar apenas a branch teste
         run: git push origin HEAD:refs/heads/teste
