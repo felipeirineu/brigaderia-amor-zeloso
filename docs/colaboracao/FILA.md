@@ -563,6 +563,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.25.1 | 19/11 | Mapa: endereço novo no pedido apaga a localização antiga, texto ganha cidade/"PB", folha mostra o destino; Mapas do iPhone só no iPhone/Mac; Hoje: Caixa Mista/kit só com o nome e sabores num toque; grafia "Caixa Mista" em todo o app. |
 | 0.25.0 | 19/11 | Ambiente de teste: prévias usam o banco `brigaderia-amor-zeloso-teste`, faixa "AMBIENTE DE TESTE", avisos desligados e confirmação do WhatsApp no teste; workflow "Ambiente de teste (manual)". |
 | 0.24.0 | 18/11 | Exportar relatórios, fluxo de caixa e custo de entrega como **planilha (.xlsx)** e **PDF** com a marca; CSV continua em "Outros formatos", agora em reais. |
 | 0.23.0 | 18/11 | Lembrete de backup (Hoje + celular), frequência na tela de Backup (padrão semanal), pasta fixa no computador e dica de quanto guardar. Precisa da migração 0027. |
@@ -619,3 +620,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 18/11 | 19 | T12 — planilha e PDF (PR #21) | Seguiu a prévia; geradores carregados só ao tocar no botão; CI completo e Segurança verdes. Publicada como 0.24.0. |
 | 19/11 | 20 | T13 — ambiente de teste (PR #22) | Claude trocou o marcador pelo ID do banco de teste enviado pelo Felipe; CI completo e Segurança verdes. Publicada como 0.25.0. |
 | 19/11 | — | Ambiente de teste configurado pelo Felipe | Environment `ambiente-teste`, Access com `teste.`/`*.`, workflow: ATUALIZAR_APP, VERIFICAR, APLICAR_MIGRACOES, COPIAR_DO_REAL verdes (27 migrações, 16 clientes, 9 produtos, 0 violações). Prévias do Pages restritas à branch `teste`. |
+| 19/11 | — | 0.25.1 (Claude) | Testes do Felipe no ambiente de teste: mapa em outro endereço, Apple Maps no Android, Waze sem app, sabores da Caixa Mista estourando o cartão. CI completo e Segurança verdes. **Codex: escreva sempre "Caixa Mista" / "Caixas Mistas".** |
