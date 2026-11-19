@@ -19,6 +19,7 @@ export interface Env {
   ORS_API_KEY?: string;
   ASSETS?: { fetch: (r: Request) => Promise<Response> };
   ACCESS_TEAM_DOMAIN?: string;
+  APP_ENVIRONMENT?: 'teste' | 'producao';
   ACCESS_AUD?: string;
   PUBLIC_CATALOG_ENABLED?: string;
 }

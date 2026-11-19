@@ -8,6 +8,7 @@ import { resolve, extname } from 'node:path';
 
 export async function runtime({
   browserHTTP = false,
+  appEnvironment,
   assetsDirectory = 'dist',
   entryPoint = 'worker/pages.ts',
   vapid,
@@ -34,7 +35,11 @@ export async function runtime({
     use: 'sig',
   };
   const result = await build({
-    entryPoints: [entryPoint],
+    entryPoints: [
+      appEnvironment === 'teste'
+        ? 'tests/helpers/test-environment-worker.ts'
+        : entryPoint,
+    ],
     bundle: true,
     loader: { '.webp': 'binary' },
     format: 'esm',
@@ -52,6 +57,7 @@ export async function runtime({
       d1Databases: { DB: 'test-database' },
       bindings: {
         ACCESS_TEAM_DOMAIN: 'demonstracao-teste.cloudflareaccess.com',
+        ...(appEnvironment ? { APP_ENVIRONMENT: appEnvironment } : {}),
         ACCESS_AUD: 'test-audience',
         OPERATIONS_ENABLED: operationsEnabled ? 'true' : 'false',
         FINANCE_ENABLED: financeEnabled ? 'true' : 'false',

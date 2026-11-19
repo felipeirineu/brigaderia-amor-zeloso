@@ -1,3 +1,4 @@
+import { WhatsAppLink } from '../../components/TestEnvironment';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/Button';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
@@ -132,7 +133,7 @@ export function FollowupSheet({
               view.data.phone &&
               shown.trim() &&
               !/[{}]/.test(shown) && (
-                <Button
+                <WhatsAppLink
                   variant="primary"
                   href={
                     'https://wa.me/' +
@@ -140,11 +141,9 @@ export function FollowupSheet({
                     '?text=' +
                     encodeURIComponent(shown)
                   }
-                  target="_blank"
-                  rel="noreferrer"
                 >
                   Abrir no WhatsApp
-                </Button>
+                </WhatsAppLink>
               )}
             <Button
               disabled={!shown.trim()}

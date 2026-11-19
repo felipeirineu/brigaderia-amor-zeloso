@@ -53,7 +53,9 @@ export function PushSettings() {
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
       {view.data &&
-        (!view.data.configured ? (
+        (view.data.environment === 'teste' ? (
+          <p>Avisos desativados no ambiente de teste</p>
+        ) : !view.data.configured ? (
           <p>
             Os avisos no celular ainda não estão disponíveis. Você pode
             adicionar lembretes ao calendário do celular.

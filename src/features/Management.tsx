@@ -1,4 +1,8 @@
 import { ConfirmProvider } from '../components/ConfirmSheet';
+import {
+  EnvironmentScope,
+  TestEnvironmentBanner,
+} from '../components/TestEnvironment';
 import { useConfirm } from '../components/confirm-context';
 import { AppOpening } from '../components/AppOpening';
 import { useTabHistory } from './mobile/useTabHistory';
@@ -108,6 +112,7 @@ import {
 import { Mascot } from '../components/Mascot';
 
 interface Session {
+  environment?: 'teste' | 'producao';
   prospect_followup?: boolean;
   visits?: boolean;
   prospects?: boolean;
@@ -1881,8 +1886,9 @@ export function Management() {
         )}
       </section>
     );
-  return (
+  const management = (
     <ConfirmProvider enabled={online}>
+      <TestEnvironmentBanner />
       <FieldProvider
         enabled={!!session.field && online}
         key={session.organization_id + session.user_id + online}
@@ -2323,6 +2329,11 @@ export function Management() {
         </OrderDraftScope>
       </FieldProvider>
     </ConfirmProvider>
+  );
+  return (
+    <EnvironmentScope test={session.environment === 'teste'}>
+      {management}
+    </EnvironmentScope>
   );
 }
 

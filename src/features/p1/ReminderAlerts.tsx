@@ -45,7 +45,9 @@ export function ReminderAlerts({
       </legend>
       <Failure message={error || view.error} />
       <p role="status">{notice}</p>
-      {state?.ready ? (
+      {state?.environment === 'teste' ? (
+        <p>Avisos desativados no ambiente de teste</p>
+      ) : state?.ready ? (
         <>
           <div className="actions">
             {(

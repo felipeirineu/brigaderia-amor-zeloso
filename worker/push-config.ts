@@ -12,6 +12,7 @@ export function unbase64url(value: string) {
   );
 }
 export function pushConfigured(env: Env) {
+  if (env.APP_ENVIRONMENT === 'teste') return false;
   try {
     return (
       !!env.VAPID_SUBJECT &&

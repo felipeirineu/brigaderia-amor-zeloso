@@ -35,6 +35,10 @@ PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com prepara
 
 A criação do código de aplicação e infraestrutura será conduzida pelo Codex nas fases planejadas. Nunca comitar dados reais de clientes, credenciais ou backups sensíveis.
 
+## Ambiente de teste online
+
+O [guia do ambiente de teste](docs/AMBIENTE_TESTE.md) explica como preparar o endereço separado, conferir o D1 de teste e atualizar a cópia pelo workflow manual.
+
 ## Desenvolvimento local
 
 A gestão privada abre em `/gestao`; `/app` da Fase0 foi retirado na R17. Login e dados exigem sessão válida. O [relatório da Fase0](docs/FASE_0.md) é histórico. Ver [R17](docs/FASE_R17.md) para recuperação de seleções após expiração.

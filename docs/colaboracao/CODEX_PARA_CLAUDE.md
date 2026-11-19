@@ -1,3 +1,35 @@
+## T13 — entrega para revisão (19/11/2026)
+
+### Produzido
+
+- Versão **0.25.0** com binding separado de Pages Preview. O marcador `PREENCHER_ID_TESTE` é aceito pelo leitor de configuração do Wrangler. A API da prévia exige o ambiente de teste e a marca criada pelo workflow no D1, antes de consultar dados de negócio. Produção mantém o binding atual.
+- Faixa de teste a partir da sessão, confirmação adicional nos cinco pontos que abrem WhatsApp e tela de avisos com indicação de desativação. O servidor também recusa inscrições de push no teste.
+- Workflow manual restrito à main e ao ambiente protegido `ambiente-teste`. O modo de branch só avança `teste`; os demais conferem IDs e nomes e gravam apenas no D1 de teste. A cópia usa temporários fora do checkout, elimina chaves Pix e dados técnicos transitórios, troca telefones por números fictícios, ensaia o SQL localmente e confere contagens e vínculos antes de liberar o acesso. A saída da operação resume contagens.
+- Guia `docs/AMBIENTE_TESTE.md` e duas capturas de demonstração, `t13-faixa.png` e `t13-whatsapp.png`.
+
+### Testes executados
+
+- Build do Pages, tipos, lint e formatação. Passaram **234 testes unitários**, incluindo a leitura do marcador, separação de bindings, requisitos de confirmação, cópia de schema anterior, validação do vínculo e remoção de temporários.
+- Passaram **317 verificações de segurança** e as integrações de backup, limpeza e avisos. Os testes de Pages confirmam o bloqueio das prévias mal configuradas e a autenticação nas prévias prontas.
+- **12 testes de tela** em Chromium móvel, WebKit móvel e Chromium desktop. Cobrem faixa em teste e produção, cancelar e confirmar WhatsApp com tráfego interceptado, aviso do ambiente e regressões de mensagens e atualização.
+- Wrangler no modo local, com dois D1 descartáveis, confirmou migrações, cópia e limpeza. As três etapas terminaram com 27 migrações e zero violações. A contagem de clientes no teste foi 0, depois 1 após a cópia e 0 após a limpeza.
+
+### Limitações
+
+- A exportação de origem pode interromper consultas momentaneamente. O workflow foi preparado para uso autorizado em janela de baixa atividade. O destino tem cópia privada com nomes, endereços e valores, por isso exige a mesma proteção de acesso.
+- A T13 depende de confirmar os bindings no Pages e retirar ou restringir as prévias antigas. O comportamento de importação e publicação na Cloudflare ainda aguarda a primeira execução autorizada.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas do PR, seguidas da revisão do Claude.
+- Criação do D1 de teste, troca de `PREENCHER_ID_TESTE`, configuração do ambiente protegido e do Access e execução humana dos modos do guia. Nenhum workflow manual, acesso ao banco real ou alteração na Cloudflare foi feito nesta entrega.
+
+## T13 — plano antes do código (19/11/2026)
+
+Base `3b350fc`. Separar bindings Pages no `wrangler.jsonc` e bloquear as APIs nas prévias até o banco declarar sua identidade de teste. A sessão informa o ambiente à faixa, aos links de WhatsApp e à tela de avisos. A produção mantém os fluxos atuais.
+
+O workflow manual `ambiente-teste.yml` será preparado para execução humana na main. O script confere nomes e IDs, protege a leitura da origem e permite mutação somente no destino de teste confirmado. Cópia e limpeza serão ensaiadas localmente com SQLite e Wrangler simulado, incluindo exclusões, telefones fictícios, contagens/FKs, logs e limpeza de arquivos. Os testes de tela conferirão faixa e confirmação do WhatsApp. O guia descreverá configuração, acesso protegido e ativação. Nenhum workflow de banco ou operação remota na Cloudflare nesta entrega.
+
 ## T12 — entrega para revisão (18/11/2026)
 
 ### Produzido

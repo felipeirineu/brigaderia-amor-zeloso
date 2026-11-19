@@ -56,6 +56,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       .bind(crypto.randomUUID(), org, a.user_id, action, entity);
   if (resource === 'session' && req.method === 'GET')
     return json({
+      environment: env.APP_ENVIRONMENT === 'teste' ? 'teste' : 'producao',
       role: a.role,
       prospects: await prospectsReady(env),
       visits: await visitsReady(env),

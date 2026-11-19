@@ -1,3 +1,4 @@
+import { WhatsAppLink } from '../../components/TestEnvironment';
 import { useConfirm, usePrompt } from '../../components/confirm-context';
 import { AvatarChip } from '../../components/AvatarChip';
 import { SkeletonList } from '../../components/Skeleton';
@@ -449,15 +450,13 @@ export function OrderDetail({
                   />
                 </label>
                 {message.trim() && !/[{}]/.test(message) && (
-                  <Button
+                  <WhatsAppLink
                     className="button"
                     href={`https://wa.me/${phone.replace(/^\+/, '')}?text=${encodeURIComponent(message)}`}
-                    target="_blank"
-                    rel="noreferrer"
                   >
                     <MessageCircle size={20} aria-hidden="true" /> Abrir
                     WhatsApp para conferir e enviar
-                  </Button>
+                  </WhatsAppLink>
                 )}
                 <p>O aplicativo não envia mensagens sozinho.</p>
                 <Button

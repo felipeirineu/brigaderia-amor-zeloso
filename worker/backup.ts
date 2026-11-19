@@ -143,7 +143,7 @@ export async function backup(db: D1Database, a: Actor) {
   const schema = (
     await db
       .prepare(
-        "SELECT name,type,tbl_name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND type IN('table','index','trigger') AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%'",
+        "SELECT name,type,tbl_name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND type IN('table','index','trigger') AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND tbl_name <> 'test_environment'",
       )
       .all<Schema>()
   ).results;

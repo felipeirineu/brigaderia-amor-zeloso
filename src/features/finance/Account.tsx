@@ -1,3 +1,4 @@
+import { WhatsAppLink } from '../../components/TestEnvironment';
 import { useConfirm, usePrompt } from '../../components/confirm-context';
 import { SkeletonList } from '../../components/Skeleton';
 import type { CustomerType } from '../../../shared/customer-order';
@@ -324,14 +325,12 @@ export function Account() {
                 />
               </label>
               {preview.message.trim() && !/[{}]/.test(preview.message) && (
-                <Button
+                <WhatsAppLink
                   className="button"
-                  target="_blank"
-                  rel="noreferrer"
                   href={`https://wa.me/${preview.phone.replace(/^\+/, '')}?text=${encodeURIComponent(preview.message)}`}
                 >
                   Abrir WhatsApp para conferir e enviar
-                </Button>
+                </WhatsAppLink>
               )}
               {preview.pix_code && (
                 <label>

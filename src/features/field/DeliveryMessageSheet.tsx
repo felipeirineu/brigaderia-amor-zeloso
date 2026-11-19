@@ -1,3 +1,4 @@
+import { WhatsAppLink } from '../../components/TestEnvironment';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/Button';
 import { HelpTip } from '../../components/HelpTip';
@@ -140,16 +141,14 @@ export function DeliveryMessageSheet({
           O envio será feito por você no WhatsApp.
         </p>
         {hasName && message.trim() && !/[{}]/.test(message) && (
-          <Button
+          <WhatsAppLink
             variant="primary"
             href={`https://wa.me/${phone.replace(/^\+/, '')}?text=${encodeURIComponent(message)}`}
-            target="_blank"
-            rel="noreferrer"
           >
             {phone
               ? 'Abrir no WhatsApp'
               : 'Abrir no WhatsApp e escolher o contato'}
-          </Button>
+          </WhatsAppLink>
         )}
         <Button
           variant="ghost"

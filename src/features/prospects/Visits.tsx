@@ -1,3 +1,4 @@
+import { WhatsAppLink } from '../../components/TestEnvironment';
 import { usePrompt } from '../../components/confirm-context';
 import { VisitCustomerPicker } from './VisitCustomerPicker';
 import { HelpTip } from '../../components/HelpTip';
@@ -77,15 +78,13 @@ function VisitActions({
             WhatsApp
           </Button>
         ) : (
-          <Button
+          <WhatsAppLink
             href={'https://wa.me/' + visit.phone.replace(/\D/g, '')}
             disabled={!visit.phone}
-            target="_blank"
-            rel="noreferrer"
           >
             <MessageCircle aria-hidden="true" size={22} />
             WhatsApp
-          </Button>
+          </WhatsAppLink>
         )}
         <Button
           href={links.uber}

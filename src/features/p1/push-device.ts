@@ -2,6 +2,7 @@ import { api } from '../api';
 export interface PushState {
   ready: boolean;
   configured: boolean;
+  environment?: 'teste';
   public_key: string | null;
   user_id: string;
   subscriptions: {

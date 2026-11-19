@@ -1657,3 +1657,15 @@ textarea::placeholder {
   font-family: var(--az-serif);
   font-weight: 400;
 }
+
+.test-environment-banner {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  padding: max(0.375rem, env(safe-area-inset-top)) 0.75rem 0.375rem;
+  text-align: center;
+  background: var(--az-warn-bg);
+  color: var(--az-warn-ink);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}

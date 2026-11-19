@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.25.0',
+    items: [
+      'O ambiente de teste usa um banco separado e mostra uma faixa no topo da gestão.',
+      'No teste, avisos do celular ficam desativados e o WhatsApp pede confirmação.',
+    ],
+  },
+  {
     version: '0.24.0',
     items: [
       'Exporte relatórios, fluxo de caixa e custo das entregas como planilha ou PDF.',

@@ -9,6 +9,7 @@ import { join } from 'node:path';
 
 /** Nunca apagar: acessos, equipe, configuração, cadastros de custo e caches. */
 export const KEEP = new Set([
+  'test_environment',
   'backup_reminders',
   'prospect_visits',
   'prospect_visit_records',

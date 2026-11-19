@@ -33,6 +33,19 @@ export async function push(req: Request, env: Env, a: Actor) {
     resource = parts[4],
     id = parts[5],
     action = parts[6];
+  if (env.APP_ENVIRONMENT === 'teste') {
+    if (req.method === 'GET' && !resource)
+      return json({
+        environment: 'teste',
+        ready: false,
+        configured: false,
+        public_key: null,
+        user_id: a.user_id,
+        subscriptions: [],
+        staff: [],
+      });
+    throw new HttpError(503, 'Avisos desativados no ambiente de teste');
+  }
   const ready = await pushSchema(db);
   if (req.method === 'GET' && !resource) {
     const subscriptions = ready
