@@ -275,7 +275,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         countColumn('Unidades por embalagem'),
         countColumn('Caixas de um sabor', true),
         countColumn('Unidades', true),
-        countColumn('Unidades em caixas mistas', true),
+        countColumn('Unidades em Caixas Mistas', true),
         countColumn('Caixas equivalentes (unidades/capacidade)', true),
         moneyColumn('Vendas atribuídas por unidades'),
       ],

@@ -178,7 +178,7 @@ export async function operations(
       componentSource = await saleComponentSource(db);
     const productionFilter =
       "o.organization_id=? AND o.active=1 AND o.status IN ('confirmed','in_production') AND o.due_at>=? AND o.due_at<?";
-    // Caixa mista conta as unidades de cada sabor; caixa de sabor único conta a caixa inteira.
+    // Caixa Mista conta as unidades de cada sabor; caixa de sabor único conta a caixa inteira.
     const productionSource = hasComponents
       ? `SELECT o.due_at,i.variant_id AS vid,i.product_name AS name,i.variant_label AS label,i.weight_grams,i.units_per_box,i.quantity*i.units_per_box AS units FROM ${saleSource} i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter} AND NOT EXISTS(SELECT 1 FROM ${componentSource} c WHERE c.organization_id=i.organization_id AND c.item_id=i.id) UNION ALL SELECT o.due_at,c.variant_id,c.product_name,c.variant_label,c.weight_grams,c.units_per_box,c.units*i.quantity FROM ${componentSource} c JOIN ${saleSource} i ON i.organization_id=c.organization_id AND i.id=c.item_id JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter}`
       : `SELECT o.due_at,i.variant_id AS vid,i.product_name AS name,i.variant_label AS label,i.weight_grams,i.units_per_box,i.quantity*i.units_per_box AS units FROM ${saleSource} i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter}`;
@@ -361,7 +361,7 @@ export async function operations(
     if (priorItems.some((i) => i.components) && data.composition_version !== 1)
       throw new HttpError(
         409,
-        'Este modelo tem caixa mista. Atualize o editor antes de salvar.',
+        'Este modelo tem Caixa Mista. Atualize o editor antes de salvar.',
       );
     const priorKits = id ? await recurringKits(db, org, [id]) : [];
     if (data.kit_items?.length && !(await p1Ready(env)))

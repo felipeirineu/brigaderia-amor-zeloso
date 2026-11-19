@@ -119,7 +119,7 @@ export async function flavorLines(
     )
       throw new HttpError(
         409,
-        'Composição inconsistente. Revise a caixa mista antes de calcular.',
+        'Composição inconsistente. Revise a Caixa Mista antes de calcular.',
       );
     const amounts = allocateFlavorRevenue(
       first.item_total_cents,

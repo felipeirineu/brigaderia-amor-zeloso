@@ -28,7 +28,7 @@ export function generateKitSnapshots(
   enforceLimit = false,
 ) {
   if (!mixed && items.some((i) => i.components.length > 1))
-    throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+    throw new HttpError(503, 'Caixas Mistas ainda não ativadas.');
   return prepareKitItems(
     items.map((i) => {
       const { item_id, ...input } = kitSnapshotInput(i);
@@ -58,7 +58,7 @@ export async function prepareKitModel(
   if (!(await kitOrdersReady(db, 'recurring')))
     throw new HttpError(503, 'Kits em modelos aguardam a migração 0021.');
   if (!mixed && input.some((i) => i.components.length > 1))
-    throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+    throw new HttpError(503, 'Caixas Mistas ainda não ativadas.');
   const catalog = await loadKitCatalog(db, org, input);
   return prepareKitItems(
     input,

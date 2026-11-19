@@ -94,7 +94,7 @@ export function prepareRecurring(
     if (!enabled)
       throw new HttpError(
         503,
-        'Caixas mistas em modelos aguardam a migração 0016 e a ativação existente.',
+        'Caixas Mistas em modelos aguardam a migração 0016 e a ativação existente.',
       );
     if (!i.components.length)
       throw new HttpError(400, 'Composição do modelo ausente.');

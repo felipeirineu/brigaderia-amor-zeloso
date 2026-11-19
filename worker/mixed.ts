@@ -60,11 +60,11 @@ export async function prepareItems(
   if (old.some((i) => i.components?.length) && version !== 1)
     throw new HttpError(
       409,
-      'Este pedido tem caixa mista. Abra um editor com suporte à composição.',
+      'Este pedido tem Caixa Mista. Abra um editor com suporte à composição.',
     );
   const hasMixed = input.some((i) => i.components?.length);
   if (hasMixed && !(await mixedReady(env)))
-    throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+    throw new HttpError(503, 'Caixas Mistas ainda não ativadas.');
   return prepareFromCatalog(
     input,
     old,
@@ -219,10 +219,10 @@ export async function validateMixedConfirmation(
   ).results;
   if (!rows.length) return;
   if (env.MIXED_BOXES_ENABLED !== 'true')
-    throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+    throw new HttpError(503, 'Caixas Mistas ainda não ativadas.');
   if (rows.some((r) => r.invalid || r.units !== r.units_per_box))
     throw new HttpError(
       400,
-      'Revise a caixa mista: composição e sabores ativos da embalagem são obrigatórios.',
+      'Revise a Caixa Mista: composição e sabores ativos da embalagem são obrigatórios.',
     );
 }

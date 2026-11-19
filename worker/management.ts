@@ -530,7 +530,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       d.kit_items?.some((i) => i.components.length > 1) &&
       env.MIXED_BOXES_ENABLED !== 'true'
     )
-      throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+      throw new HttpError(503, 'Caixas Mistas ainda não ativadas.');
     if (d.kit_items?.length && !(await p1Ready(env)))
       throw new HttpError(503, 'Kits ainda não ativados.');
     const kitItems = await prepareOrderKits(

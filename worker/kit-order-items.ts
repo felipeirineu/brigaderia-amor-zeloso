@@ -202,5 +202,5 @@ export async function validateKitConfirmation(
       'Revise os kits: composição completa e sabores ativos são obrigatórios.',
     );
   if (!mixed && rows.some((r) => r.flavors > 1))
-    throw new HttpError(503, 'Caixas mistas ainda não ativadas.');
+    throw new HttpError(503, 'Caixas Mistas ainda não ativadas.');
 }
