@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: FELIPE` — T12 publicada. Aguardando o Felipe: novas revisões, cadastro dos kits, ativação das notificações e o dia da entrega (1.0.0).
+`VEZ: CODEX` — tarefa **T13** (ambiente de teste com cópia do banco real; detalhes abaixo). Versão **0.25.0**. Ao terminar, abra o pull request. **Não rode os workflows.** Commits com o e-mail noreply do GitHub.
 
 **Pendências do Felipe (fora do código):** aplicar a migração **0027** (lembrete de backup) pela Homologação D1: PRE_CHECAGEM → APLICAR_PENDENTES. cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
 
@@ -75,6 +75,7 @@ Contador de entregas desde a última revisão: **1/3** (T12).
 | T10 | Novo pedido: retomar seleção, caixa mista e tela de revisão (testes do Felipe no celular) | **publicada** 18/11 (PR #19) como **0.22.0** |
 | T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | **publicada** 18/11 (PR #20) como **0.23.0** — migração **0027** pendente (Felipe) |
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
+| T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **vez do Codex** — versão **0.25.0** |
 
 ### T0 — R17
 
@@ -513,6 +514,42 @@ Seguir a prévia.
    - E2E: os botões baixam os 3 formatos com o nome certo;
    - a operadora não vê o que não pode.
 7. Versão **0.24.0**. Capturas `t12-*.png`, incluindo o PDF renderizado e a planilha. Só dados DEMONSTRAÇÃO.
+
+### T13 — Ambiente de teste com cópia do banco real (pedido do Felipe, 19/11)
+
+Objetivo: o Felipe testa o app inteiro (pedidos, clientes, kits, entregas, recebimentos) num endereço separado, com **banco próprio**. O banco real nunca é tocado pelo teste. Também corrige um risco atual: **as prévias das branches (`codex/*`, `claude/*`) hoje usam o banco real.**
+
+1. **Configuração Pages:**
+   - em `wrangler.jsonc`, `env.preview` com o binding `DB` apontando para `brigaderia-amor-zeloso-teste`. O id fica num marcador **`PREENCHER_ID_TESTE`**, que o Claude troca quando o Felipe mandar.
+   - Enquanto o marcador existir, o build/CI não pode quebrar: documente e teste isso.
+   - `env.preview` também recebe `APP_ENVIRONMENT=teste`; produção recebe `APP_ENVIRONMENT=producao`.
+   - Mesmas flags da produção (catálogo público continua desligado).
+   - Notificações desligadas no teste: o preview não tem VAPID; garantir que a tela explique "Avisos desativados no ambiente de teste".
+2. **Faixa no app:** com `APP_ENVIRONMENT=teste` (vindo da sessão), mostrar no topo, fixa e discreta, **"AMBIENTE DE TESTE · dados não são reais"**. Ela não aparece em produção. Acessível.
+3. **WhatsApp no teste:** antes de abrir o link, `ConfirmSheet`: "Você está no ambiente de teste. Abrir o WhatsApp mesmo assim?".
+4. **Workflow `ambiente-teste.yml`** (manual, só na main, `environment: ambiente-teste`, mesmas credenciais da homologação):
+   - Entradas: `mode` = `VERIFICAR` (padrão) | `APLICAR_MIGRACOES` | `COPIAR_DO_REAL` | `LIMPAR` | `ATUALIZAR_APP`, mais `confirmo` (booleano) para os modos que alteram.
+   - **Alvo sempre o banco de teste.** O script lê os dois ids e **recusa** se o alvo for igual ao id do banco real ou se o marcador ainda estiver lá.
+   - **COPIAR_DO_REAL:**
+     - exporta o real para um arquivo temporário **fora do checkout**;
+     - deixa de fora `sessions`, `push_subscriptions`, `push_jobs`, `backup_exports` e qualquer token/cache (mesma lista que o backup já exclui);
+     - troca telefones de clientes/contatos por fictícios (`(00) 90000-0000`) quando existirem;
+     - zera o banco de teste e importa;
+     - confere as contagens;
+     - apaga o arquivo no `finally`.
+   - **Repositório público:** nenhum dado no log, artefato ou saída. O log mostra **só contagens por tabela**; mascarar ids/token; erros sem conteúdo.
+   - **LIMPAR:** apaga todas as tabelas do banco de teste e reaplica as migrações (banco vazio).
+   - **ATUALIZAR_APP:** atualiza a branch `teste` com a `main` (`contents: write` só nesse job), para o endereço fixo `teste.brigaderia-amor-zeloso.pages.dev` ser publicado pela Cloudflare.
+5. **Testes:**
+   - unidade do script com wrangler simulado: recusa alvo = real, recusa sem `confirmo`, exclusão das tabelas, troca de telefone, nada sensível na saída capturada;
+   - E2E da faixa (aparece com `teste`, não com `producao`) e da confirmação do WhatsApp.
+6. **Documento `docs/AMBIENTE_TESTE.md`** com os passos do Felipe, em pt-BR simples:
+   - **(a)** Cloudflare → D1 → Create database `brigaderia-amor-zeloso-teste`; enviar o **Database ID** ao Claude;
+   - **(b)** GitHub → Environments → `ambiente-teste` com o mesmo token/conta da homologação; o token precisa de D1 Edit, e Pages não é necessário;
+   - **(c)** Cloudflare Zero Trust → Access → aplicação do app → adicionar o domínio `teste.brigaderia-amor-zeloso.pages.dev` e o curinga `*.brigaderia-amor-zeloso.pages.dev` (prévias) **na mesma aplicação**, para o login e o `ACCESS_AUD` valerem;
+   - **(d)** rodar ATUALIZAR_APP → APLICAR_MIGRACOES → COPIAR_DO_REAL;
+   - **(e)** abrir o endereço de teste e conferir a faixa.
+7. Versão **0.25.0**. Capturas `t13-*.png` (faixa, confirmação do WhatsApp), só com DEMONSTRAÇÃO.
 
 ## Versões do app
 
