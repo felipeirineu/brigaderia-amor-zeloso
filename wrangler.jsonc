@@ -45,7 +45,7 @@
         {
           "binding": "DB",
           "database_name": "brigaderia-amor-zeloso-teste",
-          "database_id": "PREENCHER_ID_TESTE",
+          "database_id": "f377d813-1cf1-492f-b716-2010e3bd70c1",
           "migrations_dir": "database/migrations",
         },
       ],
