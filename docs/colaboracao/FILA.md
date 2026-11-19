@@ -618,3 +618,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 18/11 | 18 | T11 — lembrete de backup (PR #20) | CI completo e Segurança verdes (reexecutados após o fim dos minutos; repositório agora público). Revisão geral 3/3 (T9, T10, T11): sem problema real. Publicada como 0.23.0; migração 0027 aguarda o Felipe. |
 | 18/11 | 19 | T12 — planilha e PDF (PR #21) | Seguiu a prévia; geradores carregados só ao tocar no botão; CI completo e Segurança verdes. Publicada como 0.24.0. |
 | 19/11 | 20 | T13 — ambiente de teste (PR #22) | Claude trocou o marcador pelo ID do banco de teste enviado pelo Felipe; CI completo e Segurança verdes. Publicada como 0.25.0. |
+| 19/11 | — | Ambiente de teste configurado pelo Felipe | Environment `ambiente-teste`, Access com `teste.`/`*.`, workflow: ATUALIZAR_APP, VERIFICAR, APLICAR_MIGRACOES, COPIAR_DO_REAL verdes (27 migrações, 16 clientes, 9 produtos, 0 violações). Prévias do Pages restritas à branch `teste`. |
