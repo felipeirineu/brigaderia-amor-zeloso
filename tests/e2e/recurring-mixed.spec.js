@@ -35,7 +35,7 @@ test('modelo misto gera composição e editor completo altera caixas e sabores',
     await first
       .getByRole('combobox', { name: 'Variante', exact: true })
       .selectOption(variants[0].id);
-    await first.getByLabel('Caixa mista', { exact: true }).check();
+    await first.getByLabel('Caixa Mista', { exact: true }).check();
     await first
       .getByLabel('Unidades de Alfa DEMONSTRAÇÃO — Caixa DEMONSTRAÇÃO', {
         exact: true,
@@ -86,7 +86,7 @@ test('modelo misto gera composição e editor completo altera caixas e sabores',
       })
       .click();
     const item = p.getByRole('group', { name: 'Item 1', exact: true });
-    await expect(item.getByLabel('Caixa mista', { exact: true })).toBeChecked();
+    await expect(item.getByLabel('Caixa Mista', { exact: true })).toBeChecked();
     await expect(
       item.getByLabel('Unidades de Alfa DEMONSTRAÇÃO — Caixa DEMONSTRAÇÃO', {
         exact: true,

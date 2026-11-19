@@ -40,13 +40,13 @@ test('R11-4 relatório mostra sabores da composição e CSV privado', async ({
     const beta = ranking.locator('p').filter({ hasText: 'Beta DEMONSTRAÇÃO' });
     const alfa = ranking.locator('p').filter({ hasText: 'Alfa DEMONSTRAÇÃO' });
     await expect(beta).toContainText('18 unidades');
-    await expect(beta).toContainText('6 unidades em caixas mistas');
+    await expect(beta).toContainText('6 unidades em Caixas Mistas');
     await expect(beta).toContainText('30 g · capacidade 12');
     await expect(beta).toContainText('1,5 caixas equivalentes');
     await expect(alfa).toContainText('16 unidades');
     await expect(alfa).toContainText('30 g · capacidade 12');
     await expect(ranking).not.toContainText('0 caixas de um sabor');
-    await expect(ranking).not.toContainText('0 unidades em caixas mistas');
+    await expect(ranking).not.toContainText('0 unidades em Caixas Mistas');
     await expect(ranking).not.toContainText('Caixa DEMONSTRAÇÃO');
     await ranking.scrollIntoViewIfNeeded();
     if (
@@ -98,7 +98,7 @@ test('R11-5 custo misto informa falta de ficha e compras usa unidades de cada sa
     ).toBeVisible();
     await p.goto(t.url + '/gestao/pedidos/' + order);
     await expect(p.locator('.order-detail-items')).toContainText(
-      '2 caixas mistas',
+      '2 Caixas Mistas',
     );
     await expect(p.locator('.order-detail-items')).toContainText(
       '8 Alfa DEMONSTRAÇÃO',

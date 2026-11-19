@@ -94,6 +94,19 @@ export function distance(
       Math.sin(dlon / 2) ** 2;
   return 6371 * 2 * Math.asin(Math.sqrt(Math.min(1, Math.max(0, h))));
 }
+/**
+ * Texto livre ("Rua X, 120") pode cair em outra cidade no mapa. Completa com a
+ * cidade da base e o estado quando faltarem; coordenadas não são afetadas.
+ */
+export function regionalAddress(address: string, city = '') {
+  let text = address.trim();
+  if (!text) return text;
+  const lower = text.toLocaleLowerCase('pt-BR');
+  if (city.trim() && !lower.includes(city.trim().toLocaleLowerCase('pt-BR')))
+    text += ', ' + city.trim();
+  if (!/para[ií]ba|\bpb\b/i.test(text)) text += ', PB';
+  return text;
+}
 export function transportLinks(p: Place) {
   const coords = p.latitude !== null && p.longitude !== null,
     destination = coords ? `${p.latitude},${p.longitude}` : p.address;

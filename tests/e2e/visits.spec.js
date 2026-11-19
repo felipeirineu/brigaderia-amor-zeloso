@@ -171,9 +171,17 @@ test('R7b agendar, produzir unidades, registrar e escolher lembrete/corrida sem 
       name: 'Rota da visita a Contato DEMONSTRAÇÃO visita móvel',
       exact: true,
     });
-    await expect(
-      map.getByRole('link', { name: 'Mapas do iPhone', exact: true }),
-    ).toHaveAttribute('href', /maps.apple.com/);
+    const apple = map.getByRole('link', {
+      name: 'Mapas do iPhone',
+      exact: true,
+    });
+    if (
+      /iPhone|iPad|Macintosh/.test(
+        await page.evaluate(() => navigator.userAgent),
+      )
+    )
+      await expect(apple).toHaveAttribute('href', /maps.apple.com/);
+    else await expect(apple).toHaveCount(0);
     await map.getByRole('button', { name: 'Fechar', exact: true }).click();
     if (
       process.env.R7B_CAPTURE === '1' &&

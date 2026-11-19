@@ -114,11 +114,17 @@ test('R8 cartão compacto, quatro atalhos e entrega validada no servidor', async
       map.getByRole('link', { name: 'Google Maps', exact: true }),
     ).toHaveAttribute(
       'href',
-      /destination=Endere%C3%A7o%20DEMONSTRA%C3%87%C3%83O&travelmode=driving/,
+      /destination=Endere%C3%A7o%20DEMONSTRA%C3%87%C3%83O%2C%20PB&travelmode=driving/,
     );
-    await expect(
-      map.getByRole('link', { name: 'Mapas do iPhone', exact: true }),
-    ).toHaveAttribute('href', /dirflg=d/);
+    const apple = map.getByRole('link', {
+      name: 'Mapas do iPhone',
+      exact: true,
+    });
+    if (
+      /iPhone|iPad|Macintosh/.test(await p.evaluate(() => navigator.userAgent))
+    )
+      await expect(apple).toHaveAttribute('href', /dirflg=d/);
+    else await expect(apple).toHaveCount(0);
     if (process.env.R8_CAPTURE === '1' && info.project.name === 'webkit-mobile')
       await p.screenshot({
         path: 'docs/colaboracao/capturas/r8-depois-mapa.png',

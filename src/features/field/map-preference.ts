@@ -22,3 +22,8 @@ export function rememberMapApp(user: string, app: MapApp) {
     /* Preferência opcional; navegação continua disponível. */
   }
 }
+
+/** Mapas da Apple só existe no iPhone, iPad e Mac; no Android abre uma página que não navega. */
+export function appleMapsAvailable() {
+  return /iPhone|iPad|iPod|Macintosh/.test(navigator.userAgent);
+}

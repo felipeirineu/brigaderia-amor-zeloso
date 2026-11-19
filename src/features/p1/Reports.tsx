@@ -233,7 +233,7 @@ export function Reports({ followup = false }: { followup?: boolean }) {
           <section className="panel">
             <h2>Ranking de produtos / sabores</h2>
             <p className="muted">
-              Ranking por unidades. O valor de uma caixa mista é rateado pelos
+              Ranking por unidades. O valor de uma Caixa Mista é rateado pelos
               sabores conforme as unidades de cada um. Não é preço avulso.
             </p>
             {view.data.products.map((p, i) => (
@@ -253,8 +253,8 @@ export function Reports({ followup = false }: { followup?: boolean }) {
                   <>
                     {' '}
                     · {p.mixed_units}{' '}
-                    {p.mixed_units === 1 ? 'unidade' : 'unidades'} em caixas
-                    mistas
+                    {p.mixed_units === 1 ? 'unidade' : 'unidades'} em Caixas
+                    Mistas
                   </>
                 )}{' '}
                 ·{' '}

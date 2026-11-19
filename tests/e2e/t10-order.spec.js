@@ -70,13 +70,13 @@ async function start(x) {
     .getByRole('button', { name: 'Cliente DEMONSTRAÇÃO P1', exact: true })
     .click();
   await expect(
-    x.p.getByRole('button', { name: /Montar caixa mista/ }),
+    x.p.getByRole('button', { name: /Montar Caixa Mista/ }),
   ).toBeEnabled();
 }
 async function mix(p, name) {
-  await p.getByRole('button', { name: /Montar caixa mista/ }).click();
+  await p.getByRole('button', { name: /Montar Caixa Mista/ }).click();
   const sheet = p.getByRole('dialog', {
-    name: 'Montar caixa mista',
+    name: 'Montar Caixa Mista',
     exact: true,
   });
   await sheet
@@ -114,7 +114,7 @@ test('T10 montagem e revisão: capturas DEMONSTRAÇÃO', async ({
     const sheet = await mix(x.p, x.names[0]);
     await shot(x.p, 'montagem', info);
     await sheet
-      .getByRole('button', { name: 'Adicionar caixa mista', exact: true })
+      .getByRole('button', { name: 'Adicionar Caixa Mista', exact: true })
       .click();
     await review(x.p);
     await shot(x.p, 'revisao', info);
@@ -166,10 +166,10 @@ test('T10 primeira retomada depois de Voltar do navegador, com catálogo lento e
       .click();
     const sheet = await mix(x.p, x.names[0]);
     await sheet
-      .getByRole('textbox', { name: 'Caixas mistas iguais', exact: true })
+      .getByRole('textbox', { name: 'Caixas Mistas iguais', exact: true })
       .fill('2');
     await sheet
-      .getByRole('button', { name: 'Adicionar caixa mista', exact: true })
+      .getByRole('button', { name: 'Adicionar Caixa Mista', exact: true })
       .click();
     await expect
       .poll(
@@ -271,7 +271,7 @@ test('T10 app recém-aberto recupera misto+kit; rascunho tardio não é sobrescr
     await review(x.p);
     await expect(
       x.p.getByRole('textbox', {
-        name: 'Revisar quantidade de Caixa mista',
+        name: 'Revisar quantidade de Caixa Mista',
         exact: true,
       }),
     ).toHaveValue('2');
@@ -340,31 +340,31 @@ test('T10 geometria 320–430, caixas iguais e remoção cancelável na revisão
     await x.p.setViewportSize({ width: 390, height: 844 });
     const sheet = await mix(x.p, x.names[0]);
     const quantity = sheet.getByRole('textbox', {
-      name: 'Caixas mistas iguais',
+      name: 'Caixas Mistas iguais',
       exact: true,
     });
     await expect(quantity).toHaveValue('1');
     await expect(
       sheet.getByRole('button', {
-        name: 'Diminuir Caixas mistas iguais',
+        name: 'Diminuir Caixas Mistas iguais',
         exact: true,
       }),
     ).toBeDisabled();
     await quantity.fill('2');
     await sheet
-      .getByRole('button', { name: 'Adicionar caixa mista', exact: true })
+      .getByRole('button', { name: 'Adicionar Caixa Mista', exact: true })
       .click();
-    await expect(x.p.getByLabel('Caixas mistas adicionadas')).toHaveText('2');
+    await expect(x.p.getByLabel('Caixas Mistas adicionadas')).toHaveText('2');
     await expect(x.p.locator('.mix-card-hint')).toHaveCSS(
       'text-align',
       'center',
     );
-    await x.p.getByRole('button', { name: /Montar caixa mista/ }).click();
+    await x.p.getByRole('button', { name: /Montar Caixa Mista/ }).click();
     await expect(
-      sheet.getByRole('textbox', { name: 'Caixas mistas iguais', exact: true }),
+      sheet.getByRole('textbox', { name: 'Caixas Mistas iguais', exact: true }),
     ).toHaveValue('1');
     await sheet.getByRole('button', { name: 'Cancelar', exact: true }).click();
-    await expect(x.p.getByLabel('Caixas mistas adicionadas')).toHaveText('2');
+    await expect(x.p.getByLabel('Caixas Mistas adicionadas')).toHaveText('2');
     await review(x.p);
     await expect(x.p.locator('.review-customer')).toHaveText(
       'Cliente: Cliente DEMONSTRAÇÃO P1',
@@ -401,12 +401,12 @@ test('T10 geometria 320–430, caixas iguais e remoção cancelável na revisão
     await expect(normal).toHaveCount(0);
     await x.p
       .getByRole('button', {
-        name: 'Diminuir Revisar quantidade de Caixa mista',
+        name: 'Diminuir Revisar quantidade de Caixa Mista',
         exact: true,
       })
       .click();
     await x.p
-      .getByRole('button', { name: 'Remover Caixa mista', exact: true })
+      .getByRole('button', { name: 'Remover Caixa Mista', exact: true })
       .click();
     await confirm.getByRole('button', { name: 'Remover', exact: true }).click();
     await expect(x.p.locator('.totem-hint')).toContainText(

@@ -87,7 +87,7 @@ try {
   assert.equal(
     today.production.reduce((n, l) => n + l.units, 0),
     24,
-    'caixa mista não conta 24 unidades extras do sabor base',
+    'Caixa Mista não conta 24 unidades extras do sabor base',
   );
   assert.equal((await call('orders', undefined, 'GET', outside)).length, 0);
   assert.equal(

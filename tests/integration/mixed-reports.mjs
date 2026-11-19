@@ -92,7 +92,7 @@ try {
       cookie: owner,
     })
   ).text();
-  assert.match(csv, /Unidades em caixas mistas/);
+  assert.match(csv, /Unidades em Caixas Mistas/);
   assert.match(csv, /Vendas atribuídas/);
   assert.ok(csv.includes(';"1,3333";'));
   assert.ok(csv.includes(';"1,5";'));

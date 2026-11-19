@@ -618,7 +618,7 @@ export function Totem({
       editing?.items.find((i) => i.id === m.item_id)?.unit_price_cents ??
       all.find((v) => v.id === m.base)?.price_cents ??
       0,
-    // Caixa mista só junta sabores da mesma embalagem (unidades e peso).
+    // Caixa Mista só junta sabores da mesma embalagem (unidades e peso).
     mixOptions =
       Object.values(
         options.reduce<Record<string, typeof options>>((g, v) => {
@@ -765,9 +765,13 @@ export function Totem({
             'field/customers/' + customer.id,
             'PUT',
             {
+              // Endereço novo digitado no pedido: a localização antiga do
+              // cadastro deixa de valer, para o mapa não levar a outro lugar.
               data: {
                 ...(site?.data ?? emptyPlace()),
                 address: address.trim(),
+                latitude: null,
+                longitude: null,
               },
               version: site?.version ?? 0,
             },
@@ -1167,7 +1171,7 @@ export function Totem({
                   <Button
                     className="flavor-add"
                     disabled={busy}
-                    aria-label="Montar caixa mista com sabores variados"
+                    aria-label="Montar Caixa Mista com sabores variados"
                     onClick={() => setMixDraft({ comp: {}, qty: 1 })}
                   >
                     {mixOptions.some((v) => v.photo_key) ? (
@@ -1188,14 +1192,14 @@ export function Totem({
                         {capacity}
                       </span>
                     )}
-                    <strong>Caixa mista</strong>
+                    <strong>Caixa Mista</strong>
                     <span className="mix-card-hint">
                       Escolha os {capacity} sabores
                     </span>
                     {mixes.length > 0 && (
                       <b
                         className="quantity-badge"
-                        aria-label="Caixas mistas adicionadas"
+                        aria-label="Caixas Mistas adicionadas"
                       >
                         {mixes.reduce((n, m) => n + m.qty, 0)}
                       </b>
@@ -1300,13 +1304,13 @@ export function Totem({
             {mixes.map((m) => (
               <article className="panel mix-line" key={m.key}>
                 <div>
-                  <h3>Caixa mista</h3>
+                  <h3>Caixa Mista</h3>
                   <p>{mixText(m.comp)}</p>
                 </div>
                 <div className="flavor-stepper">
                   <Button
                     type="button"
-                    aria-label="Menos caixas mistas iguais"
+                    aria-label="Menos Caixas Mistas iguais"
                     onClick={() =>
                       setMixes(
                         m.qty > 1
@@ -1322,7 +1326,7 @@ export function Totem({
                   <b>{m.qty} cx</b>
                   <Button
                     type="button"
-                    aria-label="Mais caixas mistas iguais"
+                    aria-label="Mais Caixas Mistas iguais"
                     onClick={() =>
                       setMixes(
                         mixes.map((x) =>
@@ -1353,14 +1357,14 @@ export function Totem({
                 className="mix-sheet"
                 role="dialog"
                 aria-modal="true"
-                aria-label="Montar caixa mista"
+                aria-label="Montar Caixa Mista"
               >
                 <div className="mix-sheet-body">
                   <p className="order-section-label">
                     Caixa com {capacity} ·{' '}
                     {money(mixOptions[0]?.price_cents ?? 0)}
                   </p>
-                  <h2 className="wizard-question">Montar caixa mista</h2>
+                  <h2 className="wizard-question">Montar Caixa Mista</h2>
                   {(() => {
                     const used = Object.values(mixDraft.comp).reduce(
                         (a, b) => a + b,
@@ -1458,7 +1462,7 @@ export function Totem({
                           </Button>
                           <QuantityInput
                             showCommitButton={false}
-                            aria-label="Caixas mistas iguais"
+                            aria-label="Caixas Mistas iguais"
                             value={mixDraft.qty}
                             min={1}
                             max={10000}
@@ -1498,8 +1502,8 @@ export function Totem({
                           onClick={saveMix}
                         >
                           {mixDraft.editing
-                            ? 'Salvar caixa mista'
-                            : 'Adicionar caixa mista'}
+                            ? 'Salvar Caixa Mista'
+                            : 'Adicionar Caixa Mista'}
                         </Button>
                         <Button
                           variant="ghost"
@@ -2073,7 +2077,7 @@ export function Totem({
           {mixes.map((m) => (
             <article className="review-line" key={m.key}>
               <div>
-                <h3>Caixa mista</h3>
+                <h3>Caixa Mista</h3>
                 <small className="review-packaging">
                   Caixa {Object.values(m.comp).reduce((n, u) => n + u, 0)} un.
                 </small>
@@ -2081,12 +2085,12 @@ export function Totem({
                 <QuantityInput
                   disabled={busy}
                   showCommitButton={false}
-                  aria-label="Revisar quantidade de Caixa mista"
+                  aria-label="Revisar quantidade de Caixa Mista"
                   value={m.qty}
-                  removeLabel="Remover Caixa mista"
+                  removeLabel="Remover Caixa Mista"
                   onRemove={() =>
                     void removeItem(
-                      'Caixa mista',
+                      'Caixa Mista',
                       () =>
                         setMixes((current) =>
                           current.filter((x) => x.key !== m.key),

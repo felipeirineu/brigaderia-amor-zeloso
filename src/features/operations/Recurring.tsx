@@ -160,7 +160,7 @@ export function Recurring({
       (!items.length && !kitItems.length) ||
       items.some((i) => !compositionValid(i, options))
     ) {
-      setError('Revise a soma das unidades da caixa mista.');
+      setError('Revise a soma das unidades da Caixa Mista.');
       return;
     }
     void run(async () => {
@@ -268,7 +268,7 @@ export function Recurring({
                   <li key={i.id ?? index}>
                     {i.quantity} ×{' '}
                     {i.components?.length
-                      ? `${i.kit_id ? i.product_name : 'Caixa mista'} (${i.components.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
+                      ? `${i.kit_id ? i.product_name : 'Caixa Mista'} (${i.components.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
                       : `${i.product_name} — ${i.variant_label}`}
                   </li>
                 ))}
@@ -621,7 +621,7 @@ export function Recurring({
               <li key={index}>
                 {i.quantity} ×{' '}
                 {i.components
-                  ? `Caixa mista (${i.components.map((c) => `${c.units} ${options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
+                  ? `Caixa Mista (${i.components.map((c) => `${c.units} ${options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
                   : (options.find((v) => v.id === i.variant_id)?.name ??
                     'Variante indisponível')}
               </li>

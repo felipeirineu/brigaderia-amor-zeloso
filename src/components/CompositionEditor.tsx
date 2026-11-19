@@ -37,7 +37,7 @@ export function CompositionEditor({
             })
           }
         />{' '}
-        Caixa mista
+        Caixa Mista
       </label>
       {mixed && (
         <>

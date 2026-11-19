@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { runtime } from '../helpers/runtime.mjs';
 import { demoProject } from '../helpers/demo-project.mjs';
 // Fixtures fictícias; D1 efêmero.
-test('Caixa mista: montar 6+6, revisar e gravar a composição', async ({
+test('Caixa Mista: montar 6+6, revisar e gravar a composição', async ({
   browser,
 }) => {
   test.setTimeout(90000);
@@ -37,11 +37,11 @@ test('Caixa mista: montar 6+6, revisar e gravar a composição', async ({
     await p
       .getByRole('button', { name: 'Cliente DEMONSTRAÇÃO P1', exact: true })
       .click();
-    await p.getByRole('button', { name: /Montar caixa mista/ }).click();
-    const sheet = p.getByRole('dialog', { name: 'Montar caixa mista' });
+    await p.getByRole('button', { name: /Montar Caixa Mista/ }).click();
+    const sheet = p.getByRole('dialog', { name: 'Montar Caixa Mista' });
     await expect(sheet.getByRole('status')).toHaveText('Faltam 12 de 12');
     const add = sheet.getByRole('button', {
-      name: 'Adicionar caixa mista',
+      name: 'Adicionar Caixa Mista',
     });
     await expect(add).toBeDisabled();
     for (let i = 0; i < 6; i++)
@@ -70,7 +70,7 @@ test('Caixa mista: montar 6+6, revisar e gravar a composição', async ({
     await expect(line).toContainText('6 Sabor A DEMONSTRAÇÃO');
     await expect(line).toContainText('6 Sabor B DEMONSTRAÇÃO');
     await line
-      .getByRole('button', { name: 'Mais caixas mistas iguais' })
+      .getByRole('button', { name: 'Mais Caixas Mistas iguais' })
       .click();
     await expect(line).toContainText('2 cx');
     await expect(p.getByRole('button', { name: /^Continuar/ })).toContainText(
@@ -85,7 +85,7 @@ test('Caixa mista: montar 6+6, revisar e gravar a composição', async ({
     while (!(await review.isVisible()))
       await p.getByRole('button', { name: /^Continuar/ }).click();
     await expect(p.locator('.review-line').first()).toContainText(
-      'Caixa mista',
+      'Caixa Mista',
     );
     await p
       .getByRole('button', { name: 'Confirmar pedido', exact: true })

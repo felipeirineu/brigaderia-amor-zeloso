@@ -640,20 +640,33 @@ export function Today({
                   <div className="delivery-flavors">
                     {order.items.map((i) =>
                       i.components?.length ? (
-                        <span
+                        // Caixa Mista/kit: só o nome no cartão; os sabores
+                        // abrem num toque, para não estourar o cartão.
+                        <details
                           className="delivery-flavor delivery-mix"
                           key={String(i.id ?? i.variant_id) + '-mix'}
                         >
-                          {i.quantity}×{' '}
-                          {i.kit_id ? i.product_name : 'Caixa mista'} (
-                          {i.components
-                            .map(
-                              (c, _, all) =>
-                                `${c.units} ${all.every((x) => x.product_name === c.product_name) && c.variant_label ? c.variant_label : c.product_name}`,
-                            )
-                            .join(' + ')}
-                          )
-                        </span>
+                          <summary>
+                            {i.quantity}×{' '}
+                            {i.kit_id ? i.product_name : 'Caixa Mista'}
+                            <span className="delivery-mix-toggle">
+                              {' '}
+                              · ver sabores
+                            </span>
+                          </summary>
+                          <ul>
+                            {i.components.map((c, k, all) => (
+                              <li key={k}>
+                                {c.units}{' '}
+                                {all.every(
+                                  (x) => x.product_name === c.product_name,
+                                ) && c.variant_label
+                                  ? c.variant_label
+                                  : c.product_name}
+                              </li>
+                            ))}
+                          </ul>
+                        </details>
                       ) : (
                         <span className="delivery-flavor" key={i.variant_id}>
                           {i.photo_key && (

@@ -1669,3 +1669,45 @@ textarea::placeholder {
   font-size: 0.8125rem;
   font-weight: 700;
 }
+
+/* Folha do Mapa: deixa claro para onde a rota vai. */
+.map-destination {
+  font-size: 0.875rem;
+  color: var(--az-muted);
+}
+.map-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--az-muted);
+}
+
+/* Hoje: Caixa Mista/kit mostram só o nome; os sabores abrem num toque. */
+.delivery-flavors .delivery-mix {
+  display: inline-block;
+  max-width: 100%;
+  padding: 3px 10px;
+}
+.delivery-flavors .delivery-mix summary {
+  cursor: pointer;
+  list-style: none;
+}
+.delivery-flavors .delivery-mix summary::-webkit-details-marker {
+  display: none;
+}
+.delivery-mix-toggle {
+  font-weight: 500;
+  color: var(--az-gold-ink);
+  text-decoration: underline;
+}
+.delivery-flavors .delivery-mix[open] {
+  flex-basis: 100%;
+  border-radius: var(--az-radius-field);
+}
+.delivery-flavors .delivery-mix[open] .delivery-mix-toggle {
+  display: none;
+}
+.delivery-flavors .delivery-mix ul {
+  margin: 6px 0 2px;
+  padding-left: 18px;
+  font-weight: 500;
+}

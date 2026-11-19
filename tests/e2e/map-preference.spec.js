@@ -39,7 +39,8 @@ test('R6-2 mapa codificado e preferência local por usuário', async ({
       }),
       waze = sheet.getByRole('link', { name: 'Waze', exact: true }),
       apple = sheet.getByRole('link', { name: 'Mapas do iPhone', exact: true });
-    const destination = 'Endereço DEMONSTRAÇÃO';
+    // O app completa o texto com o estado para o mapa não cair em outra cidade.
+    const destination = 'Endereço DEMONSTRAÇÃO, PB';
     expect(
       new URL(await google.getAttribute('href')).searchParams.get(
         'destination',
@@ -51,9 +52,14 @@ test('R6-2 mapa codificado e preferência local por usuário', async ({
     expect(new URL(await waze.getAttribute('href')).searchParams.get('q')).toBe(
       destination,
     );
-    expect(
-      new URL(await apple.getAttribute('href')).searchParams.get('daddr'),
-    ).toBe(destination);
+    // Mapas da Apple só aparece no iPhone/iPad/Mac.
+    if (
+      /iPhone|iPad|Macintosh/.test(await p.evaluate(() => navigator.userAgent))
+    )
+      expect(
+        new URL(await apple.getAttribute('href')).searchParams.get('daddr'),
+      ).toBe(destination);
+    else await expect(apple).toHaveCount(0);
     await waze.click();
     await expect(sheet.getByRole('status')).toContainText('Último usado: Waze');
     await sheet
@@ -102,9 +108,12 @@ test('R6-2 mapa codificado e preferência local por usuário', async ({
     expect(
       new URL(await waze.getAttribute('href')).searchParams.get('ll'),
     ).toBe('0,0');
-    expect(
-      new URL(await apple.getAttribute('href')).searchParams.get('daddr'),
-    ).toBe('0,0');
+    if (
+      /iPhone|iPad|Macintosh/.test(await p.evaluate(() => navigator.userAgent))
+    )
+      expect(
+        new URL(await apple.getAttribute('href')).searchParams.get('daddr'),
+      ).toBe('0,0');
     await c.setExtraHTTPHeaders({
       'Cf-Access-Jwt-Assertion': await t.token('operator@example.test'),
     });

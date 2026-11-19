@@ -1607,7 +1607,7 @@ function FullOrders({
                     {i.kit_id
                       ? `${i.product_name} (${i.components?.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
                       : i.components?.length
-                        ? `Caixa mista (${i.components.map((c) => `${c.units} ${c.product_name ?? options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
+                        ? `Caixa Mista (${i.components.map((c) => `${c.units} ${c.product_name ?? options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
                         : `${i.product_name} — ${i.variant_label}`}{' '}
                     · {money(i.unit_price_cents!)}
                   </li>

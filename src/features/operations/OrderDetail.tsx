@@ -213,7 +213,7 @@ export function OrderDetail({
                   {i.components?.length ? (
                     <>
                       {i.quantity}{' '}
-                      {i.quantity === 1 ? 'caixa mista' : 'caixas mistas'} ·{' '}
+                      {i.quantity === 1 ? 'Caixa Mista' : 'Caixas Mistas'} ·{' '}
                       {i.components
                         .map(
                           (c) =>

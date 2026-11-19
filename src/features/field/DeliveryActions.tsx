@@ -2,6 +2,7 @@ import { DeliveryMessageSheet } from './DeliveryMessageSheet';
 import { useRef, useState } from 'react';
 import { RouteInfo } from './RouteInfo';
 import {
+  appleMapsAvailable,
   mapApps,
   readMapApp,
   rememberMapApp,
@@ -10,7 +11,11 @@ import {
 import { Car, MapPin, MessageCircle, Navigation, Copy } from 'lucide-react';
 import { Button } from '../../components/Button';
 import { useField } from './FieldContext';
-import { emptyPlace, transportLinks } from '../../../shared/field';
+import {
+  emptyPlace,
+  regionalAddress,
+  transportLinks,
+} from '../../../shared/field';
 import type { OperationalOrder } from '../operations/common';
 export function DeliveryActions({ order }: { order: OperationalOrder }) {
   const field = useField(),
@@ -30,11 +35,15 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
     name: order.customer_name,
     address: order.delivery_address,
   };
-  const links = transportLinks(place),
+  const routed = {
+      ...place,
+      address: regionalAddress(place.address, field?.data?.company.data.city),
+    },
+    links = transportLinks(routed),
     destination =
       place.latitude !== null && place.longitude !== null
         ? `${place.latitude},${place.longitude}`
-        : place.address;
+        : routed.address;
   const available = order.delivery_type === 'delivery' && !!place.address;
   return (
     <>
@@ -106,6 +115,11 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
         <div className="sheet-body">
           <h2>Rota até {order.customer_name}</h2>
           <p>{place.address}</p>
+          <p className="map-destination">
+            {place.latitude !== null && place.longitude !== null
+              ? 'Destino: 📍 localização guardada no cadastro. Se o endereço acima mudou, atualize a localização em Clientes.'
+              : 'Destino: o endereço acima.'}
+          </p>
           <RouteInfo id={order.id} place={place} order />
           {preferred && (
             <p className="muted" role="status">
@@ -136,15 +150,21 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
             >
               Waze
             </Button>
-            <Button
-              data-preferred={preferred === 'apple'}
-              onClick={() => choose('apple')}
-              href={`https://maps.apple.com/?daddr=${encodeURIComponent(destination)}&dirflg=d`}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Mapas do iPhone
-            </Button>
+            {appleMapsAvailable() && (
+              <Button
+                data-preferred={preferred === 'apple'}
+                onClick={() => choose('apple')}
+                href={`https://maps.apple.com/?daddr=${encodeURIComponent(destination)}&dirflg=d`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Mapas do iPhone
+              </Button>
+            )}
+            <p className="map-hint">
+              O Waze abre direto só se o app estiver instalado; sem ele, abre a
+              página de download.
+            </p>
             <Button
               onClick={() => {
                 void navigator.clipboard

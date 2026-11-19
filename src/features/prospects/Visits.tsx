@@ -1,3 +1,4 @@
+import { appleMapsAvailable } from '../field/map-preference';
 import { WhatsAppLink } from '../../components/TestEnvironment';
 import { usePrompt } from '../../components/confirm-context';
 import { VisitCustomerPicker } from './VisitCustomerPicker';
@@ -136,17 +137,19 @@ function VisitActions({
             <Button href={links.waze} target="_blank" rel="noreferrer">
               Waze
             </Button>
-            <Button
-              href={
-                'https://maps.apple.com/?daddr=' +
-                encodeURIComponent(destination) +
-                '&dirflg=d'
-              }
-              target="_blank"
-              rel="noreferrer"
-            >
-              Mapas do iPhone
-            </Button>
+            {appleMapsAvailable() && (
+              <Button
+                href={
+                  'https://maps.apple.com/?daddr=' +
+                  encodeURIComponent(destination) +
+                  '&dirflg=d'
+                }
+                target="_blank"
+                rel="noreferrer"
+              >
+                Mapas do iPhone
+              </Button>
+            )}
           </div>
           <Button onClick={() => sheet.current?.close()}>Fechar</Button>
         </div>

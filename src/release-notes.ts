@@ -10,6 +10,14 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.25.1',
+    items: [
+      'Mapa: endereço novo digitado no pedido não leva mais à localização antiga; a folha mostra o destino.',
+      'No Hoje, Caixa Mista e kits mostram só o nome; os sabores abrem com um toque.',
+      'Mapas do iPhone só aparece no iPhone.',
+    ],
+  },
+  {
     version: '0.25.0',
     items: [
       'O ambiente de teste usa um banco separado e mostra uma faixa no topo da gestão.',
@@ -43,8 +51,8 @@ export const releaseNotes = [
   {
     version: '0.22.0',
     items: [
-      'Retome a seleção do pedido com sabores, caixas mistas e kits preservados.',
-      'Escolha quantas caixas mistas iguais e revise ou remova itens antes de confirmar.',
+      'Retome a seleção do pedido com sabores, Caixas Mistas e kits preservados.',
+      'Escolha quantas Caixas Mistas iguais e revise ou remova itens antes de confirmar.',
       'Motivos e valores são preenchidos em folhas do app.',
     ],
   },
