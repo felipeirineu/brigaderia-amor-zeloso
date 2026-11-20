@@ -20,6 +20,7 @@ export interface Env {
   ASSETS?: { fetch: (r: Request) => Promise<Response> };
   ACCESS_TEAM_DOMAIN?: string;
   APP_ENVIRONMENT?: 'teste' | 'producao';
+  FEEDBACK_WHATSAPP?: string;
   ACCESS_AUD?: string;
   PUBLIC_CATALOG_ENABLED?: string;
 }

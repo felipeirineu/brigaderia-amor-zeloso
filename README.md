@@ -35,6 +35,10 @@ PWA administrativo para uma pequena brigaderia em João Pessoa (PB), com prepara
 
 A criação do código de aplicação e infraestrutura será conduzida pelo Codex nas fases planejadas. Nunca comitar dados reais de clientes, credenciais ou backups sensíveis.
 
+## Sugestões e recuperação de tela
+
+O [guia da T14](docs/FASE_T14.md) cobre a caixa de sugestões, a confirmação de leitura e os avisos opcionais.
+
 ## Ambiente de teste online
 
 O [guia do ambiente de teste](docs/AMBIENTE_TESTE.md) explica como preparar o endereço separado, conferir o D1 de teste e atualizar a cópia pelo workflow manual.

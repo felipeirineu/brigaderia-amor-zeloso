@@ -46,6 +46,11 @@ const run = async (options) => {
 const count = async (table) => (await countRows(query, [table]))[table];
 try {
   const { call, customer, owner, makeOrder, variant } = await demoProject(t);
+  await call('feedback', {
+    kind: 'suggestion',
+    message: 'DEMONSTRAÇÃO limpeza',
+  });
+  await call('feedback/phone', { phone: '5511900000001' }, 'PUT');
   const packaging = await call('p1/supplies', {
     name: 'Caixa DEMONSTRAÇÃO limpeza',
     unit: 'unit',
@@ -233,6 +238,8 @@ try {
     0,
   );
   assert.equal((await t.request('session', { cookie: owner })).status, 200);
+  assert.equal(await count('feedback_messages'), 0);
+  assert.equal(await count('feedback_contact_profiles'), 1);
   console.log(
     'OK limpeza de testes: ordem por vínculos, protegidas mantidas, sessão ativa e zero violações.',
   );
