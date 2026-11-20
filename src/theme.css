@@ -1812,3 +1812,18 @@ body:has(.mix-sheet) {
 .help-sheet:focus {
   outline: none;
 }
+
+/* Menu +: cada atalho com contorno, para parecer botão (prévia aprovada em 20/11). */
+.quick-links > .az-button {
+  border: 1.5px solid var(--az-gold-ink);
+  background: transparent;
+  border-radius: 20px;
+}
+:root[data-theme='dark'] .quick-links > .az-button {
+  border-color: rgb(226 189 130 / 0.75);
+}
+/* "Fechar" na largura toda: alcançável com qualquer mão. */
+.help-sheet .sheet-close {
+  width: 100%;
+  margin-top: var(--az-space-2);
+}

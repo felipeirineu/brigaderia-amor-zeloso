@@ -179,9 +179,11 @@ test('T4 automático antes do app, telas escuras e preferência manual por apare
       .getByRole('button', { name: 'Fechar', exact: true })
       .click();
     await p.goto(t.url + '/gestao/mais');
+    // Desde a 1.0.0 o histórico fica em Mais; a folha não abre em testes
+    // automáticos sem az-release-e2e.
     await expect(
       p.getByRole('link', { name: 'Novidades', exact: true }),
-    ).toHaveCount(0);
+    ).toHaveCount(1);
     await expect(
       p.getByRole('dialog', { name: /Novidades da versão/ }),
     ).toHaveCount(0);
@@ -251,6 +253,7 @@ test('T5 build isolado 1.0 anuncia uma vez, convida ao passeio e mostra históri
       },
     });
     await ctx.addInitScript(() => {
+      localStorage.setItem('az-release-e2e', '1');
       if (!localStorage.getItem('az-release-seen'))
         localStorage.setItem('az-release-seen', '0.17.0');
     });

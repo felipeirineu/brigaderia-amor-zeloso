@@ -167,7 +167,9 @@ export function FollowupSheet({
           </>
         )}
         {notice && <p role="status">{notice}</p>}
-        <Button onClick={onClose}>Fechar</Button>
+        <Button className="sheet-close" onClick={onClose}>
+          Fechar
+        </Button>
       </div>
     </dialog>
   );

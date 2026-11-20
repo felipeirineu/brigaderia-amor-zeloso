@@ -142,6 +142,9 @@ export function Tour({
         ref={dialog}
         className="help-sheet tour-sheet"
         aria-label="Passeio guiado"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) close();
+        }}
         onCancel={(e) => {
           e.preventDefault();
           close();

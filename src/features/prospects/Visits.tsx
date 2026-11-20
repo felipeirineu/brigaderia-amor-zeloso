@@ -120,6 +120,9 @@ function VisitActions({
         ref={sheet}
         className="help-sheet"
         aria-label={'Rota da visita a ' + visit.customer_name}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) e.currentTarget.close();
+        }}
         onClose={() => trigger.current?.focus()}
       >
         <div className="sheet-body">
@@ -151,7 +154,12 @@ function VisitActions({
               </Button>
             )}
           </div>
-          <Button onClick={() => sheet.current?.close()}>Fechar</Button>
+          <Button
+            className="sheet-close"
+            onClick={() => sheet.current?.close()}
+          >
+            Fechar
+          </Button>
         </div>
       </dialog>
     </>

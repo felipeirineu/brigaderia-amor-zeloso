@@ -20,6 +20,14 @@ export function ReleaseAnnouncement() {
   );
   useEffect(() => {
     if (!note || !releasesEnabled(current) || memory.has(current)) return;
+    // Testes automáticos não recebem a folha sozinha (ela cobriria as telas);
+    // o teste das Novidades liga explicitamente com az-release-e2e.
+    try {
+      if (navigator.webdriver && localStorage.getItem('az-release-e2e') !== '1')
+        return;
+    } catch {
+      if (navigator.webdriver) return;
+    }
     let seen = null;
     try {
       seen = localStorage.getItem(key);

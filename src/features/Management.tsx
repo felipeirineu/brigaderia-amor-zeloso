@@ -2266,6 +2266,10 @@ export function Management() {
                 <dialog
                   ref={quick}
                   className="help-sheet"
+                  onClick={(e) => {
+                    // Tocar fora da folha fecha.
+                    if (e.target === e.currentTarget) e.currentTarget.close();
+                  }}
                   aria-label="Novo cadastro"
                 >
                   <div className="sheet-body">
@@ -2318,7 +2322,10 @@ export function Management() {
                         ? 'Recebimentos rápidos ficam no Hoje, no cartão do pedido.'
                         : 'Recebimentos dependem da ativação financeira.'}
                     </p>
-                    <Button onClick={() => quick.current?.close()}>
+                    <Button
+                      className="sheet-close"
+                      onClick={() => quick.current?.close()}
+                    >
                       Fechar
                     </Button>
                   </div>

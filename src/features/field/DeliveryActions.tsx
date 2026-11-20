@@ -110,6 +110,9 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
         ref={sheet}
         className="help-sheet"
         aria-label={`Rota até ${order.customer_name}`}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) e.currentTarget.close();
+        }}
         onClose={() => trigger.current?.focus()}
       >
         <div className="sheet-body">
@@ -180,7 +183,12 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
               <Copy size={20} aria-hidden="true" />
               Copiar endereço
             </Button>
-            <Button onClick={() => sheet.current?.close()}>Fechar mapa</Button>
+            <Button
+              className="sheet-close"
+              onClick={() => sheet.current?.close()}
+            >
+              Fechar mapa
+            </Button>
           </div>
         </div>
       </dialog>
