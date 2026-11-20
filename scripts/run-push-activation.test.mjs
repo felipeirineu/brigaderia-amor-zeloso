@@ -514,3 +514,13 @@ it('secrets do Worker são conferidos mesmo quando não aparecem em settings.bin
   await expect(runPushActivation(f.env, f.io)).rejects.toThrow(/já existe/);
   noWrites(f);
 });
+
+it('diagnóstico da publicação mostra o motivo e oculta sequências longas', async () => {
+  const { cloudflareDiagnostic } = await import('./run-push-activation.mjs');
+  const why = cloudflareDiagnostic(
+    'Uploading...\n\u001b[31m✘ [ERROR]\u001b[0m A request to the Cloudflare API failed. Authentication error [code: 10000]\nToken abcdefghijklmnopqrstuvwxyz0123456789 inválido\nok',
+  );
+  expect(why).toContain('Authentication error [code: 10000]');
+  expect(why).not.toContain('abcdefghijklmnopqrstuvwxyz0123456789');
+  expect(why).not.toContain('Uploading');
+});
