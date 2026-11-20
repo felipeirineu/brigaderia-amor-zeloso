@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.1.0',
+    items: [
+      'Se uma tela falhar, você pode recarregar, voltar ao Hoje ou contar o que aconteceu.',
+      'Envie sugestões, problemas e elogios pelo menu Mais e acompanhe quando forem lidos.',
+    ],
+  },
+  {
     version: '1.0.0',
     title: 'Bem-vindos ao app da Brigaderia Amor Zeloso',
     items: [

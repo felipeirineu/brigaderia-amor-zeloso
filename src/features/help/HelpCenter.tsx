@@ -195,6 +195,7 @@ export function Tour({
   );
 }
 export function HelpCenter({
+  feedback = false,
   financial = false,
   p1 = false,
   tools = false,
@@ -202,6 +203,7 @@ export function HelpCenter({
   financial?: boolean;
   p1?: boolean;
   tools?: boolean;
+  feedback?: boolean;
 }) {
   const [example, setExample] = useState(false);
   const field = useField();
@@ -215,6 +217,15 @@ export function HelpCenter({
           <strong>?</strong> ao lado de um campo para ver a ajuda dele.
         </p>
       </section>
+      {feedback && (
+        <Button
+          to="/gestao/sugestoes"
+          state={{ page: 'ajuda' }}
+          variant="ghost"
+        >
+          Sugestões e problemas
+        </Button>
+      )}
       <section className="panel">
         <h2>Novo pedido (modo simples)</h2>
         <p>

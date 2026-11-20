@@ -1,3 +1,4 @@
+import { feedbackReady } from './feedback';
 import { requireProductArchive } from './product-policy';
 import { prospectCostsReady } from './prospect-costs';
 import { visitsReady } from './visits';
@@ -58,6 +59,7 @@ export async function management(req: Request, env: Env, a: Actor) {
     return json({
       environment: env.APP_ENVIRONMENT === 'teste' ? 'teste' : 'producao',
       role: a.role,
+      feedback: await feedbackReady(db),
       prospects: await prospectsReady(env),
       visits: await visitsReady(env),
       prospect_followup: await prospectCostsReady(env),

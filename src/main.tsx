@@ -7,7 +7,10 @@ import '@fontsource-variable/figtree/wght.css';
 import './styles.css';
 import './theme.css';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById('root')!, {
+  // A barreira de tela registra os campos permitidos, sem mensagem ou pilha.
+  onCaughtError: () => {},
+}).render(
   <React.StrictMode>
     <BrowserRouter>
       <App />

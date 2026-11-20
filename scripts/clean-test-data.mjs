@@ -9,6 +9,7 @@ import { join } from 'node:path';
 
 /** Nunca apagar: acessos, equipe, configuração, cadastros de custo e caches. */
 export const KEEP = new Set([
+  'feedback_contact_profiles',
   'test_environment',
   'backup_reminders',
   'prospect_visits',
@@ -46,6 +47,8 @@ export const KEEP = new Set([
 
 /** Pedidos e tudo o que foi movimentado com eles. Sempre apagados. */
 export const BASE_ROOTS = [
+  'feedback_messages',
+  'push_jobs',
   'orders',
   'payment_events',
   'closings',

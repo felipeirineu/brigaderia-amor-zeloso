@@ -13,6 +13,7 @@ export async function runtime({
   entryPoint = 'worker/pages.ts',
   vapid,
   pushProvider,
+  feedbackWhatsapp,
   migrationLimit = Infinity,
   operationsEnabled = true,
   financeEnabled = false,
@@ -67,6 +68,7 @@ export async function runtime({
         MIXED_BOXES_ENABLED: mixedEnabled ? 'true' : 'false',
         FIELD_ENABLED: fieldEnabled ? 'true' : 'false',
         PROSPECTS_ENABLED: prospectsEnabled ? 'true' : 'false',
+        ...(feedbackWhatsapp ? { FEEDBACK_WHATSAPP: feedbackWhatsapp } : {}),
         ...(vapid
           ? {
               VAPID_PUBLIC_KEY: vapid.publicKey,

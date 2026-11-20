@@ -214,6 +214,13 @@ try {
     403,
   );
   assert.equal((await t.request('p1/backup')).status, 401);
+  await call(
+    'feedback',
+    { kind: 'suggestion', message: 'DEMONSTRAÇÃO no backup' },
+    'POST',
+    operator,
+  );
+  await call('feedback/phone', { phone: '5511900000001' }, 'PUT', operator);
   const r = await t.request('p1/backup', { cookie: owner });
   if (!r.ok) throw Error(r.status + ' ' + (await r.text()));
   assert.equal(r.headers.get('cache-control'), 'no-store');
@@ -236,6 +243,8 @@ print(json.dumps({'counts':counts,'fk':list(c.execute('PRAGMA foreign_key_check'
   assert.equal(restored.counts.recurring_mixed_items, 1);
   assert.equal(restored.counts.recurring_mixed_components, 1);
   assert.equal(restored.counts.sessions, 0);
+  assert.equal(restored.counts.feedback_messages, 1);
+  assert.equal(restored.counts.feedback_contact_profiles, 1);
   assert.equal(restored.counts.kits, 1);
   assert.equal(restored.counts.kit_settings, 1);
   assert.equal(restored.counts.reminder_alerts, 1);

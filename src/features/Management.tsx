@@ -1,3 +1,9 @@
+import {
+  FeedbackCount,
+  FeedbackForm,
+  FeedbackInbox,
+} from './feedback/Feedback';
+import { ManagementRoutes } from './feedback/ManagementError';
 import { ConfirmProvider } from '../components/ConfirmSheet';
 import {
   EnvironmentScope,
@@ -89,13 +95,7 @@ import { Account } from './finance/Account';
 import { CustomerProfile } from './finance/Profile';
 import { type B2BProfile } from '../../shared/finance';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import {
-  NavLink,
-  Route,
-  Routes,
-  useNavigate,
-  useSearchParams,
-} from 'react-router-dom';
+import { NavLink, Route, useNavigate, useSearchParams } from 'react-router-dom';
 import { HelpTip } from '../components/HelpTip';
 import { Icon, type IconName } from '../components/Icon';
 import { HelpCenter, Tour } from './help/HelpCenter';
@@ -112,6 +112,7 @@ import {
 import { Mascot } from '../components/Mascot';
 
 interface Session {
+  feedback?: boolean;
   environment?: 'teste' | 'producao';
   prospect_followup?: boolean;
   visits?: boolean;
@@ -1979,7 +1980,16 @@ export function Management() {
                 </p>
               </section>
             ) : (
-              <Routes key={`${session.user_id}:${session.organization_id}`}>
+              <ManagementRoutes
+                key={`${session.user_id}:${session.organization_id}`}
+                available={!!session.feedback}
+              >
+                {session.feedback && (
+                  <Route path="sugestoes" element={<FeedbackForm />} />
+                )}
+                {session.feedback && session.role === 'owner' && (
+                  <Route path="recebidas" element={<FeedbackInbox />} />
+                )}
                 {releasesEnabled(__APP_VERSION__) && (
                   <Route path="novidades" element={<ReleaseHistory />} />
                 )}
@@ -2059,7 +2069,11 @@ export function Management() {
                   <Route
                     path="preferencias"
                     element={
-                      <Preferences role={session.role} p1={session.p1} />
+                      <Preferences
+                        role={session.role}
+                        p1={session.p1}
+                        feedback={session.feedback}
+                      />
                     }
                   />
                 )}
@@ -2175,6 +2189,7 @@ export function Management() {
                       path="ajuda"
                       element={
                         <HelpCenter
+                          feedback={session.feedback}
                           financial={session.finance}
                           p1={session.p1}
                           tools={session.tools}
@@ -2185,6 +2200,7 @@ export function Management() {
                       path="mais"
                       element={
                         <More
+                          feedback={session.feedback}
                           role={session.role}
                           financial={session.finance}
                           p1={session.p1}
@@ -2202,7 +2218,7 @@ export function Management() {
                   <Route path="acessos" element={<Accesses />} />
                 )}
                 <Route path="*" element={<p>Área não encontrada.</p>} />
-              </Routes>
+              </ManagementRoutes>
             )}
             {session.operations && (
               <>
@@ -2346,6 +2362,7 @@ export function Management() {
 
 function More({
   role,
+  feedback = false,
   followup = false,
   visits = false,
   financial = false,
@@ -2355,6 +2372,7 @@ function More({
   mobile = false,
 }: {
   role: string;
+  feedback?: boolean;
   followup?: boolean;
   visits?: boolean;
   financial?: boolean;
@@ -2411,6 +2429,14 @@ function More({
             ? [['novidades', 'Novidades', 'ajuda']]
             : []),
           ['ajuda', 'Ajuda e tutorial', 'ajuda'],
+          ...(feedback
+            ? [
+                ['sugestoes', 'Sugestões e problemas', 'ajuda'],
+                ...(role === 'owner'
+                  ? [['recebidas', 'Recebidas', 'ajuda']]
+                  : []),
+              ]
+            : []),
           ...(mobile
             ? [['preferencias', 'Preferências', 'configuracoes']]
             : []),
@@ -2418,9 +2444,15 @@ function More({
             ? [['acessos', 'Acessos', 'configuracoes']]
             : []),
         ].map(([path, title, icon]) => (
-          <Button className="panel more-link" key={path} to={`/gestao/${path}`}>
+          <Button
+            className="panel more-link"
+            key={path}
+            to={`/gestao/${path}`}
+            state={path === 'sugestoes' ? { page: 'mais' } : undefined}
+          >
             <Icon name={icon as IconName} />
             {title}
+            {path === 'recebidas' && <FeedbackCount />}
           </Button>
         ))}
       </div>

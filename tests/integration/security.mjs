@@ -25,6 +25,122 @@ const ok = (cond, msg) => {
 try {
   const { call, owner, operator, outside, customer, makeOrder } =
     await demoProject(t);
+  // T14: as listas são locais à sessão e cada ID é limitado à organização.
+  const info = { kind: 'problem', message: 'DEMONSTRAÇÃO relato privado' };
+  const feedbackKey = crypto.randomUUID();
+  const submit = (cookie, data = info, key = feedbackKey) =>
+    t.request('feedback', { method: 'POST', cookie, data, key });
+  const sentFeedback = await submit(operator);
+  ok(sentFeedback.status === 201, 'operadora pode enviar feedback');
+  const row = await sentFeedback.json();
+  const path = `feedback/${row.id}/read`;
+  ok(
+    row.context === null && row.whatsapp_url === null,
+    'consentimento e canal externo opcionais',
+  );
+  ok((await submit(operator)).status === 201, 'repetição idempotente');
+  ok(
+    (await submit(operator, { ...info, message: 'DEMONSTRAÇÃO diferente' }))
+      .status === 409,
+    'chave ligada ao conteúdo original',
+  );
+  for (const [route, method, data] of [
+    ['feedback', 'GET'],
+    ['feedback', 'POST', info],
+    ['feedback/phone', 'GET'],
+    ['feedback/phone', 'PUT', { phone: '' }],
+    ['feedback/inbox', 'GET'],
+    [path, 'POST', { version: 1 }],
+  ]) {
+    ok(
+      (await t.request(route, { method, data, key: crypto.randomUUID() }))
+        .status === 401,
+      `${route} sem sessão`,
+    );
+  }
+  ok(
+    (await t.request('feedback/inbox', { cookie: operator })).status === 403,
+    'operadora não lê caixa recebida',
+  );
+  ok(
+    (
+      await t.request(path, {
+        cookie: operator,
+        method: 'POST',
+        key: crypto.randomUUID(),
+        data: { version: 1 },
+      })
+    ).status === 403,
+    'operadora não altera leitura',
+  );
+  ok(
+    (
+      await t.request(path, {
+        cookie: outside,
+        method: 'POST',
+        key: crypto.randomUUID(),
+        data: { version: 1 },
+      })
+    ).status === 404,
+    'dono externo não marca leitura',
+  );
+  for (const [route, cookie] of [
+    ['feedback', owner],
+    ['feedback', outside],
+    ['feedback/inbox', outside],
+  ]) {
+    const data = await (await t.request(route, { cookie })).json();
+    ok(
+      data.messages.length === 0,
+      `${route} não lista feedback de outro autor/tenant`,
+    );
+  }
+  for (const data of [
+    { ...info, message: 'x'.repeat(2001) },
+    { ...info, context: { page: '/gestao/pedidos/demo' } },
+  ])
+    ok(
+      (await submit(operator, data, crypto.randomUUID())).status === 400,
+      'validação do relato e do contexto',
+    );
+  const inbox = await (
+    await t.request('feedback/inbox', { cookie: owner })
+  ).json();
+  ok(
+    inbox.unread === 1 &&
+      inbox.messages.length === 1 &&
+      !inbox.messages[0].reply_url,
+    'sem telefone não oferece resposta',
+  );
+  ok(
+    (
+      await t.request(path, {
+        cookie: owner,
+        method: 'POST',
+        key: crypto.randomUUID(),
+        data: { version: 1 },
+      })
+    ).ok,
+    'dono marca como lida',
+  );
+  const mine = await (await t.request('feedback', { cookie: operator })).json();
+  ok(
+    mine.messages.length === 1 && !!mine.messages[0].read_at,
+    'autor vê leitura sem duplicar envio',
+  );
+  for (let i = 0; i < 9; i++)
+    ok(
+      (await submit(operator, info, crypto.randomUUID())).status === 201,
+      'envio dentro da cota',
+    );
+  ok(
+    (await submit(operator, info, crypto.randomUUID())).status === 429,
+    'limite de dez mensagens por hora',
+  );
+  ok(
+    (await submit(operator)).status === 201,
+    'retry de envio existente continua idempotente na cota',
+  );
   // T11: cada rota de backup nova valida sessão, tenant e papel owner.
   const backupConfigPath = 'p1/backup-reminders/' + t.org;
   const backupFile = await t.request('p1/backup', { cookie: owner });

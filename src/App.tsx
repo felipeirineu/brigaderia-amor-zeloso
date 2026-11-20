@@ -2,6 +2,7 @@ import { Button } from './components/Button';
 import { useEffect, useRef } from 'react';
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { Login, Management } from './features/Management';
+import { ManagementError } from './features/feedback/ManagementError';
 import { AppUpdate } from './components/AppUpdate';
 import { OfflineStatus } from './components/OfflineStatus';
 import { SheetGestures } from './components/SheetGestures';
@@ -44,7 +45,14 @@ export function App() {
         {location.pathname.startsWith('/gestao') && <AppUpdate />}
         <Routes>
           <Route path="/" element={<Navigate to="/gestao" replace />} />
-          <Route path="/gestao/*" element={<Management />} />
+          <Route
+            path="/gestao/*"
+            element={
+              <ManagementError>
+                <Management />
+              </ManagementError>
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route
             path="/catalogo/*"

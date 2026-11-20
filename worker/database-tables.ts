@@ -1,6 +1,8 @@
 // Tabelas conhecidas pelas migrações; exportação recusa tabelas desconhecidas.
 export const databaseTables = [
   'audit_events',
+  'feedback_messages',
+  'feedback_contact_profiles',
   'backup_reminders',
   'backup_exports',
   'authorized_emails',

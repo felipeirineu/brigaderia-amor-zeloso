@@ -7,6 +7,8 @@ export const migrations = readdirSync(migrationDir)
   .sort();
 
 export const omitted = new Set([
+  'feedback_contact_profiles',
+  'feedback_messages',
   'sessions',
   'login_attempts',
   'push_subscriptions',

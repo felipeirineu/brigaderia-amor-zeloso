@@ -1,3 +1,8 @@
+import {
+  enqueueFeedbackPush,
+  feedbackPushReady,
+  validFeedbackJob,
+} from './feedback-push';
 import { backupSchema } from './backup-reminders';
 import { enqueueBackupPush } from './backup-push';
 import { authorizedDevice, authorizedOwnerDevice } from './push-authorization';
@@ -19,6 +24,7 @@ interface Job {
   title: string | null;
   due_at: string | null;
   backup_key: string | null;
+  feedback_id: string | null;
   last_backup_at: string | null;
 }
 /** Claim atômico antes da chamada externa: não repetir automaticamente um envio incerto. */
@@ -30,7 +36,10 @@ export async function processPushJobs(
   const db = env.DB;
   if (!db || !pushConfigured(env) || !(await pushSchema(db)))
     return { configured: false, claimed: 0, sent: 0, failed: 0 };
-  const backup = await backupSchema(db);
+  const [backup, feedbackReady] = await Promise.all([
+    backupSchema(db),
+    feedbackPushReady(db),
+  ]);
   const backupEnabled =
     backup.ready &&
     env.P1_ENABLED === 'true' &&
@@ -72,6 +81,16 @@ export async function processPushJobs(
       )
       .run();
   }
+  if (feedbackReady) {
+    if (!only) await enqueueFeedbackPush(db, clock);
+    await db
+      .prepare(
+        `UPDATE push_jobs AS j SET state='cancelled' WHERE state='pending' AND feedback_id IS NOT NULL AND NOT EXISTS(
+      SELECT 1 FROM push_subscriptions s WHERE s.organization_id=j.organization_id AND s.id=j.subscription_id AND ${validFeedbackJob}
+    )`,
+      )
+      .run();
+  }
   // Concluir, arquivar, mudar o horário ou revogar o aparelho cancela o pendente.
   await db
     .prepare(
@@ -89,7 +108,7 @@ export async function processPushJobs(
   const jobs = (
     await db
       .prepare(
-        `SELECT j.id,j.organization_id,j.subscription_id,j.reminder_id,j.schedule_key,s.subscription,r.title,r.due_at,${backup.column ? 'j.backup_key' : 'NULL'} backup_key,${backupEnabled ? 'b.last_backup_at' : 'NULL'} last_backup_at FROM push_jobs j JOIN push_subscriptions s ON s.organization_id=j.organization_id AND s.id=j.subscription_id LEFT JOIN reminders r ON r.organization_id=j.organization_id AND r.id=j.reminder_id ${backupEnabled ? 'LEFT JOIN backup_reminders b ON b.organization_id=j.organization_id AND b.alert_key=j.backup_key' : ''} WHERE j.claim_nonce=? AND j.state='processing'`,
+        `SELECT j.id,j.organization_id,j.subscription_id,j.reminder_id,j.schedule_key,s.subscription,r.title,r.due_at,${feedbackReady ? 'j.feedback_id' : 'NULL'} feedback_id,${backup.column ? 'j.backup_key' : 'NULL'} backup_key,${backupEnabled ? 'b.last_backup_at' : 'NULL'} last_backup_at FROM push_jobs j JOIN push_subscriptions s ON s.organization_id=j.organization_id AND s.id=j.subscription_id LEFT JOIN reminders r ON r.organization_id=j.organization_id AND r.id=j.reminder_id ${backupEnabled ? 'LEFT JOIN backup_reminders b ON b.organization_id=j.organization_id AND b.alert_key=j.backup_key' : ''} WHERE j.claim_nonce=? AND j.state='processing'`,
       )
       .bind(nonce)
       .all<Job>()
@@ -102,7 +121,7 @@ export async function processPushJobs(
         // Reconfere revogação/conclusão depois do claim, antes de tentar o envio.
         const valid = await db
           .prepare(
-            `SELECT 1 FROM push_jobs j JOIN push_subscriptions s ON s.organization_id=j.organization_id AND s.id=j.subscription_id JOIN sessions session ON session.organization_id=s.organization_id AND session.token_hash=s.session_hash WHERE j.organization_id=? AND j.id=? AND j.claim_nonce=? AND s.active=1 AND session.expires_at>unixepoch() AND session.user_id=s.user_id AND ${authorizedDevice} ${backup.column ? `AND (j.backup_key IS NULL OR (${validBackup}))` : ''} AND (j.reminder_id IS NULL OR EXISTS(SELECT 1 FROM reminders r JOIN reminder_alerts a ON a.organization_id=r.organization_id AND a.reminder_id=r.id WHERE r.organization_id=j.organization_id AND r.id=j.reminder_id AND r.active=1 AND r.done=0 AND a.schedule_key=j.schedule_key AND EXISTS(SELECT 1 FROM reminder_recipients p WHERE p.organization_id=j.organization_id AND p.reminder_id=j.reminder_id AND p.user_id=s.user_id)))`,
+            `SELECT 1 FROM push_jobs j JOIN push_subscriptions s ON s.organization_id=j.organization_id AND s.id=j.subscription_id JOIN sessions session ON session.organization_id=s.organization_id AND session.token_hash=s.session_hash WHERE j.organization_id=? AND j.id=? AND j.claim_nonce=? AND s.active=1 AND session.expires_at>unixepoch() AND session.user_id=s.user_id AND ${authorizedDevice} ${feedbackReady ? `AND (j.feedback_id IS NULL OR (${validFeedbackJob}))` : ''} ${backup.column ? `AND (j.backup_key IS NULL OR (${validBackup}))` : ''} AND (j.reminder_id IS NULL OR EXISTS(SELECT 1 FROM reminders r JOIN reminder_alerts a ON a.organization_id=r.organization_id AND a.reminder_id=r.id WHERE r.organization_id=j.organization_id AND r.id=j.reminder_id AND r.active=1 AND r.done=0 AND a.schedule_key=j.schedule_key AND EXISTS(SELECT 1 FROM reminder_recipients p WHERE p.organization_id=j.organization_id AND p.reminder_id=j.reminder_id AND p.user_id=s.user_id)))`,
           )
           .bind(job.organization_id, job.id, nonce)
           .first();
@@ -115,15 +134,19 @@ export async function processPushJobs(
               data: {
                 title: job.backup_key
                   ? 'Está na hora de fazer o backup!'
-                  : 'Amor Zeloso · Lembrete',
+                  : job.feedback_id
+                    ? 'Nova sugestão no app'
+                    : 'Amor Zeloso · Lembrete',
                 body: job.backup_key
                   ? backupLastLabel(
                       { last_backup_at: job.last_backup_at },
                       clock,
                     )
-                  : job.reminder_id
-                    ? `${job.title} · ${relativeDateTime(job.due_at!)}`
-                    : 'Aviso de teste deste aparelho.',
+                  : job.feedback_id
+                    ? 'Veja em Recebidas.'
+                    : job.reminder_id
+                      ? `${job.title} · ${relativeDateTime(job.due_at!)}`
+                      : 'Aviso de teste deste aparelho.',
                 tag: job.backup_key
                   ? 'az-backup-' + job.organization_id
                   : 'az-' + job.id,
@@ -136,9 +159,11 @@ export async function processPushJobs(
                   : {}),
                 url: job.backup_key
                   ? '/gestao/backup'
-                  : job.due_at
-                    ? '/gestao?day=' + fortalezaDay(new Date(job.due_at))
-                    : '/gestao',
+                  : job.feedback_id
+                    ? '/gestao/recebidas'
+                    : job.due_at
+                      ? '/gestao?day=' + fortalezaDay(new Date(job.due_at))
+                      : '/gestao',
               },
               options: { ttl: 3600, urgency: 'normal' },
             },
