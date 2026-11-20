@@ -254,14 +254,12 @@ test('R7d ajuda nos contatos, folha e passeio; cancelar não agenda', async ({
       .getByRole('button', { name: 'Conhecer o app', exact: true })
       .click();
     const tour = p.getByRole('dialog', { name: 'Passeio guiado', exact: true });
-    for (let i = 0; i < 3; i++)
+    for (let i = 0; i < 2; i++)
       await tour.getByRole('button', { name: 'Próximo', exact: true }).click();
     await expect(
-      tour.getByRole('heading', {
-        name: 'Visitas de apresentação',
-        exact: true,
-      }),
+      tour.getByRole('heading', { name: 'Tudo começa no +', exact: true }),
     ).toBeVisible();
+    await expect(tour).toContainText('e nova visita');
   } finally {
     await ctx.close();
     await t.dispose();

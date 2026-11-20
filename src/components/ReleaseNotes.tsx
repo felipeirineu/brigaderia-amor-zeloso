@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from './Button';
+import { Mascot } from './Mascot';
 import {
   compareVersions,
   releaseNotes,
@@ -69,16 +70,41 @@ export function ReleaseAnnouncement() {
       <div className="sheet-body">
         {open && (
           <>
-            <h2>Novidades da versão {current}</h2>
-            {'title' in note && <h3>{note.title}</h3>}
+            {'title' in note ? (
+              // Primeiro acesso (1.0.0): boas-vindas com convite ao passeio.
+              <>
+                <Mascot size={96} className="mascot-wave" />
+                <h2 className="welcome-title">{note.title}</h2>
+              </>
+            ) : (
+              <h2>Novidades da versão {current}</h2>
+            )}
             <ul>
               {note.items.map((item) => (
                 <li key={item}>{item}</li>
               ))}
             </ul>
-            <Button variant="primary" onClick={finish}>
-              Entendi
-            </Button>
+            {'title' in note ? (
+              <div className="welcome-actions">
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    finish();
+                    window.dispatchEvent(new Event('start-tour'));
+                  }}
+                >
+                  Fazer o passeio (1 min)
+                </Button>
+                <Button onClick={finish}>Agora não</Button>
+                <p className="welcome-hint">
+                  O passeio fica no seu avatar e na Ajuda.
+                </p>
+              </div>
+            ) : (
+              <Button variant="primary" onClick={finish}>
+                Entendi
+              </Button>
+            )}
           </>
         )}
       </div>

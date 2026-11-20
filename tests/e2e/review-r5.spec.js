@@ -27,7 +27,7 @@ test('R5 cabeçalho compacto e menu acessível', async ({ browser }) => {
     await expect(
       p.getByRole('dialog', { name: 'Passeio guiado' }),
     ).toBeVisible();
-    await p.getByRole('button', { name: 'Já sei' }).click();
+    await p.getByRole('button', { name: 'Pular passeio' }).click();
     await expect(
       p.getByRole('button', { name: /Abrir menu de/ }),
     ).toBeFocused();

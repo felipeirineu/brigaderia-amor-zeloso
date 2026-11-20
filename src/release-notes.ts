@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.26.1',
+    items: [
+      'Passeio guiado renovado: textos atualizados, Voltar e destaque dourado no menu.',
+      'Montar Caixa Mista não deixa mais a lista rolar por trás.',
+    ],
+  },
+  {
     version: '0.26.0',
     items: [
       'Modo escuro renovado: cartões marrons com contorno dourado sobre fundo preto.',

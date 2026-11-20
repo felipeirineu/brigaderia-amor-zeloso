@@ -33,58 +33,82 @@ export function Tour({
     window.addEventListener('start-tour', open);
     return () => window.removeEventListener('start-tour', open);
   }, []);
-  const steps = useMemo(
-    () => [
+  // Prévia aprovada em 20/11: cinco passos, textos por papel.
+  const steps = useMemo(() => {
+    const owner = role === 'owner';
+    return [
       {
         target: 'today',
         title: 'Comece pelo Hoje',
-        text:
-          role === 'owner'
-            ? 'Veja a produção de hoje e amanhã, com quantidades por variante.'
-            : 'Veja as entregas do dia e abra o pedido para agir.',
+        text: owner
+          ? 'O que produzir hoje e amanhã, as entregas do dia e os lembretes. Quando for hora do backup, o aviso aparece aqui.'
+          : 'As entregas do dia, o que produzir e os lembretes. Toque em Mapa para a rota e em WhatsApp para avisar o cliente.',
       },
       {
         target: 'orders',
-        title: 'Abra um pedido',
-        text: 'Confira o cliente e os itens. O botão principal avança o status, sempre com histórico.',
+        title: 'Seus pedidos',
+        text: 'Busque por cliente e abra o pedido para mudar o status, avisar no WhatsApp ou registrar o recebimento. Se sair no meio de um pedido novo, o app guarda a seleção para retomar.',
       },
       {
         target: 'new',
-        title: 'Cadastro rápido',
+        title: 'Tudo começa no +',
         text:
-          'O botão + reúne novo pedido e novo cliente' +
-          (visits ? ' e Nova visita' : '') +
-          '. No modo simples, escolha o cliente, toque nas fotos e revise antes de confirmar.',
+          'Novo pedido, novo cliente, novo lembrete' +
+          (visits ? ' e nova visita' : '') +
+          '. No pedido: escolha o cliente, toque nas fotos dos sabores (ou monte uma Caixa Mista) e revise antes de confirmar.',
       },
-      ...(visits
-        ? [
-            {
-              target: 'new',
-              title: 'Visitas de apresentação',
-              text: 'No +, escolha Nova visita. Busque um contato ou cliente, marque quando ir e as amostras. Registre depois no Hoje; retorno e WhatsApp são sempre feitos por você. Visita a cliente atual não altera o funil.',
-            },
-          ]
-        : []),
       {
         target: 'customers',
         title: 'Seus clientes',
-        text: 'O nome basta para começar; o telefone pode vir depois. Use o cadastro privado para conferir os contatos.',
+        text: 'Estabelecimentos e contatos. O endereço com localização ajuda no mapa e nas rotas.',
       },
       {
         target: 'more',
-        title: 'Modelos e ajuda',
-        text: 'Em Mais ficam pedidos padrão, produtos, ajuda e acessos de administrador. Você pode refazer este passeio.',
+        title: 'Mais opções',
+        text: owner
+          ? 'Produtos, kits, relatórios em PDF e planilha, backup e Preferências, onde dá para ligar o modo escuro. A Ajuda explica cada tela.'
+          : 'Preferências (modo escuro, sua foto e seu nome) e a Ajuda, que explica cada tela.',
       },
-    ],
-    [role, visits],
-  );
+    ];
+  }, [role, visits]);
+  // Contorno dourado aceso sobre o fundo escurecido da folha: fica numa
+  // camada própria (popover) acima do fundo; sem suporte, vale o destaque comum.
+  const ring = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (step < 0) return;
     const element = Array.from(
       document.querySelectorAll(`[data-tour="${steps[step].target}"]`),
     ).find((node) => node.getClientRects().length > 0);
     element?.classList.add('tour-highlight');
-    return () => element?.classList.remove('tour-highlight');
+    const halo = ring.current;
+    const place = () => {
+      if (!halo || !element) return;
+      const r = element.getBoundingClientRect();
+      Object.assign(halo.style, {
+        left: r.left - 6 + 'px',
+        top: r.top - 6 + 'px',
+        width: r.width + 12 + 'px',
+        height: r.height + 12 + 'px',
+      });
+      try {
+        if ('showPopover' in halo && !halo.matches(':popover-open'))
+          halo.showPopover();
+      } catch {
+        /* Navegador sem popover: fica o destaque comum. */
+      }
+    };
+    const frame = requestAnimationFrame(place);
+    window.addEventListener('resize', place);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('resize', place);
+      element?.classList.remove('tour-highlight');
+      try {
+        if (halo?.matches(':popover-open')) halo.hidePopover();
+      } catch {
+        /* Sem popover. */
+      }
+    };
     // O passo escolhe um seletor estável de navegação real, sem dados privados.
   }, [step, steps]);
   function close() {
@@ -126,16 +150,28 @@ export function Tour({
         {step >= 0 && (
           <div className="sheet-body">
             {step === 0 && <Mascot size={88} className="mascot-wave" />}
-            <p>
-              Passo {step + 1} de {steps.length} ·{' '}
-              {role === 'owner' ? 'Administrador' : 'Operador'}
+            <div className="tour-dots" aria-hidden="true">
+              {steps.map((_, k) => (
+                <i key={k} className={k === step ? 'on' : ''} />
+              ))}
+            </div>
+            <p className="tour-count">
+              Passo {step + 1} de {steps.length}
             </p>
             <h2>{steps[step].title}</h2>
             <p>{steps[step].text}</p>
-            <div className="actions">
-              <Button onClick={close}>Pular</Button>
-              <Button onClick={close}>Já sei</Button>
+            <div className="tour-actions">
+              <Button variant="ghost" onClick={close}>
+                Pular passeio
+              </Button>
               <Button
+                disabled={step === 0}
+                onClick={() => setStep(Math.max(0, step - 1))}
+              >
+                Voltar
+              </Button>
+              <Button
+                variant="primary"
                 onClick={() =>
                   step < steps.length - 1 ? setStep(step + 1) : close()
                 }
@@ -146,6 +182,12 @@ export function Tour({
           </div>
         )}
       </dialog>
+      <div
+        ref={ring}
+        className="tour-ring"
+        popover="manual"
+        aria-hidden="true"
+      />
     </>
   );
 }

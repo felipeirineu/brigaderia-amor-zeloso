@@ -1737,3 +1737,78 @@ textarea::placeholder {
 :root[data-theme='dark'] .private-bottom-nav {
   border-top: 1.75px solid rgb(226 189 130 / 0.62);
 }
+
+/* Boas-vindas e passeio (prévia aprovada em 20/11). */
+.welcome-title {
+  font-family: var(--az-serif);
+  font-weight: 400;
+  text-align: center;
+}
+.welcome-actions {
+  display: grid;
+  gap: var(--az-space-2);
+}
+.welcome-hint,
+.tour-count {
+  margin: 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--az-muted);
+}
+.tour-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.tour-dots i {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--az-radius-pill);
+  background: var(--az-control-border);
+}
+.tour-dots i.on {
+  width: 22px;
+  background: var(--az-gold);
+}
+.tour-actions {
+  display: grid;
+  grid-template-columns: auto 1fr 1fr;
+  gap: var(--az-space-2);
+  align-items: center;
+}
+.tour-actions .az-button--ghost {
+  text-decoration: underline;
+  padding-inline: var(--az-space-2);
+}
+.tour-ring {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: 3px solid var(--az-gold);
+  border-radius: 22px;
+  background: transparent;
+  box-shadow: 0 0 0 6px rgb(226 189 130 / 0.35);
+  pointer-events: none;
+  overflow: visible;
+}
+.tour-ring {
+  display: none;
+}
+.tour-ring:popover-open {
+  display: block;
+}
+
+/* Montar Caixa Mista: a folha rola sozinha, sem mover a lista por trás. */
+html:has(.mix-sheet),
+body:has(.mix-sheet) {
+  overflow: hidden;
+}
+.mix-sheet,
+.mix-sheet-body {
+  overscroll-behavior: contain;
+}
+/* A folha recebe o foco ao abrir; o contorno vale para os botões, não para ela. */
+.help-sheet:focus {
+  outline: none;
+}

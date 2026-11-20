@@ -228,7 +228,7 @@ test('T4 storage bloqueado não impede escolher aparência', async ({
     await t.dispose();
   }
 });
-test('T5 build isolado 1.0 anuncia uma vez, guarda Entendi e mostra histórico privado', async ({
+test('T5 build isolado 1.0 anuncia uma vez, convida ao passeio e mostra histórico privado', async ({
   browser,
 }) => {
   test.setTimeout(120000);
@@ -266,8 +266,20 @@ test('T5 build isolado 1.0 anuncia uma vez, guarda Entendi e mostra histórico p
       'Bem-vindos ao app da Brigaderia Amor Zeloso',
     );
     await expect(sheet.locator('li')).toHaveCount(3);
-    await sheet.getByRole('button', { name: 'Entendi', exact: true }).click();
+    await expect(
+      sheet.getByRole('button', { name: 'Agora não', exact: true }),
+    ).toBeVisible();
+    // "Fazer o passeio" fecha as boas-vindas e abre o passeio guiado.
+    await sheet
+      .getByRole('button', { name: 'Fazer o passeio (1 min)', exact: true })
+      .click();
     await expect(sheet).not.toBeVisible();
+    const tour = p.getByRole('dialog', { name: 'Passeio guiado', exact: true });
+    await expect(tour).toBeVisible();
+    await tour
+      .getByRole('button', { name: 'Pular passeio', exact: true })
+      .click();
+    await expect(tour).not.toBeVisible();
     await p.reload();
     await expect(sheet).not.toBeVisible();
     expect(
