@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: FELIPE` — T13 publicada. Aguardando o Felipe: configurar o ambiente de teste (`docs/AMBIENTE_TESTE.md`), testar, cadastrar os kits, ligar as notificações e escolher o dia da entrega (1.0.0).
+`VEZ: CODEX` — tarefa **T14** (tela de erro e Sugestões/Recebidas; prévia aprovada; detalhes abaixo). Versão **0.27.0**. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub. Base: main com 0.26.x (modo escuro e passeio novos, feitos pelo Claude).
 
 **Pendências do Felipe (fora do código):** aplicar a migração **0027** (lembrete de backup) pela Homologação D1: PRE_CHECAGEM → APLICAR_PENDENTES. cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
 
@@ -76,6 +76,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | **publicada** 18/11 (PR #20) como **0.23.0** — migração **0027** pendente (Felipe) |
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
 | T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
+| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **vez do Codex** — versão **0.27.0** — migração nova (Felipe aplica) |
 
 ### T0 — R17
 
@@ -551,6 +552,48 @@ Objetivo: o Felipe testa o app inteiro (pedidos, clientes, kits, entregas, receb
    - **(e)** abrir o endereço de teste e conferir a faixa.
 7. Versão **0.25.0**. Capturas `t13-*.png` (faixa, confirmação do WhatsApp), só com DEMONSTRAÇÃO.
 
+### T14 — Tela de erro e canal de sugestões (prévia `previas/t15-erro-sugestoes.png` **aprovada pelo Felipe em 20/11**)
+
+Seguir a prévia. **Na interface, nunca o nome de uma pessoa:** dizer "quem cuida do app". O teste `interface-copy` já cobra isso.
+
+1. **Tela de erro** (`ErrorBoundary` no layout privado e em volta de cada rota da gestão):
+   - mascote, "Ops, algo deu errado nesta tela" e "Seus dados estão salvos. Recarregar costuma resolver.";
+   - **Recarregar** (primário), **Voltar ao Hoje** e o link **Contar o que aconteceu**;
+   - o código curto `E-ddmm-xxxx`, mais a versão.
+   - Registrar só código, versão, rota (sem ids nem parâmetros) e o nome do erro. **Nada de dados de cliente nem da pilha completa na tela.**
+   - "Contar o que aconteceu" abre Sugestões com **Problema** marcado e o código preenchido.
+2. **Mais → Sugestões e problemas** (e um link na Ajuda), para todos os perfis:
+   - chips Sugestão | Problema | Elogio;
+   - mensagem obrigatória, até 2000 caracteres;
+   - "Incluir informações do aparelho" já marcado: versão, sistema (Android/iPhone/Computador), tela atual sem parâmetros e código do erro, se houver. Desmarcado, nada disso vai.
+   - **Enviar** com idempotência;
+   - "Suas mensagens", com data e "✓ Lida".
+3. **Depois de enviar:** a tela "Obrigado!" e o botão opcional **Mandar também no WhatsApp**. Ele abre `wa.me` com o texto pronto, sem envio automático (regra 7 do AGENTS).
+   - O número vem de um **secret** `FEEDBACK_WHATSAPP` no Pages; **nunca no código**. O servidor só informa se ele existe e entrega o link pronto.
+   - Sem o secret, o botão não aparece.
+4. **Mais → Recebidas**, só para o **dono** (validar no backend):
+   - filtros Não lidas | Todas, com o contador no item de Mais;
+   - cartões com tipo, autor (nome de exibição), data, texto e contexto;
+   - **Marcar como lida**, que quem enviou vê como "✓ Lida";
+   - **Responder no WhatsApp** só se a pessoa tiver telefone no perfil; senão, não mostrar.
+5. **Aviso:** cada mensagem nova cria uma notificação para os aparelhos do(s) dono(s) com avisos ligados ("Nova sugestão no app"), sem o texto da mensagem. Usar o agendador/fila de push que já existe.
+6. **Banco:** migração aditiva `0028_feedback.sql` com a tabela `feedback_messages`:
+   - colunas: org, id, autor, tipo, texto, contexto em JSON limitado, `read_at`, `created_at`, version e mutation_id;
+   - índices por org/lida;
+   - incluir no exportador de backup e na limpeza de testes.
+   - **A aplicação no banco real é do Felipe.** Sem a migração, o recurso fica oculto.
+7. **Testes:**
+   - unidade: validação, contexto opcional e código de erro;
+   - E2E:
+     - provocar um erro de renderização numa rota de teste, ver a tela, Recarregar e Contar;
+     - enviar como operadora;
+     - ver como dono, marcar como lida e conferir "✓ Lida" para a operadora;
+     - a operadora não acessa Recebidas (403);
+     - sem o secret, não há botão de WhatsApp;
+   - segurança: autorização e limites;
+   - push: teste da fila com aviso sem conteúdo.
+8. Versão **0.27.0**. Capturas `t14-*.png` em claro e escuro, só com DEMONSTRAÇÃO.
+
 ## Versões do app
 
 Formato **MAIOR.MENOR.CORREÇÃO**. Quem sobe o número é o **Claude**, ao publicar:
@@ -563,6 +606,8 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 0.26.1 | 20/11 | Boas-vindas com convite ao passeio; passeio renovado (5 passos por papel, Voltar, destaque dourado); Montar Caixa Mista trava a rolagem do fundo. |
+| 0.26.0 | 20/11 | Modo escuro A+D médio: fundo preto, cartões marrons com contorno dourado, campos vazados. |
 | 0.25.1 | 19/11 | Mapa: endereço novo no pedido apaga a localização antiga, texto ganha cidade/"PB", folha mostra o destino; Mapas do iPhone só no iPhone/Mac; Hoje: Caixa Mista/kit só com o nome e sabores num toque; grafia "Caixa Mista" em todo o app. |
 | 0.25.0 | 19/11 | Ambiente de teste: prévias usam o banco `brigaderia-amor-zeloso-teste`, faixa "AMBIENTE DE TESTE", avisos desligados e confirmação do WhatsApp no teste; workflow "Ambiente de teste (manual)". |
 | 0.24.0 | 18/11 | Exportar relatórios, fluxo de caixa e custo de entrega como **planilha (.xlsx)** e **PDF** com a marca; CSV continua em "Outros formatos", agora em reais. |
