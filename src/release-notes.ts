@@ -1,6 +1,10 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.0.2',
+    items: ['Kits escolhidos aparecem em linhas compactas abaixo dos sabores.'],
+  },
+  {
     version: '1.0.1',
     items: [
       'Caixa Mista de volta na escolha dos sabores com kits.',

@@ -1902,3 +1902,112 @@ body:has(.mix-sheet) {
 .kit-actions .az-button:last-child {
   grid-column: 1 / -1;
 }
+
+/* Kits escolhidos: linhas compactas abaixo da grade de sabores (20/11). */
+.kit-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--az-space-2);
+}
+.kit-editor > .kit-lines-title,
+.kit-editor > .kit-line {
+  order: 10;
+}
+.kit-editor > .kit-lines-title {
+  margin: var(--az-space-3) 0 0;
+  font-size: 0.9375rem;
+}
+.kit-editor > .kit-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px var(--az-space-2);
+  margin: 0;
+  padding: var(--az-space-3) var(--az-space-4);
+  border-radius: var(--az-radius-field);
+}
+.kit-line > h4 {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+.kit-line > p {
+  grid-column: 1;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--az-muted);
+}
+.kit-line > .numeric-field {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+.kit-line .numeric-field > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.kit-line .quantity-control {
+  display: grid;
+  grid-template-columns: 36px 44px 36px;
+  gap: 4px;
+  align-items: center;
+}
+.kit-line .quantity-control input {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0;
+  text-align: center;
+}
+.kit-line .quantity-minus {
+  grid-column: 1;
+  grid-row: 1;
+}
+.kit-line .quantity-control .az-button {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+}
+.kit-line .quantity-control small {
+  grid-column: 1 / -1;
+}
+.kit-line > .az-button {
+  min-height: 32px;
+  padding: 0 var(--az-space-2);
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  justify-self: start;
+}
+.kit-line > .az-button:last-child {
+  grid-column: 2;
+  justify-self: end;
+}
+.kit-line > .alcohol-tag {
+  grid-column: 1;
+  justify-self: start;
+}
+.kit-line .quantity-control input {
+  width: 44px;
+}
+.kit-line .quantity-control > .az-button:not(.quantity-minus) {
+  grid-column: 3;
+  grid-row: 1;
+}
+.kit-line > p:last-of-type {
+  grid-row: 3;
+  font-weight: 600;
+  color: var(--az-ink);
+}
+.kit-line > .az-button {
+  grid-row: 4;
+  grid-column: 1;
+}
+.kit-line > .az-button:last-child {
+  grid-row: 4;
+  grid-column: 2;
+}

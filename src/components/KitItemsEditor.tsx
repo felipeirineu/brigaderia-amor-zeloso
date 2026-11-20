@@ -172,8 +172,9 @@ export function KitItemsEditor({
     products.find((p) => p.id === id)?.name ??
     'Sabor indisponível';
   return (
-    <section aria-label="Kits do pedido" ref={root}>
+    <section aria-label="Kits do pedido" ref={root} className="kit-editor">
       <h3>Kits por tamanho</h3>
+      {value.length > 0 && <h4 className="kit-lines-title">No pedido</h4>}
       {value.map((item, i) => {
         const prior = snapshots.find(
             (s) =>
@@ -185,7 +186,7 @@ export function KitItemsEditor({
           price = kitItemPrice(item, kits, snapshots);
         return (
           <article
-            className="panel"
+            className="panel kit-line"
             key={item.item_id ?? kitCompositionKey(item)}
           >
             <h4>{display ? kitLabel(display) : 'Kit indisponível'}</h4>
