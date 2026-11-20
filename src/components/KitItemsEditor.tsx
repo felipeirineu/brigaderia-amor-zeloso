@@ -411,12 +411,16 @@ export function KitItemsEditor({
           />
           <ChoiceChips
             label="Quantidade por kit"
+            className="kit-qty"
             value={draft.kit_id}
             options={active
               .filter((k) => k.weight_grams === weight)
               .map((k) => [
                 k.id,
-                `${k.units_per_kit} doces · ${money(k.price_cents)}`,
+                <span className="kit-qty-label" key={k.id}>
+                  <span>{k.units_per_kit} doces</span>
+                  <small>{money(k.price_cents)}</small>
+                </span>,
               ])}
             onChange={(kit_id) =>
               setDraft({ ...draft, kit_id, components: [] })

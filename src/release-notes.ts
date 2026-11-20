@@ -1,6 +1,10 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.0.5',
+    items: ['Quantidade por kit em duas colunas: escolha mais rápida.'],
+  },
+  {
     version: '1.0.4',
     items: [
       'Menu Mais mais enxuto: a importação inicial, já concluída, saiu do menu.',

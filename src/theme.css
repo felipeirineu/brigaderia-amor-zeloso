@@ -2011,3 +2011,27 @@ body:has(.mix-sheet) {
   grid-row: 4;
   grid-column: 2;
 }
+
+/* Quantidade por kit em duas colunas (20/11): "12 doces" em cima e o
+   preço embaixo, para as quatro opções caberem em duas linhas. */
+.kit-montage .kit-qty .chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.kit-montage .kit-qty .chips .az-button {
+  width: 100%;
+  justify-content: center;
+  min-height: 52px;
+  padding: 6px 10px;
+}
+.kit-qty-label {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+.kit-qty-label small {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
