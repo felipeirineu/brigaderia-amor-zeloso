@@ -638,6 +638,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 1.0.1 | 20/11 | Caixa Mista de volta na grade de kits (abre a montagem do kit); montagem do kit compacta; botão de notificações mostra o motivo da recusa ao publicar o agendador. |
 | **1.0.0** | 20/11 | **Entrega ao Tiago e à Alda.** Boas-vindas com convite ao passeio; Novidades ativas a partir daqui; menu + com contorno; "Fechar" largo e tocar fora fecha folhas simples. A folha de boas-vindas não abre sozinha em testes automáticos (`az-release-e2e` liga no teste das Novidades). |
 | 0.26.1 | 20/11 | Boas-vindas com convite ao passeio; passeio renovado (5 passos por papel, Voltar, destaque dourado); Montar Caixa Mista trava a rolagem do fundo. |
 | 0.26.0 | 20/11 | Modo escuro A+D médio: fundo preto, cartões marrons com contorno dourado, campos vazados. |
