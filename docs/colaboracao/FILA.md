@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T14** (tela de erro e Sugestões/Recebidas; prévia aprovada; detalhes abaixo). Versão **0.27.0**. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub. Base: main com 0.26.x (modo escuro e passeio novos, feitos pelo Claude).
+`VEZ: CODEX` — tarefa **T14** (tela de erro e Sugestões/Recebidas; prévia aprovada; detalhes abaixo). Versão **1.1.0** (o app virou **1.0.0** em 20/11, dia da entrega). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub. Base: main com 1.0.0 (modo escuro e passeio novos, feitos pelo Claude).
 
 **Pendências do Felipe (fora do código):** aplicar a migração **0027** (lembrete de backup) pela Homologação D1: PRE_CHECAGEM → APLICAR_PENDENTES. cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
 
@@ -76,7 +76,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | **publicada** 18/11 (PR #20) como **0.23.0** — migração **0027** pendente (Felipe) |
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
 | T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
-| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **vez do Codex** — versão **0.27.0** — migração nova (Felipe aplica) |
+| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **vez do Codex** — versão **1.1.0** — migração nova (Felipe aplica) |
 
 ### T0 — R17
 
@@ -592,7 +592,7 @@ Seguir a prévia. **Na interface, nunca o nome de uma pessoa:** dizer "quem cuid
      - sem o secret, não há botão de WhatsApp;
    - segurança: autorização e limites;
    - push: teste da fila com aviso sem conteúdo.
-8. Versão **0.27.0**. Capturas `t14-*.png` em claro e escuro, só com DEMONSTRAÇÃO.
+8. Versão **1.1.0** (com nota em `release-notes.ts`, que a partir da 1.0.0 aparece para eles como Novidades). Capturas `t14-*.png` em claro e escuro, só com DEMONSTRAÇÃO.
 
 ## Versões do app
 
@@ -606,6 +606,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| **1.0.0** | 20/11 | **Entrega ao Tiago e à Alda.** Boas-vindas com convite ao passeio; Novidades ativas a partir daqui. |
 | 0.26.1 | 20/11 | Boas-vindas com convite ao passeio; passeio renovado (5 passos por papel, Voltar, destaque dourado); Montar Caixa Mista trava a rolagem do fundo. |
 | 0.26.0 | 20/11 | Modo escuro A+D médio: fundo preto, cartões marrons com contorno dourado, campos vazados. |
 | 0.25.1 | 19/11 | Mapa: endereço novo no pedido apaga a localização antiga, texto ganha cidade/"PB", folha mostra o destino; Mapas do iPhone só no iPhone/Mac; Hoje: Caixa Mista/kit só com o nome e sabores num toque; grafia "Caixa Mista" em todo o app. |
