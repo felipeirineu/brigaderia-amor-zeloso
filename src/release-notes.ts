@@ -1,6 +1,12 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.0.4',
+    items: [
+      'Menu Mais mais enxuto: a importação inicial, já concluída, saiu do menu.',
+    ],
+  },
+  {
     version: '1.0.3',
     items: [
       'Notificações no Android com o ícone de brigadeiro na barra de avisos.',

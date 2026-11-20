@@ -2376,15 +2376,8 @@ function More({
                 ...(role === 'owner'
                   ? [
                       ['importar-clientes', 'Importar clientes', 'clientes'],
-                      ...(p1
-                        ? [
-                            [
-                              'importar-cadastro',
-                              'Importar cadastro inicial',
-                              'produtos',
-                            ],
-                          ]
-                        : []),
+                      // "Importar cadastro inicial" já foi usado (20/11); a rota
+                      // /gestao/importar-cadastro continua, sem atalho no menu.
                       ['backup', 'Backup privado', 'configuracoes'],
                     ]
                   : []),
