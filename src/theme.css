@@ -1843,11 +1843,6 @@ body:has(.mix-sheet) {
   padding: 6px 14px;
   font-size: 0.875rem;
 }
-.kit-montage .kit-use-hint {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--az-muted);
-}
 .kit-montage [role='status'] {
   margin: var(--az-space-3) 0 var(--az-space-2);
   font-weight: 650;
@@ -2034,4 +2029,10 @@ body:has(.mix-sheet) {
   font-size: 0.8125rem;
   font-weight: 500;
   opacity: 0.85;
+}
+
+/* Nome do sabor no centro vertical da linha, alinhado com foto e botões. */
+.kit-composition .mix-row > .kit-flavor-name {
+  align-self: stretch;
+  justify-content: center;
 }

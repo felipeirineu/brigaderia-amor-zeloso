@@ -2,7 +2,10 @@
 export const releaseNotes = [
   {
     version: '1.0.5',
-    items: ['Quantidade por kit em duas colunas: escolha mais rápida.'],
+    items: [
+      'Quantidade por kit em duas colunas: escolha mais rápida.',
+      'Nomes dos sabores alinhados ao centro de cada linha do kit.',
+    ],
   },
   {
     version: '1.0.4',

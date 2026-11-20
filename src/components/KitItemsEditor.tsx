@@ -426,15 +426,6 @@ export function KitItemsEditor({
               setDraft({ ...draft, kit_id, components: [] })
             }
           />
-          <p className="kit-use-hint">
-            {weight === 15
-              ? 'Festa infantil'
-              : weight === 23
-                ? 'Festas e brindes'
-                : weight === 30
-                  ? 'Revenda e presentes'
-                  : ''}
-          </p>
           {kit && (
             <>
               <p role="status">
