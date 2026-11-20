@@ -77,6 +77,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
 | T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
 | T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **vez do Codex** — versão **1.1.0** — migração nova (Felipe aplica) |
+| T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | prévia **aprovada** 20/11; **depois da T14** — versão **1.2.0** |
 
 ### T0 — R17
 
@@ -593,6 +594,37 @@ Seguir a prévia. **Na interface, nunca o nome de uma pessoa:** dizer "quem cuid
    - segurança: autorização e limites;
    - push: teste da fila com aviso sem conteúdo.
 8. Versão **1.1.0** (com nota em `release-notes.ts`, que a partir da 1.0.0 aparece para eles como Novidades). Capturas `t14-*.png` em claro e escuro, só com DEMONSTRAÇÃO.
+
+### T15 — Versão de computador (prévia `previas/computador-hoje.png` **aprovada pelo Felipe em 20/11: "mil vezes melhor"**; fazer depois da T14)
+
+Só telas **≥ 1024 px de largura**. **O celular não muda nada**, e os testes de celular continuam iguais.
+
+1. **Menu lateral:**
+   - logo + "Amor Zeloso / Gestão" no topo;
+   - grupo principal: Hoje, Pedidos, Clientes;
+   - separador e o grupo secundário: Produtos e kits, Pedidos padrão, Relatórios, Mais;
+   - Acessos e Ajuda ficam em Mais e no avatar;
+   - botão **+ Novo** fixo no pé, abrindo o mesmo menu "O que vamos preparar?".
+2. **Cabeçalho em uma linha:**
+   - título da tela (serifado) + data em dourado à esquerda;
+   - à direita, o seletor de dia (só no Hoje), o (?) da ajuda e o avatar com o menu da conta (Sair, Preferências, Conhecer o app).
+   - **Remover no computador:** "Área privada · Administrador", "Conheça os atalhos / Conhecer o app" soltos, "SUA ROTINA", o segundo título "Hoje" e o campo "Dia de trabalho" (o seletor faz esse papel).
+3. **Hoje:**
+   - frase-resumo "Boa tarde, {nome}. N entregas hoje · N lembretes.";
+   - os 4 valores em **uma linha**;
+   - duas colunas: à esquerda, **Entregas do dia** (horário · endereço/retirada · itens · situação, link "Ver pedidos"); à direita, **Produzir hoje e amanhã** (foto, barra, quantidade, link "Gerar pedidos da semana") e **Lembretes** ("+ Novo lembrete").
+   - Avisos (base, backup) ficam no topo, na largura toda.
+4. **Demais telas, mesmo padrão:**
+   - **Pedidos e Clientes:** lista à esquerda e detalhe ou folha à direita, quando couber.
+   - **Formulários:** largura máxima de ~720 px, centralizados.
+   - **Mais:** grade de 3 colunas.
+   - **Relatórios:** filtros numa linha.
+   - Nada de cartão esticado de ponta a ponta.
+5. Claro e escuro (o escuro A+D já aprovado). Mesmos tokens do `theme.css`.
+6. **Testes:**
+   - E2E em `chromium-desktop` (1366×860): menu lateral com logo; cabeçalho sem os textos removidos; 4 valores na mesma linha; duas colunas no Hoje; + Novo abre o menu.
+   - Garantir que `chromium-mobile` e `webkit-mobile` não mudaram: rodar a bateria inteira.
+7. Versão **1.2.0** (nota em `release-notes.ts`). Capturas `t15-*.png` de Hoje, Pedidos, Clientes, Mais e Relatórios, em claro e escuro, só com DEMONSTRAÇÃO.
 
 ## Versões do app
 
