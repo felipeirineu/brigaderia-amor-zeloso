@@ -18,7 +18,7 @@
     root.dataset.theme = dark ? 'dark' : 'light';
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', dark ? '#1b120c' : '#fcf6ec');
+      ?.setAttribute('content', dark ? '#090605' : '#fcf6ec');
     document
       .querySelector('link[rel="manifest"]')
       ?.setAttribute(

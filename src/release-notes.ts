@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '0.26.0',
+    items: [
+      'Modo escuro renovado: cartões marrons com contorno dourado sobre fundo preto.',
+      'Campos de busca e de texto agora se distinguem dos botões no modo escuro.',
+    ],
+  },
+  {
     version: '0.25.1',
     items: [
       'Mapa: endereço novo digitado no pedido não leva mais à localização antiga; a folha mostra o destino.',

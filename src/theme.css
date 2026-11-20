@@ -1018,17 +1018,17 @@ body:has(dialog[open]) {
   color-scheme: dark;
   --az-ink: #f6ead8;
   --az-choc: #f6ead8;
-  --az-paper: #1b120c;
-  --az-surface: #261a12;
-  --az-tonal: #3a2a1e;
-  --az-tonal-strong: #503b2a;
-  --az-cream: #261a12;
+  --az-paper: #090605;
+  --az-surface: #30231a;
+  --az-tonal: #4a3727;
+  --az-tonal-strong: #5e4632;
+  --az-cream: #30231a;
   --az-gold: #e2bd82;
   --az-gold-ink: #e2bd82;
   --az-muted: #c9b49f;
   --az-line: rgb(246 234 216 / 0.18);
   --az-control-border: #8c755f;
-  --az-nav-bg: rgb(27 18 12 / 0.98);
+  --az-nav-bg: #0e0907;
   --az-handle: rgb(246 234 216 / 0.35);
   --az-ok: #90d5a6;
   --az-on-ok: #12251a;
@@ -1710,4 +1710,30 @@ textarea::placeholder {
   margin: 6px 0 2px;
   padding-left: 18px;
   font-weight: 500;
+}
+
+/* Modo escuro "A+D médio" (prévia aprovada em 20/11): fundo quase preto,
+   cartões marrons com contorno dourado, quadrinhos um tom acima, títulos
+   dourados e campos vazados, distintos dos botões. */
+:root[data-theme='dark'] .panel {
+  border: 1.75px solid rgb(226 189 130 / 0.62);
+  box-shadow: none;
+}
+:root[data-theme='dark'] .summary-grid .panel {
+  background: #46342a;
+  border: 0;
+}
+:root[data-theme='dark'] h2,
+:root[data-theme='dark'] .today-greeting h1 {
+  color: #e8c48c;
+}
+:root[data-theme='dark']
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+:root[data-theme='dark'] textarea,
+:root[data-theme='dark'] select {
+  background: var(--az-paper);
+  border: 1.5px solid #e2bd82;
+}
+:root[data-theme='dark'] .private-bottom-nav {
+  border-top: 1.75px solid rgb(226 189 130 / 0.62);
 }

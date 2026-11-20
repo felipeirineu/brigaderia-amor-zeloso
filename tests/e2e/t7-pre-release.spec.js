@@ -105,8 +105,8 @@ test('T7 abertura aguarda sessão, acompanha tema e falha real permite entrar', 
         await p
           .locator('.app-opening')
           .evaluate((el) => getComputedStyle(el).backgroundColor),
-      ).toBe('rgb(27, 18, 12)');
-      expect(manifest.background_color).toBe('#1b120c');
+      ).toBe('rgb(9, 6, 5)');
+      expect(manifest.background_color).toBe('#090605');
     }
     release();
     await p.unrouteAll({ behavior: 'wait' });

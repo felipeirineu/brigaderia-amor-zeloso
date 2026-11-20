@@ -99,8 +99,8 @@ export default defineConfig({
           fileName: 'manifest-dark.webmanifest',
           source: JSON.stringify({
             ...manifest,
-            background_color: '#1b120c',
-            theme_color: '#1b120c',
+            background_color: '#090605',
+            theme_color: '#090605',
           }),
         });
       },

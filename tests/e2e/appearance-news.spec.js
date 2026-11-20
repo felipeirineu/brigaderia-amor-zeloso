@@ -120,7 +120,7 @@ test('T4 automático antes do app, telas escuras e preferência manual por apare
         await p
           .locator('body')
           .evaluate((el) => getComputedStyle(el).backgroundColor),
-      ).toBe('rgb(27, 18, 12)');
+      ).toBe('rgb(9, 6, 5)');
       for (const button of await p
         .locator('.az-button--primary:visible, .az-button--success:visible')
         .all())
@@ -160,7 +160,7 @@ test('T4 automático antes do app, telas escuras e preferência manual por apare
     await expect(p.locator('html')).toHaveAttribute('data-theme', 'dark');
     await expect(p.locator('meta[name="theme-color"]')).toHaveAttribute(
       'content',
-      '#1b120c',
+      '#090605',
     );
     await expect(p.locator('link[rel="manifest"]')).toHaveAttribute(
       'href',
@@ -169,7 +169,7 @@ test('T4 automático antes do app, telas escuras e preferência manual por apare
     const manifest = await (
       await ctx.request.get(t.url + '/manifest-dark.webmanifest')
     ).json();
-    expect(manifest.theme_color).toBe('#1b120c');
+    expect(manifest.theme_color).toBe('#090605');
     expect(manifest.start_url).toBe('/gestao');
     await shot(p, 'preferencias', info);
     await p.getByRole('button', { name: 'Novo cadastro', exact: true }).click();

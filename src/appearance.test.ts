@@ -47,7 +47,7 @@ function boot(saved: string | null, dark: boolean, blocked = false) {
 test('boot aplica antes do DOM pronto, segue sistema e respeita escolha manual', () => {
   const a = boot(null, true);
   expect(a.root.dataset.theme).toBe('dark');
-  expect(a.meta.get('content')).toBe('#1b120c');
+  expect(a.meta.get('content')).toBe('#090605');
   expect(a.manifest.get('href')).toBe('/manifest-dark.webmanifest');
   a.listeners.get('az-appearance')!({ detail: 'light' });
   expect(a.root.dataset.theme).toBe('light');
