@@ -273,6 +273,60 @@ export function KitItemsEditor({
           {quickKit && <p>Toque no sabor para somar 1 kit.</p>}
           {quickKit && (
             <div className="flavor-grid">
+              {products.length > 1 && (
+                // Caixa Mista no modo kit: monta um kit com vários sabores,
+                // dentro do limite do kit escolhido.
+                <article
+                  className={`flavor-card mix-card${value.some((i) => i.kit_id === quickKit.id && i.components.length > 1) ? ' is-selected' : ''}`}
+                >
+                  <Button
+                    type="button"
+                    className="flavor-add"
+                    aria-label="Montar Caixa Mista com sabores variados"
+                    disabled={disabled || value.length >= 50}
+                    onClick={() => start()}
+                  >
+                    {products.some((p) => p.photo_key) ? (
+                      <span className="mix-mosaic" aria-hidden="true">
+                        {products
+                          .filter((p) => p.photo_key)
+                          .slice(0, 4)
+                          .map((p) => (
+                            <img
+                              key={p.id}
+                              src={photoURL(p.photo_key!)}
+                              alt=""
+                            />
+                          ))}
+                      </span>
+                    ) : (
+                      <span className="mix-mosaic no-photos" aria-hidden="true">
+                        {quickKit.units_per_kit}
+                      </span>
+                    )}
+                    <strong>Caixa Mista</strong>
+                    <span className="mix-card-hint">
+                      Até {quickKit.max_flavors} sabores
+                    </span>
+                    {(() => {
+                      const mixed = value
+                        .filter(
+                          (i) =>
+                            i.kit_id === quickKit.id && i.components.length > 1,
+                        )
+                        .reduce((n, i) => n + i.quantity, 0);
+                      return mixed > 0 ? (
+                        <b
+                          className="quantity-badge"
+                          aria-label="Caixas Mistas adicionadas"
+                        >
+                          {mixed}
+                        </b>
+                      ) : null;
+                    })()}
+                  </Button>
+                </article>
+              )}
               {products.map((p) => {
                 const count = value
                   .filter(
@@ -295,13 +349,15 @@ export function KitItemsEditor({
                       }
                       onClick={() => addFlavor(p)}
                     >
-                      {p.photo_key && (
+                      {p.photo_key ? (
                         <img
                           src={photoURL(p.photo_key)}
                           alt=""
                           width={120}
                           height={120}
                         />
+                      ) : (
+                        <NoPhoto />
                       )}
                       <span className="flavor-name">
                         <strong>{p.name}</strong>
@@ -332,7 +388,7 @@ export function KitItemsEditor({
         </Button>
       )}
       {draft && (
-        <div className="panel" aria-label="Montagem do kit">
+        <div className="panel kit-montage" aria-label="Montagem do kit">
           <h4>Escolha tamanho e quantidade</h4>
           {draft.item_id && (
             <p>
@@ -365,7 +421,7 @@ export function KitItemsEditor({
               setDraft({ ...draft, kit_id, components: [] })
             }
           />
-          <p>
+          <p className="kit-use-hint">
             {weight === 15
               ? 'Festa infantil'
               : weight === 23
@@ -463,7 +519,7 @@ export function KitItemsEditor({
                 })}
               </div>
               {error && <p role="alert">{error}</p>}
-              <div className="actions action-pair">
+              <div className="kit-actions">
                 <Button
                   type="button"
                   variant="ghost"

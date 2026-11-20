@@ -1827,3 +1827,78 @@ body:has(.mix-sheet) {
   width: 100%;
   margin-top: var(--az-space-2);
 }
+
+/* Montagem do kit compacta (20/11): escolhas em linha, caixa leve,
+   sabores alinhados à esquerda e ações organizadas. */
+.kit-montage h4 {
+  margin: 0 0 var(--az-space-2);
+}
+.kit-montage .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--az-space-2);
+}
+.kit-montage .chips .az-button {
+  min-height: 40px;
+  padding: 6px 14px;
+  font-size: 0.875rem;
+}
+.kit-montage .kit-use-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--az-muted);
+}
+.kit-montage [role='status'] {
+  margin: var(--az-space-3) 0 var(--az-space-2);
+  font-weight: 650;
+  color: var(--az-gold-ink);
+}
+.kit-montage .kit-slots {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  max-width: 260px;
+  margin: 0 0 var(--az-space-3);
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--az-tonal);
+}
+.kit-montage .kit-slot {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border: 1.5px dashed var(--az-control-border);
+}
+.kit-montage .kit-slot.filled {
+  border: 0;
+  background: var(--az-gold);
+}
+.kit-montage .kit-composition .kit-flavor-name .az-button-label,
+.kit-montage .kit-composition .flavor-name,
+.kit-montage .kit-composition .kit-flavor-name strong {
+  justify-content: flex-start;
+  text-align: left;
+}
+.kit-montage .kit-composition .kit-flavor-name {
+  justify-content: flex-start;
+  padding-inline: 0;
+}
+.kit-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--az-space-2);
+  margin-top: var(--az-space-3);
+}
+.kit-actions .az-button {
+  min-height: 44px;
+  font-size: 0.875rem;
+}
+.kit-actions .az-button--primary {
+  grid-column: 1 / -1;
+  order: -1;
+  min-height: 52px;
+  font-size: 1rem;
+}
+.kit-actions .az-button:last-child {
+  grid-column: 1 / -1;
+}

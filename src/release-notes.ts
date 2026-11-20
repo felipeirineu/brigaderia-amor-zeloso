@@ -10,6 +10,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '1.0.1',
+    items: [
+      'Caixa Mista de volta na escolha dos sabores com kits.',
+      'Montagem do kit mais compacta e organizada.',
+    ],
+  },
+  {
     version: '0.26.1',
     items: [
       'Passeio guiado renovado: textos atualizados, Voltar e destaque dourado no menu.',
