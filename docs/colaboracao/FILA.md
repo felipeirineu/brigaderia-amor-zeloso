@@ -638,8 +638,8 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
-| 1.0.3 | 20/11 | Ícone monocromático das notificações (silhueta de brigadeiro, `/icons/badge-96.png`). Notificações testadas no Android do Felipe. |
 | 1.0.4 | 20/11 | "Importar cadastro inicial" sai do menu Mais (já usado; a rota continua). Caixa Mista no modo rápido e montagem compacta dos kits. |
+| 1.0.3 | 20/11 | Ícone monocromático das notificações (silhueta de brigadeiro, `/icons/badge-96.png`). Notificações testadas no Android do Felipe. |
 | 1.0.2 | 20/11 | Kits escolhidos em linhas compactas ("No pedido") abaixo da grade de sabores, em vez de cartões grandes no topo. |
 | 1.0.1 | 20/11 | Caixa Mista de volta na grade de kits (abre a montagem do kit); montagem do kit compacta; botão de notificações mostra o motivo da recusa ao publicar o agendador. |
 | **1.0.0** | 20/11 | **Entrega ao Tiago e à Alda.** Boas-vindas com convite ao passeio; Novidades ativas a partir daqui; menu + com contorno; "Fechar" largo e tocar fora fecha folhas simples. A folha de boas-vindas não abre sozinha em testes automáticos (`az-release-e2e` liga no teste das Novidades). |
