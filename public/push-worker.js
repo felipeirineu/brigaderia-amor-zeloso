@@ -21,7 +21,7 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(data.title.slice(0, 100), {
       body: data.body.slice(0, 300),
       icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
+      badge: '/icons/badge-96.png',
       tag:
         typeof data.tag === 'string'
           ? data.tag.slice(0, 100)
