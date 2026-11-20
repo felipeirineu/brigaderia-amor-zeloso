@@ -1,19 +1,19 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.0.1',
+    items: [
+      'Caixa Mista de volta na escolha dos sabores com kits.',
+      'Montagem do kit mais compacta e organizada.',
+    ],
+  },
+  {
     version: '1.0.0',
     title: 'Bem-vindos ao app da Brigaderia Amor Zeloso',
     items: [
       'Comece pelo Hoje: confira produção, entregas e lembretes.',
       'Prepare pedidos, acompanhe clientes e registre pagamentos.',
       'Agende visitas e amostras; confira as mensagens antes de abrir o WhatsApp.',
-    ],
-  },
-  {
-    version: '1.0.1',
-    items: [
-      'Caixa Mista de volta na escolha dos sabores com kits.',
-      'Montagem do kit mais compacta e organizada.',
     ],
   },
   {
