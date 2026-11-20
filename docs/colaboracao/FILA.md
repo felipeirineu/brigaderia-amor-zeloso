@@ -638,6 +638,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 1.0.5 | 20/11 | Quantidade por kit em duas colunas (preço abaixo); nomes dos sabores no centro vertical da linha; sai a dica fixa de uso por peso ("Revenda e presentes"), que não era dado cadastrado. |
 | 1.0.4 | 20/11 | "Importar cadastro inicial" sai do menu Mais (já usado; a rota continua). Caixa Mista no modo rápido e montagem compacta dos kits. |
 | 1.0.3 | 20/11 | Ícone monocromático das notificações (silhueta de brigadeiro, `/icons/badge-96.png`). Notificações testadas no Android do Felipe. |
 | 1.0.2 | 20/11 | Kits escolhidos em linhas compactas ("No pedido") abaixo da grade de sabores, em vez de cartões grandes no topo. |
