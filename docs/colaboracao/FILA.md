@@ -569,7 +569,7 @@ Seguir a prévia. **Na interface, nunca o nome de uma pessoa:** dizer "quem cuid
    - **Enviar** com idempotência;
    - "Suas mensagens", com data e "✓ Lida".
 3. **Depois de enviar:** a tela "Obrigado!" e o botão opcional **Mandar também no WhatsApp**. Ele abre `wa.me` com o texto pronto, sem envio automático (regra 7 do AGENTS).
-   - O número vem de um **secret** `FEEDBACK_WHATSAPP` no Pages; **nunca no código**. O servidor só informa se ele existe e entrega o link pronto.
+   - O número vem de um **secret** `FEEDBACK_WHATSAPP` no Pages; **nunca no código**. Formato: **só dígitos com país e DDD**, ex.: `5583900000000`. Validar (12–13 dígitos); se for inválido, tratar como ausente. O servidor só informa se ele existe e entrega o link pronto.
    - Sem o secret, o botão não aparece.
 4. **Mais → Recebidas**, só para o **dono** (validar no backend):
    - filtros Não lidas | Todas, com o contador no item de Mais;
