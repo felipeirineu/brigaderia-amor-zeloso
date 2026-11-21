@@ -626,6 +626,17 @@ Só telas **≥ 1024 px de largura**. **O celular não muda nada**, e os testes 
    - Garantir que `chromium-mobile` e `webkit-mobile` não mudaram: rodar a bateria inteira.
 7. Versão **1.2.0** (nota em `release-notes.ts`). Capturas `t15-*.png` de Hoje, Pedidos, Clientes, Mais e Relatórios, em claro e escuro, só com DEMONSTRAÇÃO.
 
+### T16 — Entrega feita pelos dois (pedido do Felipe em 21/11; fazer depois da T15)
+
+Hoje o pedido aceita um só responsável pela entrega (`courier`: `owner`, `partner`, `courier` ou `unassigned`), mas o Tiago e a Alda às vezes entregam juntos.
+
+- **Banco:** migração nova permitindo o valor `both` ("Tiago e Alda") em `orders.courier` e `recurring_templates.courier`. Como é um `CHECK`, exige reconstruir as tabelas preservando dados, índices e gatilhos. Teste de migração sobre cópia com pedidos existentes. **Aplicar no banco real só com aprovação do Felipe** (Homologação: PRE_CHECAGEM → APLICAR_PENDENTES).
+- **Telas:** nova opção "Os dois" na escolha de quem entrega (detalhe do pedido, fluxo do celular, pedido padrão e Hoje). Mostrar as iniciais dos dois.
+- **Relatórios e custos:** a entrega feita pelos dois conta uma vez por pedido (não duplicar entregas nem taxas). Onde houver contagem por pessoa, contar para os dois e dizer isso na tela.
+- **Compatibilidade:** o app antigo e bancos sem a migração continuam funcionando, sem a opção nova (mesmo padrão das migrações anteriores).
+- **Testes:** integração (gravar, editar, recorrência, relatórios, backup/restauração) e E2E no celular.
+- Versão **1.3.0** (minor: muda o banco).
+
 ## Versões do app
 
 Formato **MAIOR.MENOR.CORREÇÃO**. Quem sobe o número é o **Claude**, ao publicar:
@@ -638,6 +649,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 1.0.7 | 21/11 | Ajuda (?) na etapa Pagamento do pedido explicando cada opção (a definir, adiantado, na entrega, a prazo, pagar no fechamento). Kit repetido: mensagem clara orientando a editar o kit existente (antes: "Registro já existente"). |
 | 1.0.6 | 21/11 | Ativar avisos tenta o registro de novo e, se o serviço de push do celular recusar ("push service error", visto num Xiaomi com HyperOS 2), explica em português o que conferir. |
 | 1.0.5 | 20/11 | Quantidade por kit em duas colunas (preço abaixo); nomes dos sabores no centro vertical da linha; sai a dica fixa de uso por peso ("Revenda e presentes"), que não era dado cadastrado. |
 | 1.0.4 | 20/11 | "Importar cadastro inicial" sai do menu Mais (já usado; a rota continua). Caixa Mista no modo rápido e montagem compacta dos kits. |
