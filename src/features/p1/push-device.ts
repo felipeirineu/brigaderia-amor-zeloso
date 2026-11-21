@@ -118,10 +118,7 @@ export async function enablePushDevice(state: PushState) {
     }
   }
   if (current && sub) return { id: current.id };
-  sub ??= await reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: bytes(state.public_key),
-  });
+  sub ??= await subscribeWithRetry(reg, bytes(state.public_key));
   const data = sub.toJSON();
   if (!data.keys?.p256dh || !data.keys.auth)
     throw Error(
@@ -153,5 +150,29 @@ export async function disablePushDevice(state: PushState, id: string) {
     );
   } finally {
     if (local?.record.id === id) await local.sub.unsubscribe();
+  }
+}
+
+// O serviço de push do celular (no Android, o do Google) às vezes recusa o
+// primeiro registro ("Registration failed - push service error"). Tenta mais
+// uma vez e, se falhar de novo, explica em português o que conferir.
+export const PUSH_SERVICE_HELP =
+  'O serviço de avisos do celular recusou o registro. Confira: o app foi instalado pelo Google Chrome; o Google Play Services está atualizado; a economia de bateria ou de dados não está bloqueando o Chrome. Depois, feche o app, abra de novo e tente outra vez. Enquanto isso, use Adicionar ao calendário.';
+export async function subscribeWithRetry(
+  reg: Pick<ServiceWorkerRegistration, 'pushManager'>,
+  key: ReturnType<typeof bytes>,
+  wait = (ms: number) => new Promise((r) => setTimeout(r, ms)),
+) {
+  const options = { userVisibleOnly: true, applicationServerKey: key };
+  try {
+    return await reg.pushManager.subscribe(options);
+  } catch (first) {
+    if ((first as Error)?.name === 'NotAllowedError') throw first;
+    await wait(1500);
+    try {
+      return await reg.pushManager.subscribe(options);
+    } catch {
+      throw Error(PUSH_SERVICE_HELP);
+    }
   }
 }

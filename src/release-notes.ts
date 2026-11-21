@@ -1,6 +1,12 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.0.6',
+    items: [
+      'Ativar avisos tenta de novo sozinho e explica o que conferir se o celular recusar.',
+    ],
+  },
+  {
     version: '1.0.5',
     items: [
       'Quantidade por kit em duas colunas: escolha mais rápida.',
