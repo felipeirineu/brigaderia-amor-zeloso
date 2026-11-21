@@ -2036,3 +2036,14 @@ body:has(.mix-sheet) {
   align-self: stretch;
   justify-content: center;
 }
+
+/* Título de seção com (?) ao lado, sem herdar maiúsculas na folha de ajuda. */
+.order-section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--az-space-2);
+  margin: 18px 0 8px;
+}
+.order-section-head .order-section-label {
+  margin: 0;
+}

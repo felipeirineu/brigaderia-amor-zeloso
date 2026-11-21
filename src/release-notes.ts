@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.0.7',
+    items: [
+      'Ajuda (?) no pagamento do pedido explica cada opção, inclusive pagar no fechamento.',
+      'Kit repetido: o aviso diz qual kit já existe e orienta a editar.',
+    ],
+  },
+  {
     version: '1.0.6',
     items: [
       'Ativar avisos tenta de novo sozinho e explica o que conferir se o celular recusar.',

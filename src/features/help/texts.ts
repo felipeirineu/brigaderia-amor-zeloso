@@ -72,6 +72,18 @@ export const helpTexts = {
     title: 'Por quanto tempo guardar os backups',
     text: 'A Cloudflare já guarda sozinha o histórico dos últimos 7 dias. O backup semanal cobre o que for mais antigo que isso. Guarde pelo menos os 8 backups mais recentes (cerca de 2 meses). Os arquivos têm dados de clientes: guarde em pasta privada, nunca em grupo, chat ou link público. O app não apaga arquivos antigos.',
   },
+  orderPayment: {
+    title: 'Como o cliente paga',
+    text: 'Escolha quando este pedido será cobrado. A escolha aparece no Financeiro, para saber o que falta receber; ela não registra o pagamento.',
+    steps: [
+      'A definir: ainda não combinado. O pedido fica sem data de cobrança até você escolher.',
+      'Adiantado: o cliente paga antes de receber os doces, por exemplo por Pix ao fazer o pedido.',
+      'Na entrega: o cliente paga quando recebe os doces.',
+      'A prazo (só estabelecimentos): as entregas do período se acumulam e são cobradas juntas num fechamento semanal, quinzenal (dia 15 e fim do mês) ou mensal.',
+      'Pagar no fechamento: a cobrança vence no dia em que o período fecha. 7 ou 15 dias depois: o cliente ganha esse prazo extra após o fechamento.',
+      'Para gerar o fechamento e cobrar pelo WhatsApp, abra a conta do cliente no Financeiro. O padrão de cada cliente também muda lá.',
+    ],
+  },
   push: {
     title: 'Avisos no celular',
     text: 'Ative somente se quiser receber lembretes neste aparelho. No iPhone, é preciso iOS 16.4 ou mais recente e o app instalado na Tela de Início; no Android/Chrome pode funcionar no navegador. A permissão só é pedida ao ativar ou escolher um aviso. O título e horário aparecem na notificação, que pode atrasar alguns minutos. Se não funcionar, use Adicionar ao calendário do celular e confira o alarme na importação. Sair da conta revoga os avisos desta sessão; um aviso já despachado pode chegar.',

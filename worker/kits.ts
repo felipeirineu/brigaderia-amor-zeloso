@@ -187,6 +187,19 @@ export async function kits(
       );
     if (id && d.version !== current?.version)
       throw new HttpError(409, 'Kit alterado. Atualize antes de salvar.');
+    // Tamanho + quantidade identificam o kit: mensagem clara em vez do
+    // genérico "Registro já existente" quando alguém tenta cadastrar de novo.
+    const same = await db
+      .prepare(
+        'SELECT id FROM kits WHERE organization_id=? AND weight_grams=? AND units_per_kit=? AND id<>? LIMIT 1',
+      )
+      .bind(org, d.weight_grams, d.units_per_kit, entity)
+      .first<{ id: string }>();
+    if (same)
+      throw new HttpError(
+        409,
+        `Já existe um kit de ${d.weight_grams} g com ${d.units_per_kit} doces. Para mudar preço ou limite de sabores, toque em Editar nesse kit.`,
+      );
     if (d.packaging_supply_id) {
       const supply = await db
         .prepare(
