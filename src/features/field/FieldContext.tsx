@@ -21,6 +21,8 @@ export interface FieldData {
     version: number;
     has_photo?: number;
     photo_version?: number;
+    /** Só no próprio aparelho do desenvolvedor; fica fora da equipe. */
+    developer?: boolean;
   }[];
 }
 const Context = createContext<{
@@ -100,12 +102,13 @@ export function CourierAvatars({ courier }: { courier: string }) {
   const staff =
     field?.data?.staff.filter(
       (s) =>
+        !s.developer &&
         s.role ===
-        (courier === 'owner'
-          ? 'owner'
-          : courier === 'partner'
-            ? 'operator'
-            : ''),
+          (courier === 'owner'
+            ? 'owner'
+            : courier === 'partner'
+              ? 'operator'
+              : ''),
     ) ?? [];
   return (
     <span className="courier-avatars" aria-hidden="true">
@@ -131,7 +134,7 @@ export function useCourierLabels() {
     unassigned: 'A definir',
     owner:
       field?.data?.staff
-        .filter((s) => s.role === 'owner')
+        .filter((s) => s.role === 'owner' && !s.developer)
         .map((s) => s.display_name)
         .join(' / ') || 'Administrador',
     partner:

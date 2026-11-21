@@ -24,6 +24,7 @@ export async function runtime({
   prospectsEnabled = false,
   placesProvider = false,
   routingProvider,
+  developerEmails,
   port = 0,
 } = {}) {
   const issuer = 'https://demonstracao-teste.cloudflareaccess.com';
@@ -74,6 +75,7 @@ export async function runtime({
               VAPID_SUBJECT: vapid.subject,
             }
           : {}),
+        ...(developerEmails ? { DEVELOPER_EMAILS: developerEmails } : {}),
         ...(routingProvider
           ? { ROUTING_PROVIDER: 'ors', ORS_API_KEY: 'demonstracao-route-key' }
           : {}),

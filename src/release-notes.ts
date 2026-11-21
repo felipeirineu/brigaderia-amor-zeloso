@@ -1,6 +1,12 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.0.8',
+    items: [
+      'Papel Desenvolvedor para o suporte técnico, fora das escolhas de equipe da operação.',
+    ],
+  },
+  {
     version: '1.0.7',
     items: [
       'Ajuda (?) no pagamento do pedido explica cada opção, inclusive pagar no fechamento.',

@@ -22,6 +22,8 @@ export interface Env {
   APP_ENVIRONMENT?: 'teste' | 'producao';
   ACCESS_AUD?: string;
   PUBLIC_CATALOG_ENABLED?: string;
+  /** E-mails do papel Desenvolvedor (segredo; separados por vírgula). */
+  DEVELOPER_EMAILS?: string;
 }
 export class HttpError extends Error {
   constructor(

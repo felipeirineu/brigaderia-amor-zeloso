@@ -1,3 +1,4 @@
+import { developerEmails, isDeveloper } from './developers';
 import { requireProductArchive } from './product-policy';
 import { prospectCostsReady } from './prospect-costs';
 import { visitsReady } from './visits';
@@ -58,6 +59,7 @@ export async function management(req: Request, env: Env, a: Actor) {
     return json({
       environment: env.APP_ENVIRONMENT === 'teste' ? 'teste' : 'producao',
       role: a.role,
+      developer: await isDeveloper(db, env, a.user_id),
       prospects: await prospectsReady(env),
       visits: await visitsReady(env),
       prospect_followup: await prospectCostsReady(env),
@@ -80,7 +82,8 @@ export async function management(req: Request, env: Env, a: Actor) {
   if (resource === 'members') {
     if (a.role !== 'owner')
       throw new HttpError(403, 'Somente o administrador gerencia acessos.');
-    if (req.method === 'GET')
+    if (req.method === 'GET') {
+      const developers = developerEmails(env);
       return json(
         (
           await db
@@ -88,9 +91,13 @@ export async function management(req: Request, env: Env, a: Actor) {
               'SELECT email,role FROM authorized_emails WHERE organization_id=? ORDER BY email',
             )
             .bind(org)
-            .all()
-        ).results,
+            .all<{ email: string; role: string }>()
+        ).results.map((m) => ({
+          ...m,
+          developer: developers.includes(m.email.toLowerCase()),
+        })),
       );
+    }
     if (req.method === 'POST') {
       const data = await body(req, memberSchema);
       // Alterações em acessos existentes exigem procedimento administrativo separado.

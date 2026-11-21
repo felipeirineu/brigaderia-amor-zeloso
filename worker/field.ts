@@ -1,3 +1,4 @@
+import { developerEmails, isDeveloper, notDeveloper } from './developers';
 import { profilePhoto, profilePhotosReady, photoBody } from './profile-photos';
 import {
   routeSchema,
@@ -98,11 +99,15 @@ export async function field(req: Request, env: Env, a: Actor) {
     const staff = (
       await db
         .prepare(
-          `SELECT m.user_id AS id,m.role,COALESCE(p.display_name,CASE WHEN m.role='owner' THEN 'Administrador' ELSE 'Operador' END) AS display_name,COALESCE(p.version,0) AS version,${photosReady ? 'f.photo IS NOT NULL AS has_photo,COALESCE(f.version,0) AS photo_version' : '0 AS has_photo,0 AS photo_version'} FROM memberships m LEFT JOIN display_profiles p ON p.organization_id=m.organization_id AND p.id=m.user_id ${photosReady ? 'LEFT JOIN profile_photos f ON f.organization_id=m.organization_id AND f.id=m.user_id' : ''} WHERE m.organization_id=? ORDER BY m.role,m.user_id`,
+          `SELECT m.user_id AS id,m.role,COALESCE(p.display_name,CASE WHEN m.role='owner' THEN 'Administrador' ELSE 'Operador' END) AS display_name,COALESCE(p.version,0) AS version,${photosReady ? 'f.photo IS NOT NULL AS has_photo,COALESCE(f.version,0) AS photo_version' : '0 AS has_photo,0 AS photo_version'} FROM memberships m LEFT JOIN display_profiles p ON p.organization_id=m.organization_id AND p.id=m.user_id ${photosReady ? 'LEFT JOIN profile_photos f ON f.organization_id=m.organization_id AND f.id=m.user_id' : ''} WHERE m.organization_id=? AND (m.user_id=? OR ${notDeveloper('m')}) ORDER BY m.role,m.user_id`,
         )
-        .bind(org)
-        .all()
+        .bind(org, a.user_id, JSON.stringify(developerEmails(env)))
+        .all<{ id: string }>()
     ).results;
+    // Desenvolvedor só aparece para si mesmo (nome e foto do próprio perfil).
+    const selfDeveloper = await isDeveloper(db, env, a.user_id);
+    for (const s of staff as { id: string; developer?: boolean }[])
+      if (s.id === a.user_id && selfDeveloper) s.developer = true;
     const company = await db
       .prepare(
         'SELECT data,version FROM company_places WHERE organization_id=? AND id=?',
