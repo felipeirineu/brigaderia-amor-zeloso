@@ -649,6 +649,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 1.0.8 | 21/11 | Papel Desenvolvedor: segredo `DEVELOPER_EMAILS` (Cloudflare, Production e Preview) marca o administrador de suporte técnico. Mantém permissões, aparece como "Desenvolvedor", sai das iniciais/escolhas de equipe para os outros e continua visível em Acessos como "Desenvolvedor (suporte técnico)". Sem o segredo, nada muda. |
 | 1.0.7 | 21/11 | Ajuda (?) na etapa Pagamento do pedido explicando cada opção (a definir, adiantado, na entrega, a prazo, pagar no fechamento). Kit repetido: mensagem clara orientando a editar o kit existente (antes: "Registro já existente"). |
 | 1.0.6 | 21/11 | Ativar avisos tenta o registro de novo e, se o serviço de push do celular recusar ("push service error", visto num Xiaomi com HyperOS 2), explica em português o que conferir. |
 | 1.0.5 | 20/11 | Quantidade por kit em duas colunas (preço abaixo); nomes dos sabores no centro vertical da linha; sai a dica fixa de uso por peso ("Revenda e presentes"), que não era dado cadastrado. |
