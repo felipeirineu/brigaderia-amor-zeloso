@@ -1828,6 +1828,112 @@ body:has(.mix-sheet) {
   margin-top: var(--az-space-2);
 }
 
+.feedback-page,
+.feedback-form,
+.feedback-result {
+  display: grid;
+  gap: 0.85rem;
+}
+.feedback-page,
+.feedback-result {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+.feedback-result {
+  justify-items: stretch;
+  text-align: center;
+  padding-block: clamp(1.5rem, 6vw, 3rem);
+}
+.feedback-result h1 {
+  font-family: var(--az-serif);
+  font-weight: 400;
+  font-size: clamp(1.5rem, 5vw, 2.1rem);
+}
+.feedback-result :is(h1, p),
+.feedback-page > :is(p, h2),
+.feedback-message p {
+  margin: 0;
+}
+.feedback-result .mascot {
+  justify-self: center;
+}
+.feedback-code {
+  font: 0.85rem monospace;
+  color: var(--az-muted);
+}
+.feedback-report-link {
+  text-decoration: underline;
+}
+.feedback-text,
+.feedback-consent {
+  display: grid;
+  gap: 0.375rem;
+}
+.feedback-consent {
+  grid-template-columns: auto 1fr;
+  align-items: start;
+}
+.feedback-consent input {
+  accent-color: var(--chocolate);
+  width: 1.15rem;
+  height: 1.15rem;
+}
+.feedback-consent small {
+  display: block;
+}
+.feedback-message {
+  display: grid;
+  gap: 0.5rem;
+}
+.feedback-message-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.feedback-message-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.feedback-kind,
+.feedback-count {
+  border-radius: 999px;
+  padding: 0.125rem 0.625rem;
+  background: var(--az-warn-bg);
+  color: var(--az-warn-ink);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.feedback-kind--praise,
+.feedback-whatsapp {
+  background: var(--az-ok-bg);
+  color: var(--az-ok-ink);
+}
+.feedback-kind--new {
+  background: var(--az-ink);
+  color: var(--az-surface);
+}
+.feedback-inbox-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.feedback-inbox-actions > * {
+  flex: 1 1 9rem;
+}
+
+.feedback-kind--suggestion {
+  background: var(--az-tonal);
+  color: var(--az-ink);
+}
+.feedback-page .choice-chips > legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
 /* Montagem do kit compacta (20/11): escolhas em linha, caixa leve,
    sabores alinhados à esquerda e ações organizadas. */
 .kit-montage h4 {

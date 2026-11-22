@@ -1,4 +1,5 @@
 import { readTerms } from './finance-domain';
+import { feedbackReady } from './feedback';
 import { developerEmails, isDeveloper } from './developers';
 import { requireProductArchive } from './product-policy';
 import { prospectCostsReady } from './prospect-costs';
@@ -60,6 +61,7 @@ export async function management(req: Request, env: Env, a: Actor) {
     return json({
       environment: env.APP_ENVIRONMENT === 'teste' ? 'teste' : 'producao',
       role: a.role,
+      feedback: await feedbackReady(db),
       developer: await isDeveloper(db, env, a.user_id),
       prospects: await prospectsReady(env),
       visits: await visitsReady(env),

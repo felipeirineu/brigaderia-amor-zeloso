@@ -25,6 +25,8 @@ const titles: Record<string, string> = {
   ajuda: 'Ajuda',
   preferencias: 'Preferências',
   novidades: 'Novidades',
+  sugestoes: 'Sugestões e problemas',
+  recebidas: 'Recebidas',
   kits: 'Kits',
   recorrentes: 'Pedidos padrão',
   deslocamentos: 'Corridas',

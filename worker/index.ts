@@ -1,3 +1,4 @@
+import { feedback } from './feedback';
 import { prospectReport, prospectVisitTools } from './prospect-costs';
 import { visits } from './visits';
 import { prospects } from './prospects';
@@ -97,6 +98,8 @@ export default {
           finance: await financeReady(env),
         });
       if (req.method !== 'GET') writeGuard(req);
+      if (/^\/api\/feedback(?:\/|$)/.test(pathname))
+        return await feedback(req, env, user);
       if (pathname === '/api/auth/logout' && req.method === 'POST') {
         const db = env.DB!;
         await db.batch([

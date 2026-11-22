@@ -195,6 +195,7 @@ export function Tour({
   );
 }
 export function HelpCenter({
+  feedback = false,
   financial = false,
   p1 = false,
   tools = false,
@@ -202,6 +203,7 @@ export function HelpCenter({
   financial?: boolean;
   p1?: boolean;
   tools?: boolean;
+  feedback?: boolean;
 }) {
   const [example, setExample] = useState(false);
   const field = useField();
@@ -229,6 +231,15 @@ export function HelpCenter({
           <strong>?</strong> ao lado de um campo para ver a ajuda dele.
         </p>
       </section>
+      {feedback && (
+        <Button
+          to="/gestao/sugestoes"
+          state={{ page: 'ajuda' }}
+          variant="ghost"
+        >
+          Sugestões e problemas
+        </Button>
+      )}
       <section className="panel">
         <h2>Novo pedido (modo simples)</h2>
         <p>
@@ -399,6 +410,22 @@ export function HelpCenter({
               fatura do cartão de crédito: o cliente não paga a cada entrega;
               paga tudo de uma vez depois que a conta fecha.
             </p>
+            <h3>Exemplo</h3>
+            <p>
+              Uma conveniência recebe 1 Kit 12 de R$ 42,00 toda terça e sexta.
+              Está em <strong>A prazo · Quinzenal · 7 dias depois</strong>.
+            </p>
+            <ul>
+              <li>
+                1ª quinzena: entregas nos dias 3, 6, 10 e 13 = 4 kits ={' '}
+                <strong>R$ 168,00</strong>. Fecha no dia 15 e vence no dia 22.
+              </li>
+              <li>
+                2ª quinzena: entregas nos dias 17, 20, 24 e 27 ={' '}
+                <strong>R$ 168,00</strong>. Fecha no último dia do mês e vence 7
+                dias depois, já no mês seguinte.
+              </li>
+            </ul>
             <h3>A comparação com o cartão</h3>
             <ul>
               <li>Compras no cartão = entregas da Brigaderia.</li>
@@ -439,22 +466,6 @@ export function HelpCenter({
               <li>
                 <strong>Mensal:</strong> soma o mês inteiro; fecha no último
                 dia.
-              </li>
-            </ul>
-            <h3>Exemplo</h3>
-            <p>
-              Uma conveniência recebe 1 Kit 12 de R$ 42,00 toda terça e sexta.
-              Está em <strong>A prazo · Quinzenal · 7 dias depois</strong>.
-            </p>
-            <ul>
-              <li>
-                1ª quinzena: entregas nos dias 3, 6, 10 e 13 = 4 kits ={' '}
-                <strong>R$ 168,00</strong>. Fecha no dia 15 e vence no dia 22.
-              </li>
-              <li>
-                2ª quinzena: entregas nos dias 17, 20, 24 e 27 ={' '}
-                <strong>R$ 168,00</strong>. Fecha no último dia do mês e vence 7
-                dias depois, já no mês seguinte.
               </li>
             </ul>
             <h3>Passo a passo</h3>

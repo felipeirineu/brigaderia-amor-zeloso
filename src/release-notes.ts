@@ -8,6 +8,13 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '1.1.0',
+    items: [
+      'Se uma tela falhar, você pode recarregar, voltar ao Hoje ou contar o que aconteceu.',
+      'Envie sugestões, problemas e elogios pelo menu Mais e acompanhe quando forem lidos.',
+    ],
+  },
+  {
     version: '1.0.10',
     items: [
       'Fechamento explicado como a fatura do cartão, com exemplo, no (?) do pedido a prazo.',

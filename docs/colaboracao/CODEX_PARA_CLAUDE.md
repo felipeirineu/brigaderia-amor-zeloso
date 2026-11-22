@@ -1,3 +1,7 @@
+## T17 — retomada após a T14 (22/11/2026)
+
+Base atualizada para `d8d7493`, com a T14. O CI inicial do PR #24 passou em Segurança e falhou no mesmo cenário de Ajuda nos três navegadores. O exemplo de fechamento ficou abaixo da área visível ao seguir o link. Em `HelpCenter.tsx`, trazer o exemplo para perto da abertura da seção. O teste de agenda existente deve passar sem relaxar a checagem de visibilidade. Revalidar o fluxo T17 e a integração da T14 no mesmo branch.
+
 ## T17 — entrega para revisão (22/11/2026)
 
 ### Produzido
@@ -5,13 +9,14 @@
 - O cadastro pelo fluxo **Novo pedido → Revisar** agora permite registrar uma entrega já realizada. Data e hora começam no horário atual de João Pessoa. Um recebimento opcional, integral ou parcial, é registrado na mesma operação idempotente. O pedido entra no financeiro sem passar pela produção.
 - **Na próxima entrega** está disponível para pessoas e estabelecimentos. O saldo fica em **A receber**, sem vencimento até a próxima entrega efetiva ao mesmo cliente. O marco é recalculado se essa entrega for desfeita. A condição aparece na ajuda, no filtro do Financeiro e no relatório de vendas.
 - Nas condições a prazo, **Dia do mês** aceita de 1 a 31 e usa a primeira ocorrência depois do fechamento. Dia 31 significa o último dia do mês. A regra aparece no pedido, na conta, no extrato e na cobrança. Os prazos em dias seguem disponíveis.
+- Após incorporar a T14 do `main` (`d8d7493`), o exemplo de fechamento passou para o início da seção da Ajuda, ao alcance do link **Ver explicação completa**. O E2E de diagnóstico da T14 passou a conferir a versão declarada no pacote.
 - Versão 1.2.0, guia em `docs/FASE_T17.md` e captura com dados fictícios em `docs/colaboracao/capturas/t17-entrega-realizada.png`. A entrega usa o esquema de banco existente.
 
 ### Testes executados
 
-- Build de Pages, TypeScript, lint, formatação e 241 testes unitários.
-- Integrações de financeiro, operações, mobile, R2, P1 e 317 verificações de segurança. O cenário T17 verifica produção, recebíveis, relatórios, validade e atomicidade do recebimento, concorrência, isolamento por cliente e organização e vencimento depois do fechamento.
-- 9 testes de tela de financeiro, mobile e T17 em Chromium móvel, WebKit móvel e Chromium desktop. O fluxo T17 foi repetido nos três navegadores após os últimos ajustes.
+- Build de Pages, TypeScript, lint, formatação e 243 testes unitários na base atualizada.
+- Integrações de financeiro, operações, mobile, R2, P1 e 349 verificações de segurança com a matriz da T14 e teste de avisos de feedback. O cenário T17 verifica produção, recebíveis, relatórios, validade e atomicidade do recebimento, concorrência, isolamento por cliente e organização e vencimento depois do fechamento.
+- 15 testes locais de agenda (incluindo o link da Ajuda), feedback T14 e fluxo T17 em Chromium móvel, WebKit móvel e Chromium desktop após a integração do main. Na entrega inicial também passaram os cenários selecionados de financeiro e mobile.
 
 ### Limitações
 
@@ -20,13 +25,43 @@
 
 ### Pendências
 
-- Validação da gestão e Segurança automáticas do PR, revisão do Claude e publicação depois da T14. Nenhuma operação na Cloudflare ou no D1 real.
+- Nova Validação da gestão e Segurança automáticas no mesmo PR #24 e revisão do Claude. A T14 já está no main. A T17 não exige migração. Nenhuma operação na Cloudflare ou no D1 real.
 
 ## T17 — plano antes do código (22/11/2026)
 
 Base `8b524a0`. Em Novo pedido, registrar entrega ocorrida e recebimento opcional na mesma transação idempotente do cadastro, usando os eventos de status, financeiro e auditoria existentes. O estoque segue manual, como na entrega normal. Usar a data efetiva nos recebíveis e relatórios.
 
 Estender Terms (JSON) com próxima entrega e dia fixo do mês. Financeiro, conta, filtros e relatórios compartilham o cálculo de vencimento. Verificar fechamento, datas retroativas, produção, isolamento e caminhos com/sem recebimento, com integração local e E2E móvel. Sem migração prevista: status, eventos e condições já comportam os valores. Incorporar o main atual antes do PR.
+
+## T14 — entrega para revisão (20/11/2026)
+
+### Produzido
+
+- Versão **1.1.0** com barreira de erro no layout e nas rotas. A recuperação volta ao Hoje, recarrega a página ou abre um relato de Problema com código preenchido. O diagnóstico no navegador registra só código, versão, categoria da tela e tipo de erro.
+- Sugestões e problemas em Mais e na Ajuda. Tipos Sugestão, Problema e Elogio, mensagem de até 2000 caracteres, contexto opcional, envio idempotente e histórico com confirmação de leitura. O atalho pós-envio depende do secret `FEEDBACK_WHATSAPP` válido.
+- Recebidas exclusiva do administrador, com contador, filtros, nome de exibição, contexto e leitura idempotente. O número de retorno é optativo no perfil e libera um atalho assistido ao WhatsApp.
+- O agendador existente envia um aviso genérico por mensagem nova ainda não lida aos aparelhos elegíveis dos administradores. A fila deduplica por mensagem e aparelho e revalida autorização e leitura antes de enviar. A migração aditiva 0028 habilita os recursos e o backup inclui as tabelas. A limpeza remove os relatos de teste e conserva a configuração de retorno. A cópia da T13 exclui mensagens e telefones de retorno.
+- Guia `docs/FASE_T14.md` e quatro capturas `t14-*` com dados de demonstração em claro e escuro.
+
+### Testes executados
+
+- Build do Pages, tipos, lint, formatação e **236 testes unitários**, incluindo sanitização do diagnóstico, validação e consentimento.
+- **349 verificações de segurança**, com rotas sem sessão, papel, isolamento, limite de envio e reenvio idempotente. Integrações de migrações, backup/restauração, limpeza e push em D1 efêmero. O teste de push decifrou a entrega simulada, conferindo mensagem genérica, destino, deduplicação e cancelamento após leitura.
+- **24 testes de tela selecionados** nos três navegadores do projeto. Cobrem erro de renderização, recarregar, voltar ao Hoje, contexto e envio, autorização da caixa, leitura, WhatsApp opcional e regressões de aparência, Novidades, navegação e atualização.
+
+### Limitações
+
+- A barreira trata falhas de renderização. O diagnóstico fica no navegador até a pessoa optar por enviar um relato. A fila cobre as mensagens ainda não lidas das últimas 24 horas para aparelhos elegíveis que já estavam inscritos no momento do envio.
+- O WhatsApp abre o texto para revisão e envio humano. As notificações foram testadas com provedor simulado.
+
+### Pendências
+
+- Validação e Segurança automáticas do PR e revisão do Claude.
+- Após aprovação do responsável, publicar a versão, aplicar a 0028 ao banco autorizado e atualizar o agendador se o Web Push estiver em uso. O secret do WhatsApp é opcional. Nada foi aplicado no D1 nem na Cloudflare.
+
+## T14 — plano antes do código (20/11/2026)
+
+Base `8879d33` e prévia aprovada. Proteger layout e rotas em App/Management, com diagnóstico sanitizado, recuperação e formulário pré-preenchido. Implementar Sugestões e Recebidas com autorização no servidor, contexto opcional, idempotência, leitura controlada e WhatsApp assistido. A migração 0028 e o agendador local vão cobrir persistência e avisos genéricos. Validar a matriz de segurança, a fila de push, os três navegadores e capturas de demonstração. Nenhuma alteração no D1 ou na Cloudflare nesta etapa.
 
 ## T13 — entrega para revisão (19/11/2026)
 
