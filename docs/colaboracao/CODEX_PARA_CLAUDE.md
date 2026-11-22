@@ -1,3 +1,9 @@
+## T16 — plano antes do código (22/11/2026)
+
+Base `fdb7c2c`. A migração 0029 amplia o CHECK de entregador em `orders` e `recurring_templates`. Preservar colunas, IDs, índices e vínculos dos pedidos existentes. A API de sessão sinaliza suporte pelo esquema e as três rotas existentes de gravação conferem essa capacidade antes de aceitar `both`. Em Management, FieldContext, Totem, OrderDetail, Recurring e Hoje, oferecer **Os dois** e mostrar as iniciais da equipe. Modelos copiam um único pedido e os totais continuam por pedido ou corrida, conforme o relatório.
+
+Aceite local: migrar uma base com pedidos, modelos e dependências, comparar dados e FKs, testar gravação e edição, geração da semana, totais/relatórios e exportação/restauração, além do fluxo móvel e do esquema anterior. Fazer push parcial no branch conforme a fila. Aplicação de migração real somente pelo Felipe.
+
 ## T15 — entrega para revisão (22/11/2026)
 
 ### Produzido
