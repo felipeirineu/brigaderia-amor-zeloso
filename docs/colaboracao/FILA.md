@@ -10,6 +10,8 @@
 
 **Pendência do Claude (junto com a revisão da T18):** no Hoje, ao abrir "ver sabores" de um kit, o Chrome do Felipe mostra um espaço vazio grande entre "1× Kit 12 · 30 g" e a lista (mesma altura extra que o Chrome reserva para o conteúdo do `<details>`; o oval fechado já foi resolvido na 1.4.3). Reduzir esse espaço sem quebrar o abrir/fechar.
 
+**Pendência do Claude (pedido do Felipe, 22/11):** quando os pedidos do Tiago estiverem publicados (1.4.4 cadastro no computador, T18, T20, T19), escrever para o Felipe uma mensagem curta de WhatsApp para o Tiago resumindo o que foi corrigido e adicionado, em linguagem simples e com onde encontrar cada coisa.
+
 **Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
 
