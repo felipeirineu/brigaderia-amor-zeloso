@@ -202,7 +202,12 @@ test('T18 configura a cobrança por entregas, confere mensagem e registra o cicl
     await page
       .getByRole('button', { name: 'Cliente DEMONSTRAÇÃO P1', exact: true })
       .click();
-    await page.locator('.flavor-add').first().click();
+    await page
+      .getByRole('button', {
+        name: 'Produto DEMONSTRAÇÃO P1, adicionar',
+        exact: true,
+      })
+      .click();
     const next = () => page.getByRole('button', { name: /^Continuar/ }).click();
     await next();
     await page.getByRole('button', { name: 'Amanhã', exact: true }).click();

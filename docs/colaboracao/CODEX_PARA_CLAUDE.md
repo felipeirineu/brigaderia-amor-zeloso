@@ -1,3 +1,27 @@
+## T18 — entrega para revisão (22/11/2026)
+
+### Produzido
+
+- Versão 1.5.0. **A cada X entregas** está no pagamento do pedido e na condição do cliente, com contador de 2 a 12 e vencimento na última entrega efetiva. Retiradas concluídas contam. O ciclo seguinte começa mesmo com saldo anterior em aberto.
+- Ao trocar a condição no meio do ciclo, a primeira entrega efetiva sob a regra nova fecha e dá vencimento aos pedidos anteriores. O valor da entrega sob a nova condição fica separado. Desfazer recalcula o ciclo e preserva os recebimentos registrados.
+- O Hoje mostra a contagem e o aviso **Cobrar hoje**, com prévia editável do WhatsApp e recebimento agrupado. A conta mostra progresso, ciclos fechados e saldo. Financeiro e relatórios usam as datas efetivas. O aviso privado da manhã usa o agendador existente.
+- Incorporei a versão 1.4.3 do main. A abertura de **ver sabores** tem menos espaço entre o título e a lista. A ajuda inclui um exemplo. Há quatro capturas com dados de demonstração e um guia em `docs/FASE_T18.md`.
+
+### Testes executados
+
+- Build de Pages, TypeScript, lint, formatação, 252 testes unitários e 349 verificações de segurança.
+- Integrações de financeiro, operação, P1 e notificações passaram. A T18 foi testada em D1 com migrações até 0028. Verifiquei retirada, cancelamento, desfazer, entrega atrasada, reinício com saldo em aberto, recebimento parcial idempotente, relatórios, isolamento e deduplicação do aviso. As trocas para outro X, Na entrega e A prazo por data fecham apenas o saldo anterior.
+- 27 testes de tela passaram em Chromium móvel, WebKit móvel e Chromium desktop. O cenário T18 verificou o contador, a projeção, a prévia do WhatsApp, o recebimento e a abertura da lista de sabores. Na primeira rodada, o WebKit abriu a Caixa Mista porque o teste selecionava o primeiro cartão. O teste final seleciona o sabor pelo nome.
+
+### Limitações
+
+- Um pedido agendado permite conferir a previsão. O recebimento do ciclo e o Pix da cobrança ficam disponíveis após confirmar a última entrega efetiva. O WhatsApp exige conferência e envio humano.
+- Os avisos foram testados com provedor simulado. Para aparelhos já inscritos, o aviso novo depende de o responsável republicar o agendador após a publicação.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas do PR e revisão do Claude. A T18 dispensa migração. O guia registra o passo para republicar o agendador, quando autorizado.
+
 ## T18 — plano antes do código (22/11/2026)
 
 Base `8d379b8` e prévia `previas/t18-cobrar-a-cada-x-entregas.png`. Estender o JSON de condições, agrupar entregas efetivas por cliente e vincular o vencimento à última do grupo em Financeiro, recebíveis e relatórios. Troca de condição inicia outro grupo quando há uma entrega efetiva sob a regra nova. Pedidos agendados do dia são projeções no Hoje. Ao desfazer, recalcular sem alterar pagamentos gravados. Reaproveitar a alocação e o CAS dos recebimentos, a prévia do WhatsApp e a fila de avisos privados.
