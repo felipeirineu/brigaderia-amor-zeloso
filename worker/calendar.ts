@@ -158,7 +158,11 @@ export async function calendar(
   const profiles = (
     await db
       .prepare(
-        "SELECT p.customer_id,p.data,c.name FROM customer_profiles p JOIN customers c ON c.organization_id=p.organization_id AND c.id=p.customer_id WHERE p.organization_id=? AND c.active=1 AND p.payment_mode='credit' LIMIT 201",
+        `SELECT p.customer_id,p.data,c.name FROM customer_profiles p
+         JOIN customers c ON c.organization_id=p.organization_id AND c.id=p.customer_id
+         WHERE p.organization_id=? AND c.active=1 AND p.payment_mode='credit'
+           AND json_extract(p.data,'$.terms.cycle') IS NOT 'deliveries'
+         LIMIT 201`,
       )
       .bind(org)
       .all<{ customer_id: string; data: string; name: string }>()

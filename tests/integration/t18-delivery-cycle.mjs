@@ -44,6 +44,24 @@ try {
     every_deliveries: 2,
     due_days: null,
   };
+  const profilePath = (id) => 'finance/customers/' + id + '/profile';
+  const setTerms = async (id, terms) => {
+    const { data, version } = await call(profilePath(id), undefined, 'GET');
+    await call(profilePath(id), { version, data: { ...data, terms } }, 'PUT');
+  };
+  await setTerms(customer, terms);
+  const weekly = await call('customers', {
+    name: 'Cliente semanal DEMONSTRAÇÃO',
+  });
+  await setTerms(weekly.id, {
+    ...profile.terms,
+    mode: 'credit',
+    cycle: 'weekly',
+    week_end: new Date(today + 'T12:00:00Z').getUTCDay() || 7,
+    due_days: 0,
+  });
+  const calendarQuery = '?from=' + today + '&to=' + today;
+  const agenda = () => call('p1/calendar' + calendarQuery, undefined, 'GET');
   const data = {
     customer_id: customer,
     due_at: today + 'T15:00:00.000Z',
@@ -97,6 +115,12 @@ try {
   assert.equal(projected.projected, true);
   assert.equal(projected.due_on, null);
   assert.equal(projected.balance_cents, 2000);
+  const beforeClosing = (await agenda()).events;
+  assert.deepEqual(
+    beforeClosing.filter((e) => e.kind === 'closing').map((e) => e.id),
+    ['closing-plan-' + weekly.id + '-' + today],
+  );
+  assert(!beforeClosing.some((e) => e.kind === 'due'));
   assert(!dashboard.delivery_cycles.some((x) => x.order_id === cancelled.id));
   const charge = () =>
     call(path + '/charge', { delivery_cycle_id: second.id }, 'POST', operator);
@@ -126,6 +150,15 @@ try {
   for (const to of ['in_production', 'ready', 'out_for_delivery'])
     await advance(to);
   const completion = await advance('delivered');
+  const due = (await agenda()).events.find((e) => e.id === 'due-' + first.id);
+  assert.equal(due?.date, today);
+  const ics = await t.request('p1/calendar.ics' + calendarQuery, {
+    cookie: owner,
+  });
+  assert.equal(ics.status, 200);
+  const calendarFile = await ics.text();
+  assert(calendarFile.includes('UID:due-' + first.id + '@amor-zeloso.local'));
+  assert(!calendarFile.includes('UID:closing-plan-' + customer));
   assert.equal(
     (await account()).orders.find((o) => o.id === first.id).due_on,
     today,
