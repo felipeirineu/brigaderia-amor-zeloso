@@ -1,3 +1,9 @@
+## T18 — plano antes do código (22/11/2026)
+
+Base `8d379b8` e prévia `previas/t18-cobrar-a-cada-x-entregas.png`. Estender o JSON de condições, agrupar entregas efetivas por cliente e vincular o vencimento à última do grupo em Financeiro, recebíveis e relatórios. Troca de condição inicia outro grupo quando há uma entrega efetiva sob a regra nova. Pedidos agendados do dia são projeções no Hoje. Ao desfazer, recalcular sem alterar pagamentos gravados. Reaproveitar a alocação e o CAS dos recebimentos, a prévia do WhatsApp e a fila de avisos privados.
+
+Aceite: condições antigas, contagem de 2 a 12 e reinício com saldo em aberto, cancelamento, desfazer, mudança de condição, retirada, recebimento parcial, isolamento, três navegadores e captura de demonstração. Push parcial autorizado no branch. A estrutura existente comporta os dados e a fila de notificações. Nenhuma operação na Cloudflare ou no banco real.
+
 ## T16 — entrega para revisão (22/11/2026)
 
 ### Produzido

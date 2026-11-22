@@ -1,6 +1,8 @@
+import { resolveDeliveryCycles, todayDeliveryCycles } from './delivery-cycle';
 import {
   completionDay,
   completedAt,
+  completionSequence,
   completionDates,
 } from './order-completion';
 import { customerAddressSQL } from './customer-address';
@@ -54,7 +56,7 @@ export async function accountView(
       .prepare(
         `${completionDates(true)} SELECT o.id,` +
           orderNumber('o') +
-          `,o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,${completedAt} AS completed_at,d.next_delivery_on,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents FROM orders o LEFT JOIN completion_dates d ON d.id=o.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=?1 AND o.customer_id=?2 ORDER BY o.due_at,o.id LIMIT 1001`,
+          `,o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,${completedAt} AS completed_at,${completionSequence} AS completion_sequence,d.next_delivery_on,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents FROM orders o LEFT JOIN completion_dates d ON d.id=o.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=?1 AND o.customer_id=?2 ORDER BY o.due_at,o.id LIMIT 1001`,
       )
       .bind(org, customer)
       .all<Row>()
@@ -65,6 +67,18 @@ export async function accountView(
       'Mais de 1000 pedidos nesta conta. É necessária paginação antes de continuar.',
     );
   const today = businessDay();
+  const { current, positions } = resolveDeliveryCycles(
+    orders.map((o) => ({
+      order_id: String(o.id),
+      customer_id: customer,
+      due_at: String(o.due_at),
+      status: String(o.status),
+      active: Number(o.active),
+      terms: o.terms as string | null,
+      completed_at: o.completed_at as number | null,
+      completion_sequence: o.completion_sequence as number | null,
+    })),
+  );
   const enriched = orders.map((o) => {
     const terms = readTerms(o.terms as string | null),
       day = String(o.due_at).slice(0, 10),
@@ -77,6 +91,7 @@ export async function accountView(
     const due = termsDueDate(businessDate, terms, {
       closing: o.closing_due_on as string | null,
       nextDelivery: o.next_delivery_on as string | null,
+      deliveryCycle: positions.get(String(o.id))?.cycle.due_on,
     });
     const balance = Number(o.total_cents) - Number(o.paid_cents);
     return {
@@ -107,6 +122,22 @@ export async function accountView(
           : 0,
     };
   });
+  const deliveryCycles = [...positions].flatMap(([id, { cycle, position }]) =>
+    cycle.due_on && position === cycle.size
+      ? [
+          {
+            id,
+            ...cycle,
+            total_cents: enriched
+              .filter((o) => cycle.orders.includes(o.id))
+              .reduce((sum, o) => sum + o.total_cents, 0),
+            balance_cents: enriched
+              .filter((o) => cycle.orders.includes(o.id))
+              .reduce((sum, o) => sum + o.balance_cents, 0),
+          },
+        ]
+      : [],
+  );
   const events = (
     await db
       .prepare(
@@ -184,6 +215,8 @@ export async function accountView(
     credits,
     credit_allocations: creditAllocations,
     annulments,
+    delivery_cycles: deliveryCycles,
+    delivery_cycle_progress: current.get(customer) ?? null,
     closing_history: closingHistory,
     available_credit_cents: credits.reduce((n, c) => n + c.available_cents, 0),
     profile: profile ? JSON.parse(profile.data) : emptyProfile(),
@@ -288,7 +321,7 @@ export async function finance(
     const rows = (
       await db
         .prepare(
-          `${completionDates()} SELECT c.id,c.name,COALESCE(t.data,'') AS terms,o.id AS order_id,o.status,o.active,o.total_cents,o.due_at,${completedAt} AS completed_at,d.next_delivery_on,cl.due_on,COALESCE(p.paid,0) AS paid FROM customers c JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id LEFT JOIN completion_dates d ON d.id=o.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings cl ON cl.organization_id=co.organization_id AND cl.id=co.closing_id LEFT JOIN (SELECT x.organization_id,x.order_id,SUM(CASE WHEN e.kind='reversal' THEN -x.amount_cents ELSE x.amount_cents END) AS paid FROM payment_allocations x JOIN payment_events e ON e.organization_id=x.organization_id AND e.id=x.event_id GROUP BY x.organization_id,x.order_id) p ON p.organization_id=o.organization_id AND p.order_id=o.id WHERE c.organization_id=?1 AND o.active=1 AND o.status IN ('delivered','picked_up') LIMIT 5001`,
+          `${completionDates()} SELECT c.id,c.name,COALESCE(t.data,'') AS terms,o.id AS order_id,o.status,o.active,o.total_cents,o.due_at,${completedAt} AS completed_at,${completionSequence} AS completion_sequence,d.next_delivery_on,cl.due_on,COALESCE(p.paid,0) AS paid FROM customers c JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id LEFT JOIN completion_dates d ON d.id=o.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings cl ON cl.organization_id=co.organization_id AND cl.id=co.closing_id LEFT JOIN (SELECT x.organization_id,x.order_id,SUM(CASE WHEN e.kind='reversal' THEN -x.amount_cents ELSE x.amount_cents END) AS paid FROM payment_allocations x JOIN payment_events e ON e.organization_id=x.organization_id AND e.id=x.event_id GROUP BY x.organization_id,x.order_id) p ON p.organization_id=o.organization_id AND p.order_id=o.id WHERE c.organization_id=?1 AND o.active=1 AND o.status IN ('delivered','picked_up') LIMIT 5001`,
         )
         .bind(org)
         .all<Row>()
@@ -313,6 +346,17 @@ export async function finance(
         }
       >(),
       today = businessDay();
+    const { positions } = resolveDeliveryCycles(
+      rows.map((o) => ({
+        order_id: String(o.order_id),
+        customer_id: String(o.id),
+        due_at: String(o.due_at),
+        status: String(o.status),
+        terms: o.terms as string | null,
+        completed_at: o.completed_at as number | null,
+        completion_sequence: o.completion_sequence as number | null,
+      })),
+    );
     for (const o of rows) {
       const t = readTerms(String(o.terms) || null),
         day = completionDay(
@@ -322,6 +366,7 @@ export async function finance(
         due = termsDueDate(day, t, {
           closing: o.due_on as string | null,
           nextDelivery: o.next_delivery_on as string | null,
+          deliveryCycle: positions.get(String(o.order_id))?.cycle.due_on,
         }),
         balance = Math.max(0, Number(o.total_cents) - Number(o.paid));
       const row = clients.get(String(o.id)) ?? {
@@ -824,6 +869,11 @@ export async function finance(
       throw new HttpError(
         400,
         'Selecione entrega a prazo com condição definida.',
+      );
+    if (anchor.terms.cycle === 'deliveries')
+      throw new HttpError(
+        409,
+        'O fechamento por entregas é calculado na última entrega.',
       );
     const period = closingPeriod(anchor.business_date, anchor.terms as Terms);
     if (period.end >= businessDay())

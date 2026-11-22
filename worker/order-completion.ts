@@ -6,6 +6,7 @@ function latestCompletion(order: string) {
     ORDER BY e.created_at DESC,e.rowid DESC LIMIT 1)`;
 }
 export const completedAt = `(SELECT e.created_at FROM order_status_events e WHERE e.rowid=${latestCompletion('o')})`;
+export const completionSequence = latestCompletion('o');
 
 // Calcula uma sequência por cliente, sem repetir uma busca por entrega para cada pedido.
 export function completionDates(singleCustomer = false) {
