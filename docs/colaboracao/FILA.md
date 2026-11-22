@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T15** (versão de computador; prévia `previas/computador-hoje.png` aprovada; detalhes abaixo). Versão **1.3.0**. Base: main atual (1.2.0, com a T17). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
+`VEZ: CODEX` — tarefa **T16** (entrega feita pelos dois; detalhes abaixo). Versão **1.4.0**, com migração (aplicação no banco real só pelo Felipe). Base: main atual (1.3.0, com a T15). Em tarefas longas, faça **push parcial** no branch `codex/t16-...` durante o trabalho (em 22/11 a T15 quase se perdeu quando o workspace caiu). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
 **Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
@@ -78,7 +78,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
 | T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **publicada** 22/11 (PR #23, integrada pelo Claude) como **1.1.0** — migração **0028** aplicada pelo Felipe em 22/11 (28 aplicadas, nenhuma pendente) |
 | T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" + vencimento em dia fixo | **publicada** 22/11 (PR #24) como **1.2.0** — sem migração |
-| T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | prévia **aprovada** 20/11; **depois da T17** — versão **1.3.0** |
+| T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | **publicada** 22/11 (PR #25) como **1.3.0** |
 | T16 | Entrega feita pelos dois (Tiago e Alda) | **depois da T15** — versão **1.4.0** — migração (Felipe aplica) |
 | T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | prévia **aprovada** 22/11; **depois da T15** — versão **1.5.0** |
 
@@ -673,6 +673,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| **1.3.0** | 22/11 | **T15** (PR #25): gestão para computador a partir de 1024 px — menu lateral com + Novo fixo, Hoje com 4 indicadores em linha e duas colunas (entregas | produção e lembretes), Pedidos com detalhe ao lado, Clientes com edição à direita, Mais em três colunas, Relatórios com filtros em uma linha; celular inalterado. CI: testes de tela em 3 partes paralelas (variável `E2E_SHARDS`), ~9 min em vez de ~21. |
 | 1.2.1 | 22/11 | Nome de exibição (prévia `previas/nome-de-exibicao.png` aprovada): cartão "Como a equipe te chama?" no topo do Hoje enquanto não houver nome ("Agora não" esconde até a próxima abertura; substitui o botão "Defina seu nome"); passo 6 do passeio na foto de perfil, que abre Preferências em `#nome` com o campo em foco; nome passa para o topo de Preferências e fica vazio até ser definido. |
 | **1.2.0** | 22/11 | **T17** (PR #24): "Já foi entregue" no novo pedido (com recebimento opcional, fora da produção, direto no financeiro); pagamento "Na próxima entrega"; "Dia do mês" no vencimento a prazo (dia inexistente vence no último dia do mês — ajuste do Claude). Sem migração. Teste da T14 no WebKit passou a simular o erro no servidor de teste (page.route não intercepta após recarga no WebKit). |
 | **1.1.0** | 22/11 | **T14** (PR #23): tela de erro amigável (recarregar, voltar ao Hoje, contar o que houve), Sugestões e problemas no menu Mais e Recebidas para o administrador. Migração **0028** (Felipe aplica; sem ela o canal fica oculto). Integração: `z.config({ jitless: true })` em `src/zod-csp.ts`, importado primeiro em `main.tsx` (a T14 usava schema antes de `order-draft.ts` e violava a CSP). |
