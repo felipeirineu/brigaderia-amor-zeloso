@@ -5,9 +5,9 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T16** (entrega feita pelos dois; detalhes abaixo). Versão **1.4.0**, com migração (aplicação no banco real só pelo Felipe). Base: main atual (1.3.0, com a T15). Em tarefas longas, faça **push parcial** no branch `codex/t16-...` durante o trabalho (em 22/11 a T15 quase se perdeu quando o workspace caiu). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
+`VEZ: CODEX` — tarefa **T18** (pagar a cada X entregas; prévia `previas/t18-cobrar-a-cada-x-entregas.png` aprovada; detalhes abaixo). Versão **1.5.0**. Base: main atual (1.4.0, com a T16 e a migração 0029). Se precisar de migração, use a **0030**. Faça **push parcial** no branch `codex/t18-...` durante o trabalho. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
-**Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
+**Pendências do Felipe (fora do código):** aplicar a migração **0029** (T16) pela Homologação D1 (backup → PRE_CHECAGEM → APLICAR_PENDENTES → PRE_CHECAGEM). Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
 
 
@@ -79,8 +79,8 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **publicada** 22/11 (PR #23, integrada pelo Claude) como **1.1.0** — migração **0028** aplicada pelo Felipe em 22/11 (28 aplicadas, nenhuma pendente) |
 | T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" + vencimento em dia fixo | **publicada** 22/11 (PR #24) como **1.2.0** — sem migração |
 | T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | **publicada** 22/11 (PR #25) como **1.3.0** |
-| T16 | Entrega feita pelos dois (Tiago e Alda) | **depois da T15** — versão **1.4.0** — migração (Felipe aplica) |
-| T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | prévia **aprovada** 22/11; **depois da T15** — versão **1.5.0** |
+| T16 | Entrega feita pelos dois (Tiago e Alda) | **publicada** 22/11 (PR #26) como **1.4.0** — migração **0029** pendente (Felipe) |
+| T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | prévia **aprovada** 22/11; **vez do Codex** — versão **1.5.0** |
 
 ### T0 — R17
 
@@ -673,6 +673,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| **1.4.0** | 22/11 | **T16** (PR #26): entrega feita pelos dois ("Os dois") no Novo pedido, Editar entrega, Pedidos padrão e "Atribuir aos dois" no Hoje, com as duas iniciais (sem o Desenvolvedor); taxa e contagens uma vez por pedido. Migração **0029** (reconstrói `orders` e `recurring_templates` só para ampliar o CHECK de `courier`; estrutura conferida idêntica antes/depois pelo Claude). Sem a 0029, a opção fica oculta. |
 | **1.3.0** | 22/11 | **T15** (PR #25): gestão para computador a partir de 1024 px — menu lateral com + Novo fixo, Hoje com 4 indicadores em linha e duas colunas (entregas | produção e lembretes), Pedidos com detalhe ao lado, Clientes com edição à direita, Mais em três colunas, Relatórios com filtros em uma linha; celular inalterado. CI: testes de tela em 3 partes paralelas (variável `E2E_SHARDS`), ~9 min em vez de ~21. |
 | 1.2.1 | 22/11 | Nome de exibição (prévia `previas/nome-de-exibicao.png` aprovada): cartão "Como a equipe te chama?" no topo do Hoje enquanto não houver nome ("Agora não" esconde até a próxima abertura; substitui o botão "Defina seu nome"); passo 6 do passeio na foto de perfil, que abre Preferências em `#nome` com o campo em foco; nome passa para o topo de Preferências e fica vazio até ser definido. |
 | **1.2.0** | 22/11 | **T17** (PR #24): "Já foi entregue" no novo pedido (com recebimento opcional, fora da produção, direto no financeiro); pagamento "Na próxima entrega"; "Dia do mês" no vencimento a prazo (dia inexistente vence no último dia do mês — ajuste do Claude). Sem migração. Teste da T14 no WebKit passou a simular o erro no servidor de teste (page.route não intercepta após recarga no WebKit). |
