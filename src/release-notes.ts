@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.2.0',
+    items: [
+      'Na revisão, registre pedidos já entregues e o que foi recebido.',
+      'Combine pagar na próxima entrega ou em um dia fixo do mês após o fechamento.',
+    ],
+  },
+  {
     version: '1.0.10',
     items: [
       'Fechamento explicado como a fatura do cartão, com exemplo, no (?) do pedido a prazo.',

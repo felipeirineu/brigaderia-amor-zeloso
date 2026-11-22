@@ -1,3 +1,8 @@
+import {
+  completionDay,
+  completedAt,
+  completionDates,
+} from './order-completion';
 import { customerAddressSQL } from './customer-address';
 import { customerType } from '../shared/customer-order';
 import { checkPersonTerms } from './customer-order';
@@ -15,6 +20,7 @@ import {
   emptyProfile,
   emptyTerms,
   closingPeriod,
+  termsDueDate,
   type Terms,
 } from '../shared/finance';
 import {
@@ -46,9 +52,9 @@ export async function accountView(
   const orders = (
     await db
       .prepare(
-        'SELECT o.id,' +
+        `${completionDates(true)} SELECT o.id,` +
           orderNumber('o') +
-          ",o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,(SELECT MAX(e.created_at) FROM order_status_events e WHERE e.organization_id=o.organization_id AND e.order_id=o.id AND e.to_status IN ('delivered','picked_up')) AS completed_at,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents FROM orders o LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=? AND o.customer_id=? ORDER BY o.due_at,o.id LIMIT 1001",
+          `,o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,${completedAt} AS completed_at,d.next_delivery_on,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents FROM orders o LEFT JOIN completion_dates d ON d.id=o.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=?1 AND o.customer_id=?2 ORDER BY o.due_at,o.id LIMIT 1001`,
       )
       .bind(org, customer)
       .all<Row>()
@@ -62,22 +68,16 @@ export async function accountView(
   const enriched = orders.map((o) => {
     const terms = readTerms(o.terms as string | null),
       day = String(o.due_at).slice(0, 10),
-      businessDate = new Date(
-        (o.completed_at
-          ? Number(o.completed_at) * 1000
-          : Date.parse(String(o.due_at))) - 10800000,
-      )
-        .toISOString()
-        .slice(0, 10);
+      businessDate = completionDay(
+        o.completed_at == null ? null : Number(o.completed_at),
+        String(o.due_at),
+      );
     const delivered =
       ['delivered', 'picked_up'].includes(String(o.status)) && !!o.active;
-    const due =
-      terms.mode === 'unset'
-        ? null
-        : terms.mode === 'credit'
-          ? (o.closing_due_on as string | null) ||
-            closingPeriod(businessDate, terms).due_on
-          : businessDate;
+    const due = termsDueDate(businessDate, terms, {
+      closing: o.closing_due_on as string | null,
+      nextDelivery: o.next_delivery_on as string | null,
+    });
     const balance = Number(o.total_cents) - Number(o.paid_cents);
     return {
       ...o,
@@ -288,7 +288,7 @@ export async function finance(
     const rows = (
       await db
         .prepare(
-          "SELECT c.id,c.name,COALESCE(t.data,'') AS terms,o.id AS order_id,o.status,o.active,o.total_cents,o.due_at,(SELECT MAX(e.created_at) FROM order_status_events e WHERE e.organization_id=o.organization_id AND e.order_id=o.id AND e.to_status IN ('delivered','picked_up')) AS completed_at,cl.due_on,COALESCE(p.paid,0) AS paid FROM customers c JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings cl ON cl.organization_id=co.organization_id AND cl.id=co.closing_id LEFT JOIN (SELECT x.organization_id,x.order_id,SUM(CASE WHEN e.kind='reversal' THEN -x.amount_cents ELSE x.amount_cents END) AS paid FROM payment_allocations x JOIN payment_events e ON e.organization_id=x.organization_id AND e.id=x.event_id GROUP BY x.organization_id,x.order_id) p ON p.organization_id=o.organization_id AND p.order_id=o.id WHERE c.organization_id=? AND o.active=1 AND o.status IN ('delivered','picked_up') LIMIT 5001",
+          `${completionDates()} SELECT c.id,c.name,COALESCE(t.data,'') AS terms,o.id AS order_id,o.status,o.active,o.total_cents,o.due_at,${completedAt} AS completed_at,d.next_delivery_on,cl.due_on,COALESCE(p.paid,0) AS paid FROM customers c JOIN orders o ON o.organization_id=c.organization_id AND o.customer_id=c.id LEFT JOIN completion_dates d ON d.id=o.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings cl ON cl.organization_id=co.organization_id AND cl.id=co.closing_id LEFT JOIN (SELECT x.organization_id,x.order_id,SUM(CASE WHEN e.kind='reversal' THEN -x.amount_cents ELSE x.amount_cents END) AS paid FROM payment_allocations x JOIN payment_events e ON e.organization_id=x.organization_id AND e.id=x.event_id GROUP BY x.organization_id,x.order_id) p ON p.organization_id=o.organization_id AND p.order_id=o.id WHERE c.organization_id=?1 AND o.active=1 AND o.status IN ('delivered','picked_up') LIMIT 5001`,
         )
         .bind(org)
         .all<Row>()
@@ -309,24 +309,20 @@ export async function finance(
           overdue_cents: number;
           week_cents: number;
           received_cents: number;
+          next_delivery_cents: number;
         }
       >(),
       today = businessDay();
     for (const o of rows) {
       const t = readTerms(String(o.terms) || null),
-        day = new Date(
-          (o.completed_at
-            ? Number(o.completed_at) * 1000
-            : Date.parse(String(o.due_at))) - 10800000,
-        )
-          .toISOString()
-          .slice(0, 10),
-        due =
-          t.mode === 'unset'
-            ? null
-            : t.mode === 'credit'
-              ? String(o.due_on || closingPeriod(day, t).due_on)
-              : day,
+        day = completionDay(
+          o.completed_at == null ? null : Number(o.completed_at),
+          String(o.due_at),
+        ),
+        due = termsDueDate(day, t, {
+          closing: o.due_on as string | null,
+          nextDelivery: o.next_delivery_on as string | null,
+        }),
         balance = Math.max(0, Number(o.total_cents) - Number(o.paid));
       const row = clients.get(String(o.id)) ?? {
         id: String(o.id),
@@ -337,6 +333,7 @@ export async function finance(
         overdue_cents: 0,
         week_cents: 0,
         received_cents: 0,
+        next_delivery_cents: 0,
       };
       row.balance_cents += balance;
       const sunday = new Date(today + 'T12:00:00Z');
@@ -352,7 +349,8 @@ export async function finance(
               86400000,
           ),
         );
-      if (balance && !due) row.unconfigured++;
+      if (balance && t.mode === 'unset') row.unconfigured++;
+      if (t.mode === 'next_delivery') row.next_delivery_cents += balance;
       clients.set(row.id, row);
     }
     const received = await db
@@ -379,6 +377,7 @@ export async function finance(
         overdue_cents: 0,
         week_cents: 0,
         received_cents: 0,
+        next_delivery_cents: 0,
       };
       item.received_cents = r.received_cents;
       clients.set(r.id, item);
@@ -403,7 +402,9 @@ export async function finance(
             ? c.week_cents > 0
             : filter === 'received'
               ? c.received_cents !== 0
-              : true,
+              : filter === 'next_delivery'
+                ? c.next_delivery_cents > 0
+                : true,
       ),
     });
   }
@@ -641,7 +642,7 @@ export async function finance(
         (!closing || o.closing_id === closing.id) &&
         (!selectedOrder || o.id === selectedOrder.id),
     );
-    const message = `Olá, ${customer.name}! Segue o resumo ${selectedOrder ? 'do pedido selecionado' : closing ? `do fechamento ${closing.period_start} a ${closing.period_end}` : 'da sua conta'}: ${lines.map((o) => `pedido ${'number' in o && o.number ? 'nº ' + String(o.number) : String(o.id).slice(0, 8)} (${o.business_date}): ${brl(o.receivable_cents)}`).join('; ')}. Saldo: ${brl(balance)}.${closing ? ` Vencimento: ${closing.due_on}.` : ''}${pix ? ` Pix copia e cola: ${pix}` : ''}`;
+    const message = `Olá, ${customer.name}! Segue o resumo ${selectedOrder ? 'do pedido selecionado' : closing ? `do fechamento ${closing.period_start} a ${closing.period_end}` : 'da sua conta'}: ${lines.map((o) => `pedido ${'number' in o && o.number ? 'nº ' + String(o.number) : String(o.id).slice(0, 8)} (${o.business_date}): ${brl(o.receivable_cents)}`).join('; ')}. Saldo: ${brl(balance)}.${closing ? ` Vencimento: ${closing.due_on}.` : selectedOrder?.due_on ? ` Vencimento: ${selectedOrder.due_on}.` : selectedOrder?.terms.mode === 'next_delivery' ? ' Vencimento na próxima entrega.' : ''}${pix ? ` Pix copia e cola: ${pix}` : ''}`;
     // Sem telefone cadastrado: a mensagem sai e o contato é escolhido no WhatsApp.
     if (
       hasPhone(customer.phone) &&

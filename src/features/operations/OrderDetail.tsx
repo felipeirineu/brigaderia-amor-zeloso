@@ -1,3 +1,8 @@
+import {
+  dueDayLabel,
+  paymentModeLabels,
+  type Terms,
+} from '../../../shared/finance';
 import { WhatsAppLink } from '../../components/TestEnvironment';
 import { useConfirm, usePrompt } from '../../components/confirm-context';
 import { AvatarChip } from '../../components/AvatarChip';
@@ -50,7 +55,7 @@ export function OrderDetail({
     field = useField(),
     [trip, setTrip] = useState(false);
   const { id } = useParams();
-  const view = useRemote<OperationalOrder>(`orders/${id}`);
+  const view = useRemote<OperationalOrder & { terms?: Terms }>(`orders/${id}`);
   const history = useRemote<
     {
       id: string;
@@ -133,6 +138,13 @@ export function OrderDetail({
       {order ? (
         <>
           <h1>{order.customer_name}</h1>
+          {financial && order.terms && order.terms.mode !== 'unset' && (
+            <p>
+              Pagamento: {paymentModeLabels[order.terms.mode]}
+              {order.terms.due_day_of_month != null &&
+                ' · vence no ' + dueDayLabel(order.terms.due_day_of_month)}
+            </p>
+          )}
           {occasionLabel(order.occasion) && (
             <p>Ocasião: {occasionLabel(order.occasion)}</p>
           )}

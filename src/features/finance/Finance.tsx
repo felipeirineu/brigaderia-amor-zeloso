@@ -24,6 +24,7 @@ export interface Summary {
     received_cents: number;
     overdue_cents: number;
     week_cents: number;
+    next_delivery_cents: number;
   }[];
 }
 export function FinanceSummary({
@@ -101,6 +102,20 @@ export function FinanceSummary({
           </div>
           {!dashboard && (
             <>
+              <div className="chips" aria-label="Filtro de recebíveis">
+                <Button
+                  to="/gestao/financeiro"
+                  variant={filter ? 'tonal' : 'primary'}
+                >
+                  Todos
+                </Button>
+                <Button
+                  to="/gestao/financeiro?filter=next_delivery"
+                  variant={filter === 'next_delivery' ? 'primary' : 'tonal'}
+                >
+                  Na próxima entrega
+                </Button>
+              </div>
               <p className="finance-reference">
                 Valores líquidos em {civilDate(view.data.day)}. Saldos de
                 entregas realizadas.
@@ -116,7 +131,9 @@ export function FinanceSummary({
                           ? c.overdue_cents
                           : filter === 'week'
                             ? c.week_cents
-                            : c.balance_cents,
+                            : filter === 'next_delivery'
+                              ? c.next_delivery_cents
+                              : c.balance_cents,
                     )}
                   </Button>
                   {c.overdue_days > 0 && (

@@ -62,6 +62,9 @@ import { NoPhoto } from '../../components/NoPhoto';
 import { deliveryAddress, emptyPlace } from '../../../shared/field';
 import {
   emptyTerms,
+  paymentModeLabels,
+  paymentMethods,
+  dueDayLabel,
   type B2BProfile,
   type Terms,
 } from '../../../shared/finance';
@@ -229,6 +232,12 @@ export function Totem({
     [schedule, setSchedule] = useState({ due: '', pastConfirmed: false }),
     [planDue, setPlanDue] = useState(''),
     [notes, setNotes] = useState(''),
+    [deliveredAt, setDeliveredAt] = useState<string | null>(null),
+    [receiptMethod, setReceiptMethod] = useState<
+      keyof typeof paymentMethods | ''
+    >(''),
+    [receiptAmount, setReceiptAmount] = useState<number | null>(null),
+    [receiptDay, setReceiptDay] = useState(''),
     [occasion, setOccasion] = useState<Occasion>(''),
     [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>(
       'delivery',
@@ -362,9 +371,10 @@ export function Totem({
   // Aviso de pedido repetido: mesmo cliente, mesmo dia, outro pedido ativo.
   // Não bloqueia (o cliente pode pedir duas vezes), mas exige um toque a mais.
   // Ao editar um pedido existente, não avisa.
+  const effectiveDue = deliveredAt ?? due;
   const dupKey =
-    step === REVIEW && !id && customer?.id && due
-      ? customer.id + '|' + due.slice(0, 10)
+    step === REVIEW && !id && customer?.id && effectiveDue
+      ? customer.id + '|' + effectiveDue.slice(0, 10)
       : '';
   const [dupFound, setDupFound] = useState<{
       key: string;
@@ -695,7 +705,12 @@ export function Totem({
   }
   async function confirmOrder() {
     if (pending.current || !customer || kitEditing || sameDayBlocks) return;
-    if (!id && isPastToday(due) && !schedule.pastConfirmed) {
+    if (
+      deliveredAt === null &&
+      !id &&
+      isPastToday(due) &&
+      !schedule.pastConfirmed
+    ) {
       setClock(readTime());
       setStep(WHEN);
       return;
@@ -710,13 +725,39 @@ export function Totem({
         invalid.reportValidity();
         throw Error('Confira o campo indicado antes de confirmar.');
       }
-      if (!validDue)
+      if (deliveredAt === null && !validDue)
         throw Error('Escolha uma data a partir de hoje e um horário válido.');
+      const completed =
+        deliveredAt === null ? null : new Date(deliveredAt + ':00-03:00');
+      if (
+        completed &&
+        (!Number.isFinite(completed.getTime()) ||
+          completed.getTime() > readTime())
+      )
+        throw Error('Informe uma data e hora de entrega que já passaram.');
+      if (
+        terms.mode === 'credit' &&
+        terms.due_day_of_month != null &&
+        (terms.due_day_of_month < 1 || terms.due_day_of_month > 31)
+      )
+        throw Error('Informe um dia de vencimento de 1 a 31.');
       const data = {
           customer_id: customer.id,
           occasion: metadata ? occasion : undefined,
           ...(editing ? { version: editing.version } : {}),
-          due_at: new Date(due + ':00-03:00').toISOString(),
+          due_at:
+            completed?.toISOString() ??
+            new Date(due + ':00-03:00').toISOString(),
+          ...(completed ? { delivered_at: completed.toISOString() } : {}),
+          ...(completed && receiptMethod
+            ? {
+                receipt: {
+                  amount_cents: receiptAmount ?? 0,
+                  method: receiptMethod,
+                  paid_on: receiptDay || effectiveDue.slice(0, 10),
+                },
+              }
+            : {}),
           notes,
           items: [
             ...selected.map((v) => ({
@@ -941,13 +982,18 @@ export function Totem({
     return (
       <section className="panel order-success">
         <Mascot size={120} className="mascot-wave" />
-        <h1>Pedido confirmado</h1>
+        <h1>
+          {deliveredAt
+            ? 'Pedido registrado como entregue'
+            : 'Pedido confirmado'}
+        </h1>
         <p>
           {customer?.name} · {money(total)}
         </p>
         <p>
-          {deliveryDayLabel(due.slice(0, 10))} · {due.slice(11, 16)} ·{' '}
-          {boxCount} {boxCount === 1 ? 'caixa' : 'caixas'}
+          {deliveryDayLabel(effectiveDue.slice(0, 10))} ·{' '}
+          {effectiveDue.slice(11, 16)} · {boxCount}{' '}
+          {boxCount === 1 ? 'caixa' : 'caixas'}
         </p>
         {addressNotice && <p role="status">{addressNotice}</p>}
         <div className="stacked-actions">
@@ -1820,12 +1866,21 @@ export function Totem({
             <HelpTip topic="orderPayment" />
           </div>
           <div className="chips" aria-label="Condição de pagamento">
-            {(['unset', 'advance', 'delivery', 'credit'] as const)
+            {(
+              [
+                'unset',
+                'advance',
+                'delivery',
+                'next_delivery',
+                'credit',
+              ] as const
+            )
               .filter(
                 (mode) =>
                   customerType(defaults ?? customer) !== 'person' ||
                   mode === 'advance' ||
-                  mode === 'delivery',
+                  mode === 'delivery' ||
+                  mode === 'next_delivery',
               )
               .map((mode) => (
                 <Button
@@ -1845,17 +1900,11 @@ export function Totem({
                                   : terms.cycle,
                               due_days: terms.due_days ?? 0,
                             }
-                        : { ...terms, mode },
+                        : { ...terms, mode, due_day_of_month: undefined },
                     )
                   }
                 >
-                  {mode === 'unset'
-                    ? 'A definir'
-                    : mode === 'advance'
-                      ? 'Adiantado'
-                      : mode === 'delivery'
-                        ? 'Na entrega'
-                        : 'A prazo'}
+                  {paymentModeLabels[mode]}
                 </Button>
               ))}
           </div>
@@ -1906,13 +1955,52 @@ export function Totem({
                   <Button
                     key={days}
                     variant="chip"
-                    aria-pressed={terms.due_days === days}
-                    onClick={() => setTerms({ ...terms, due_days: days })}
+                    aria-pressed={
+                      terms.due_day_of_month == null && terms.due_days === days
+                    }
+                    onClick={() =>
+                      setTerms({
+                        ...terms,
+                        due_days: days,
+                        due_day_of_month: undefined,
+                      })
+                    }
                   >
                     {label}
                   </Button>
                 ))}
+                <Button
+                  variant="chip"
+                  aria-pressed={terms.due_day_of_month != null}
+                  onClick={() =>
+                    setTerms({
+                      ...terms,
+                      due_days: null,
+                      due_day_of_month: terms.due_day_of_month ?? 10,
+                    })
+                  }
+                >
+                  Dia do mês
+                </Button>
               </div>
+              {terms.due_day_of_month != null && (
+                <label>
+                  Dia de vencimento (31 = último dia)
+                  <input
+                    type="number"
+                    min={1}
+                    max={31}
+                    required
+                    value={terms.due_day_of_month || ''}
+                    onChange={(e) =>
+                      setTerms({
+                        ...terms,
+                        due_day_of_month: Number(e.target.value),
+                      })
+                    }
+                  />
+                </label>
+              )}
               <p className="wizard-hint">
                 Vale para este pedido. Para mudar o padrão do cliente, use a
                 conta dele no Financeiro.
@@ -2126,7 +2214,7 @@ export function Totem({
             <li>
               <span>
                 <small>Quando</small>
-                {due
+                {effectiveDue
                   ? new Intl.DateTimeFormat('pt-BR', {
                       weekday: 'short',
                       day: '2-digit',
@@ -2134,12 +2222,14 @@ export function Totem({
                       hour: '2-digit',
                       minute: '2-digit',
                       timeZone: 'UTC',
-                    }).format(new Date(due + ':00Z'))
+                    }).format(new Date(effectiveDue + ':00Z'))
                   : 'A escolher'}
               </span>
-              <Button variant="ghost" onClick={() => setStep(WHEN)}>
-                Alterar
-              </Button>
+              {deliveredAt === null && (
+                <Button variant="ghost" onClick={() => setStep(WHEN)}>
+                  Alterar
+                </Button>
+              )}
             </li>
             <li>
               <span>
@@ -2157,18 +2247,10 @@ export function Totem({
               <li>
                 <span>
                   <small>Pagamento</small>
-                  {terms.mode === 'advance'
-                    ? 'Adiantado'
-                    : terms.mode === 'delivery'
-                      ? 'Na entrega'
-                      : terms.mode === 'credit'
-                        ? 'A prazo · ' +
-                          (terms.cycle === 'weekly'
-                            ? 'semanal'
-                            : terms.cycle === 'monthly'
-                              ? 'mensal'
-                              : 'quinzenal')
-                        : 'A definir'}
+                  {paymentModeLabels[terms.mode]}
+                  {terms.mode === 'credit' &&
+                    terms.due_day_of_month != null &&
+                    ' · vence no ' + dueDayLabel(terms.due_day_of_month)}
                 </span>
                 <Button variant="ghost" onClick={() => setStep(PAYMENT)}>
                   Alterar
@@ -2176,6 +2258,90 @@ export function Totem({
               </li>
             )}
           </ul>
+          {!id && (
+            <fieldset className="panel data-form">
+              <legend>Entrega realizada</legend>
+              <label className="check-row">
+                <input
+                  type="checkbox"
+                  checked={deliveredAt !== null}
+                  onChange={(e) => {
+                    const now = new Date();
+                    const time = new Intl.DateTimeFormat('en-GB', {
+                      timeZone: 'America/Fortaleza',
+                      hourCycle: 'h23',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }).format(now);
+                    setDeliveredAt(
+                      e.target.checked ? fortalezaDay(now) + 'T' + time : null,
+                    );
+                    setReceiptMethod('');
+                    setReceiptDay('');
+                  }}
+                />
+                Já foi entregue
+              </label>
+              {deliveredAt !== null && (
+                <>
+                  <label>
+                    Data e hora da entrega
+                    <input
+                      type="datetime-local"
+                      value={deliveredAt}
+                      required
+                      onChange={(e) => setDeliveredAt(e.target.value)}
+                    />
+                  </label>
+                  {financial && (
+                    <>
+                      <label>
+                        Registrar recebimento
+                        <select
+                          value={receiptMethod}
+                          onChange={(e) => {
+                            setReceiptMethod(
+                              e.target.value as typeof receiptMethod,
+                            );
+                            setReceiptAmount(total);
+                          }}
+                        >
+                          <option value="">Deixar a receber</option>
+                          {Object.entries(paymentMethods).map(
+                            ([method, label]) => (
+                              <option key={method} value={method}>
+                                {label}
+                              </option>
+                            ),
+                          )}
+                        </select>
+                      </label>
+                      {receiptMethod && (
+                        <>
+                          <MoneyInput
+                            label="Valor recebido (R$)"
+                            value={receiptAmount}
+                            maxCents={total}
+                            onValueChange={setReceiptAmount}
+                          />
+                          <label>
+                            Data do recebimento
+                            <input
+                              type="date"
+                              required
+                              max={fortalezaDay()}
+                              value={receiptDay || deliveredAt.slice(0, 10)}
+                              onChange={(e) => setReceiptDay(e.target.value)}
+                            />
+                          </label>
+                        </>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </fieldset>
+          )}
           <label>
             Observações
             <textarea
@@ -2206,7 +2372,12 @@ export function Totem({
                 (step === WHEN && (!validDue || pastBlocks)) ||
                 (step === PAYMENT &&
                   customerType(defaults ?? customer) === 'person' &&
-                  !['advance', 'delivery'].includes(terms.mode))
+                  !['advance', 'delivery', 'next_delivery'].includes(
+                    terms.mode,
+                  )) ||
+                (step === PAYMENT &&
+                  terms.due_day_of_month != null &&
+                  (terms.due_day_of_month < 1 || terms.due_day_of_month > 31))
               }
               onClick={() => {
                 if (
@@ -2235,7 +2406,11 @@ export function Totem({
                 (!!id &&
                   (editing?.id !== id || (financial && termsLoaded !== id))) ||
                 !hasItems ||
-                !due
+                (deliveredAt === null
+                  ? !due
+                  : !deliveredAt ||
+                    (!!receiptMethod &&
+                      (!receiptAmount || receiptAmount > total)))
               }
               onClick={() => void confirmOrder()}
               variant="primary"

@@ -99,3 +99,27 @@ it('CRC16 confere exemplo estático oficial BACEN seção 2.6.3', () => {
     '00020126580014br.gov.bcb.pix0136123e4567-e12b-12d1-a456-4266554400005204000053039865802BR5913Fulano de Tal6008BRASILIA62070503***6304';
   expect(crc16(payload)).toBe('1D3D');
 });
+
+it('dia fixo é posterior ao fechamento, inclusive em fevereiro e na virada de ano', () => {
+  const t = { ...emptyTerms(), mode: 'credit' as const, due_day_of_month: 10 };
+  expect(closingPeriod('2026-11-01', t).due_on).toBe('2026-12-10');
+  expect(closingPeriod('2026-11-20', t).due_on).toBe('2026-12-10');
+  expect(closingPeriod('2026-12-20', t).due_on).toBe('2027-01-10');
+  expect(
+    closingPeriod('2028-02-01', { ...t, due_day_of_month: 31 }).due_on,
+  ).toBe('2028-02-29');
+  expect(
+    closingPeriod('2027-02-16', { ...t, due_day_of_month: 31 }).due_on,
+  ).toBe('2027-03-31');
+  expect(
+    closingPeriod('2026-11-01', { ...t, due_day_of_month: 15 }).due_on,
+  ).toBe('2026-12-15');
+  expect(
+    closingPeriod('2027-02-01', { ...t, due_day_of_month: 30 }).due_on,
+  ).toBe('2027-03-30');
+  expect(termsSchema.safeParse(t).success).toBe(true);
+  expect(termsSchema.safeParse({ ...t, due_days: 7 }).success).toBe(false);
+  expect(termsSchema.safeParse({ ...t, due_day_of_month: 32 }).success).toBe(
+    false,
+  );
+});

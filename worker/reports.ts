@@ -1,3 +1,4 @@
+import { paymentModeLabels } from '../shared/finance';
 import { flavorLines, flavorItemTexts } from './flavor-lines';
 import { z } from 'zod';
 import { receivables } from './receivables';
@@ -19,8 +20,9 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     mode = url.searchParams.get('condition') || 'all',
     customer = url.searchParams.get('customer') || '';
   if (
-    !z.enum(['all', 'unset', 'advance', 'delivery', 'credit']).safeParse(mode)
-      .success ||
+    !z
+      .enum(['all', 'unset', 'advance', 'delivery', 'next_delivery', 'credit'])
+      .safeParse(mode).success ||
     (customer && !z.uuid().safeParse(customer).success)
   )
     throw new HttpError(400, 'Filtro inválido.');
@@ -255,7 +257,9 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         o.total_cents,
         o.paid_cents,
         o.balance_cents,
-        o.condition,
+        o.condition === 'next_delivery'
+          ? paymentModeLabels.next_delivery
+          : o.condition,
         o.cycle,
       ]),
     },

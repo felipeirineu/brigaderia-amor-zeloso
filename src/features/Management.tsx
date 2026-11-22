@@ -1,3 +1,4 @@
+import { paymentModeLabels } from '../../shared/finance';
 import { roleLabel } from '../role-label';
 import { ConfirmProvider } from '../components/ConfirmSheet';
 import {
@@ -1390,13 +1391,9 @@ function FullOrders({
                 Padrões do cliente:{' '}
                 {defaults.profile.address || 'Endereço a definir'} · janela{' '}
                 {defaults.profile.delivery_window || 'a definir'} · condição{' '}
-                {defaults.profile.terms.mode === 'unset'
-                  ? 'a definir'
-                  : defaults.profile.terms.mode === 'credit'
-                    ? 'a prazo'
-                    : defaults.profile.terms.mode === 'advance'
-                      ? 'adiantado'
-                      : 'na entrega'}
+                {paymentModeLabels[
+                  defaults.profile.terms.mode
+                ].toLocaleLowerCase('pt-BR')}
                 . Tudo pode ser revisado.
               </p>
               {defaults.plans.length > 0 && (

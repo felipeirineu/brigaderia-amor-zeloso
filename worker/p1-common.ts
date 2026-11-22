@@ -90,20 +90,42 @@ export async function p1Mutation(
     guard = `EXISTS(SELECT 1 FROM ${plan.table} WHERE organization_id=? AND id=? ${plan.table === 'expense_events' ? '' : 'AND mutation_id=?'})`,
     args =
       plan.table === 'expense_events' ? [org, plan.id] : [org, plan.id, nonce];
-  const result = await db.batch([
-    plan.first,
-    ...plan.rest(guard, args),
-    db
+  let result;
+  try {
+    result = await db.batch([
+      plan.first,
+      ...plan.rest(guard, args),
+      db
+        .prepare(
+          `INSERT INTO ${requestsTable}(organization_id,request_key,request_hash,response) SELECT ?,?,?,? WHERE ${guard}`,
+        )
+        .bind(org, key, fingerprint, JSON.stringify(plan.response), ...args),
+      db
+        .prepare(
+          `INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT ?,?,?,?,? WHERE ${guard}`,
+        )
+        .bind(
+          crypto.randomUUID(),
+          org,
+          a.user_id,
+          plan.action,
+          plan.id,
+          ...args,
+        ),
+    ]);
+  } catch (error) {
+    // Envio simultâneo: se a primeira transação já confirmou, reaproveite seu resultado.
+    const concurrent = await db
       .prepare(
-        `INSERT INTO ${requestsTable}(organization_id,request_key,request_hash,response) SELECT ?,?,?,? WHERE ${guard}`,
+        `SELECT request_hash,response FROM ${requestsTable} WHERE organization_id=? AND request_key=?`,
       )
-      .bind(org, key, fingerprint, JSON.stringify(plan.response), ...args),
-    db
-      .prepare(
-        `INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT ?,?,?,?,? WHERE ${guard}`,
-      )
-      .bind(crypto.randomUUID(), org, a.user_id, plan.action, plan.id, ...args),
-  ]);
+      .bind(org, key)
+      .first<{ request_hash: string; response: string }>();
+    if (!concurrent) throw error;
+    if (concurrent.request_hash !== fingerprint)
+      throw new HttpError(409, 'Chave já usada.');
+    return json(JSON.parse(concurrent.response));
+  }
   if (!result[0].meta.changes)
     throw new HttpError(409, 'Registro alterado. Atualize.');
   return json(plan.response, req.method === 'POST' ? 201 : 200);

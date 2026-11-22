@@ -1,3 +1,4 @@
+import { readTerms } from './finance-domain';
 import { developerEmails, isDeveloper } from './developers';
 import { requireProductArchive } from './product-policy';
 import { prospectCostsReady } from './prospect-costs';
@@ -208,6 +209,15 @@ export async function management(req: Request, env: Env, a: Actor) {
         : {}),
     }));
     if (id && !rows.length) throw new HttpError(404, 'Não encontrado.');
+    if (id && resource === 'orders' && (await financeReady(env))) {
+      const terms = await db
+        .prepare(
+          'SELECT data FROM order_terms WHERE organization_id=? AND order_id=?',
+        )
+        .bind(org, id)
+        .first<{ data: string }>();
+      return json({ ...extended[0], terms: readTerms(terms?.data) });
+    }
     return json(id ? extended[0] : extended);
   }
   if (req.method !== 'POST' && req.method !== 'PUT' && req.method !== 'DELETE')

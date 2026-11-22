@@ -38,7 +38,7 @@ export const helpTexts = {
   },
   payment: {
     title: 'Condição de pagamento',
-    text: 'É o jeito de pagar que já vem marcado nos pedidos deste cliente. Adiantado: paga antes de receber. Na entrega: paga quando recebe. A prazo (só estabelecimentos): paga tudo junto no fechamento; veja o (?) de Fechamento. A condição só organiza a cobrança; o pagamento é registrado em Registrar recebimento.',
+    text: 'É o jeito de pagar que já vem marcado nos pedidos deste cliente. Adiantado: paga antes de receber. Na entrega: paga quando recebe. Na próxima entrega: o saldo fica a receber e vence na data da próxima entrega ao cliente. A prazo (só estabelecimentos): paga tudo junto no fechamento; veja o (?) de Fechamento. A condição só organiza a cobrança; o pagamento é registrado em Registrar recebimento.',
   },
   balance: {
     title: 'Saldo / a receber',
@@ -75,6 +75,7 @@ export const helpTexts = {
       'A definir: ainda não combinaram. O pedido não aparece como cobrança.',
       'Adiantado: o cliente paga antes de receber, por exemplo por Pix ao encomendar.',
       'Na entrega: o cliente paga na hora em que recebe os doces.',
+      'Na próxima entrega: o saldo deste pedido vence na data da próxima entrega realizada para o mesmo cliente.',
       'A prazo (só estabelecimentos): o cliente não paga a cada entrega; paga tudo junto no fechamento. Toque no (?) de Fechamento para ver um exemplo.',
     ],
   },
@@ -83,7 +84,8 @@ export const helpTexts = {
     text: 'Funciona como a fatura do cartão de crédito: as entregas se somam, a conta fecha num dia e vence depois. O cliente paga tudo de uma vez.',
     steps: [
       'Fechamento: o dia em que a conta fecha. Semanal (todo domingo), Quinzenal (dia 15 e último dia do mês) ou Mensal (último dia do mês).',
-      'Pagar: quando a conta vence. No fechamento (no mesmo dia), 7 dias depois ou 15 dias depois.',
+      'Pagar: quando a conta vence. No fechamento (no mesmo dia), 7 dias depois, 15 dias depois ou Dia do mês (31 significa o último dia).',
+      'Em Dia do mês vale a primeira ocorrência depois do fechamento. Se fecha dia 15 e o vencimento é dia 10, vence dia 10 do mês seguinte.',
       'Exemplo: uma conveniência recebe 1 Kit 12 de R$ 42,00 toda terça e sexta, em Quinzenal e 7 dias depois. Entregas nos dias 3, 6, 10 e 13: R$ 168,00. A conta fecha no dia 15 e vence no dia 22.',
     ],
     more: '/gestao/ajuda#fechamento-prazos',

@@ -301,8 +301,8 @@ export function HelpCenter({
             </li>
             <li>
               Combine data, retirada ou entrega e quem leva. Para pessoa,
-              escolha adiantado ou na entrega; registrar a condição não registra
-              pagamento.
+              escolha adiantado, na entrega ou na próxima entrega; registrar a
+              condição não registra pagamento.
             </li>
             <li>
               Em Revisar, a ocasião é opcional. Confira itens, quantidades e
@@ -408,13 +408,24 @@ export function HelpCenter({
               </li>
               <li>
                 Vencimento da fatura = <strong>Pagar</strong>: no fechamento, 7
-                dias depois ou 15 dias depois.
+                dias depois, 15 dias depois ou no próximo dia fixo escolhido.
               </li>
               <li>
                 Pagar a fatura inteira = o cliente paga todas as entregas
                 juntas.
               </li>
             </ul>
+            <p>
+              Em <strong>Dia do mês</strong>, o vencimento é a primeira
+              ocorrência após o fechamento. Se fechou dia 15 e o dia escolhido é
+              10, a conta vence no dia 10 do mês seguinte. O dia 31 sempre
+              representa o último dia do mês.
+            </p>
+            <p>
+              <strong>Na próxima entrega:</strong> a cobrança é por pedido. O
+              saldo fica a receber sem vencimento até a próxima entrega
+              realizada para o mesmo cliente.
+            </p>
             <h3>Quando a conta fecha</h3>
             <ul>
               <li>

@@ -1,3 +1,33 @@
+## T17 — entrega para revisão (22/11/2026)
+
+### Produzido
+
+- O cadastro pelo fluxo **Novo pedido → Revisar** agora permite registrar uma entrega já realizada. Data e hora começam no horário atual de João Pessoa. Um recebimento opcional, integral ou parcial, é registrado na mesma operação idempotente. O pedido entra no financeiro sem passar pela produção.
+- **Na próxima entrega** está disponível para pessoas e estabelecimentos. O saldo fica em **A receber**, sem vencimento até a próxima entrega efetiva ao mesmo cliente. O marco é recalculado se essa entrega for desfeita. A condição aparece na ajuda, no filtro do Financeiro e no relatório de vendas.
+- Nas condições a prazo, **Dia do mês** aceita de 1 a 31 e usa a primeira ocorrência depois do fechamento. Dia 31 significa o último dia do mês. A regra aparece no pedido, na conta, no extrato e na cobrança. Os prazos em dias seguem disponíveis.
+- Versão 1.2.0, guia em `docs/FASE_T17.md` e captura com dados fictícios em `docs/colaboracao/capturas/t17-entrega-realizada.png`. A entrega usa o esquema de banco existente.
+
+### Testes executados
+
+- Build de Pages, TypeScript, lint, formatação e 241 testes unitários.
+- Integrações de financeiro, operações, mobile, R2, P1 e 317 verificações de segurança. O cenário T17 verifica produção, recebíveis, relatórios, validade e atomicidade do recebimento, concorrência, isolamento por cliente e organização e vencimento depois do fechamento.
+- 9 testes de tela de financeiro, mobile e T17 em Chromium móvel, WebKit móvel e Chromium desktop. O fluxo T17 foi repetido nos três navegadores após os últimos ajustes.
+
+### Limitações
+
+- A baixa de estoque continua manual. Retiradas e entregas planejadas não disparam o vencimento da dívida anterior. Se o dia fixo de 1 a 30 não existir em um mês, o cálculo busca o próximo mês com aquele dia.
+- O registro retroativo fica no fluxo Novo pedido do Modo simples. A versão foi testada em navegadores simulados e em banco local descartável. Depois de gravar as novas condições, qualquer reversão de versão precisa preservar a leitura desses valores.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas do PR, revisão do Claude e publicação depois da T14. Nenhuma operação na Cloudflare ou no D1 real.
+
+## T17 — plano antes do código (22/11/2026)
+
+Base `8b524a0`. Em Novo pedido, registrar entrega ocorrida e recebimento opcional na mesma transação idempotente do cadastro, usando os eventos de status, financeiro e auditoria existentes. O estoque segue manual, como na entrega normal. Usar a data efetiva nos recebíveis e relatórios.
+
+Estender Terms (JSON) com próxima entrega e dia fixo do mês. Financeiro, conta, filtros e relatórios compartilham o cálculo de vencimento. Verificar fechamento, datas retroativas, produção, isolamento e caminhos com/sem recebimento, com integração local e E2E móvel. Sem migração prevista: status, eventos e condições já comportam os valores. Incorporar o main atual antes do PR.
+
 ## T13 — entrega para revisão (19/11/2026)
 
 ### Produzido

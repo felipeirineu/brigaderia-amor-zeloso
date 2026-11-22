@@ -35,7 +35,7 @@ import { hash, HttpError, json, type Actor, type Env } from './security';
 import { p1Mutation } from './p1-common';
 import { termsSchema } from './finance-domain';
 import { emptyTerms, emptyProfile } from '../shared/finance';
-import { deliverySchema, nextStatuses } from './operations-domain';
+import { businessDay, deliverySchema, nextStatuses } from './operations-domain';
 const schema = z
   .object({
     customer_id: z.uuid(),
@@ -55,6 +55,15 @@ const schema = z
         (v) => v.courier !== 'courier' || !!v.courier_name,
         'Informe o nome do motoboy.',
       ),
+    delivered_at: z.iso.datetime({ offset: true }).optional(),
+    receipt: z
+      .object({
+        amount_cents: z.number().int().positive().max(1000000000),
+        method: z.enum(['pix', 'cash', 'debit', 'credit', 'transfer', 'other']),
+        paid_on: z.iso.date(),
+      })
+      .strict()
+      .optional(),
     terms: termsSchema.nullable().default(null),
   })
   .strict()
@@ -374,6 +383,44 @@ export async function mobile(req: Request, env: Env, a: Actor) {
         true,
       );
     }
+    const completed = d.delivered_at
+      ? Math.floor(Date.parse(d.delivered_at) / 1000)
+      : null;
+    if (
+      completed !== null &&
+      (id || completed < 0 || Date.parse(d.delivered_at!) > Date.now())
+    )
+      throw new HttpError(
+        400,
+        'Informe uma data de entrega já ocorrida para o novo pedido.',
+      );
+    if (
+      completed !== null &&
+      d.delivery.delivery_type === 'delivery' &&
+      d.delivery.courier === 'unassigned'
+    )
+      throw new HttpError(400, 'Selecione quem fez a entrega.');
+    if (
+      d.receipt &&
+      (completed === null ||
+        !financial ||
+        d.receipt.paid_on > businessDay() ||
+        d.receipt.amount_cents > total)
+    )
+      throw new HttpError(
+        400,
+        'Confira data, condição e valor do recebimento antes de confirmar.',
+      );
+    const status =
+      completed === null
+        ? 'confirmed'
+        : d.delivery.delivery_type === 'pickup'
+          ? 'picked_up'
+          : 'delivered';
+    const dueAt =
+      completed === null ? d.due_at : new Date(completed * 1000).toISOString();
+    const eventTime = completed ?? Math.floor(Date.now() / 1000);
+    const paymentId = d.receipt ? crypto.randomUUID() : null;
     const occasionWrites = await customerOrderFieldWrite(
       db,
       org,
@@ -389,8 +436,11 @@ export async function mobile(req: Request, env: Env, a: Actor) {
     return {
       id: order,
       table: 'orders',
-      action: 'order.mobile_confirmed',
-      response: { id: order, status: 'confirmed', version },
+      action:
+        completed === null
+          ? 'order.mobile_confirmed'
+          : 'order.mobile_delivered',
+      response: { id: order, status, version },
       first: id
         ? db
             .prepare(
@@ -412,19 +462,20 @@ export async function mobile(req: Request, env: Env, a: Actor) {
             )
         : db
             .prepare(
-              "INSERT INTO orders(id,organization_id,customer_id,customer_name,due_at,notes,total_cents,request_key,request_hash,mutation_id,status,delivery_type,delivery_address,courier,courier_name,courier_fee_cents) VALUES(?,?,?,?,?,?,?,?,?,?,'confirmed',?,?,?,?,?)",
+              'INSERT INTO orders(id,organization_id,customer_id,customer_name,due_at,notes,total_cents,request_key,request_hash,mutation_id,status,delivery_type,delivery_address,courier,courier_name,courier_fee_cents) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             )
             .bind(
               order,
               org,
               d.customer_id,
               customer.name,
-              d.due_at,
+              dueAt,
               d.notes,
               total,
               key,
               fingerprint,
               nonce,
+              status,
               d.delivery.delivery_type,
               d.delivery.delivery_address,
               d.delivery.courier,
@@ -464,7 +515,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
           : []),
         db
           .prepare(
-            `INSERT INTO order_status_events(id,organization_id,order_id,user_id,from_status,to_status,reason,order_version,request_key,request_hash) SELECT ?,?,?,?,?,'confirmed','Confirmação após revisão do pedido',?,?,? WHERE ${g}`,
+            `INSERT INTO order_status_events(id,organization_id,order_id,user_id,from_status,to_status,reason,order_version,request_key,request_hash,created_at) SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE ${g}`,
           )
           .bind(
             crypto.randomUUID(),
@@ -472,11 +523,49 @@ export async function mobile(req: Request, env: Env, a: Actor) {
             order,
             a.user_id,
             prior?.status ?? 'draft',
+            status,
+            completed === null
+              ? 'Confirmação após revisão do pedido'
+              : 'Cadastro após a entrega',
             version,
             key,
             fingerprint,
+            eventTime,
             ...args,
           ),
+        ...(d.receipt
+          ? [
+              db
+                .prepare(
+                  `INSERT INTO finance_accounts(organization_id,customer_id,version,mutation_id) SELECT ?,?,2,? WHERE ${g} ON CONFLICT(organization_id,customer_id) DO UPDATE SET version=finance_accounts.version+1,mutation_id=excluded.mutation_id`,
+                )
+                .bind(org, d.customer_id, nonce, ...args),
+              db
+                .prepare(
+                  `INSERT INTO payment_events(id,organization_id,customer_id,user_id,kind,amount_cents,method,paid_on) SELECT ?,?,?,?,'payment',?,?,? WHERE ${g}`,
+                )
+                .bind(
+                  paymentId,
+                  org,
+                  d.customer_id,
+                  a.user_id,
+                  d.receipt.amount_cents,
+                  d.receipt.method,
+                  d.receipt.paid_on,
+                  ...args,
+                ),
+              db
+                .prepare(
+                  `INSERT INTO payment_allocations(organization_id,event_id,order_id,amount_cents) SELECT ?,?,?,? WHERE ${g}`,
+                )
+                .bind(org, paymentId, order, d.receipt.amount_cents, ...args),
+              db
+                .prepare(
+                  `INSERT INTO audit_events(id,organization_id,user_id,action,entity_id) SELECT ?,?,?,'finance.payments',? WHERE ${g}`,
+                )
+                .bind(crypto.randomUUID(), org, a.user_id, paymentId, ...args),
+            ]
+          : []),
       ],
     };
   });

@@ -1,3 +1,4 @@
+import { dueDayLabel, paymentModeLabels } from '../../../shared/finance';
 import { WhatsAppLink } from '../../components/TestEnvironment';
 import { useConfirm, usePrompt } from '../../components/confirm-context';
 import { SkeletonList } from '../../components/Skeleton';
@@ -362,7 +363,14 @@ export function Account() {
                 <p>
                   {o.due_on
                     ? `Vencimento: ${civilDate(o.due_on)}`
-                    : 'Condição/vencimento a definir.'}{' '}
+                    : o.terms.mode === 'next_delivery'
+                      ? 'Vencimento na próxima entrega.'
+                      : 'Condição/vencimento a definir.'}{' '}
+                  {o.terms.mode !== 'unset' &&
+                    ' · ' + paymentModeLabels[o.terms.mode]}
+                  {o.terms.mode === 'credit' &&
+                    o.terms.due_day_of_month != null &&
+                    ' · ' + dueDayLabel(o.terms.due_day_of_month)}
                   {o.status === 'draft' || o.status === 'awaiting_confirmation'
                     ? 'Rascunho: não compõe a receber.'
                     : ''}

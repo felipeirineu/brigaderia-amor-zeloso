@@ -1,11 +1,21 @@
 export type Terms = {
-  mode: 'unset' | 'advance' | 'delivery' | 'credit';
+  mode: 'unset' | 'advance' | 'delivery' | 'next_delivery' | 'credit';
   cycle: 'weekly' | 'monthly' | 'fixed_days' | 'fourteen_days';
   fixed_days: number[];
   base_date: string;
   week_end: number;
   due_days: number | null;
+  due_day_of_month?: number | null;
 };
+export const paymentModeLabels: Record<Terms['mode'], string> = {
+  unset: 'A definir',
+  advance: 'Adiantado',
+  delivery: 'Na entrega',
+  next_delivery: 'Na próxima entrega',
+  credit: 'A prazo',
+};
+export const dueDayLabel = (day: number) =>
+  day === 31 ? 'último dia do mês' : `dia ${day} do mês`;
 export const emptyTerms = (): Terms => ({
   mode: 'unset',
   cycle: 'fixed_days',
@@ -58,6 +68,32 @@ const monthEnd = (date: string) =>
   new Date(
     Date.UTC(Number(date.slice(0, 4)), Number(date.slice(5, 7)), 0),
   ).getUTCDate();
+export function fixedDueDate(after: string, day: number) {
+  if (!Number.isInteger(day) || day < 1 || day > 31)
+    throw new Error('Dia de vencimento inválido.');
+  let month = after.slice(0, 8) + '01';
+  for (;;) {
+    const last = monthEnd(month);
+    const date = day === 31 ? last : day;
+    const candidate = month.slice(0, 8) + String(date).padStart(2, '0');
+    if (date <= last && candidate > after) return candidate;
+    month = shift(month, last);
+  }
+}
+export function termsDueDate(
+  day: string,
+  terms: Terms,
+  {
+    closing,
+    nextDelivery,
+  }: { closing?: string | null; nextDelivery?: string | null } = {},
+) {
+  if (terms.mode === 'unset') return null;
+  if (terms.mode === 'next_delivery') return nextDelivery ?? null;
+  if (terms.mode === 'credit')
+    return closing || closingPeriod(day, terms).due_on;
+  return day;
+}
 /** Datas civis do negócio, intervalos inclusivos, independentes do fuso do navegador. */
 export function closingPeriod(day: string, t: Terms) {
   let start: string, end: string;
@@ -93,7 +129,12 @@ export function closingPeriod(day: string, t: Terms) {
   return {
     start,
     end,
-    due_on: t.due_days === null ? null : shift(end, t.due_days),
+    due_on:
+      t.due_day_of_month != null
+        ? fixedDueDate(end, t.due_day_of_month)
+        : t.due_days === null
+          ? null
+          : shift(end, t.due_days),
   };
 }
 export const addCivilDays = shift;

@@ -3,17 +3,25 @@ import { emptyTerms } from '../shared/finance';
 const text = (n: number) => z.string().trim().max(n);
 export const termsSchema = z
   .object({
-    mode: z.enum(['unset', 'advance', 'delivery', 'credit']),
+    mode: z.enum(['unset', 'advance', 'delivery', 'next_delivery', 'credit']),
     cycle: z.enum(['weekly', 'monthly', 'fixed_days', 'fourteen_days']),
     fixed_days: z.array(z.number().int().min(1).max(31)).min(1).max(31),
     base_date: z.union([z.iso.date(), z.literal('')]),
     week_end: z.number().int().min(1).max(7),
     due_days: z.number().int().min(0).max(365).nullable(),
+    due_day_of_month: z.number().int().min(1).max(31).nullable().optional(),
   })
   .strict()
   .refine(
-    (t) => t.mode !== 'credit' || t.due_days !== null,
+    (t) =>
+      t.mode !== 'credit' || t.due_days !== null || t.due_day_of_month != null,
     'Informe o prazo após fechamento.',
+  )
+  .refine(
+    (t) =>
+      t.due_day_of_month == null ||
+      (t.mode === 'credit' && t.due_days === null),
+    'Use apenas um prazo: dias depois do fechamento ou dia do mês.',
   )
   .refine(
     (t) => t.mode !== 'credit' || t.cycle !== 'fourteen_days' || !!t.base_date,
@@ -22,6 +30,9 @@ export const termsSchema = z
   .refine(
     (t) => new Set(t.fixed_days).size === t.fixed_days.length,
     'Dias repetidos.',
+  )
+  .transform(({ due_day_of_month, ...terms }) =>
+    due_day_of_month == null ? terms : { ...terms, due_day_of_month },
   );
 export const profileSchema = z
   .object({

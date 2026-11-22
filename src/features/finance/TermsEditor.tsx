@@ -1,3 +1,4 @@
+import { DueDayInput } from './DueDayInput';
 import { HelpTip } from '../../components/HelpTip';
 import type { Terms } from '../../../shared/finance';
 export function TermsEditor({
@@ -20,12 +21,21 @@ export function TermsEditor({
         <select
           value={value.mode}
           onChange={(e) =>
-            onChange({ ...value, mode: e.target.value as Terms['mode'] })
+            onChange(
+              e.target.value === 'credit'
+                ? { ...value, mode: 'credit', due_days: value.due_days ?? 0 }
+                : {
+                    ...value,
+                    mode: e.target.value as Terms['mode'],
+                    due_day_of_month: undefined,
+                  },
+            )
           }
         >
           <option value="unset">A definir</option>
           <option value="advance">Adiantado</option>
           <option value="delivery">Na entrega</option>
+          <option value="next_delivery">Na próxima entrega</option>
           {!person && <option value="credit">A prazo com fechamento</option>}
           {person && value.mode === 'credit' && (
             <option value="credit" disabled>
@@ -36,8 +46,8 @@ export function TermsEditor({
       </label>
       {person && (
         <p>
-          Para pessoa, escolha adiantado ou na entrega antes de confirmar o
-          pedido.
+          Para pessoa, escolha adiantado, na entrega ou na próxima entrega antes
+          de confirmar o pedido.
         </p>
       )}
       {!person && value.mode === 'credit' && (
@@ -115,23 +125,7 @@ export function TermsEditor({
               </select>
             </label>
           )}
-          <label>
-            Prazo após fechamento (dias)
-            <input
-              type="number"
-              required
-              min={0}
-              max={365}
-              value={value.due_days ?? ''}
-              onChange={(e) =>
-                onChange({
-                  ...value,
-                  due_days:
-                    e.target.value === '' ? null : Number(e.target.value),
-                })
-              }
-            />
-          </label>
+          <DueDayInput value={value} onChange={onChange} />
         </>
       )}
       <p>

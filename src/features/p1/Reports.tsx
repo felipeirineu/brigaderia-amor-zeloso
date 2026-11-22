@@ -1,3 +1,4 @@
+import { paymentModeLabels, type Terms } from '../../../shared/finance';
 import { SkeletonList } from '../../components/Skeleton';
 import { ChoiceChips } from '../../components/ChoiceChips';
 import { Button } from '../../components/Button';
@@ -63,6 +64,7 @@ const conditions = [
   ['unset', 'A definir'],
   ['advance', 'Adiantado'],
   ['delivery', 'Na entrega'],
+  ['next_delivery', 'Na próxima entrega'],
   ['credit', 'A prazo'],
 ] satisfies [string, string][];
 
@@ -269,14 +271,8 @@ export function Reports({ followup = false }: { followup?: boolean }) {
             <h2>Vendas por condição</h2>
             {view.data.conditions.map((c) => (
               <p key={c.mode}>
-                {c.mode === 'credit'
-                  ? 'A prazo'
-                  : c.mode === 'delivery'
-                    ? 'Na entrega'
-                    : c.mode === 'advance'
-                      ? 'Adiantado'
-                      : 'A definir'}{' '}
-                · {money(c.total_cents)}
+                {paymentModeLabels[c.mode as Terms['mode']] ?? 'A definir'} ·{' '}
+                {money(c.total_cents)}
               </p>
             ))}
           </section>

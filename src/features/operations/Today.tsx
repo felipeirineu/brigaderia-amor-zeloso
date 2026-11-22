@@ -1,3 +1,4 @@
+import { paymentModeLabels, type Terms } from '../../../shared/finance';
 import { BackupReminderCard } from '../p1/BackupReminderCard';
 import { VisitCard } from '../prospects/Visits';
 import type { ProspectVisit } from '../../../shared/visits';
@@ -696,13 +697,11 @@ export function Today({
                       </span>
                     ) : (
                       <span className="status-tag">
-                        {order.payment_mode === 'delivery'
-                          ? 'Na entrega'
-                          : order.payment_mode === 'advance'
-                            ? 'Adiantado'
-                            : order.payment_mode === 'credit'
-                              ? 'A prazo'
-                              : 'Pagamento a definir'}
+                        {order.payment_mode && order.payment_mode !== 'unset'
+                          ? (paymentModeLabels[
+                              order.payment_mode as Terms['mode']
+                            ] ?? 'Pagamento a definir')
+                          : 'Pagamento a definir'}
                       </span>
                     )}
                     <strong>{money(order.total_cents)}</strong>

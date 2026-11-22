@@ -41,10 +41,11 @@ export function checkPersonTerms(
   if (
     type === 'person' &&
     (terms.mode === 'credit' ||
-      (confirming && !['advance', 'delivery'].includes(terms.mode)))
+      (confirming &&
+        !['advance', 'delivery', 'next_delivery'].includes(terms.mode)))
   )
     throw new HttpError(
       400,
-      'Para pessoa, escolha pagamento adiantado ou na entrega.',
+      'Para pessoa, escolha pagamento adiantado, na entrega ou na próxima entrega.',
     );
 }

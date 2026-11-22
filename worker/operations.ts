@@ -828,6 +828,7 @@ export async function operations(
       if (
         !event ||
         event.user_id !== a.user_id ||
+        !['out_for_delivery', 'ready'].includes(String(event.from_status)) ||
         event.to_status !== order.status ||
         event.order_version !== order.version ||
         !['delivered', 'picked_up'].includes(String(event.to_status)) ||
