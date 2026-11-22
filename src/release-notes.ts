@@ -1,6 +1,12 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.6.1',
+    items: [
+      'App mais leve para o banco de dados: evita o bloqueio diário que derrubou o acesso em 22/11.',
+    ],
+  },
+  {
     version: '1.6.0',
     items: [
       'Em Pedidos, selecione vários para mudar a data ou avançar as etapas de uma vez.',

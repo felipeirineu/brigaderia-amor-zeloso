@@ -27,6 +27,7 @@ export async function runtime({
   placesProvider = false,
   routingProvider,
   developerEmails,
+  schemaCacheSeconds,
   port = 0,
 } = {}) {
   const issuer = 'https://demonstracao-teste.cloudflareaccess.com';
@@ -79,6 +80,9 @@ export async function runtime({
             }
           : {}),
         ...(developerEmails ? { DEVELOPER_EMAILS: developerEmails } : {}),
+        ...(schemaCacheSeconds !== undefined
+          ? { SCHEMA_CACHE_SECONDS: String(schemaCacheSeconds) }
+          : {}),
         ...(routingProvider
           ? { ROUTING_PROVIDER: 'ors', ORS_API_KEY: 'demonstracao-route-key' }
           : {}),

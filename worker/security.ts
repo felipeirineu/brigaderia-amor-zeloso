@@ -25,6 +25,8 @@ export interface Env {
   PUBLIC_CATALOG_ENABLED?: string;
   /** E-mails do papel Desenvolvedor (segredo; separados por vírgula). */
   DEVELOPER_EMAILS?: string;
+  /** Segundos que as respostas sobre a estrutura do banco ficam guardadas. */
+  SCHEMA_CACHE_SECONDS?: string;
 }
 export class HttpError extends Error {
   constructor(

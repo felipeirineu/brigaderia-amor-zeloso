@@ -1,3 +1,4 @@
+import { schemaCacheSeconds, withSchemaCache } from './schema-cache';
 import { safeErrorText } from './safe-error';
 import { feedback } from './feedback';
 import { prospectReport, prospectVisitTools } from './prospect-costs';
@@ -30,7 +31,12 @@ import { management } from './management';
 import { z } from 'zod';
 export type { Env } from './security';
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, rawEnv: Env): Promise<Response> {
+    // Perguntas sobre a estrutura do banco ficam guardadas (ver schema-cache).
+    const env: Env = {
+      ...rawEnv,
+      DB: withSchemaCache(rawEnv.DB, schemaCacheSeconds(rawEnv)),
+    };
     try {
       const { pathname } = new URL(req.url);
       if (

@@ -4,6 +4,8 @@ import { readFile } from 'node:fs/promises';
 import { runtime } from '../helpers/runtime.mjs';
 import { demoProject } from '../helpers/demo-project.mjs';
 const t = await runtime({
+  // Aplica/remove migrações no meio do teste: sem cache de estrutura.
+  schemaCacheSeconds: 0,
   mixedEnabled: true,
   mobileEnabled: true,
   financeEnabled: true,
@@ -372,6 +374,8 @@ try {
 // Antes da migração e com flag ausente, itens simples continuam funcionando.
 for (const migrationLimit of [14, Infinity]) {
   const old = await runtime({
+    // Aplica/remove migrações no meio do teste: sem cache de estrutura.
+    schemaCacheSeconds: 0,
     migrationLimit,
     mobileEnabled: true,
     mixedEnabled: migrationLimit === 14,

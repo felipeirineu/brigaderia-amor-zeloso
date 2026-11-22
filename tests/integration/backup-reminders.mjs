@@ -19,6 +19,8 @@ const targets = new Map(
   [ownerDevice, operatorDevice].map((d) => [d.subscription.endpoint, d]),
 );
 const t = await runtime({
+  // Aplica/remove migrações no meio do teste: sem cache de estrutura.
+  schemaCacheSeconds: 0,
   ...flags,
   vapid,
   entryPoint: 'tests/helpers/push-worker.ts',
@@ -312,7 +314,12 @@ try {
 } finally {
   await t.dispose();
 }
-const legacy = await runtime({ ...flags, migrationLimit: 26 });
+const legacy = await runtime({
+  // Aplica/remove migrações no meio do teste: sem cache de estrutura.
+  schemaCacheSeconds: 0,
+  ...flags,
+  migrationLimit: 26,
+});
 try {
   const owner = await legacy.login('owner@example.test');
   const r = await legacy.request('p1/backup-reminders/' + legacy.org, {

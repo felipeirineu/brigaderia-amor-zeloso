@@ -9,7 +9,7 @@
 
 **Pendência do Claude (pedido do Felipe, 22/11):** quando os pedidos do Tiago estiverem publicados (1.4.4 cadastro no computador, T18, T20, T19), escrever para o Felipe uma mensagem curta de WhatsApp para o Tiago resumindo o que foi corrigido e adicionado, em linguagem simples e com onde encontrar cada coisa.
 
-**Pendências do Felipe (fora do código):** republicar o agendador dos avisos (workflow "Ativar lembretes (manual)" → REPUBLICAR_AGENDADOR) para o aviso "Cobrar hoje" da T18. Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
+**Pendências do Felipe (fora do código):** depois da 1.6.1, republicar o agendador dos avisos (workflow "Ativar lembretes (manual)" → REPUBLICAR_AGENDADOR) para ele também usar o cache de estrutura. Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
 
 
@@ -213,7 +213,7 @@ O Tiago conquista a maioria dos clientes visitando estabelecimentos com amostras
 
 1. **Migração:** `0024_prospects.sql` (e as seguintes, se precisar) **somente aditiva**: tabelas e colunas novas, sem apagar nem converter dados. Nenhum dado de exemplo.
 2. **Código publicável antes da migração:** com a migração ainda não aplicada, o app continua funcionando igual, com a função escondida. Usar verificação de prontidão do schema, como `weightCostingReady`, e uma flag própria `PROSPECTS_ENABLED`, **desligada** em `wrangler.jsonc`.
-3. **Ordem:** o Claude publica o código → o Felipe faz backup e aplica a migração pelo workflow "Homologação D1" (PRE_CHECAGEM → APLICAR_PENDENTES → PRE_CHECAGEM) → o Claude confere → **ligar a flag é decisão do Felipe** (`VEZ: FELIPE`).
+3. **Ordem:** o Claude publica o código → o Felipe faz backup e aplica a migração pelo workflow "Homologação D1" (PRE_CHECAGEM → APLICAR_PENDENTES → PRE_CHECAGEM) → **o recurso novo pode levar até 15 min para aparecer no app (cache de estrutura, 1.6.1)** → o Claude confere → **ligar a flag é decisão do Felipe** (`VEZ: FELIPE`).
 4. **Testes:**
    - matriz de segurança (401, outro tenant 404, operadora conforme o papel);
    - backup/restauração e limpeza (KEEP) incluindo as tabelas novas;
@@ -703,6 +703,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 1.6.1 | 22/11 | **Incidente 22/11 ~20h:** o D1 bloqueou leituras ao passar de 5 milhões de linhas lidas no dia (plano gratuito), derrubando o login até 00:00 UTC. Causa: ~29 verificações de estrutura (`sqlite_schema`/`pragma_*`) em toda requisição e em cada rodada do agendador (sessão lia ~7 mil linhas; Hoje ~4 mil; agendador ~900). Correção: `worker/schema-cache.ts` guarda por isolate, por 15 min (`SCHEMA_CACHE_SECONDS`, 0 desliga), só respostas de consultas cujas fontes são todas `sqlite_schema`/`sqlite_master`/`pragma_*`; medido: sessão 7.118→4, agendador 899→14. **Efeito colateral:** após aplicar uma migração, o recurso novo pode levar até 15 min para aparecer (ou republicar). Também: erros inesperados passam a registrar só o tipo do erro (`worker/safe-error.ts`). Agendador precisa ser republicado para pegar o cache. |
 | **1.6.0** | 22/11 | **T20** (PR #28): pedidos em lote — Selecionar (ou toque longo), Todos do dia, Mudar data (mantém o horário), Avançar etapa, Marcar entregue (registra cada etapa; retirada vira Retirado), pulados com motivo, Desfazer por 30 s; recalcula vencimentos T17/T18. Celular e computador. Sem migração. CI completo do próprio PR usado para publicar. |
 | **1.5.0** | 22/11 | **T18** (PR #27): a prazo "A cada X entregas" (2 a 12), vencimento na última entrega efetiva, ciclo recomeça mesmo com saldo aberto; troca de condição fecha o ciclo incompleto na primeira entrega sob a regra nova; Hoje com "Nª de X" e "Cobrar hoje" (WhatsApp assistido e recebimento do ciclo); conta com progresso; aviso da manhã (requer REPUBLICAR_AGENDADOR); Agenda/ICS corrigidos; menos espaço ao abrir "ver sabores". Sem migração. Claude: `useSave` mostra "Alteração salva no servidor" logo após o servidor confirmar (antes esperava a recarga da lista — teste `kit-orders` instável). Teste de rolagem no computador (`t15-desktop-scroll`). |
 | 1.4.4 | 22/11 | Computador: a folha lateral de cliente (novo/editar) passa a ter altura da tela e rolagem própria (com `max-height: none` e `height: fit-content` do `dialog`, passava da borda de baixo sem rolar e não dava para salvar). Teste em `t15-desktop.spec.js`. Relatado pelo Tiago. |
