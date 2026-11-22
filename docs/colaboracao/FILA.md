@@ -5,7 +5,8 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T17** (pedido já entregue no cadastro, pagamento "Na próxima entrega" e vencimento em dia fixo do mês; detalhes abaixo). Versão **1.2.0**. Base: main atual (1.0.10). **A T14 já está no main como 1.1.0** (migração **0028**): antes de abrir o PR, incorpore o main atual; se a T17 precisar de migração, use a **0029**. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
+`VEZ: CODEX` — **correção da T17 (PR #24), CI vermelho**. Diagnóstico do Claude (22/11): o CI completo do PR #24 (run 44984175967) e o da integração no branch do Claude (run 44984769157) falham no mesmo teste, **só no `webkit-mobile`**: `tests/e2e/t14-feedback.spec.js:21` — no **terceiro** `page.goto(orderUrl)` (depois de "Voltar ao Hoje"), o cabeçalho "Ops, algo deu errado nesta tela" não aparece em 5 s. Na 1.1.0 (T14 sem a T17) o mesmo teste passava no WebKit em 5,8 s; agora falha em ~9–10 s, ou seja, a tela de erro não aparece nessa terceira carga. Chromium móvel e desktop passam; o Claude não tem WebKit no ambiente dele. Investigue a causa no WebKit (não aumente timeout nem pule o teste sem explicar a causa) e corrija no próprio branch `codex/t17-delivered-payment`, no mesmo PR #24.
+**Antes, incorpore o branch `claude/brigaderia-project-analysis-tf66ax`**: ele já tem a T17 com um ajuste do Claude — `fixedDueDate` agora usa o último dia do mês quando o dia escolhido não existe (30 em fevereiro vence em 28/29, como na fatura do cartão), com testes, textos da Ajuda e `docs/FASE_T17.md` atualizados — e a especificação da T18. Depois da correção, a próxima tarefa é a **T15**.
 
 **Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
@@ -80,6 +81,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" | **depois da T14** (Felipe pediu antes da T15 em 22/11) — versão **1.2.0** |
 | T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | prévia **aprovada** 20/11; **depois da T17** — versão **1.3.0** |
 | T16 | Entrega feita pelos dois (Tiago e Alda) | **depois da T15** — versão **1.4.0** — migração (Felipe aplica) |
+| T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | prévia **aprovada** 22/11; **depois da T15** — versão **1.5.0** |
 
 ### T0 — R17
 
@@ -646,6 +648,19 @@ Hoje o pedido aceita um só responsável pela entrega (`courier`: `owner`, `part
 3. **Vencimento em dia fixo do mês** (como a fatura do cartão; pedido do Felipe em 22/11). Em "Pagar", além de "No fechamento", "7 dias depois" e "15 dias depois", a opção "Dia do mês" com um número de 1 a 31 (31 = último dia). O vencimento é a próxima ocorrência desse dia **depois** do fechamento (ex.: quinzenal, dia 10 → a conta que fecha no dia 15 vence no dia 10 do mês seguinte; a que fecha no fim do mês vence no dia 10 seguinte). Guardar nos `terms` (JSON) sem quebrar `due_days`; validar no servidor; mostrar no pedido, no Financeiro (condição do cliente), no extrato e na mensagem de cobrança. Atualizar o (?) "Fechamento" e a seção "Fechamento e prazos" da Ajuda.
 - Testes de integração (financeiro, recebíveis, produção, relatórios) e E2E no celular.
 - Versão **1.2.0**. O Felipe pediu em 22/11 para vir antes da T15.
+
+### T18 — Pagar a cada X entregas (prévia `previas/t18-cobrar-a-cada-x-entregas.png` **aprovada pelo Felipe em 22/11**; fazer depois da T15)
+
+Novo tipo de **Fechamento** dentro de **A prazo**: em vez de fechar por data, fecha por quantidade de entregas efetivas ao mesmo cliente. Siga a prévia.
+
+1. **Escolha:** no pedido (etapa Pagamento) e na condição do cliente (Financeiro), opção de Fechamento **"A cada X entregas"** com contador − X + (2 a 12). Em "Pagar" aparece fixo "Na Xª entrega (no dia dela)". Guardar nos `terms` (JSON), por exemplo `cycle: 'deliveries'` e `every_deliveries: X`; validar no servidor; condições antigas continuam válidas.
+2. **Regra (decisão do Felipe):** cobra **na X-ésima entrega, somando as X**, incluindo a do dia. O vencimento é a data dessa entrega. Contam só entregas efetivas (entregue/retirado) do mesmo cliente com essa condição; cancelada ou desfeita não conta (recalcular se desfizer). A contagem **recomeça na entrega seguinte**, mesmo que o ciclo anterior ainda não tenha sido pago; o saldo não pago continua em "A receber".
+3. **Hoje:** no cartão da X-ésima entrega, aviso destacado "Cobrar hoje · Xª de X entregas" com total, datas e os botões **Cobrar no WhatsApp** (texto pré-preenchido, envio humano) e **Registrar recebimento**. Nas demais, contagem discreta "Nª de X entregas · cobra na Xª". Se os avisos estiverem ativos, lembrete pela manhã no dia da cobrança (mesmo mecanismo de lembretes, sem envio automático ao cliente).
+4. **Conta do cliente e cobrança:** condição "A prazo · a cada X entregas", "Entregas neste ciclo N de X", mensagem de cobrança listando as X entregas (data, item, valor) e o total. Reaproveitar fechamento, extrato e recebimento existentes.
+5. **Ajuda:** atualizar o (?) de Fechamento e a seção "Fechamento e prazos" (Ajuda → Rotinas e financeiro) com um exemplo.
+- Se precisar de migração, usar o próximo número livre do main; aplicação no banco real só com aprovação do Felipe.
+- Testes: unitários da contagem (cancelar, desfazer, ciclo não pago, troca de condição), integração de financeiro/recebíveis/relatórios e E2E no celular. Capturas `t18-*.png` só com DEMONSTRAÇÃO.
+- Versão **1.5.0**.
 
 ## Versões do app
 
