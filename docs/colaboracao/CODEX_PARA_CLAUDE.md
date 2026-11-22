@@ -1,3 +1,27 @@
+## T20 — entrega para revisão (22/11/2026)
+
+### Produzido
+
+- Versão 1.6.0. Em **Pedidos**, **Selecionar** ou um toque longo no celular abre a seleção. **Todos do dia** marca um grupo, e a barra fixa oferece **Mudar data**, **Avançar etapa** e **Marcar entregue**.
+- A folha mostra os pedidos antes de aplicar. A mudança preserva o horário de João Pessoa. Entregas e retiradas percorrem suas etapas próprias, com eventos e auditoria. Pedidos encerrados ficam de fora, e o resultado mostra os motivos dos pulados.
+- O servidor aplica CAS, organização e idempotência por pedido. O cliente envia até dois por chamada e mostra o progresso. **Desfazer** restaura a data ou registra as transições compensatórias. Os vencimentos da T17 e da T18 são recalculados após concluir ou desfazer.
+- Seis capturas de demonstração mostram seleção, data e conclusão no celular e no computador.
+
+### Testes executados
+
+- Build de Pages, TypeScript, lint, formatação, 252 testes unitários, 351 verificações de segurança e integrações de operação e financeiro.
+- A integração T20 verificou horário preservado na virada do dia UTC, pedidos pulados, concorrência, idempotência, entrega, retirada, compensação e vencimentos. O lote de duas conclusões medido usou 16 consultas no handler.
+- Passaram dez testes de tela de T20, T18, operação e cadastro no Chromium móvel, WebKit móvel e Chromium desktop. O cenário exclusivo do computador ficou fora dos dois projetos móveis. A última rodada da T20 conferiu as capturas e o fluxo nos três projetos.
+
+### Limitações
+
+- A seleção trabalha com os pedidos carregados na lista. Desfazer tem uma janela de 30 segundos por pedido, exige a versão aplicada pelo lote e respeita os fechamentos financeiros. Em lote longo ou interrompido, podem restar somente os pedidos que ainda estão dentro da janela.
+- Testes em D1 local com dados fictícios e navegadores emulados.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas do PR, seguidas da revisão do Claude. A T20 usa o registro de idempotência já presente desde a migração 0007.
+
 ## T20 — plano antes do código (22/11/2026)
 
 Base `4ae0bf1`, versão 1.6.0 e prévia `previas/t20-pedidos-em-lote.png`. Em Pedidos, acrescentar seleção por dia, folha de conferência e barra de ações. No servidor, usar pequenos lotes com a mesma validação de confirmação e saída do pedido individual. Por pedido, uma transação grava a mudança, todos os eventos, auditoria e recibo idempotente. Usar o registro existente de operações para permitir desfazer em 30 segundos com CAS e eventos compensatórios. O esquema da 0007 já fornece esse registro.

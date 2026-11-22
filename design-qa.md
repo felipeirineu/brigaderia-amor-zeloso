@@ -69,3 +69,11 @@ Referência: `docs/colaboracao/previas/computador-hoje.png` (1912 × 1204). Comp
 - Conferi claro e escuro em Hoje, Pedidos, Clientes, Mais e Relatórios nas dez capturas `t15-*.png`. Em Pedidos, conferi a atualização da lista após mudar o status no detalhe. Em Clientes, a folha fica à direita. Em Relatórios, as quatro áreas de filtro ficam na mesma linha. O cenário automatizado confirmou navegação, abertura de folhas, ordem dos grupos, limites de 1023/1024 px e ausência de erros de execução no fluxo capturado.
 
 final result: passed
+
+## T20 — pedidos em lote (22/11/2026)
+
+Comparei as três telas da prévia aprovada com as capturas `t20-selecao.png`, `t20-data.png` e `t20-etapas.png` a 390 × 844 CSS px. A primeira iteração empurrava a seleção para baixo com os controles normais da lista. Na captura final, o modo seleção abre direto no título, com o agrupamento por dia, cartões marcados, barra inferior e folhas sobrepostas conforme a prévia. As caixas são controles nativos. As três capturas `t20-desktop-*` mostram os mesmos passos com folha central e menu lateral a 1366 × 860.
+
+Conferi seleção, mudança de data preservando os horários, entrega, retirada, desfazer e ausência de erros de execução no fluxo automatizado. Todas as capturas usam dados de demonstração.
+
+final result: passed
