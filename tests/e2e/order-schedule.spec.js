@@ -233,6 +233,16 @@ test('R12 janela explícita sugere horário, passado bloqueia continuar e data i
     await expect(
       p.getByRole('button', { name: 'Escolher dia', exact: true }),
     ).toContainText('Hoje');
+    // Calendário: cada dia ocupa a coluna inteira (não encolhe ao número).
+    await p.getByRole('button', { name: 'Escolher dia', exact: true }).click();
+    const sizes = await p
+      .locator('.calendar-grid > .az-button')
+      .first()
+      .evaluate((e) => ({
+        day: e.getBoundingClientRect().width,
+        column: e.parentElement.getBoundingClientRect().width / 7,
+      }));
+    expect(sizes.day).toBeGreaterThan(sizes.column * 0.85);
   } finally {
     await c.close();
     await t.dispose();

@@ -2668,3 +2668,15 @@ body:has(.mix-sheet) {
   min-width: 24px;
   height: 24px;
 }
+
+/* Calendário de dias: cada dia ocupa a coluna inteira, número no centro
+   (o estilo de chip encolhia o botão ao tamanho do número). */
+.calendar-grid > .az-button {
+  width: 100%;
+  padding-inline: 0;
+  justify-content: center;
+}
+.calendar-grid > .az-button .az-button-label {
+  width: 100%;
+  text-align: center;
+}

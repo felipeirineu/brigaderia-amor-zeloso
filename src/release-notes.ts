@@ -1,6 +1,12 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.4.1',
+    items: [
+      'Calendário do Hoje com os dias do mesmo tamanho, número no centro.',
+    ],
+  },
+  {
     version: '1.4.0',
     items: [
       'Quando a equipe sair junta, escolha Os dois na entrega ou no pedido padrão.',
