@@ -90,17 +90,24 @@ test('produção e relatórios distinguem o mesmo sabor em dois pesos e capacida
     await p.goto(t.url + '/api/access/start');
     await p.goto(t.url + '/gestao?day=' + day);
     await expect(p.locator('.production-list li')).toHaveCount(4);
-    await expect(p.getByText('0,6 cx eq.', { exact: true })).toBeVisible();
-    await expect(
-      p
-        .locator('.production-list')
-        .getByText('Kit 25 · 15 g/un.', { exact: true }),
-    ).toHaveCount(2);
-    await expect(
-      p
-        .locator('.production-list')
-        .getByText('Kit 12 · 30 g/un.', { exact: true }),
-    ).toHaveCount(2);
+    // Unidades inteiras por sabor, agrupadas por tamanho; caixas à parte.
+    await expect(p.locator('.production-group-title')).toHaveCount(2);
+    await expect(p.locator('.production-group-title').first()).toContainText(
+      'doces de 30 g',
+    );
+    await expect(p.locator('.production-group-title').last()).toContainText(
+      'doces de 15 g',
+    );
+    await expect(p.getByText(/cx eq\./)).toHaveCount(0);
+    await expect(p.locator('.production-packaging').first()).toContainText(
+      'Caixa de 12 (30 g)',
+    );
+    await expect(p.locator('.production-packaging').last()).toContainText(
+      'Caixa de 25 (15 g)',
+    );
+    await expect(p.locator('.production-packaging').last()).toContainText(
+      '1 caixa',
+    );
     expect(await p.evaluate(() => window.__sizeCsp)).toEqual([]);
     await call('orders/' + id + '/status', { version: 1, to: 'in_production' });
     await call('orders/' + id + '/status', { version: 2, to: 'ready' });

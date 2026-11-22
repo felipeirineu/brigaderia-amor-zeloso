@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.4.3',
+    items: [
+      'Produzir hoje e amanhã: doces por sabor em unidades e caixas contadas à parte, sem números quebrados.',
+      'Pedido: data, valor e status no topo, com Mapa, WhatsApp, Uber e 99 e o deslocamento recolhido.',
+    ],
+  },
+  {
     version: '1.4.2',
     items: [
       'Mapa: o último app usado aparece destacado mesmo logo após abrir o app.',

@@ -54,6 +54,16 @@ test('T16 seleciona os dois no Hoje e no novo pedido e exibe as iniciais', async
     ]);
 
     await page.goto(t.url + '/gestao/pedidos/' + id);
+    // Detalhe compacto: ações iguais às do Hoje e deslocamento recolhido.
+    for (const name of ['Mapa', 'Uber', '99'])
+      await expect(
+        page
+          .locator('.delivery-icon-row')
+          .getByRole('button', { name })
+          .or(page.locator('.delivery-icon-row').getByRole('link', { name }))
+          .first(),
+      ).toBeVisible();
+    await expect(page.locator('.order-travel')).not.toHaveAttribute('open');
     await expect(page.getByText(/Entregador: Os dois/)).toBeVisible();
     await page
       .getByRole('button', { name: 'Editar entrega', exact: true })

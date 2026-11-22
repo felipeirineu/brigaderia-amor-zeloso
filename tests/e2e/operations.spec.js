@@ -75,10 +75,14 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
     await selectWorkday(page, '2030-01-07');
     await expect(
       page.locator('.production-list .production-counts'),
-    ).toHaveAttribute('aria-label', '2 caixas · 4 unidades');
+    ).toHaveAttribute('aria-label', '4 unidades');
+    // Caixas contadas dos pedidos, à parte e em número inteiro.
+    await expect(page.locator('.production-packaging')).toContainText(
+      '2 caixas',
+    );
     await expect(
-      page.locator('.production-list .production-counts small'),
-    ).toHaveText('4 un.');
+      page.locator('.production-list .production-units'),
+    ).toHaveText('4');
     await page.screenshot({
       path: `test-results/today-owner-${testInfo.project.name}.png`,
       fullPage: true,

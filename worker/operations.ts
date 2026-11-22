@@ -197,6 +197,16 @@ export async function operations(
         )
         .all()
     ).results;
+    // Embalagens: quantas caixas (ou avulsos) separar, contadas dos itens
+    // pedidos — número inteiro, sem dividir doces por capacidade.
+    const packaging = (
+      await db
+        .prepare(
+          `SELECT date(o.due_at,'-3 hours') AS day,i.weight_grams,i.units_per_box,SUM(i.quantity) AS boxes FROM ${saleSource} i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter} GROUP BY day,i.weight_grams,i.units_per_box ORDER BY day,i.weight_grams,i.units_per_box`,
+        )
+        .bind(...productionArgs)
+        .all()
+    ).results;
     const totals = await db
       .prepare(
         "SELECT COALESCE(SUM(CASE WHEN status IN ('confirmed','in_production','ready','out_for_delivery') THEN total_cents ELSE 0 END),0) AS expected_cents, COALESCE(SUM(CASE WHEN status IN ('delivered','picked_up') THEN total_cents ELSE 0 END),0) AS delivered_cents FROM orders WHERE organization_id=? AND active=1 AND due_at>=? AND due_at<?",
@@ -236,6 +246,7 @@ export async function operations(
       pending_truncated: pendingRows.length > 50,
       travel_week_cents,
       production,
+      packaging,
       totals,
       received_available: financial,
       truncated,
