@@ -23,6 +23,8 @@
 4. Se o CI do PR ficar vermelho, o Claude escreve o diagnóstico aqui e devolve a VEZ ao Codex (no máximo 2 vezes no mesmo ponto; na terceira, `VEZ: FELIPE`).
 5. **Prévias visuais (regra do Felipe, 17/11):** antes de mandar uma tarefa visual nova para o Codex, o Claude pode montar uma prévia da tela e pedir aprovação ao Felipe. Quando a tarefa tiver prévia aprovada, ela fica em `docs/colaboracao/previas/` e o Codex segue a prévia: mesma ordem, agrupamento e textos, sempre com os tokens do `theme.css`.
 
+**Norma do Felipe (22/11) — antes de pedir o "continue":** o Claude **sempre verifica primeiro** se o Codex ainda não fez a tarefa ou se já fez e está aguardando (PR aberto, branch `codex/...` com commits recentes, relatório em `CODEX_PARA_CLAUDE.md`). Só diz ao Felipe para mandar o "continue" quando a tarefa da VEZ ainda não foi entregue; se já há PR, o Claude revisa em vez de pedir outro "continue".
+
 ## Paradas obrigatórias → `VEZ: FELIPE`
 
 Qualquer um dos itens abaixo para o fluxo até o Felipe decidir:
