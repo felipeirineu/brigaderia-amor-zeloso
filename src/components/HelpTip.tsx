@@ -46,11 +46,11 @@ export function HelpTip({
             </ol>
           )}
           <Button
-            to="/gestao/ajuda"
+            to={'more' in text ? text.more : '/gestao/ajuda'}
             onClick={() => dialog.current?.close()}
             variant="ghost"
           >
-            Ver no tutorial
+            {'more' in text ? 'Ver explicação completa' : 'Ver no tutorial'}
           </Button>
           {/* "Fechar" escrito e embaixo, como nas outras folhas. */}
           <Button

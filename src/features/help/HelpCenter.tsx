@@ -205,6 +205,20 @@ export function HelpCenter({
 }) {
   const [example, setExample] = useState(false);
   const field = useField();
+  const location = useLocation(),
+    closingRef = useRef<HTMLDetailsElement>(null);
+  // O (?) de Fechamento abre a ajuda já nesta seção.
+  useEffect(() => {
+    if (location.hash !== '#fechamento-prazos' || !closingRef.current) return;
+    const el = closingRef.current;
+    el.open = true;
+    // Depois da volta ao topo que o app faz ao trocar de tela.
+    const timer = window.setTimeout(
+      () => el.scrollIntoView({ block: 'start' }),
+      80,
+    );
+    return () => window.clearTimeout(timer);
+  }, [location.hash]);
   return (
     <>
       <h1 className="mobile-context-title">Ajuda</h1>
@@ -378,6 +392,95 @@ export function HelpCenter({
       {p1 && (
         <section className="panel">
           <h2>Rotinas P1</h2>
+          <details id="fechamento-prazos" ref={closingRef}>
+            <DisclosureSummary>Fechamento e prazos</DisclosureSummary>
+            <p>
+              Para estabelecimentos <strong>a prazo</strong>. Funciona como a
+              fatura do cartão de crédito: o cliente não paga a cada entrega;
+              paga tudo de uma vez depois que a conta fecha.
+            </p>
+            <h3>A comparação com o cartão</h3>
+            <ul>
+              <li>Compras no cartão = entregas da Brigaderia.</li>
+              <li>
+                Fechamento da fatura = <strong>Fechamento</strong>: o app soma
+                as entregas do período.
+              </li>
+              <li>
+                Vencimento da fatura = <strong>Pagar</strong>: no fechamento, 7
+                dias depois ou 15 dias depois.
+              </li>
+              <li>
+                Pagar a fatura inteira = o cliente paga todas as entregas
+                juntas.
+              </li>
+            </ul>
+            <h3>Quando a conta fecha</h3>
+            <ul>
+              <li>
+                <strong>Semanal:</strong> soma de segunda a domingo; fecha no
+                domingo.
+              </li>
+              <li>
+                <strong>Quinzenal:</strong> soma do dia 1 ao 15 (fecha no dia
+                15) e do dia 16 ao fim do mês (fecha no último dia).
+              </li>
+              <li>
+                <strong>Mensal:</strong> soma o mês inteiro; fecha no último
+                dia.
+              </li>
+            </ul>
+            <h3>Exemplo</h3>
+            <p>
+              Uma conveniência recebe 1 Kit 12 de R$ 42,00 toda terça e sexta.
+              Está em <strong>A prazo · Quinzenal · 7 dias depois</strong>.
+            </p>
+            <ul>
+              <li>
+                1ª quinzena: entregas nos dias 3, 6, 10 e 13 = 4 kits ={' '}
+                <strong>R$ 168,00</strong>. Fecha no dia 15 e vence no dia 22.
+              </li>
+              <li>
+                2ª quinzena: entregas nos dias 17, 20, 24 e 27 ={' '}
+                <strong>R$ 168,00</strong>. Fecha no último dia do mês e vence 7
+                dias depois, já no mês seguinte.
+              </li>
+            </ul>
+            <h3>Passo a passo</h3>
+            <ol>
+              <li>
+                Durante o período: entregue normalmente e marque cada pedido
+                como Entregue. Não cobre na hora.
+              </li>
+              <li>
+                No dia do fechamento (ou logo depois): Financeiro → conta do
+                cliente → Gerar fechamento. O app soma tudo.
+              </li>
+              <li>
+                Toque em Cobrar fechamento no WhatsApp, confira a mensagem e
+                envie.
+              </li>
+              <li>
+                Quando o cliente pagar: Registrar recebimento na conta dele.
+              </li>
+            </ol>
+            <h3>Dicas</h3>
+            <ul>
+              <li>
+                <strong>No fechamento</strong> vence no mesmo dia em que a conta
+                fecha. <strong>15 dias depois</strong> dá mais folga ao cliente.
+              </li>
+              <li>
+                O padrão de cada cliente fica em Financeiro → conta do cliente →
+                Condição de pagamento. No pedido, a escolha vale só para aquele
+                pedido.
+              </li>
+              <li>Para pessoa física, use Adiantado ou Na entrega.</li>
+            </ul>
+            <Button to="/gestao/financeiro" variant="ghost">
+              Abrir financeiro
+            </Button>
+          </details>
           <details>
             <DisclosureSummary>Agenda e lembretes</DisclosureSummary>
             <ol>

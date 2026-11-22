@@ -79,16 +79,14 @@ export const helpTexts = {
     ],
   },
   closing: {
-    title: 'Fechamento: como funciona o a prazo',
-    text: 'O cliente a prazo não paga a cada entrega. O app soma as entregas de um período e gera uma conta só. Essa conta é o fechamento.',
+    title: 'Fechamento: como a fatura do cartão',
+    text: 'Funciona como a fatura do cartão de crédito: as entregas se somam, a conta fecha num dia e vence depois. O cliente paga tudo de uma vez.',
     steps: [
-      'Fechamento é o período que o app soma: Semanal (de segunda a domingo), Quinzenal (do dia 1 ao 15 e do dia 16 ao fim do mês) ou Mensal (o mês inteiro).',
-      'Pagar é quando a conta vence: No fechamento (no último dia do período), 7 dias depois ou 15 dias depois.',
-      'Exemplo: a Padaria Exemplo está em Quinzenal e 7 dias depois. Recebe um kit de R$ 42,00 nos dias 3, 8 e 12. No dia 15 o período fecha: a conta é R$ 126,00 e vence no dia 22.',
-      'Uma entrega no dia 18 já vai para a conta seguinte: a que fecha no fim do mês e vence 7 dias depois.',
-      'Para cobrar: Financeiro, conta do cliente, Gerar fechamento e depois Cobrar fechamento no WhatsApp. Você confere a mensagem e envia.',
-      'Quando o cliente pagar, toque em Registrar recebimento na conta dele.',
+      'Fechamento: o dia em que a conta fecha. Semanal (todo domingo), Quinzenal (dia 15 e último dia do mês) ou Mensal (último dia do mês).',
+      'Pagar: quando a conta vence. No fechamento (no mesmo dia), 7 dias depois ou 15 dias depois.',
+      'Exemplo: uma conveniência recebe 1 Kit 12 de R$ 42,00 toda terça e sexta, em Quinzenal e 7 dias depois. Entregas nos dias 3, 6, 10 e 13: R$ 168,00. A conta fecha no dia 15 e vence no dia 22.',
     ],
+    more: '/gestao/ajuda#fechamento-prazos',
   },
   push: {
     title: 'Avisos no celular',

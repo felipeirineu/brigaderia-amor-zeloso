@@ -643,6 +643,7 @@ Hoje o pedido aceita um só responsável pela entrega (`courier`: `owner`, `part
 
 1. **Cadastrar pedido já entregue.** Às vezes o Tiago ou a Alda registram o pedido depois de entregar. Na revisão do pedido, opção "Já foi entregue" (com data e hora da entrega, padrão agora). O pedido nasce entregue: não entra em "Produzir hoje e amanhã" e já conta em "A receber" (ou em "Recebido" se o pagamento for registrado). Validar no servidor (mesmas regras da mudança de status para entregue: estoque, auditoria, financeiro) numa única operação idempotente, sem estado intermediário.
 2. **Pagamento "Na próxima entrega".** Novo modo de pagamento para estabelecimentos e pessoas: o valor fica "a receber" sem vencimento até a próxima entrega ao mesmo cliente; quando a próxima entrega for marcada como entregue, o vencimento passa a ser a data dela. Aparece no (?) do pagamento, nos relatórios e no filtro do Financeiro. Se mudar o banco (enum/CHECK), migração com aprovação do Felipe.
+3. **Vencimento em dia fixo do mês** (como a fatura do cartão; pedido do Felipe em 22/11). Em "Pagar", além de "No fechamento", "7 dias depois" e "15 dias depois", a opção "Dia do mês" com um número de 1 a 31 (31 = último dia). O vencimento é a próxima ocorrência desse dia **depois** do fechamento (ex.: quinzenal, dia 10 → a conta que fecha no dia 15 vence no dia 10 do mês seguinte; a que fecha no fim do mês vence no dia 10 seguinte). Guardar nos `terms` (JSON) sem quebrar `due_days`; validar no servidor; mostrar no pedido, no Financeiro (condição do cliente), no extrato e na mensagem de cobrança. Atualizar o (?) "Fechamento" e a seção "Fechamento e prazos" da Ajuda.
 - Testes de integração (financeiro, recebíveis, produção, relatórios) e E2E no celular.
 - Versão **1.2.0**. O Felipe pediu em 22/11 para vir antes da T15.
 
@@ -658,6 +659,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 1.0.10 | 22/11 | Fechamento explicado como a fatura do cartão: resumo com exemplo no (?) de Fechamento (pedido a prazo) e no Financeiro; seção "Fechamento e prazos" em Ajuda → Rotinas P1, aberta direto pelo link "Ver explicação completa". Fila: T17 antes da T15; vencimento em dia fixo do mês entrou na T17. |
 | 1.0.9 | 22/11 | Folha de ajuda (?) com "Fechar" escrito embaixo (antes: X em botão largo no topo). Kit no Hoje com o texto centralizado no fundo destacado (Chrome novo reservava espaço para a lista oculta). |
 | 1.0.8 | 21/11 | Papel Desenvolvedor: segredo `DEVELOPER_EMAILS` (Cloudflare, Production e Preview) marca o administrador de suporte técnico. Mantém permissões, aparece como "Desenvolvedor", sai das iniciais/escolhas de equipe para os outros e continua visível em Acessos como "Desenvolvedor (suporte técnico)". Sem o segredo, nada muda. Segredo cadastrado pelo Felipe em 22/11 (republicado para valer). |
 | 1.0.7 | 21/11 | Ajuda (?) na etapa Pagamento do pedido explicando cada opção (a definir, adiantado, na entrega, a prazo, pagar no fechamento). Kit repetido: mensagem clara orientando a editar o kit existente (antes: "Registro já existente"). |

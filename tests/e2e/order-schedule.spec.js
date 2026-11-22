@@ -101,6 +101,27 @@ test('R12 calendário com contagem, sugestão editável e sucesso abre agenda do
     await expect(
       p.getByRole('heading', { name: 'Como vai pagar?', exact: true }),
     ).toBeVisible();
+    // Fechamento: resumo no (?) com link que abre a Ajuda na seção detalhada.
+    await p.getByRole('button', { name: 'A prazo', exact: true }).click();
+    await p.getByRole('button', { name: /Ajuda: Fechamento/ }).click();
+    await expect(p.getByText(/Funciona como a fatura do cartão/)).toBeVisible();
+    await expect(
+      p.getByRole('link', { name: 'Ver explicação completa' }),
+    ).toHaveAttribute('href', '/gestao/ajuda#fechamento-prazos');
+    await p.getByRole('button', { name: 'Fechar ajuda', exact: true }).click();
+    const help = await c.newPage();
+    await help.goto(t.url + '/gestao/ajuda#fechamento-prazos');
+    await expect(help.locator('#fechamento-prazos')).toHaveJSProperty(
+      'open',
+      true,
+    );
+    await expect(
+      help
+        .locator('#fechamento-prazos')
+        .getByText('Fecha no dia 15 e vence no dia 22.', { exact: false }),
+    ).toBeInViewport();
+    await help.close();
+    await p.getByRole('button', { name: 'A definir', exact: true }).click();
     await p.getByRole('button', { name: /^Continuar/ }).click();
     // O dia escolhido já tem um pedido deste cliente: aviso de repetido.
     await expect(
