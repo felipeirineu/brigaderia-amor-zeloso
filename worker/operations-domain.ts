@@ -1,3 +1,4 @@
+import { couriers } from '../shared/courier';
 import { kitItemSchema } from './kit-order-domain';
 import { z } from 'zod';
 import { itemInputSchema, uniqueItems } from './mixed-domain';
@@ -15,7 +16,7 @@ export const deliverySchema = z
     version: z.number().int().positive(),
     delivery_type: z.enum(['delivery', 'pickup']),
     delivery_address: z.string().trim().max(1000).default(''),
-    courier: z.enum(['unassigned', 'owner', 'partner', 'courier']),
+    courier: z.enum(couriers),
     courier_name: z.string().trim().max(100).default(''),
     courier_fee_cents: z.number().int().min(0).max(100000000).default(0),
   })
@@ -33,9 +34,7 @@ export const recurringSchema = z
     notes: z.string().trim().max(2000).default(''),
     delivery_type: z.enum(['delivery', 'pickup']).default('delivery'),
     delivery_address: z.string().trim().max(1000).default(''),
-    courier: z
-      .enum(['unassigned', 'owner', 'partner', 'courier'])
-      .default('unassigned'),
+    courier: z.enum(couriers).default('unassigned'),
     courier_name: z.string().trim().max(100).default(''),
     courier_fee_cents: z.number().int().min(0).max(100000000).default(0),
     active: z.boolean().default(true),

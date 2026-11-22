@@ -17,7 +17,12 @@ import { DeliveryActions } from '../field/DeliveryActions';
 import { photoURL } from '../../../shared/flavors';
 import { TravelSheet } from '../field/TravelSheet';
 import { distance } from '../../../shared/field';
-import { useCourierLabels, useField, SiteAvatar } from '../field/FieldContext';
+import {
+  CourierAvatars,
+  useCourierLabels,
+  useField,
+  SiteAvatar,
+} from '../field/FieldContext';
 import { TodayReminders } from '../p1/Reminders';
 import { QuickReceipt, type ReceiptResult } from '../finance/QuickReceipt';
 import { FinanceSummary } from '../finance/Finance';
@@ -75,6 +80,7 @@ function DayTotals({
 export function Today({
   role,
   followup = false,
+  sharedDelivery = false,
   financial = false,
   p1 = false,
   backupOrganizationId,
@@ -84,6 +90,7 @@ export function Today({
   backupOrganizationId?: string;
   calendarSlot?: HTMLSpanElement | null;
   followup?: boolean;
+  sharedDelivery?: boolean;
   financial?: boolean;
   p1?: boolean;
 }) {
@@ -219,6 +226,29 @@ export function Today({
           version: order.version + 1,
         });
       if (to === 'delivered' && field) setTrip(order);
+      await view.refresh();
+    } catch (e) {
+      setActionError((e as Error).message);
+    } finally {
+      pending.current = false;
+      setBusy(false);
+    }
+  }
+  async function assignBoth(order: OperationalOrder) {
+    if (pending.current) return;
+    pending.current = true;
+    setBusy(true);
+    setActionError('');
+    try {
+      await api(`orders/${order.id}/delivery`, 'PUT', {
+        version: order.version,
+        delivery_type: order.delivery_type,
+        delivery_address: order.delivery_address,
+        courier: 'both',
+        courier_name: '',
+        courier_fee_cents: order.courier_fee_cents,
+      });
+      setNotice('Entrega atribuída aos dois.');
       await view.refresh();
     } catch (e) {
       setActionError((e as Error).message);
@@ -708,6 +738,7 @@ export function Today({
                         <strong>{money(order.total_cents)}</strong>
                       </div>
                       {order.courier !== 'unassigned' &&
+                        order.courier !== 'both' &&
                         order.courier !==
                           (role === 'owner' ? 'owner' : 'partner') && (
                           <span className="status-tag">
@@ -753,6 +784,19 @@ export function Today({
                           <DisclosureSummary>
                             Mais ações do pedido
                           </DisclosureSummary>
+                          {sharedDelivery &&
+                            order.delivery_type === 'delivery' &&
+                            order.courier !== 'both' &&
+                            !['delivered', 'picked_up', 'cancelled'].includes(
+                              order.status,
+                            ) && (
+                              <Button
+                                disabled={busy}
+                                onClick={() => void assignBoth(order)}
+                              >
+                                Atribuir aos dois
+                              </Button>
+                            )}
                           {financial &&
                             ![
                               'draft',
@@ -843,6 +887,11 @@ export function Today({
                               )?.data
                             }
                           />
+                          {order.courier === 'both' && (
+                            <span className="status-tag shared-courier">
+                              <CourierAvatars courier="both" /> Os dois
+                            </span>
+                          )}
                         </div>
                         <span
                           className={`status-tag status-${order.status} delivery-status`}

@@ -1,3 +1,4 @@
+import { courierChoices, type Courier } from '../../../shared/courier';
 import {
   dueDayLabel,
   paymentModeLabels,
@@ -44,11 +45,13 @@ export function OrderDetail({
   mobile = false,
   p1 = false,
   onChanged,
+  sharedDelivery = false,
 }: {
   financial?: boolean;
   mobile?: boolean;
   p1?: boolean;
   onChanged?: () => Promise<void>;
+  sharedDelivery?: boolean;
 }) {
   const askConfirmation = useConfirm();
   const askPrompt = usePrompt();
@@ -80,7 +83,7 @@ export function OrderDetail({
   const [delivery, setDelivery] = useState<{
     delivery_type: 'delivery' | 'pickup';
     delivery_address: string;
-    courier: 'unassigned' | 'owner' | 'partner' | 'courier';
+    courier: Courier;
     courier_name: string;
     price: string;
   } | null>(null);
@@ -307,36 +310,25 @@ export function OrderDetail({
                   />
                 </label>
                 <div className="chips" role="group" aria-label="Entregador">
-                  {(['unassigned', 'owner', 'partner', 'courier'] as const).map(
-                    (v) => (
-                      <AvatarChip
-                        type="button"
-                        key={v}
-                        aria-pressed={delivery.courier === v}
-                        onClick={() => setDelivery({ ...delivery, courier: v })}
-                        avatar={
-                          v === 'owner' || v === 'partner' ? (
-                            <CourierAvatars courier={v} />
-                          ) : v === 'courier' ? (
-                            <span
-                              className="courier-initials"
-                              aria-hidden="true"
-                            >
-                              M
-                            </span>
-                          ) : undefined
-                        }
-                      >
-                        {v === 'unassigned'
-                          ? 'A definir'
-                          : v === 'owner'
-                            ? courierLabels.owner
-                            : v === 'partner'
-                              ? courierLabels.partner
-                              : 'Motoboy'}
-                      </AvatarChip>
-                    ),
-                  )}
+                  {courierChoices(sharedDelivery).map((v) => (
+                    <AvatarChip
+                      type="button"
+                      key={v}
+                      aria-pressed={delivery.courier === v}
+                      onClick={() => setDelivery({ ...delivery, courier: v })}
+                      avatar={
+                        v === 'owner' || v === 'partner' || v === 'both' ? (
+                          <CourierAvatars courier={v} />
+                        ) : v === 'courier' ? (
+                          <span className="courier-initials" aria-hidden="true">
+                            M
+                          </span>
+                        ) : undefined
+                      }
+                    >
+                      {courierLabels[v]}
+                    </AvatarChip>
+                  ))}
                 </div>
                 {delivery.courier === 'courier' && (
                   <>
@@ -384,13 +376,12 @@ export function OrderDetail({
                 </p>
                 <p>
                   Entregador:{' '}
-                  {order.courier === 'unassigned'
-                    ? 'A definir'
-                    : order.courier === 'owner'
-                      ? courierLabels.owner
-                      : order.courier === 'partner'
-                        ? courierLabels.partner
-                        : order.courier_name || 'Motoboy'}{' '}
+                  {order.courier === 'courier'
+                    ? order.courier_name || courierLabels.courier
+                    : courierLabels[order.courier]}{' '}
+                  {order.courier === 'both' && (
+                    <CourierAvatars courier="both" />
+                  )}{' '}
                   · taxa registrada {money(order.courier_fee_cents)}
                 </p>
                 <div className="actions">

@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.4.0',
+    items: [
+      'Quando a equipe sair junta, escolha Os dois na entrega ou no pedido padrão.',
+      'O Hoje mostra as duas iniciais no mesmo pedido.',
+    ],
+  },
+  {
     version: '1.3.0',
     items: [
       'No computador, navegue pelo menu lateral e veja entregas, produção e lembretes em duas colunas.',

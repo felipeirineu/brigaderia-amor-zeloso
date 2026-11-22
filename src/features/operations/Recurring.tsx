@@ -1,3 +1,4 @@
+import { courierChoices, type Courier } from '../../../shared/courier';
 import { useConfirm } from '../../components/confirm-context';
 import {
   customerType,
@@ -33,7 +34,7 @@ interface Plan {
   notes: string;
   delivery_type: 'delivery' | 'pickup';
   delivery_address: string;
-  courier: 'unassigned' | 'owner' | 'partner' | 'courier';
+  courier: Courier;
   courier_name: string;
   courier_fee_cents: number;
   active: number;
@@ -69,9 +70,11 @@ function monday() {
 export function Recurring({
   mixed = false,
   kitModels = false,
+  sharedDelivery = false,
 }: {
   mixed?: boolean;
   kitModels?: boolean;
+  sharedDelivery?: boolean;
 }) {
   const askConfirmation = useConfirm();
 
@@ -438,10 +441,11 @@ export function Recurring({
             value={courier}
             onChange={(e) => setCourier(e.target.value as Plan['courier'])}
           >
-            <option value="unassigned">A definir</option>
-            <option value="owner">{courierLabels.owner}</option>
-            <option value="partner">{courierLabels.partner}</option>
-            <option value="courier">Motoboy</option>
+            {courierChoices(sharedDelivery).map((value) => (
+              <option key={value} value={value}>
+                {courierLabels[value]}
+              </option>
+            ))}
           </select>
         </label>
         <CourierAvatars courier={courier} />

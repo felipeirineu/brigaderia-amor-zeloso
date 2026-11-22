@@ -2656,3 +2656,15 @@ body:has(.mix-sheet) {
     max-width: 720px;
   }
 }
+
+.shared-courier.status-tag {
+  display: inline-flex;
+  gap: var(--az-space-2);
+  align-items: center;
+  margin-top: var(--az-space-1);
+}
+.shared-courier .staff-avatar {
+  width: 24px;
+  min-width: 24px;
+  height: 24px;
+}

@@ -1,3 +1,27 @@
+## T16 — entrega para revisão (22/11/2026)
+
+### Produzido
+
+- Versão 1.4.0. **Os dois** está disponível no Novo pedido, em Editar entrega e nos Pedidos padrão. No Hoje, a ação **Atribuir aos dois** aparece em entregas em aberto, e o cartão mostra as duas iniciais vindas dos nomes de exibição.
+- A migração 0029 amplia as opções válidas de entregador em pedidos e modelos. Preserva os dados, índices e vínculos existentes. A sessão habilita a nova escolha após detectar o esquema.
+- A geração semanal registra um pedido com uma taxa. Os totais de entregas e corridas continuam contabilizando cada registro uma vez. O guia `docs/FASE_T16.md` descreve a pré-checagem, a aplicação e a conferência pelo responsável.
+
+### Testes executados
+
+- Build de Pages, TypeScript, lint, formatação, 243 testes unitários, 10 testes SQLite de migrações e 349 verificações de segurança.
+- Integrações de operação e financeiro passaram. A T16 conferiu bloqueio antes da migração, preservação de pedido e modelo com dependências, edição pelo servidor, recorrência idempotente, totais de venda e corrida, e restauração do backup com a nova opção.
+- Wrangler local aplicou a 0029 em uma base fictícia já populada. Preservou os responsáveis anteriores e o evento vinculado. `foreign_key_check` retornou zero linhas.
+- Passaram 18 testes de tela em Chromium móvel, WebKit móvel e Chromium desktop, incluindo as escolhas nos quatro fluxos e a compatibilidade sem 0029.
+
+### Limitações
+
+- Os relatórios atuais agregam por pedido, cliente, produto ou corrida, sem indicador de entregas por integrante da equipe. Em uma reversão após gravar a primeira entrega conjunta, mantenha uma versão capaz de exibir e ler o novo valor.
+- A migração foi ensaiada em banco local descartável, com dados de demonstração.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas no PR, seguidas da revisão do Claude. Felipe aplica a 0029 no banco autorizado após a aprovação e a conferência do backup.
+
 ## T16 — plano antes do código (22/11/2026)
 
 Base `fdb7c2c`. A migração 0029 amplia o CHECK de entregador em `orders` e `recurring_templates`. Preservar colunas, IDs, índices e vínculos dos pedidos existentes. A API de sessão sinaliza suporte pelo esquema e as três rotas existentes de gravação conferem essa capacidade antes de aceitar `both`. Em Management, FieldContext, Totem, OrderDetail, Recurring e Hoje, oferecer **Os dois** e mostrar as iniciais da equipe. Modelos copiam um único pedido e os totais continuam por pedido ou corrida, conforme o relatório.

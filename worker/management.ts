@@ -1,3 +1,4 @@
+import { sharedDeliveryReady } from './shared-delivery';
 import { readTerms } from './finance-domain';
 import { feedbackReady } from './feedback';
 import { developerEmails, isDeveloper } from './developers';
@@ -74,6 +75,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       recurring_mixed:
         env.MIXED_BOXES_ENABLED === 'true' && (await recurringMixedSchema(db)),
       operations: await operationalReady(env),
+      shared_delivery: await sharedDeliveryReady(db),
       finance: await financeReady(env),
       p1: await p1Ready(env),
       tools: await toolsReady(env),

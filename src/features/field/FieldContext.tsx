@@ -110,6 +110,25 @@ export function CourierAvatars({ courier }: { courier: string }) {
               ? 'operator'
               : ''),
     ) ?? [];
+  if (courier === 'both') {
+    const people = field?.data?.staff ?? [];
+    return (
+      <span className="courier-avatars" aria-hidden="true">
+        {(['owner', 'operator'] as const).map((role) => {
+          const name = people.find(
+            (s) => s.role === role && !s.developer,
+          )?.display_name;
+          return (
+            <span key={role} className="initial-avatar staff-avatar">
+              {nameInitials(
+                name || (role === 'owner' ? 'Administrador' : 'Operador'),
+              )}
+            </span>
+          );
+        })}
+      </span>
+    );
+  }
   return (
     <span className="courier-avatars" aria-hidden="true">
       {staff.map((s) => (
@@ -143,5 +162,6 @@ export function useCourierLabels() {
         .map((s) => s.display_name)
         .join(' / ') || 'Operador',
     courier: 'Motoboy',
+    both: 'Os dois',
   };
 }

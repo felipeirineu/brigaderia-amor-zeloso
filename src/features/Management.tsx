@@ -128,6 +128,7 @@ import { Mascot } from '../components/Mascot';
 
 interface Session {
   feedback?: boolean;
+  shared_delivery?: boolean;
   developer?: boolean;
   environment?: 'teste' | 'producao';
   prospect_followup?: boolean;
@@ -1141,10 +1142,12 @@ type OrderDetailPane = (onChanged: () => Promise<void>) => ReactNode;
 function Orders({
   mobile = false,
   role = 'owner',
+  sharedDelivery,
   detail,
   ...props
 }: {
   detail?: OrderDetailPane;
+  sharedDelivery?: boolean;
   mobile?: boolean;
   role?: string;
   operational?: boolean;
@@ -1163,6 +1166,7 @@ function Orders({
     return (
       <Totem
         financial={props.financial}
+        sharedDelivery={sharedDelivery}
         mixed={props.mixed}
         metadata={props.metadata}
         kitOrders={props.kitOrders}
@@ -1952,6 +1956,7 @@ export function Management() {
       mobile={session.mobile}
       role={session.role}
       detail={detail}
+      sharedDelivery={session.shared_delivery}
     />
   );
   const orderDetail = (onChanged?: () => Promise<void>) => (
@@ -1959,6 +1964,7 @@ export function Management() {
       key={pathname}
       p1={session.p1}
       onChanged={onChanged}
+      sharedDelivery={session.shared_delivery}
       financial={session.finance}
       mobile={session.mobile}
     />
@@ -2147,6 +2153,7 @@ export function Management() {
                   element={
                     session.operations ? (
                       <Today
+                        sharedDelivery={session.shared_delivery}
                         followup={session.prospect_followup}
                         role={session.role}
                         calendarSlot={desktop ? desktopCalendar : null}
@@ -2222,6 +2229,7 @@ export function Management() {
                     path="pedidos/:id/editar-simples"
                     element={
                       <Totem
+                        sharedDelivery={session.shared_delivery}
                         kitOrders={session.kit_orders}
                         financial={session.finance}
                         mixed={session.mixed}
@@ -2313,6 +2321,7 @@ export function Management() {
                       path="recorrentes"
                       element={
                         <Recurring
+                          sharedDelivery={session.shared_delivery}
                           mixed={session.recurring_mixed}
                           kitModels={session.kit_recurring}
                         />

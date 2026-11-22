@@ -1,3 +1,4 @@
+import { requireSharedDelivery } from './shared-delivery';
 import { prospectsSchema, requireCustomer } from './prospects';
 import { customerType, occasionValues } from '../shared/customer-order';
 import {
@@ -260,6 +261,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
   return p1Mutation(req, db, a, async (raw, nonce) => {
     const d = schema.parse(raw),
       order = id || crypto.randomUUID();
+    await requireSharedDelivery(db, d.delivery.courier);
     if (id && !z.uuid().safeParse(id).success)
       throw new HttpError(404, 'Não encontrado.');
     const prior = id

@@ -1,3 +1,4 @@
+import { type Courier } from '../../../shared/courier';
 import { Button } from '../../components/Button';
 /* eslint-disable react-refresh/only-export-components -- Utilitários internos compartilhados das telas operacionais. */
 import { useCallback, useEffect, useState } from 'react';
@@ -32,7 +33,7 @@ export interface OperationalOrder {
   version: number;
   delivery_type: 'delivery' | 'pickup';
   delivery_address: string;
-  courier: 'unassigned' | 'owner' | 'partner' | 'courier';
+  courier: Courier;
   courier_name: string;
   courier_fee_cents: number;
   payment_mode?: string;

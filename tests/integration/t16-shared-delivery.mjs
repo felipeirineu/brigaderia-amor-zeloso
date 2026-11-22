@@ -18,9 +18,11 @@ const t = await runtime({
   p1Enabled: true,
   mobileEnabled: true,
   toolsEnabled: true,
+  fieldEnabled: true,
 });
 try {
-  const { call, customer, makeOrder, variant } = await demoProject(t);
+  const { call, customer, makeOrder, variant, owner, operator } =
+    await demoProject(t);
   const id = await makeOrder(due);
   const model = {
     name: 'Modelo DEMONSTRAÇÃO T16',
@@ -33,6 +35,41 @@ try {
   };
   const template = await call('recurring', model);
   const readOrder = () => call('orders/' + id, undefined, 'GET');
+  const both = {
+    delivery_type: 'delivery',
+    delivery_address: model.delivery_address,
+    courier: 'both',
+    courier_fee_cents: 525,
+  };
+  const mobileOrder = {
+    customer_id: customer,
+    due_at: due,
+    items: model.items,
+    delivery: both,
+  };
+  const session = () => call('session', undefined, 'GET');
+  assert.equal((await session()).shared_delivery, false);
+  for (const [path, method, data] of [
+    ['orders/' + id + '/delivery', 'PUT', { ...both, version: 3 }],
+    [
+      'recurring/' + template.id,
+      'PUT',
+      { ...model, courier: 'both', version: 1 },
+    ],
+    ['mobile/orders', 'POST', mobileOrder],
+  ]) {
+    const response = await t.request(path, {
+      cookie: owner,
+      method,
+      data,
+      key: crypto.randomUUID(),
+    });
+    assert.equal(response.status, 409);
+    assert.match(
+      await response.text(),
+      /entrega pelos dois ainda não está disponível/,
+    );
+  }
   const snapshot = async () => {
     const rows = {};
     for (const table of [
@@ -40,6 +77,7 @@ try {
       'order_items',
       'order_status_events',
       'order_terms',
+      'order_places',
       'recurring_templates',
       'recurring_items',
     ])
@@ -79,21 +117,99 @@ try {
     t.db.prepare("UPDATE orders SET courier='invalid'").run(),
     /CHECK constraint failed/,
   );
-  for (const [table, rowId] of [
-    ['orders', id],
-    ['recurring_templates', template.id],
-  ]) {
-    await t.db
-      .prepare(`UPDATE ${table} SET courier='both' WHERE id=?`)
-      .bind(rowId)
-      .run();
-  }
+  assert.equal((await session()).shared_delivery, true);
+  await call(
+    'orders/' + id + '/delivery',
+    { ...both, version: (await readOrder()).version },
+    'PUT',
+    operator,
+  );
   assert.equal((await readOrder()).courier, 'both');
+  assert.equal((await readOrder()).courier_fee_cents, 525);
+  const mobile = await call('mobile/orders', mobileOrder, 'POST', operator);
+  await call(
+    'orders/' + mobile.id + '/status',
+    {
+      version: mobile.version,
+      to: 'awaiting_confirmation',
+      reason: 'Revisão DEMONSTRAÇÃO',
+    },
+    'POST',
+    operator,
+  );
+  const reopened = await call('orders/' + mobile.id, undefined, 'GET');
+  const editedMobile = await call(
+    'mobile/orders/' + mobile.id,
+    {
+      ...mobileOrder,
+      version: reopened.version,
+      delivery: { ...both, courier: 'owner' },
+    },
+    'PUT',
+    operator,
+  );
   assert.equal(
-    (await call('recurring', undefined, 'GET')).find(
-      (row) => row.id === template.id,
-    ).courier,
-    'both',
+    (await call('orders/' + mobile.id, undefined, 'GET')).courier,
+    'owner',
+  );
+  await call(
+    'orders/' + mobile.id + '/delivery',
+    { ...both, version: editedMobile.version },
+    'PUT',
+    operator,
+  );
+
+  await call(
+    'recurring/' + template.id,
+    { ...model, courier: 'both', courier_fee_cents: 525, version: 1 },
+    'PUT',
+  );
+  const week = { week: '2030-01-07' };
+  const generated = await call('generate-week', week);
+  assert.equal(generated.created, 1);
+  assert.equal((await call('generate-week', week)).created, 0);
+  const recurrence = await t.db
+    .prepare(
+      'SELECT COUNT(*) AS count, SUM(courier_fee_cents) AS fee, MIN(courier) AS courier FROM orders WHERE order_type = ?',
+    )
+    .bind('recurring')
+    .first();
+  assert.deepEqual(recurrence, { count: 1, fee: 525, courier: 'both' });
+
+  for (const to of [
+    'in_production',
+    'ready',
+    'out_for_delivery',
+    'delivered',
+  ]) {
+    await call(
+      'orders/' + id + '/status',
+      { version: (await readOrder()).version, to },
+      'POST',
+      operator,
+    );
+  }
+  await call('field/trips', {
+    order_ids: [id],
+    mode: 'car',
+    leg: 'roundtrip',
+    occurred_at: new Date().toISOString(),
+    amount_cents: 525,
+    method: 'cash',
+  });
+  const today = await call('today?date=' + day, undefined, 'GET');
+  assert.equal(today.orders.filter((o) => o.id === id).length, 1);
+  assert.equal(today.totals.delivered_cents, 2000);
+  assert.equal(today.travel_week_cents, 525);
+  const report = await call(
+    `p1/reports?from=${day}&to=${day}`,
+    undefined,
+    'GET',
+  );
+  assert.equal(report.sales_cents, 2000);
+  assert.deepEqual(
+    report.orders.map((o) => o.id),
+    [id],
   );
 
   const backup = await t.request('p1/backup', {
@@ -115,9 +231,9 @@ try {
       { input: await backup.text(), encoding: 'utf8' },
     ),
   );
-  assert.deepEqual(restored, [[], [['both']], [['both']]]);
+  assert.deepEqual(restored, [[], [['both'], ['both'], ['both']], [['both']]]);
   console.log(
-    'OK T16 migração D1 preserva linhas, índices, vínculos e backup restaurável.',
+    'OK T16 migração, pré-ativação, edição, recorrência, totais e backup restaurável.',
   );
 } finally {
   await t.dispose();

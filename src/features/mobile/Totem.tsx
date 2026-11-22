@@ -1,3 +1,4 @@
+import { courierChoices, type Courier } from '../../../shared/courier';
 import { AlcoholTag } from '../../components/AlcoholTag';
 import { AvatarChip } from '../../components/AvatarChip';
 import { SkeletonList } from '../../components/Skeleton';
@@ -111,7 +112,7 @@ interface Plan {
   notes: string;
   delivery_type: 'pickup' | 'delivery';
   delivery_address: string;
-  courier: 'unassigned' | 'owner' | 'partner' | 'courier';
+  courier: Courier;
   courier_name: string;
   courier_fee_cents: number;
   valid: boolean;
@@ -171,11 +172,13 @@ export function Totem({
   mixed = false,
   metadata = false,
   kitOrders = false,
+  sharedDelivery = false,
 }: {
   financial?: boolean;
   mixed?: boolean;
   metadata?: boolean;
   kitOrders?: boolean;
+  sharedDelivery?: boolean;
 }) {
   const {
     scope: draftScope,
@@ -1819,26 +1822,24 @@ export function Totem({
             role="group"
             aria-label="Quem leva"
           >
-            {(['unassigned', 'owner', 'partner', 'courier'] as const).map(
-              (c) => (
-                <AvatarChip
-                  key={c}
-                  aria-pressed={courier === c}
-                  onClick={() => setCourier(c)}
-                  avatar={
-                    c === 'owner' || c === 'partner' ? (
-                      <CourierAvatars courier={c} />
-                    ) : c === 'courier' ? (
-                      <span className="courier-initials" aria-hidden="true">
-                        M
-                      </span>
-                    ) : null
-                  }
-                >
-                  {courierLabels[c]}
-                </AvatarChip>
-              ),
-            )}
+            {courierChoices(sharedDelivery).map((c) => (
+              <AvatarChip
+                key={c}
+                aria-pressed={courier === c}
+                onClick={() => setCourier(c)}
+                avatar={
+                  c === 'owner' || c === 'partner' || c === 'both' ? (
+                    <CourierAvatars courier={c} />
+                  ) : c === 'courier' ? (
+                    <span className="courier-initials" aria-hidden="true">
+                      M
+                    </span>
+                  ) : null
+                }
+              >
+                {courierLabels[c]}
+              </AvatarChip>
+            ))}
           </div>
           {courier === 'courier' && (
             <label>

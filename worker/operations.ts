@@ -1,3 +1,4 @@
+import { requireSharedDelivery } from './shared-delivery';
 import { visitsReady, visitList, sampleProduction } from './visits';
 import { requireCustomer } from './prospects';
 import { customerAddressSQL } from './customer-address';
@@ -344,6 +345,7 @@ export async function operations(
     if (id && !previous) throw new HttpError(404, 'Modelo não encontrado.');
     if (id && data.version !== previous?.version)
       throw new HttpError(409, 'Modelo alterado. Atualize.');
+    await requireSharedDelivery(db, data.courier);
     const customer = await db
       .prepare(
         'SELECT * FROM customers WHERE organization_id=? AND id=? AND active=1',
@@ -754,6 +756,7 @@ export async function operations(
     );
   if (action === 'delivery' && req.method === 'PUT') {
     const data = await body(req, deliverySchema);
+    await requireSharedDelivery(db, data.courier);
     if (data.version !== order.version)
       throw new HttpError(409, 'Pedido alterado. Atualize.');
     if (['delivered', 'picked_up', 'cancelled'].includes(String(order.status)))
