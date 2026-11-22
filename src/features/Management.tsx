@@ -1,3 +1,4 @@
+import { BatchOrders } from './operations/BatchOrders';
 import { paymentModeLabels } from '../../shared/finance';
 import {
   FeedbackCount,
@@ -200,6 +201,7 @@ interface Order {
   id: string;
   customer_id: string;
   customer_name: string;
+  delivery_type: string;
   due_at: string;
   notes: string;
   total_cents: number;
@@ -1176,7 +1178,7 @@ function Orders({
     );
   return (
     <>
-      <div className="chips">
+      <div className="chips order-mode-switch">
         {mobile && (
           <>
             <Button
@@ -1375,10 +1377,108 @@ function FullOrders({
           0),
     0,
   );
+  const orderRecords = orders.loading ? (
+    <SkeletonList label="Carregando pedidos…" />
+  ) : !orders.data.length ? (
+    <div className="mascot-empty">
+      <Mascot size={72} />
+      <p>Nenhum pedido encontrado.</p>
+    </div>
+  ) : (
+    <div className="record-list">
+      {orders.data.map((o) => (
+        <article className="panel" key={o.id} data-batch-order={o.id}>
+          <h2>{o.customer_name}</h2>
+          {occasionLabel(o.occasion) && (
+            <p>Ocasião: {occasionLabel(o.occasion)}</p>
+          )}
+          <p>
+            {statusLabels[o.status] || 'Rascunho'} · {dateTime(o.due_at)} ·{' '}
+            {money(o.total_cents)}
+          </p>
+          <ul>
+            {o.items.map((i, index) => (
+              <li key={i.id ?? index}>
+                {i.quantity} ×{' '}
+                {i.kit_id
+                  ? `${i.product_name} (${i.components?.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
+                  : i.components?.length
+                    ? `Caixa Mista (${i.components.map((c) => `${c.units} ${c.product_name ?? options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
+                    : `${i.product_name} — ${i.variant_label}`}{' '}
+                · {money(i.unit_price_cents!)}
+              </li>
+            ))}
+          </ul>
+          {operational && (
+            <Button
+              className="button"
+              to={`/gestao/pedidos/${o.id}`}
+              variant="ghost"
+            >
+              Abrir pedido
+            </Button>
+          )}
+          {['draft', 'awaiting_confirmation'].includes(o.status) && (
+            <>
+              <Button
+                onClick={() => {
+                  if (simple) {
+                    navigate(`/gestao/pedidos/${o.id}/editar-simples`);
+                    return;
+                  }
+                  choice.current++;
+                  setDefaults(null);
+                  setTemplate('');
+                  setEditing(o);
+                  setCustomer(o.customer_id);
+                  setDue(
+                    new Date(new Date(o.due_at).getTime() - 3 * 3600000)
+                      .toISOString()
+                      .slice(0, 16),
+                  );
+                  setNotes(o.notes);
+                  setOccasion((o.occasion ?? '') as Occasion);
+                  setKitEditing(false);
+                  const savedKits = o.items.filter(
+                    (i) => i.kit_id,
+                  ) as unknown as KitItemSnapshot[];
+                  setKitSnapshots(savedKits);
+                  setKitItems(savedKits.map(kitSnapshotInput));
+                  setItems(o.items.filter((i) => !i.kit_id));
+                }}
+              >
+                Editar pedido de {o.customer_name}
+              </Button>
+              <Button
+                disabled={save.busy}
+                onClick={async () => {
+                  if (
+                    await askConfirmation(
+                      'Arquivar rascunho? O registro e os itens serão preservados.',
+                      'Arquivar',
+                    )
+                  )
+                    void save.save(() =>
+                      api(`orders/${o.id}`, 'DELETE', {
+                        version: o.version,
+                      }),
+                    );
+                }}
+                variant="danger"
+                loading={save.busy}
+              >
+                Arquivar pedido de {o.customer_name}
+              </Button>
+            </>
+          )}
+        </article>
+      ))}
+    </div>
+  );
   return (
     <>
       <h1 className="orders-page-title">Pedidos</h1>
-      <p>
+      <p className="orders-page-description">
         Pedidos. Quantidade se refere à embalagem/caixa cadastrada. Status e
         entrega ficam no detalhe do pedido quando a operação está ativa.
       </p>
@@ -1402,7 +1502,7 @@ function FullOrders({
           </section>
         ) : simple ? (
           <Button
-            className="button primary-action"
+            className="button primary-action order-list-new"
             to="/gestao/pedidos?novo=1"
             variant="primary"
           >
@@ -1621,7 +1721,7 @@ function FullOrders({
           </form>
         )}
         <div className="desktop-order-list">
-          <label>
+          <label className="order-list-search">
             Buscar pedidos por cliente
             <input
               type="search"
@@ -1629,106 +1729,18 @@ function FullOrders({
               onChange={(e) => setQuery(e.target.value)}
             />
           </label>
-          <Button onClick={() => void orders.reload()}>
+          <Button
+            className="order-list-refresh"
+            onClick={() => void orders.reload()}
+          >
             Atualizar pedidos
           </Button>
-          {orders.loading ? (
-            <SkeletonList label="Carregando pedidos…" />
-          ) : !orders.data.length ? (
-            <div className="mascot-empty">
-              <Mascot size={72} />
-              <p>Nenhum pedido encontrado.</p>
-            </div>
+          {operational ? (
+            <BatchOrders orders={orders.data} reload={orders.reload}>
+              {orderRecords}
+            </BatchOrders>
           ) : (
-            <div className="record-list">
-              {orders.data.map((o) => (
-                <article className="panel" key={o.id}>
-                  <h2>{o.customer_name}</h2>
-                  {occasionLabel(o.occasion) && (
-                    <p>Ocasião: {occasionLabel(o.occasion)}</p>
-                  )}
-                  <p>
-                    {statusLabels[o.status] || 'Rascunho'} ·{' '}
-                    {dateTime(o.due_at)} · {money(o.total_cents)}
-                  </p>
-                  <ul>
-                    {o.items.map((i, index) => (
-                      <li key={i.id ?? index}>
-                        {i.quantity} ×{' '}
-                        {i.kit_id
-                          ? `${i.product_name} (${i.components?.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
-                          : i.components?.length
-                            ? `Caixa Mista (${i.components.map((c) => `${c.units} ${c.product_name ?? options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
-                            : `${i.product_name} — ${i.variant_label}`}{' '}
-                        · {money(i.unit_price_cents!)}
-                      </li>
-                    ))}
-                  </ul>
-                  {operational && (
-                    <Button
-                      className="button"
-                      to={`/gestao/pedidos/${o.id}`}
-                      variant="ghost"
-                    >
-                      Abrir pedido
-                    </Button>
-                  )}
-                  {['draft', 'awaiting_confirmation'].includes(o.status) && (
-                    <>
-                      <Button
-                        onClick={() => {
-                          if (simple) {
-                            navigate(`/gestao/pedidos/${o.id}/editar-simples`);
-                            return;
-                          }
-                          choice.current++;
-                          setDefaults(null);
-                          setTemplate('');
-                          setEditing(o);
-                          setCustomer(o.customer_id);
-                          setDue(
-                            new Date(new Date(o.due_at).getTime() - 3 * 3600000)
-                              .toISOString()
-                              .slice(0, 16),
-                          );
-                          setNotes(o.notes);
-                          setOccasion((o.occasion ?? '') as Occasion);
-                          setKitEditing(false);
-                          const savedKits = o.items.filter(
-                            (i) => i.kit_id,
-                          ) as unknown as KitItemSnapshot[];
-                          setKitSnapshots(savedKits);
-                          setKitItems(savedKits.map(kitSnapshotInput));
-                          setItems(o.items.filter((i) => !i.kit_id));
-                        }}
-                      >
-                        Editar pedido de {o.customer_name}
-                      </Button>
-                      <Button
-                        disabled={save.busy}
-                        onClick={async () => {
-                          if (
-                            await askConfirmation(
-                              'Arquivar rascunho? O registro e os itens serão preservados.',
-                              'Arquivar',
-                            )
-                          )
-                            void save.save(() =>
-                              api(`orders/${o.id}`, 'DELETE', {
-                                version: o.version,
-                              }),
-                            );
-                        }}
-                        variant="danger"
-                        loading={save.busy}
-                      >
-                        Arquivar pedido de {o.customer_name}
-                      </Button>
-                    </>
-                  )}
-                </article>
-              ))}
-            </div>
+            orderRecords
           )}
         </div>
       </div>

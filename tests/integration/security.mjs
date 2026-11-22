@@ -645,6 +645,7 @@ try {
   for (const [path, method] of [
     ['customers', 'POST'],
     ['orders', 'POST'],
+    ['orders-batch', 'POST'],
     ['orders/' + order, 'PUT'],
     ['mobile/orders', 'POST'],
     ['field/reverse', 'POST'],
@@ -775,6 +776,14 @@ try {
   }
   for (const [path, method, data] of [
     ['customers/' + customer, 'PUT', { name: 'Invasão', version: 1 }],
+    [
+      'orders-batch',
+      'POST',
+      {
+        action: 'advance',
+        orders: [{ id: order, version: 3, key: crypto.randomUUID() }],
+      },
+    ],
     ['orders/' + order + '/status', 'POST', { version: 3, to: 'cancelled' }],
     [
       'finance/customers/' + customer + '/payments',

@@ -2812,3 +2812,150 @@ body:has(.mix-sheet) {
 .order-travel .az-button {
   width: 100%;
 }
+
+/* Pedidos em lote: a seleção substitui os cartões de edição. */
+.batch-order-heading,
+.batch-order-group > header,
+.batch-order-group > header label {
+  display: flex;
+  align-items: center;
+  gap: var(--az-space-2);
+}
+.batch-order-heading,
+.batch-order-group > header {
+  justify-content: space-between;
+  margin-block: var(--az-space-3);
+}
+.batch-order-heading > button {
+  margin-inline-start: auto;
+}
+.batch-order-heading h2 {
+  margin: 0;
+}
+.batch-order-group > header {
+  flex-wrap: wrap;
+}
+.batch-order-group h3 {
+  margin: 0;
+  color: var(--az-gold-ink);
+  font: 700 0.82rem var(--font-body, sans-serif);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.batch-order-group > header label {
+  font-weight: 650;
+}
+.batch-order-list input[type='checkbox'] {
+  inline-size: 24px;
+  block-size: 24px;
+  margin: 0;
+  accent-color: var(--az-choc);
+}
+.batch-order-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--az-space-2);
+  padding: var(--az-space-3);
+  margin-block: var(--az-space-2);
+  border: 2px solid transparent;
+  border-radius: var(--az-radius-field);
+  background: var(--az-surface);
+  color: var(--az-ink);
+  cursor: pointer;
+}
+.batch-order-card:has(input:checked) {
+  border-color: var(--az-gold);
+  background: var(--az-paper);
+}
+.batch-order-card :is(strong, small) {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.batch-order-card small {
+  color: var(--az-muted);
+}
+.batch-order-state {
+  padding: var(--az-space-1) var(--az-space-2);
+  border-radius: var(--az-radius-pill);
+  background: var(--az-tonal);
+  font-size: 0.75rem;
+  font-weight: 650;
+  text-align: center;
+}
+.batch-order-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(var(--az-bottom-nav-height) + env(safe-area-inset-bottom));
+  z-index: 30;
+  width: min(100%, 680px);
+  margin-inline: auto;
+  padding: var(--az-space-4);
+  border-radius: var(--az-radius-card) var(--az-radius-card) 0 0;
+  background: var(--az-choc);
+  color: var(--az-cream);
+}
+.batch-order-bar[data-selecting='true'] {
+  bottom: 0;
+  padding-bottom: calc(var(--az-space-4) + env(safe-area-inset-bottom));
+}
+.batch-order-list:has(.batch-order-bar) {
+  padding-bottom: 8rem;
+}
+.batch-order-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--az-space-2);
+  margin-top: var(--az-space-2);
+}
+.batch-order-actions button {
+  min-block-size: 48px;
+  justify-content: center;
+  padding-inline: var(--az-space-2);
+  border-radius: var(--az-radius-field);
+  border-color: transparent;
+  background: color-mix(in srgb, var(--az-cream) 14%, var(--az-choc));
+  color: var(--az-cream);
+}
+.batch-order-actions button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--az-cream) 23%, var(--az-choc));
+}
+.batch-order-sheet .sheet-body {
+  display: grid;
+  gap: var(--az-space-3);
+}
+.batch-order-sheet .sheet-body > :is(p, h2, ul) {
+  margin-block: 0;
+}
+.batch-order-warning {
+  padding: var(--az-space-2);
+  border-radius: var(--az-radius-field);
+  background: var(--az-warn-bg);
+  color: var(--az-warn-ink);
+}
+@media (max-width: 759px) {
+  body:has(.batch-order-bar[data-selecting='true'])
+    :is(
+      .management-nav,
+      .private-bottom-nav,
+      .compact-header,
+      .order-mode-switch,
+      .orders-page-title,
+      .orders-page-description,
+      .order-list-new,
+      .order-list-search,
+      .order-list-refresh,
+      .desktop-order-editor,
+      .desktop-order-detail
+    ) {
+    display: none;
+  }
+  .batch-order-list [data-batch-order] {
+    -webkit-touch-callout: none;
+  }
+}
+@media (min-width: 1024px) {
+  .batch-order-bar {
+    bottom: 0;
+  }
+}

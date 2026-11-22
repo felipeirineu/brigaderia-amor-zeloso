@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.6.0',
+    items: [
+      'Em Pedidos, selecione vários para mudar a data ou avançar as etapas de uma vez.',
+      'O lote permite conferir antes de aplicar e desfazer por alguns segundos.',
+    ],
+  },
+  {
     version: '1.5.0',
     items: [
       'A prazo pode fechar a cada 2 a 12 entregas, com vencimento na última.',

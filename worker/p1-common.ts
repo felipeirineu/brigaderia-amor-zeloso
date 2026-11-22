@@ -74,12 +74,14 @@ export async function p1Mutation(
         data: raw,
       }),
     ),
-    repeated = await db
-      .prepare(
-        `SELECT request_hash,response FROM ${requestsTable} WHERE organization_id=? AND request_key=?`,
-      )
-      .bind(org, key)
-      .first<{ request_hash: string; response: string }>();
+    findRequest = () =>
+      db
+        .prepare(
+          `SELECT request_hash,response FROM ${requestsTable} WHERE organization_id=? AND request_key=?`,
+        )
+        .bind(org, key)
+        .first<{ request_hash: string; response: string }>();
+  const repeated = await findRequest();
   if (repeated) {
     if (repeated.request_hash !== fingerprint)
       throw new HttpError(409, 'Chave já usada.');
@@ -115,19 +117,18 @@ export async function p1Mutation(
     ]);
   } catch (error) {
     // Envio simultâneo: se a primeira transação já confirmou, reaproveite seu resultado.
-    const concurrent = await db
-      .prepare(
-        `SELECT request_hash,response FROM ${requestsTable} WHERE organization_id=? AND request_key=?`,
-      )
-      .bind(org, key)
-      .first<{ request_hash: string; response: string }>();
+    const concurrent = await findRequest();
     if (!concurrent) throw error;
     if (concurrent.request_hash !== fingerprint)
       throw new HttpError(409, 'Chave já usada.');
     return json(JSON.parse(concurrent.response));
   }
-  if (!result[0].meta.changes)
+  if (!result[0].meta.changes) {
+    const concurrent = await findRequest();
+    if (concurrent?.request_hash === fingerprint)
+      return json(JSON.parse(concurrent.response));
     throw new HttpError(409, 'Registro alterado. Atualize.');
+  }
   return json(plan.response, req.method === 'POST' ? 201 : 200);
 }
 export function fileResponse(content: string, type: string, name: string) {

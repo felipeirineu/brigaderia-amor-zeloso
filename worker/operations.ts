@@ -1,3 +1,5 @@
+import { validateOrderStatus } from './order-status';
+import { batchOrders } from './batch-orders';
 import { completedAt } from './order-completion';
 import { todayDeliveryCycles } from './delivery-cycle';
 import { requireSharedDelivery } from './shared-delivery';
@@ -5,7 +7,7 @@ import { visitsReady, visitList, sampleProduction } from './visits';
 import { requireCustomer } from './prospects';
 import { customerAddressSQL } from './customer-address';
 import { customerType, occasionLabel } from '../shared/customer-order';
-import { customerOrderFieldsReady, checkPersonTerms } from './customer-order';
+import { customerOrderFieldsReady } from './customer-order';
 import { p1Ready } from './p1-ready';
 import {
   recurringKits,
@@ -32,7 +34,7 @@ import { catalogForItems, writeComponents } from './mixed';
 import type { ItemSnapshot } from '../shared/mixed';
 import { orderNumber } from './order-number';
 import type { ComponentSnapshot } from '../shared/mixed';
-import { compositionSchema, validateMixedConfirmation } from './mixed';
+import { compositionSchema } from './mixed';
 import { shiftMonth } from '../shared/workday';
 import { mobileReady } from './mobile-ready';
 import { fieldReady } from './field-ready';
@@ -265,6 +267,8 @@ export async function operations(
     });
   }
   // Três pedidos por invocação: mesmas validações individuais sem exceder D1 Free.
+  if (resource === 'orders-batch' && !id && req.method === 'POST')
+    return batchOrders(req, env, a);
   if (resource === 'confirm-reviewed' && req.method === 'POST') {
     const data = await body(
       req,
@@ -917,8 +921,6 @@ export async function operations(
       )
         throw new HttpError(409, 'Entrega já incluída em fechamento.');
     }
-    if (target === 'out_for_delivery' && order.courier === 'unassigned')
-      throw new HttpError(400, 'Selecione quem fará a entrega antes da saída.');
     if (
       target === 'awaiting_confirmation' &&
       order.status === 'confirmed' &&
@@ -927,40 +929,7 @@ export async function operations(
       throw new HttpError(400, 'Informe o motivo da reabertura.');
     if (target === 'cancelled' && !reason.trim())
       throw new HttpError(400, 'Informe o motivo do cancelamento.');
-    if (
-      target === 'confirmed' &&
-      order.delivery_type === 'delivery' &&
-      !String(order.delivery_address).trim()
-    )
-      throw new HttpError(
-        400,
-        'Informe o endereço de entrega ou selecione retirada antes de confirmar.',
-      );
-    if (target === 'confirmed') {
-      await validateMixedConfirmation(env, org, id);
-      const payer = await db
-        .prepare('SELECT * FROM customers WHERE organization_id=? AND id=?')
-        .bind(org, order.customer_id)
-        .first<Row>();
-      if (customerType(payer) === 'person') {
-        if (!(await financeReady(env)))
-          throw new HttpError(
-            503,
-            'Ative o financeiro antes de confirmar pedidos de pessoa.',
-          );
-        const terms = await db
-          .prepare(
-            'SELECT data FROM order_terms WHERE organization_id=? AND order_id=?',
-          )
-          .bind(org, id)
-          .first<{ data: string }>();
-        checkPersonTerms(
-          'person',
-          terms ? JSON.parse(terms.data) : emptyTerms(),
-          true,
-        );
-      }
-    }
+    await validateOrderStatus(env, a, order, target);
     const eventId = crypto.randomUUID();
     const result = await db.batch([
       db

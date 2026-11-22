@@ -159,7 +159,7 @@ export default {
       if (pathname.startsWith('/api/finance/'))
         return await finance(req, env, user);
       if (
-        /^\/api\/(today|recurring|generate-week|confirm-reviewed|message-templates)(?:\/|$)/.test(
+        /^\/api\/(today|recurring|generate-week|confirm-reviewed|message-templates|orders-batch)(?:\/|$)/.test(
           pathname,
         ) ||
         /^\/api\/orders\/[^/]+\/[^/]+/.test(pathname)
