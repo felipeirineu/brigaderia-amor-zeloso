@@ -7,7 +7,7 @@ import { Button } from '../../components/Button';
 import { useField } from '../field/FieldContext';
 import { FinancialTutorial } from '../finance/Tutorial';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { helpTexts } from './texts';
 import { Mascot } from '../../components/Mascot';
 
@@ -22,7 +22,13 @@ export function Tour({
     [done, setDone] = useState(
       () => readLocalPreference(`az-tour-${role}`) === 'done',
     );
-  const location = useLocation();
+  const location = useLocation(),
+    navigate = useNavigate(),
+    field = useField();
+  // Sem nome de exibição salvo: o passeio termina pedindo o nome.
+  const needsName =
+    !!field?.data &&
+    !field.data.staff.find((s) => s.id === field.data!.user_id)?.version;
   const dialog = useRef<HTMLDialogElement>(null),
     trigger = useRef<HTMLButtonElement>(null);
   useEffect(() => {
@@ -69,8 +75,17 @@ export function Tour({
           ? 'Produtos, kits, relatórios em PDF e planilha, backup e Preferências, onde dá para ligar o modo escuro. A Ajuda explica cada tela.'
           : 'Preferências (modo escuro, sua foto e seu nome) e a Ajuda, que explica cada tela.',
       },
+      ...(needsName
+        ? [
+            {
+              target: 'profile',
+              title: 'Como a equipe te chama?',
+              text: 'Toque na sua foto, no alto, para escolher seu nome de exibição. Ele aparece nas entregas, nas visitas e assina as mensagens do WhatsApp.',
+            },
+          ]
+        : []),
     ];
-  }, [role, visits]);
+  }, [role, visits, needsName]);
   // Contorno dourado aceso sobre o fundo escurecido da folha: fica numa
   // camada própria (popover) acima do fundo; sem suporte, vale o destaque comum.
   const ring = useRef<HTMLDivElement>(null);
@@ -175,11 +190,18 @@ export function Tour({
               </Button>
               <Button
                 variant="primary"
-                onClick={() =>
-                  step < steps.length - 1 ? setStep(step + 1) : close()
-                }
+                onClick={() => {
+                  if (step < steps.length - 1) return setStep(step + 1);
+                  close();
+                  if (steps[step].target === 'profile')
+                    navigate('/gestao/preferencias#nome');
+                }}
               >
-                {step < steps.length - 1 ? 'Próximo' : 'Concluir'}
+                {step < steps.length - 1
+                  ? 'Próximo'
+                  : steps[step].target === 'profile'
+                    ? 'Escolher meu nome'
+                    : 'Concluir'}
               </Button>
             </div>
           </div>

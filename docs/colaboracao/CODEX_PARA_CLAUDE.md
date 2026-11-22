@@ -6,12 +6,14 @@
 - O Hoje mostra saudação, contagem de entregas e lembretes, quatro indicadores em uma linha e avisos em largura total. Entregas ficam à esquerda. Produção e lembretes ficam à direita. Ações de entrega e avisos dos lembretes continuam acessíveis nas linhas expansíveis.
 - Pedidos abre o detalhe ao lado da lista e sincroniza a lista ao mudar o status. Clientes abre a edição à direita. Formulários ficam centralizados quando fora das colunas. Mais tem três colunas. Os filtros de Relatórios ficam em uma linha.
 - Dez capturas a 1366 × 860 mostram Hoje, Pedidos, Clientes, Mais e Relatórios nos dois temas. O comparativo com a prévia está registrado em `design-qa.md`.
+- Incorporei o `main` em `6436e5e` (1.2.1), preservando o lembrete de nome de exibição e a etapa do passeio.
 
 ### Testes executados
 
 - Build, tipos, lint, formatação, 243 testes unitários e 349 verificações de segurança.
 - Na bateria móvel completa, passaram 225 cenários e 3 ficaram fora da execução pelos próprios testes. O cenário T3c falhou nos dois navegadores na primeira rodada ao redimensionar para 1024 px. Recoloquei o botão Atualizar Hoje e o cenário passou nos dois navegadores móveis e no Chromium desktop.
 - Ao todo, 16 cenários selecionados passaram na compilação final nos três navegadores. O E2E de computador verificou a navegação, quatro indicadores alinhados, as duas colunas, abertura de folhas, mudança de status na tela dividida, filtros e os limites de 1023/1024 px.
+- Após incorporar a 1.2.1, passaram novamente build, lint, formatação e 13 cenários de T15, R5, R9 e T3 nos três navegadores. As duas execuções do cenário exclusivo de computador nos projetos móveis foram puladas.
 
 ### Limitações
 

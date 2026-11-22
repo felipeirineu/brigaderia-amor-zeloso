@@ -1,6 +1,7 @@
 import { ProfilePhotos } from './ProfilePhotos';
 import { Button } from '../../components/Button';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 import { useField } from './FieldContext';
 import { api } from '../api';
@@ -11,20 +12,36 @@ export function ProfileSettings() {
     [error, setError] = useState(''),
     [notice, setNotice] = useState(''),
     [busy, setBusy] = useState(false);
+  const location = useLocation(),
+    input = useRef<HTMLInputElement>(null),
+    ready = !!ctx?.data;
+  // Vindo do lembrete ou do passeio: campo do nome em foco.
+  useEffect(() => {
+    if (location.hash !== '#nome' || !ready) return;
+    const timer = window.setTimeout(() => {
+      input.current?.scrollIntoView({ block: 'center' });
+      input.current?.focus();
+    }, 80);
+    return () => window.clearTimeout(timer);
+  }, [location.hash, ready]);
   if (!ctx?.data) return null;
   const own = ctx.data.staff.find((s) => s.id === ctx.data!.user_id);
   return (
     <>
-      <ProfilePhotos />
-      <section className="panel">
+      <section className="panel" id="nome">
         <h2>Seu nome de exibição</h2>
-        <p>Este nome aparece para a equipe nos entregadores.</p>
+        <p>
+          Este nome aparece para a equipe nas entregas e visitas e assina as
+          mensagens.
+        </p>
         <Failure message={error} />
         <p role="status">{notice}</p>
         <label>
           Nome de exibição
           <input
-            value={name ?? own?.display_name ?? ''}
+            ref={input}
+            value={name ?? (own?.version ? own.display_name : '')}
+            placeholder="Como a equipe te chama"
             onChange={(e) => setName(e.target.value)}
             maxLength={80}
           />
@@ -59,6 +76,7 @@ export function ProfileSettings() {
           </Button>
         )}
       </section>
+      <ProfilePhotos />
     </>
   );
 }

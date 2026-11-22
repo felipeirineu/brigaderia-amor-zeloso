@@ -123,11 +123,16 @@ test('T3 cinco telas com tipografia, telefone e último cliente acessível', asy
         .first()
         .evaluate((el) => getComputedStyle(el).fontFamily),
     ).toContain('Figtree');
-    const chip = op.getByRole('link', { name: 'Defina seu nome', exact: true });
-    await expect(chip).toBeVisible();
-    const box = await chip.boundingBox();
-    expect(box.height).toBeGreaterThanOrEqual(40);
-    expect(box.height).toBeLessThanOrEqual(44);
+    // Lembrete do nome: "Agora não" esconde até a próxima abertura do app.
+    const reminder = op.getByRole('region', { name: 'Nome de exibição' });
+    await expect(reminder).toBeVisible();
+    await reminder
+      .getByRole('button', { name: 'Agora não', exact: true })
+      .click();
+    await expect(reminder).toHaveCount(0);
+    await op.reload();
+    await expect(op.locator('.order-card h3').first()).toBeVisible();
+    await expect(reminder).toHaveCount(0);
     expect(
       (await op.locator('.order-card').first().boundingBox()).y,
     ).toBeLessThanOrEqual(200);

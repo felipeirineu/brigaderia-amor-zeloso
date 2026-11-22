@@ -2183,6 +2183,48 @@ body:has(.mix-sheet) {
   color: var(--az-muted);
 }
 
+/* Lembrete do nome de exibição no Hoje (prévia aprovada em 22/11). */
+.name-reminder {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: var(--az-space-3);
+  align-items: center;
+  background: #fbeedd;
+  border: 1.5px solid #e2b77a;
+}
+.name-reminder h2 {
+  margin: 0 0 4px;
+  font-family: var(--az-serif);
+  font-weight: 400;
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+.name-reminder p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--az-muted);
+}
+.name-reminder-actions .az-button {
+  padding-inline: var(--az-space-2);
+  white-space: nowrap;
+}
+.name-reminder-actions {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--az-space-2);
+}
+:root[data-theme='dark'] .name-reminder {
+  background: var(--az-surface);
+  border-color: rgb(226 189 130 / 0.62);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .name-reminder {
+    background: var(--az-surface);
+    border-color: rgb(226 189 130 / 0.62);
+  }
+}
+
 /* T15 — gestão em tela larga. A navegação compacta anterior continua até 1023 px. */
 .desktop-sidebar,
 .desktop-header-date,
