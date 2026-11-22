@@ -21,26 +21,34 @@ async function session(browser, t, email, colorScheme = 'light') {
 test('T14 erro real de renderização recupera e abre relato com contexto sanitizado', async ({
   browser,
 }, info) => {
+  let broken = true;
   const t = await runtime({
     browserHTTP: true,
     mobileEnabled: true,
     feedbackWhatsapp: '5500900000000',
+    // WebKit pode contornar page.route após recarregar. Simule no servidor local.
+    browserResponse: (url, method, response) => {
+      if (
+        broken &&
+        method === 'GET' &&
+        url.pathname === '/api/orders' &&
+        url.searchParams.has('q') &&
+        response.ok
+      ) {
+        return Response.json(
+          { length: 1, sentinel: 'DEMONSTRAÇÃO conteúdo privado' },
+          { headers: { 'Cache-Control': 'no-store' } },
+        );
+      }
+    },
   });
   const operator = await session(browser, t, 'operator@example.test');
   const { page } = operator;
   try {
-    let broken = true;
     const logs = [];
     page.on('console', (msg) => {
       if (msg.type() === 'warning') logs.push(msg);
     });
-    await page.route(/\/api\/orders\?q=/, (route) =>
-      broken
-        ? route.fulfill({
-            json: { length: 1, sentinel: 'DEMONSTRAÇÃO conteúdo privado' },
-          })
-        : route.continue(),
-    );
     const orderUrl = t.url + '/gestao/pedidos?cliente=DEMO-PRIVADO';
     await page.goto(orderUrl);
     const error = page.getByRole('heading', {

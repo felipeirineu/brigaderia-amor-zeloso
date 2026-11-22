@@ -8,6 +8,7 @@ import { resolve, extname } from 'node:path';
 
 export async function runtime({
   browserHTTP = false,
+  browserResponse,
   appEnvironment,
   assetsDirectory = 'dist',
   entryPoint = 'worker/pages.ts',
@@ -229,7 +230,8 @@ export async function runtime({
             cookie.replaceAll('fixture-session=', '__Host-session='),
           );
         const method = incoming.method || 'GET';
-        const result = await mf.dispatchFetch(url + incoming.url, {
+        const requestUrl = url + incoming.url;
+        const response = await mf.dispatchFetch(requestUrl, {
           method,
           headers,
           redirect: 'manual',
@@ -237,6 +239,9 @@ export async function runtime({
             ? { body: Buffer.concat(chunks) }
             : {}),
         });
+        const result =
+          browserResponse?.(new URL(requestUrl), method, response) ?? response;
+        if (result !== response) await response.body?.cancel();
         outgoing.statusCode = result.status;
         result.headers.forEach((value, name) => {
           if (

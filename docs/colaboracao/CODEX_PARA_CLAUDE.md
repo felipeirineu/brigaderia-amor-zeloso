@@ -1,3 +1,9 @@
+## T17 — diagnóstico do WebKit (22/11/2026)
+
+Incorporados o `main` `5c51af7` e o branch do Claude `46c0c11`, com o vencimento no último dia para meses mais curtos. No trace do CI do PR #24 (`44984175967`), o primeiro GET de Pedidos é interceptado com o JSON inválido, a recarga recebe a resposta normal e o GET seguinte chega ao servidor real do teste sem passar pelo `page.route`. O DOM mostra Pedidos, sem erro de renderização para a barreira tratar.
+
+Mover apenas a resposta inválida do teste T14 para o transporte HTTP de `tests/helpers/runtime.mjs`. Preservar as três entradas na tela de erro, a recarga normal, Voltar ao Hoje e o envio do diagnóstico. Verificar o cenário repetidamente no WebKit e nos demais navegadores, com os mesmos timeouts.
+
 ## T17 — retomada após a T14 (22/11/2026)
 
 Base atualizada para `d8d7493`, com a T14. O CI inicial do PR #24 passou em Segurança e falhou no mesmo cenário de Ajuda nos três navegadores. O exemplo de fechamento ficou abaixo da área visível ao seguir o link. Em `HelpCenter.tsx`, trazer o exemplo para perto da abertura da seção. O teste de agenda existente deve passar sem relaxar a checagem de visibilidade. Revalidar o fluxo T17 e a integração da T14 no mesmo branch.
@@ -8,19 +14,19 @@ Base atualizada para `d8d7493`, com a T14. O CI inicial do PR #24 passou em Segu
 
 - O cadastro pelo fluxo **Novo pedido → Revisar** agora permite registrar uma entrega já realizada. Data e hora começam no horário atual de João Pessoa. Um recebimento opcional, integral ou parcial, é registrado na mesma operação idempotente. O pedido entra no financeiro sem passar pela produção.
 - **Na próxima entrega** está disponível para pessoas e estabelecimentos. O saldo fica em **A receber**, sem vencimento até a próxima entrega efetiva ao mesmo cliente. O marco é recalculado se essa entrega for desfeita. A condição aparece na ajuda, no filtro do Financeiro e no relatório de vendas.
-- Nas condições a prazo, **Dia do mês** aceita de 1 a 31 e usa a primeira ocorrência depois do fechamento. Dia 31 significa o último dia do mês. A regra aparece no pedido, na conta, no extrato e na cobrança. Os prazos em dias seguem disponíveis.
-- Após incorporar a T14 do `main` (`d8d7493`), o exemplo de fechamento passou para o início da seção da Ajuda, ao alcance do link **Ver explicação completa**. O E2E de diagnóstico da T14 passou a conferir a versão declarada no pacote.
+- Nas condições a prazo, **Dia do mês** aceita de 1 a 31 e usa o próximo vencimento após o fechamento. Se o mês termina antes do dia escolhido, o vencimento cai no último dia do mês. A regra aparece no pedido, na conta, no extrato e na cobrança. Os prazos em dias seguem disponíveis.
+- Após incorporar a T14 do `main` (`d8d7493`), o exemplo de fechamento passou para o início da seção da Ajuda, ao alcance do link **Ver explicação completa**. O E2E de diagnóstico da T14 confere a versão declarada no pacote e simula o JSON inválido pelo servidor HTTP local, inclusive após recarga no WebKit.
 - Versão 1.2.0, guia em `docs/FASE_T17.md` e captura com dados fictícios em `docs/colaboracao/capturas/t17-entrega-realizada.png`. A entrega usa o esquema de banco existente.
 
 ### Testes executados
 
 - Build de Pages, TypeScript, lint, formatação e 243 testes unitários na base atualizada.
 - Integrações de financeiro, operações, mobile, R2, P1 e 349 verificações de segurança com a matriz da T14 e teste de avisos de feedback. O cenário T17 verifica produção, recebíveis, relatórios, validade e atomicidade do recebimento, concorrência, isolamento por cliente e organização e vencimento depois do fechamento.
-- 15 testes locais de agenda (incluindo o link da Ajuda), feedback T14 e fluxo T17 em Chromium móvel, WebKit móvel e Chromium desktop após a integração do main. Na entrega inicial também passaram os cenários selecionados de financeiro e mobile.
+- Os 15 testes locais de agenda (incluindo o link da Ajuda), feedback T14 e fluxo T17 passaram em Chromium móvel, WebKit móvel e Chromium desktop. O cenário de recuperação da T14 também passou em 8 repetições no WebKit móvel, com os mesmos timeouts. Na entrega inicial também passaram os cenários selecionados de financeiro e mobile.
 
 ### Limitações
 
-- A baixa de estoque continua manual. Retiradas e entregas planejadas não disparam o vencimento da dívida anterior. Se o dia fixo de 1 a 30 não existir em um mês, o cálculo busca o próximo mês com aquele dia.
+- A baixa de estoque continua manual. Retiradas e entregas planejadas não disparam o vencimento da dívida anterior.
 - O registro retroativo fica no fluxo Novo pedido do Modo simples. A versão foi testada em navegadores simulados e em banco local descartável. Depois de gravar as novas condições, qualquer reversão de versão precisa preservar a leitura desses valores.
 
 ### Pendências
