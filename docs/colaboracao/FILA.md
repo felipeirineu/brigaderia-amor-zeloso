@@ -84,6 +84,8 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | **publicada** 22/11 (PR #25) como **1.3.0** |
 | T16 | Entrega feita pelos dois (Tiago e Alda) | **publicada** 22/11 (PR #26) como **1.4.0** — migração **0029** aplicada pelo Felipe em 22/11 (29 aplicadas; 6 pedidos e 14 eventos preservados) |
 | T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | prévia **aprovada** 22/11; **vez do Codex** — versão **1.5.0** |
+| T20 | Pedidos em lote: selecionar vários (ou todos do dia) e mudar data ou status de uma vez | prévia **aprovada** 22/11; **depois da T18** — versão **1.6.0** |
+| T19 | Fichas: custo por ingrediente (lote e por doce), custos não calculados (20%), preço sugerido por doce | prévia **aprovada** 22/11; **depois da T20** — versão **1.7.0** — migração (Felipe aplica) |
 
 ### T0 — R17
 
@@ -663,6 +665,30 @@ Novo tipo de **Fechamento** dentro de **A prazo**: em vez de fechar por data, fe
 - Se precisar de migração, usar o próximo número livre do main; aplicação no banco real só com aprovação do Felipe.
 - Testes: unitários da contagem (cancelar, desfazer, ciclo não pago, troca de condição), integração de financeiro/recebíveis/relatórios e E2E no celular. Capturas `t18-*.png` só com DEMONSTRAÇÃO.
 - Versão **1.5.0**.
+
+### T20 — Pedidos em lote (prévia `previas/t20-pedidos-em-lote.png` **aprovada pelo Felipe em 22/11**; fazer depois da T18)
+
+Pedido do Tiago: mudar a data de vários pedidos de uma vez (ex.: tudo de amanhã para terça) e avançar o status de vários sem abrir um por um. Siga a prévia.
+
+1. **Modo seleção** na lista de Pedidos (celular e computador): botão "Selecionar" no topo (e toque longo num pedido no celular). Caixa em cada pedido, **"Todos do dia"** em cada grupo de dia, "Cancelar seleção". Barra fixa embaixo: "N pedidos selecionados" + **Mudar data**, **Avançar etapa**, **Marcar entregue**.
+2. **Mudar data:** folha com Hoje, Amanhã, próximos dias e "Outra data"; **mantém o horário de cada pedido**, troca só o dia (fuso de João Pessoa). Lista de conferência antes de aplicar. Entregues, retirados e cancelados ficam de fora, com aviso.
+3. **Avançar etapa:** cada pedido vai para o próximo status permitido em `nextStatuses` (retirada segue o caminho de retirada). **Marcar entregue:** leva cada pedido até `delivered` (ou `picked_up` para retirada), **registrando cada transição intermediária** como hoje (eventos, auditoria, financeiro e o que mais a mudança de status já dispara — inclusive o aviso de cobrança da T18 e o vencimento "Na próxima entrega" da T17). Folha de confirmação com "status atual → final" por pedido.
+4. **Servidor:** endpoint em lote com validação por pedido (CAS/versão, organização, papel), idempotente, resultado por pedido (aplicado / pulado com motivo). Respeitar o limite de consultas do D1 por chamada (mesmo padrão de `confirm-reviewed`, que processa em partes): o cliente envia em partes e mostra o progresso. Nunca deixar pedido em estado intermediário sem evento.
+5. **Desfazer** por alguns segundos depois da ação em lote (reverte data ou status de todos os aplicados, com os eventos compensatórios que já existem para um pedido).
+- Testes: integração (data mantendo hora, virada de dia no fuso, pulados, concorrência, idempotência, caminho completo de status, retirada, financeiro/T17/T18) e E2E no celular e no computador (selecionar todos do dia, mudar data, marcar entregue, desfazer). Capturas `t20-*.png` só com DEMONSTRAÇÃO.
+- Versão **1.6.0**. Se precisar de migração, use o próximo número livre do main.
+
+### T19 — Fichas: custos por ingrediente e custos não calculados (prévia `previas/t19-fichas-custos.png` **aprovada pelo Felipe em 22/11**; fazer depois da T20)
+
+Pedido do Tiago. Siga a prévia.
+
+1. **Tabela da ficha:** cada ingrediente (insumo) com **custo no lote** e **custo por doce** (lote ÷ rendimento), mais mão de obra e outros custos. Linhas de **Custo de produção**, **Custos não calculados (N%)** e **Custo total**, cada uma por lote e por doce. Valores em centavos inteiros com arredondamento consistente (documente: por doce = arredondar lote ÷ rendimento).
+2. **Preço sugerido por doce** ao lado do preço sugerido do lote, mais o sugerido por embalagem/kit vinculado (ex.: caixa de 12), como já existe.
+3. **Campo novo "Custos não calculados (%)"** na ficha: padrão **20%**, de 0% a 100%, aplicado sobre o custo de produção **antes da margem**. **Decisão do Felipe (22/11): vale para todas as fichas, inclusive as existentes** — a migração cria a coluna com padrão 2000 bps para todas; a ficha mostra um aviso de que o cálculo passou a incluir os custos não calculados. Texto de ajuda: gás, energia, água, perdas e pequenos gastos difíceis de medir.
+4. Refletir o percentual em todos os lugares que usam o custo da ficha (custo estimado do pedido, relatórios, custo por peso/kit, exportações), sem mudar preços de produtos sozinho (o preço sugerido continua só sugestão).
+- **Migração** (próximo número livre do main): coluna do percentual em `recipes` com padrão 2000; aplicação no banco real só pelo Felipe.
+- Testes: unitários do cálculo (incluindo 0% e arredondamento), integração (CAS, papéis, backup/restauração com a coluna nova, schema antigo sem a coluna) e E2E da ficha. Capturas `t19-*.png` só com DEMONSTRAÇÃO.
+- Versão **1.7.0**.
 
 ## Versões do app
 
