@@ -63,9 +63,8 @@ test('R10-1 produção compacta preserva variantes e quantidades', async ({
         nodes.map((n) => n.value).sort((a, b) => a - b),
       ),
     ).toEqual([2, 3, 4]);
-    expect(
-      await bars.evaluateAll((nodes) => nodes.every((n) => n.max === 4)),
-    ).toBe(true);
+    // Cada tamanho de doce é um grupo; a barra compara dentro do grupo.
+    await expect(p.locator('.production-group')).toHaveCount(2);
 
     const simple = list
       .locator('li')
@@ -76,19 +75,19 @@ test('R10-1 produção compacta preserva variantes e quantidades', async ({
     await expect(simple.locator('.production-variant')).toHaveCount(0);
     await expect(simple.locator('.production-counts')).toHaveAttribute(
       'aria-label',
-      '1 caixa · 2 unidades',
+      '2 unidades',
     );
     await expect(list.locator('.production-variant')).toHaveCount(2);
     await expect(list.locator('.production-variant')).toHaveText([
-      'Embalagem A DEMONSTRAÇÃO · 10 g/un.',
-      'Embalagem B DEMONSTRAÇÃO · 20 g/un.',
+      'Embalagem B DEMONSTRAÇÃO',
+      'Embalagem A DEMONSTRAÇÃO',
     ]);
     const help = p.locator('.production-dashboard h2').getByRole('button');
     expect(
       await help.evaluate((e) => getComputedStyle(e).backgroundColor),
     ).toBe('rgba(0, 0, 0, 0)');
     expect((await help.boundingBox()).height).toBeGreaterThanOrEqual(44);
-    await list.scrollIntoViewIfNeeded();
+    await list.first().scrollIntoViewIfNeeded();
     await capture(p, 'producao-compacta', info);
   } finally {
     await c.close();

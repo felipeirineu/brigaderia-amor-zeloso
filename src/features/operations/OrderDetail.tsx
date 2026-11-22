@@ -13,6 +13,7 @@ import { OrderCost } from '../p1/OrderCost';
 import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { Button } from '../../components/Button';
 import { Transport } from '../field/Transport';
+import { DeliveryActions } from '../field/DeliveryActions';
 import { TravelSheet } from '../field/TravelSheet';
 import {
   StaffIdentity,
@@ -145,22 +146,39 @@ export function OrderDetail({
       {order ? (
         <>
           <h1>{order.customer_name}</h1>
-          {financial && order.terms && order.terms.mode !== 'unset' && (
-            <p>
-              Pagamento: {termsModeLabel(order.terms)}
-              {order.terms.due_day_of_month != null &&
-                ' · vence no ' + dueDayLabel(order.terms.due_day_of_month)}
-            </p>
-          )}
+          {/* Prévia aprovada em 22/11: data, valor e pagamento no topo; ações
+              iguais às do Hoje; deslocamento recolhido. */}
+          <p className="order-meta">
+            {dateTime(order.due_at)} · {money(order.total_cents)}
+            {financial &&
+              order.terms &&
+              order.terms.mode !== 'unset' &&
+              ' · ' +
+                termsModeLabel(order.terms) +
+                (order.terms.due_day_of_month != null
+                  ? ' (vence no ' +
+                    dueDayLabel(order.terms.due_day_of_month) +
+                    ')'
+                  : '')}
+          </p>
+          <p className={`status-tag status-${order.status}`}>
+            {statusLabels[order.status]} <HelpTip topic="status" />
+          </p>
           {occasionLabel(order.occasion) && (
             <p>Ocasião: {occasionLabel(order.occasion)}</p>
           )}
           {field && (
             <>
-              <Button onClick={() => setTrip(true)} variant="primary">
-                Registrar deslocamento pago
-              </Button>
-              <Transport order={order} />
+              {order.delivery_type === 'delivery' && (
+                <DeliveryActions order={order} />
+              )}
+              <details className="order-travel">
+                <DisclosureSummary>Deslocamento</DisclosureSummary>
+                <Transport order={order} compact />
+                <Button onClick={() => setTrip(true)}>
+                  Registrar valor pago
+                </Button>
+              </details>
               {trip && (
                 <TravelSheet
                   orders={[order]}
@@ -180,12 +198,6 @@ export function OrderDetail({
                 Ajustar pedido
               </Button>
             )}
-          <p>
-            {dateTime(order.due_at)} · {money(order.total_cents)}
-          </p>
-          <p className={`status-tag status-${order.status}`}>
-            {statusLabels[order.status]} <HelpTip topic="status" />
-          </p>
           <p role="status">{notice}</p>
           {financial && (
             <Button

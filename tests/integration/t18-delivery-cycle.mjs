@@ -256,6 +256,75 @@ try {
       ?.order_ids,
     [third.id, late.id],
   );
+  for (const [label, newTerms] of [
+    ['troca de quantidade', { ...terms, every_deliveries: 3 }],
+    ['troca para na entrega', { ...profile.terms, mode: 'delivery' }],
+    [
+      'troca para a prazo por data',
+      { ...profile.terms, mode: 'credit', cycle: 'weekly', due_days: 7 },
+    ],
+  ]) {
+    const other = await call('customers', {
+      name: 'Cliente DEMONSTRAÇÃO ' + label,
+    });
+    const original = await call(
+      'mobile/orders',
+      { ...data, customer_id: other.id, delivered_at: prior.toISOString() },
+      'POST',
+      operator,
+    );
+    const accountPath = 'finance/customers/' + other.id;
+    const view = () => call(accountPath, undefined, 'GET', operator);
+    assert.equal(
+      (await view()).orders.find((o) => o.id === original.id).due_on,
+      null,
+    );
+    const changed = await call(
+      'mobile/orders',
+      {
+        ...data,
+        customer_id: other.id,
+        terms: newTerms,
+        delivered_at: new Date().toISOString(),
+      },
+      'POST',
+      operator,
+    );
+    const accountData = await view();
+    assert.equal(
+      accountData.orders.find((o) => o.id === original.id).due_on,
+      today,
+    );
+    const cycle = accountData.delivery_cycles.find((c) => c.id === changed.id);
+    assert.equal(cycle.closed_on_change, true);
+    assert.deepEqual(cycle.orders, [original.id]);
+    assert.equal(cycle.balance_cents, 1000);
+    const dayView = await call(
+      'today?date=' + today,
+      undefined,
+      'GET',
+      operator,
+    );
+    const closed = dayView.delivery_cycles.find(
+      (c) => c.order_id === changed.id && c.closed_on_change,
+    );
+    assert.equal(closed.due_on, today);
+    assert.deepEqual(closed.order_ids, [original.id]);
+    const { message } = await call(
+      accountPath + '/charge',
+      { delivery_cycle_id: changed.id },
+      'POST',
+      operator,
+    );
+    assert.match(
+      message,
+      /fechamento das entregas pendentes da condição anterior/,
+    );
+    assert.equal(
+      message.split('\n').filter((line) => line.startsWith('•')).length,
+      1,
+    );
+  }
   console.log(
     'OK T18 compatibilidade, projeção, retirada, desfazer, reinício, recebimento, relatórios, isolamento e push deduplicado.',
   );

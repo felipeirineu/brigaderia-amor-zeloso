@@ -18,10 +18,12 @@ export interface DeliveryCycle {
   days: string[];
   due_on: string | null;
   projected: boolean;
+  closed_on_change?: boolean;
 }
 
 /** Recebe somente entregas efetivas e, opcionalmente, as projeções do dia. */
 export function deliveryCycles(entries: readonly CycleEntry[]) {
+  const closures = new Map<string, DeliveryCycle>();
   const current = new Map<string, DeliveryCycle>();
   const positions = new Map<
     string,
@@ -35,6 +37,17 @@ export function deliveryCycles(entries: readonly CycleEntry[]) {
       a.id.localeCompare(b.id),
   );
   for (const entry of ordered) {
+    const previous = current.get(entry.customer);
+    if (
+      !entry.projected &&
+      previous &&
+      !previous.due_on &&
+      previous.size !== entry.count
+    ) {
+      previous.due_on = entry.day;
+      previous.closed_on_change = true;
+      closures.set(entry.id, previous);
+    }
     if (entry.count === null) {
       current.delete(entry.customer);
       continue;
@@ -58,11 +71,13 @@ export function deliveryCycles(entries: readonly CycleEntry[]) {
     cycle.orders.push(entry.id);
     cycle.days.push(entry.day);
     cycle.projected ||= !!entry.projected;
-    if (cycle.orders.length === cycle.size && !cycle.projected)
+    if (cycle.orders.length === cycle.size && !cycle.projected) {
       cycle.due_on = entry.day;
+      closures.set(entry.id, cycle);
+    }
     positions.set(entry.id, { cycle, position: cycle.orders.length });
   }
-  return { current, positions };
+  return { closures, current, positions };
 }
 
 export interface DeliveryCycleCard {
@@ -72,6 +87,7 @@ export interface DeliveryCycleCard {
   days: string[];
   size: number;
   position: number;
+  closed_on_change?: boolean;
   projected: boolean;
   due_on: string | null;
   total_cents: number;

@@ -40,8 +40,8 @@ test('uma entrega desfeita sai da sequência e a próxima recompõe o grupo', ()
   ).toEqual(['1', '3']);
 });
 
-test('troca de condição reinicia e não mistura contas, mantendo o saldo antigo sem vencimento', () => {
-  const { positions } = deliveryCycles([
+test('primeira entrega efetiva sob condição nova fecha o ciclo anterior e reinicia sem misturar contas', () => {
+  const { closures, positions } = deliveryCycles([
     entry(1),
     entry(2, 3, { customer: 'Outro DEMONSTRAÇÃO' }),
     entry(3, null),
@@ -49,7 +49,18 @@ test('troca de condição reinicia e não mistura contas, mantendo o saldo antig
     entry(5, 2),
     entry(6, 2),
   ]);
-  expect(positions.get('1')?.cycle.due_on).toBeNull();
+  expect(closures.get('3')).toMatchObject({
+    orders: ['1'],
+    due_on: entry(3).day,
+    closed_on_change: true,
+  });
+  expect(positions.get('1')?.cycle.due_on).toBe(entry(3).day);
+  expect(closures.get('5')).toMatchObject({
+    orders: ['4'],
+    due_on: entry(5).day,
+    closed_on_change: true,
+  });
+  expect(positions.get('5')?.position).toBe(1);
   expect(positions.get('4')?.cycle.orders).toEqual(['4']);
   expect(positions.get('5')?.cycle.orders).toEqual(['5', '6']);
   expect(positions.get('2')?.cycle.orders).toEqual(['2']);
@@ -72,4 +83,13 @@ test('projeção mostra posição sem criar vencimento', () => {
   expect(
     termsDueDate(entry(1).day, terms, { deliveryCycle: entry(2).day }),
   ).toBe(entry(2).day);
+});
+
+test('troca apenas agendada preserva o ciclo antigo aberto', () => {
+  const { closures, positions } = deliveryCycles([
+    entry(1),
+    entry(2, 3, { projected: true }),
+  ]);
+  expect(closures.size).toBe(0);
+  expect(positions.get('1')?.cycle.due_on).toBeNull();
 });

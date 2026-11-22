@@ -64,7 +64,13 @@ function Buttons({ place, base = false }: { place: Place; base?: boolean }) {
     </div>
   );
 }
-function Destination({ order }: { order: OperationalOrder }) {
+function Destination({
+  order,
+  compact = false,
+}: {
+  order: OperationalOrder;
+  compact?: boolean;
+}) {
   const c = useField(),
     snapshot = useRemote<Place | null>(`field/orders/${order.id}`),
     place = snapshot.data ?? {
@@ -82,7 +88,7 @@ function Destination({ order }: { order: OperationalOrder }) {
           linha reta
         </p>
       )}
-      <Buttons place={place} />
+      {!compact && <Buttons place={place} />}
       {c?.data?.company.data.address && (
         <Buttons base place={c.data.company.data} />
       )}
@@ -93,7 +99,17 @@ function Destination({ order }: { order: OperationalOrder }) {
     </>
   );
 }
-export function Transport({ order }: { order: OperationalOrder }) {
+/** compact: só distância, "Voltar para a base" e o aviso (o pedido já tem
+ *  Mapa, WhatsApp, Uber e 99 na fileira de ações). */
+export function Transport({
+  order,
+  compact = false,
+}: {
+  order: OperationalOrder;
+  compact?: boolean;
+}) {
   const c = useField();
-  return c && order.delivery_address ? <Destination order={order} /> : null;
+  return c && order.delivery_address ? (
+    <Destination order={order} compact={compact} />
+  ) : null;
 }

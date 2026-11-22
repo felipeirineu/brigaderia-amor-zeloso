@@ -23,8 +23,12 @@ export async function enqueueDeliveryCyclePush(db: D1Database, clock: Date) {
   const { results } = await db
     .prepare(
       `SELECT DISTINCT o.organization_id
-     FROM orders o JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id
-     WHERE o.active=1 AND t.payment_mode='credit' AND json_extract(t.data,'$.cycle')='deliveries'
+     FROM orders o
+     WHERE o.active=1 AND EXISTS (
+       SELECT 1 FROM orders prior JOIN order_terms t ON t.organization_id=prior.organization_id AND t.order_id=prior.id
+       WHERE prior.organization_id=o.organization_id AND prior.customer_id=o.customer_id
+         AND t.payment_mode='credit' AND json_extract(t.data,'$.cycle')='deliveries'
+     )
        AND (o.due_at>=?1 AND o.due_at<?2 OR EXISTS (
          SELECT 1 FROM order_status_events e WHERE e.organization_id=o.organization_id AND e.order_id=o.id
          AND e.to_status IN ('delivered','picked_up') AND e.created_at>=unixepoch(?1) AND e.created_at<unixepoch(?2)
@@ -39,7 +43,7 @@ export async function enqueueDeliveryCyclePush(db: D1Database, clock: Date) {
     if (
       cards.some(
         (c) =>
-          c.position === c.size &&
+          (c.position === c.size || c.closed_on_change) &&
           c.balance_cents > 0 &&
           (c.due_on === day || (c.projected && c.days.at(-1) === day)),
       )

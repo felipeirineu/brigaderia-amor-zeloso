@@ -68,7 +68,7 @@ export async function accountView(
       'Mais de 1000 pedidos nesta conta. É necessária paginação antes de continuar.',
     );
   const today = businessDay();
-  const { current, positions } = resolveDeliveryCycles(
+  const { closures, current, positions } = resolveDeliveryCycles(
     orders.map((o) => ({
       order_id: String(o.id),
       customer_id: customer,
@@ -124,24 +124,18 @@ export async function accountView(
     };
   });
   const enrichedById = new Map(enriched.map((order) => [order.id, order]));
-  const deliveryCycles = [...positions].flatMap(([id, { cycle, position }]) =>
-    cycle.due_on && position === cycle.size
-      ? [
-          {
-            id,
-            ...cycle,
-            total_cents: cycle.orders.reduce(
-              (sum, id) => sum + enrichedById.get(id)!.total_cents,
-              0,
-            ),
-            balance_cents: cycle.orders.reduce(
-              (sum, id) => sum + enrichedById.get(id)!.balance_cents,
-              0,
-            ),
-          },
-        ]
-      : [],
-  );
+  const deliveryCycles = [...closures].map(([id, cycle]) => ({
+    id,
+    ...cycle,
+    total_cents: cycle.orders.reduce(
+      (sum, id) => sum + enrichedById.get(id)!.total_cents,
+      0,
+    ),
+    balance_cents: cycle.orders.reduce(
+      (sum, id) => sum + enrichedById.get(id)!.balance_cents,
+      0,
+    ),
+  }));
   const events = (
     await db
       .prepare(
@@ -724,7 +718,9 @@ export async function finance(
         `Olá, ${customer.name}! Aqui é da Brigaderia Amor Zeloso.`,
         cycle.projected
           ? `Previsão para o fechamento após a entrega de hoje (${cycle.size} entregas):`
-          : `Fechamos as últimas ${cycle.size} entregas:`,
+          : cycle.closed_on_change
+            ? 'Segue o fechamento das entregas pendentes da condição anterior:'
+            : `Fechamos as últimas ${orderIds.length} entregas:`,
         ...detail,
         `Total: ${brl(cycle.total_cents)}.`,
         ...(cycle.balance_cents !== cycle.total_cents

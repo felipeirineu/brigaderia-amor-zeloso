@@ -1,5 +1,12 @@
 import { DeliveryCycleNotice } from '../finance/DeliveryCycleNotice';
 import type { DeliveryCycleCard } from '../../../shared/delivery-cycle';
+import {
+  packagingText,
+  partsText,
+  productionGroups,
+  type PackagingLine,
+  type ProductionLine,
+} from '../../../shared/production-groups';
 import { createPortal } from 'react-dom';
 import { paymentModeLabels, type Terms } from '../../../shared/finance';
 import { BackupReminderCard } from '../p1/BackupReminderCard';
@@ -179,16 +186,8 @@ export function Today({
     pending_truncated: boolean;
     delivery_cycles?: DeliveryCycleCard[];
     travel_week_cents: number | null;
-    production: {
-      photo_key: string | null;
-      name: string;
-      label: string;
-      day: string;
-      boxes: number;
-      units: number;
-      weight_grams: number;
-      units_per_box: number;
-    }[];
+    production: (ProductionLine & { boxes: number })[];
+    packaging?: PackagingLine[];
     totals: { expected_cents: number; delivered_cents: number };
     received_available: boolean;
     truncated: boolean;
@@ -570,70 +569,85 @@ export function Today({
                     </Button>
                   </div>
                   {view.data.production.length ? (
-                    <ul className="production-list">
-                      {view.data.production.map((line, i) => (
-                        <li key={i}>
-                          {line.photo_key && (
-                            <img
-                              src={photoURL(line.photo_key)}
-                              alt=""
-                              width={40}
-                              height={40}
-                            />
-                          )}
-                          <div>
-                            <strong>
-                              {line.name}
-                              {(!line.label ||
-                                new Set(
-                                  view
-                                    .data!.production.filter(
-                                      (p) => p.name === line.name,
-                                    )
-                                    .map(
-                                      (p) =>
-                                        p.label +
-                                        '|' +
-                                        p.weight_grams +
-                                        '|' +
-                                        p.units_per_box,
-                                    ),
-                                ).size > 1) && (
-                                <small className="production-variant">
-                                  {line.label || 'Kit ' + line.units_per_box} ·{' '}
-                                  {line.weight_grams} g/un.
+                    productionGroups(
+                      view.data.production,
+                      view.data.packaging ?? [],
+                    ).map((g) => (
+                      <div
+                        className="production-group"
+                        key={g.day + '|' + g.weight_grams}
+                      >
+                        <h3 className="production-group-title">
+                          <span>
+                            {dayChip(g.day)} · doces de {g.weight_grams} g
+                          </span>
+                          <span>{g.units} un.</span>
+                        </h3>
+                        <ul className="production-list">
+                          {g.flavors.map((f) => (
+                            <li key={f.key}>
+                              {f.photo_key && (
+                                <img
+                                  src={photoURL(f.photo_key)}
+                                  alt=""
+                                  width={40}
+                                  height={40}
+                                />
+                              )}
+                              <div>
+                                <strong>
+                                  {f.name}
+                                  {f.showLabel && (
+                                    <small className="production-variant">
+                                      {f.label}
+                                    </small>
+                                  )}
+                                </strong>
+                                <small className="production-parts">
+                                  {partsText(f.parts)}
                                 </small>
-                              )}
-                            </strong>
-                            <progress
-                              className="production-bar"
-                              aria-hidden="true"
-                              value={line.units}
-                              max={Math.max(
-                                1,
-                                ...view.data!.production.map((p) => p.units),
-                              )}
-                            />
+                                <progress
+                                  className="production-bar"
+                                  aria-hidden="true"
+                                  value={f.units}
+                                  max={Math.max(
+                                    1,
+                                    ...g.flavors.map((x) => x.units),
+                                  )}
+                                />
+                              </div>
+                              <div
+                                className="production-counts"
+                                aria-label={`${f.units} ${f.units === 1 ? 'unidade' : 'unidades'}`}
+                              >
+                                <strong className="production-units">
+                                  {f.units}
+                                </strong>
+                                <small>un.</small>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                        {g.packaging.length > 0 && (
+                          <div className="production-packaging">
+                            <p>
+                              Embalagens para {dayChip(g.day).toLowerCase()}
+                            </p>
+                            {g.packaging.map((pk) => {
+                              const t = packagingText(pk);
+                              return (
+                                <div key={pk.units_per_box}>
+                                  <span>
+                                    {t.name} ({g.weight_grams} g)
+                                  </span>
+                                  <strong>{t.value}</strong>
+                                </div>
+                              );
+                            })}
                           </div>
-                          <div
-                            className="production-counts"
-                            aria-label={`${line.boxes.toLocaleString('pt-BR', { maximumFractionDigits: 4 })} ${line.boxes === 1 ? 'caixa' : 'caixas'} · ${line.units} ${line.units === 1 ? 'unidade' : 'unidades'}`}
-                          >
-                            <strong
-                              className="production-boxes"
-                              title="Caixas equivalentes: unidades divididas pela capacidade"
-                            >
-                              {line.boxes.toLocaleString('pt-BR', {
-                                maximumFractionDigits: 4,
-                              })}{' '}
-                              {Number.isInteger(line.boxes) ? 'cx' : 'cx eq.'}
-                            </strong>
-                            <small>{line.units} un.</small>
-                          </div>
-                          <small>{dayChip(line.day)}</small>
-                        </li>
-                      ))}
-                    </ul>
+                        )}
+                      </div>
+                    ))
                   ) : (
                     <p>
                       Nada confirmado para produzir.{' '}

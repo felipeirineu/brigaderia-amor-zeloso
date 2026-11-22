@@ -23,7 +23,7 @@ export function DeliveryCycleNotice({
     if (draft !== null && !dialog.current?.open) dialog.current?.showModal();
   }, [draft]);
   const { position, size, projected } = cycle;
-  if (position !== size)
+  if (position !== size && !cycle.closed_on_change)
     return (
       <p className="delivery-cycle-progress">
         {position}ª de {size} entregas · cobra na {size}ª
@@ -50,11 +50,15 @@ export function DeliveryCycleNotice({
         {projected || cycle.due_on === localDay()
           ? 'Cobrar hoje'
           : 'Fechamento'}{' '}
-        · {position}ª de {size} entregas
+        ·{' '}
+        {cycle.closed_on_change
+          ? 'ciclo encerrado na troca'
+          : `${position}ª de ${size} entregas`}
       </strong>
       <p>
-        Total das {size} entregas: {money(cycle.total_cents)} (
-        {cycle.days.map(civilDate).join(', ')})
+        Total de {cycle.days.length}{' '}
+        {cycle.days.length === 1 ? 'entrega' : 'entregas'}:{' '}
+        {money(cycle.total_cents)} ({cycle.days.map(civilDate).join(', ')})
       </p>
       {cycle.balance_cents !== cycle.total_cents && (
         <p>Saldo: {money(cycle.balance_cents)}</p>

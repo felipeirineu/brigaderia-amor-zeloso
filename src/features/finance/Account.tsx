@@ -278,8 +278,9 @@ export function Account() {
                   .filter((c) => c.balance_cents > 0)
                   .map((c) => (
                     <option key={c.id} value={`cycle:${c.id}`}>
-                      Ciclo de {c.size} entregas · {civilDate(c.due_on!)} ·{' '}
-                      {money(c.balance_cents)}
+                      Ciclo · {c.orders.length}{' '}
+                      {c.orders.length === 1 ? 'entrega' : 'entregas'} ·{' '}
+                      {civilDate(c.due_on!)} · {money(c.balance_cents)}
                     </option>
                   ))}
                 {data.closings
@@ -492,7 +493,11 @@ export function Account() {
             <h2>Fechamentos</h2>
             {(data.delivery_cycles ?? []).map((c) => (
               <article className="panel" key={c.id}>
-                <h3>Ciclo de {c.size} entregas</h3>
+                <h3>
+                  {c.closed_on_change
+                    ? 'Ciclo encerrado na troca'
+                    : `Ciclo de ${c.size} entregas`}
+                </h3>
                 <p>{c.days.map(civilDate).join(', ')}</p>
                 <p>
                   Total: {money(c.total_cents)} · saldo {money(c.balance_cents)}{' '}

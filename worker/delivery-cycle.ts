@@ -68,10 +68,15 @@ export async function todayDeliveryCycles(
       .prepare(
         `WITH clients AS (
       SELECT DISTINCT x.customer_id
-      FROM orders x JOIN order_terms xt ON xt.organization_id=x.organization_id AND xt.order_id=x.id
+      FROM orders x
       WHERE x.organization_id=?1 AND x.active=1
         AND (x.customer_id IN (SELECT value FROM json_each(?4)) OR ?4 IS NULL)
-        AND xt.payment_mode='credit' AND json_extract(xt.data,'$.cycle')='deliveries'
+        AND EXISTS (
+          SELECT 1 FROM orders prior JOIN order_terms xt
+            ON xt.organization_id=prior.organization_id AND xt.order_id=prior.id
+          WHERE prior.organization_id=x.organization_id AND prior.customer_id=x.customer_id
+            AND xt.payment_mode='credit' AND json_extract(xt.data,'$.cycle')='deliveries'
+        )
         AND (x.due_at>=?2 AND x.due_at<?3 OR x.id IN (
           SELECT order_id FROM order_status_events WHERE organization_id=?1
           AND to_status IN ('delivered','picked_up') AND created_at>=unixepoch(?2) AND created_at<unixepoch(?3)
@@ -93,26 +98,35 @@ export async function todayDeliveryCycles(
   ).results;
   if (rows.length > 5000)
     throw new HttpError(409, 'Mais de 5000 entregas nas contas do dia.');
-  const { positions } = resolveDeliveryCycles(rows, day);
+  const { closures, positions } = resolveDeliveryCycles(rows, day);
   const orders = new Map(rows.map((row) => [row.order_id, row]));
-  return [...positions]
-    .filter(([, { cycle, position }]) => cycle.days[position - 1] === day)
-    .map(([order_id, { cycle, position }]) => ({
-      customer_id: cycle.customer,
-      order_id,
-      order_ids: cycle.orders,
-      days: cycle.days,
-      position,
-      size: cycle.size,
-      due_on: cycle.due_on,
-      projected: cycle.projected,
-      total_cents: cycle.orders.reduce(
-        (sum, id) => sum + orders.get(id)!.total_cents,
-        0,
-      ),
-      balance_cents: cycle.orders.reduce(
-        (sum, id) => sum + orders.get(id)!.balance_cents,
-        0,
-      ),
-    }));
+  const today = [
+    ...[...positions].filter(
+      ([, { cycle, position }]) => cycle.days[position - 1] === day,
+    ),
+    ...[...closures].flatMap(([id, cycle]) =>
+      cycle.closed_on_change && cycle.due_on === day
+        ? [[id, { cycle, position: cycle.orders.length }] as const]
+        : [],
+    ),
+  ];
+  return today.map(([order_id, { cycle, position }]) => ({
+    customer_id: cycle.customer,
+    order_id,
+    order_ids: cycle.orders,
+    days: cycle.days,
+    position,
+    size: cycle.size,
+    due_on: cycle.due_on,
+    projected: cycle.projected,
+    closed_on_change: cycle.closed_on_change,
+    total_cents: cycle.orders.reduce(
+      (sum, id) => sum + orders.get(id)!.total_cents,
+      0,
+    ),
+    balance_cents: cycle.orders.reduce(
+      (sum, id) => sum + orders.get(id)!.balance_cents,
+      0,
+    ),
+  }));
 }

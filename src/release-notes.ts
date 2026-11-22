@@ -8,6 +8,27 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '1.4.3',
+    items: [
+      'Produzir hoje e amanhã: doces por sabor em unidades e caixas contadas à parte, sem números quebrados.',
+      'Pedido: data, valor e status no topo, com Mapa, WhatsApp, Uber e 99 e o deslocamento recolhido.',
+      'Kits no Hoje com o texto centralizado no oval em todos os celulares.',
+    ],
+  },
+  {
+    version: '1.4.2',
+    items: [
+      'Mapa: o último app usado aparece destacado mesmo logo após abrir o app.',
+      'Estoque e cadastros: o que você digita logo após salvar não é mais apagado.',
+    ],
+  },
+  {
+    version: '1.4.1',
+    items: [
+      'Calendário do Hoje com os dias do mesmo tamanho, número no centro.',
+    ],
+  },
+  {
     version: '1.4.0',
     items: [
       'Quando a equipe sair junta, escolha Os dois na entrega ou no pedido padrão.',

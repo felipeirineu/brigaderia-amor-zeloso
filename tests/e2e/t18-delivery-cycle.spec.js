@@ -10,6 +10,7 @@ test('T18 configura a cobrança por entregas, confere mensagem e registra o cicl
   const t = await runtime({
     browserHTTP: true,
     mobileEnabled: true,
+    mixedEnabled: true,
     financeEnabled: true,
     p1Enabled: true,
   });
@@ -51,7 +52,50 @@ test('T18 configura a cobrança por entregas, confere mensagem e registra o cicl
         'POST',
         operator,
       );
-    const last = await call('mobile/orders', order, 'POST', operator);
+    const secondProduct = await call('products', {
+      name: 'Outro sabor DEMONSTRAÇÃO',
+      variants: [
+        {
+          label: 'Embalagem fictícia',
+          weight_grams: 10,
+          units_per_box: 2,
+          price_cents: 1000,
+        },
+      ],
+    });
+    const { variants } = await call(
+      'products/' + secondProduct.id,
+      undefined,
+      'GET',
+    );
+    const last = await call(
+      'mobile/orders',
+      {
+        ...order,
+        composition_version: 1,
+        items: [
+          {
+            variant_id: variant,
+            quantity: 1,
+            components: [
+              { variant_id: variant, units: 1 },
+              { variant_id: variants[0].id, units: 1 },
+            ],
+          },
+        ],
+      },
+      'POST',
+      operator,
+    );
+    const partial = await call('customers', {
+      name: 'Outro cliente DEMONSTRAÇÃO T18',
+    });
+    await call(
+      'mobile/orders',
+      { ...order, customer_id: partial.id },
+      'POST',
+      operator,
+    );
     const page = await context.newPage();
     async function capture(target, suffix) {
       if (
@@ -67,8 +111,24 @@ test('T18 configura a cobrança por entregas, confere mensagem e registra o cicl
     }
     await page.goto(t.url + '/api/access/start');
     const panel = page.locator('.delivery-cycle-notice');
+    await expect(
+      page.getByText('1ª de 4 entregas · cobra na 4ª', { exact: true }),
+    ).toBeVisible();
     await expect(panel).toContainText('Cobrar hoje · 4ª de 4 entregas');
     await expect(panel).toContainText('40,00');
+    const mix = page.locator('.delivery-mix');
+    const summary = mix.locator('summary');
+    await summary.click();
+    await expect(mix.locator('li').last()).toBeVisible();
+    const summaryBox = await summary.boundingBox();
+    const flavorBox = await mix.locator('li').first().boundingBox();
+    expect(
+      flavorBox.y - (summaryBox.y + summaryBox.height),
+    ).toBeLessThanOrEqual(8);
+    expect(summaryBox.height).toBeLessThanOrEqual(32);
+    await summary.click();
+    await expect(mix.locator('ul')).toBeHidden();
+
     await expect(
       panel.getByRole('button', { name: 'Registrar recebimento' }),
     ).toBeDisabled();

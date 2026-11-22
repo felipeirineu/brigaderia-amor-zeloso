@@ -1703,11 +1703,16 @@ textarea::placeholder {
   flex-basis: 100%;
   border-radius: var(--az-radius-field);
 }
+.delivery-flavors .delivery-mix[open] > summary {
+  display: flex;
+  align-items: center;
+  min-height: 26px;
+}
 .delivery-flavors .delivery-mix[open] .delivery-mix-toggle {
   display: none;
 }
 .delivery-flavors .delivery-mix ul {
-  margin: 6px 0 2px;
+  margin: 4px 0 2px;
   padding-left: 18px;
   font-weight: 500;
 }
@@ -2154,15 +2159,23 @@ body:has(.mix-sheet) {
   margin: 0;
 }
 
-/* Hoje, kit fechado: o Chrome novo reserva espaço para a lista oculta dos
-   sabores; o texto fica no centro vertical do fundo destacado. */
+/* Hoje, kit fechado: o fundo oval fica no próprio texto (summary), não no
+   <details>. Alguns Chrome reservam altura para a lista oculta dos sabores;
+   assim essa altura fica transparente e o texto sempre no centro do oval. */
 .delivery-flavors .delivery-mix:not([open]) {
-  display: inline-flex;
-  align-items: center;
-  min-height: 0;
+  padding: 0;
+  background: transparent;
 }
 .delivery-flavors .delivery-mix:not([open])::details-content {
   display: none;
+}
+.delivery-flavors .delivery-mix:not([open]) > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--az-tonal);
 }
 
 /* Folha de ajuda: "Fechar" escrito, embaixo, na largura toda. */
@@ -2698,4 +2711,100 @@ body:has(.mix-sheet) {
 .delivery-cycle-actions .az-button {
   white-space: normal;
   padding-inline: var(--az-space-2);
+}
+
+/* Calendário de dias: cada dia ocupa a coluna inteira, número no centro
+   (o estilo de chip encolhia o botão ao tamanho do número). */
+.calendar-grid > .az-button {
+  width: 100%;
+  padding-inline: 0;
+  justify-content: center;
+}
+.calendar-grid > .az-button .az-button-label {
+  width: 100%;
+  text-align: center;
+}
+
+/* Produzir hoje e amanhã (prévia aprovada em 22/11): grupos por dia e
+   tamanho, unidades inteiras por sabor e embalagens contadas à parte. */
+.production-group + .production-group {
+  margin-top: var(--az-space-3);
+}
+.production-group-title {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--az-space-2);
+  margin: var(--az-space-3) 0 var(--az-space-1);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--az-gold-ink);
+}
+.production-dashboard .production-list li,
+.operations-active .production-dashboard .production-list li {
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+}
+.production-dashboard .production-list li:not(:has(img)),
+.operations-active .production-dashboard .production-list li:not(:has(img)) {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+.production-parts {
+  display: block;
+  margin: 2px 0 4px;
+  font-size: 12.5px;
+  color: var(--az-muted);
+}
+.production-dashboard .production-counts .production-units {
+  font-size: 20px;
+  line-height: 1;
+}
+.production-dashboard .production-counts small {
+  font-weight: 400;
+  color: var(--az-muted);
+}
+.production-packaging {
+  margin-top: var(--az-space-2);
+  padding: var(--az-space-2) var(--az-space-3);
+  border-radius: 16px;
+  background: var(--az-tonal);
+  font-size: 13.5px;
+}
+.production-packaging p {
+  margin: 0 0 4px;
+  font-size: 11.5px;
+  font-weight: 650;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--az-gold-ink);
+}
+.production-packaging div {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--az-space-2);
+  padding: 2px 0;
+}
+
+/* Detalhe do pedido (prévia aprovada em 22/11): ações compactas. */
+.order-meta {
+  margin: 0 0 var(--az-space-2);
+  color: var(--az-ink);
+}
+.order-travel {
+  margin: var(--az-space-2) 0;
+  padding: var(--az-space-2) var(--az-space-3);
+  border: 1px solid var(--az-line, rgb(0 0 0 / 0.08));
+  border-radius: 18px;
+  background: var(--az-surface, #fff);
+}
+.order-travel > :not(summary) {
+  margin-top: var(--az-space-2);
+}
+.order-travel p {
+  font-size: 0.85rem;
+  color: var(--az-muted);
+}
+.order-travel .az-button {
+  width: 100%;
 }

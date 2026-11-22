@@ -116,7 +116,7 @@ export async function operations(
     const rows = (
       await db
         .prepare(
-          `SELECT o.*,${orderNumber('o')}${financial ? ",COALESCE(json_extract(t.data,'$.mode'),'unset') AS payment_mode,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -pa.amount_cents ELSE pa.amount_cents END) FROM payment_allocations pa JOIN payment_events e ON e.organization_id=pa.organization_id AND e.id=pa.event_id WHERE pa.organization_id=o.organization_id AND pa.order_id=o.id),0) AS paid_cents" : ''} FROM orders o ${financial ? 'LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id' : ''} WHERE o.organization_id=?1 AND o.active=1 AND o.status<>'cancelled' AND ((o.due_at>=?2 AND o.due_at<?3)${financial ? ` OR (t.payment_mode='credit' AND json_extract(t.data,'$.cycle')='deliveries' AND o.status IN ('delivered','picked_up') AND ${completedAt}>=unixepoch(?2) AND ${completedAt}<unixepoch(?4))` : ''}) ORDER BY o.due_at,o.id LIMIT 201`,
+          `SELECT o.*,${orderNumber('o')}${financial ? ",COALESCE(json_extract(t.data,'$.mode'),'unset') AS payment_mode,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -pa.amount_cents ELSE pa.amount_cents END) FROM payment_allocations pa JOIN payment_events e ON e.organization_id=pa.organization_id AND e.id=pa.event_id WHERE pa.organization_id=o.organization_id AND pa.order_id=o.id),0) AS paid_cents" : ''} FROM orders o ${financial ? 'LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id' : ''} WHERE o.organization_id=?1 AND o.active=1 AND o.status<>'cancelled' AND ((o.due_at>=?2 AND o.due_at<?3)${financial ? ` OR (EXISTS(SELECT 1 FROM orders prior JOIN order_terms pt ON pt.organization_id=prior.organization_id AND pt.order_id=prior.id WHERE prior.organization_id=o.organization_id AND prior.customer_id=o.customer_id AND pt.payment_mode='credit' AND json_extract(pt.data,'$.cycle')='deliveries') AND o.status IN ('delivered','picked_up') AND ${completedAt}>=unixepoch(?2) AND ${completedAt}<unixepoch(?4))` : ''}) ORDER BY o.due_at,o.id LIMIT 201`,
         )
         .bind(
           org,
@@ -204,6 +204,16 @@ export async function operations(
         )
         .all()
     ).results;
+    // Embalagens: quantas caixas (ou avulsos) separar, contadas dos itens
+    // pedidos — número inteiro, sem dividir doces por capacidade.
+    const packaging = (
+      await db
+        .prepare(
+          `SELECT date(o.due_at,'-3 hours') AS day,i.weight_grams,i.units_per_box,SUM(i.quantity) AS boxes FROM ${saleSource} i JOIN orders o ON o.organization_id=i.organization_id AND o.id=i.order_id WHERE ${productionFilter} GROUP BY day,i.weight_grams,i.units_per_box ORDER BY day,i.weight_grams,i.units_per_box`,
+        )
+        .bind(...productionArgs)
+        .all()
+    ).results;
     const totals = await db
       .prepare(
         "SELECT COALESCE(SUM(CASE WHEN status IN ('confirmed','in_production','ready','out_for_delivery') THEN total_cents ELSE 0 END),0) AS expected_cents, COALESCE(SUM(CASE WHEN status IN ('delivered','picked_up') THEN total_cents ELSE 0 END),0) AS delivered_cents FROM orders WHERE organization_id=? AND active=1 AND due_at>=? AND due_at<?",
@@ -241,17 +251,14 @@ export async function operations(
       orders,
       delivery_cycles: financial
         ? await todayDeliveryCycles(db, org, day, [
-            ...new Set(
-              selected
-                .filter((o) => o.payment_mode === 'credit')
-                .map((o) => String(o.customer_id)),
-            ),
+            ...new Set(selected.map((o) => String(o.customer_id))),
           ])
         : [],
       pending_orders,
       pending_truncated: pendingRows.length > 50,
       travel_week_cents,
       production,
+      packaging,
       totals,
       received_available: financial,
       truncated,
