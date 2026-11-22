@@ -659,7 +659,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
-| 1.0.10 | 22/11 | Fechamento explicado como a fatura do cartão: resumo com exemplo no (?) de Fechamento (pedido a prazo) e no Financeiro; seção "Fechamento e prazos" em Ajuda → Rotinas P1, aberta direto pelo link "Ver explicação completa". Fila: T17 antes da T15; vencimento em dia fixo do mês entrou na T17. |
+| 1.0.10 | 22/11 | Fechamento explicado como a fatura do cartão: resumo com exemplo no (?) de Fechamento (pedido a prazo) e no Financeiro; seção "Fechamento e prazos" em Ajuda → Rotinas e financeiro (antes "Rotinas P1"; aparece com financeiro ou P1), aberta direto pelo link "Ver explicação completa". Fila: T17 antes da T15; vencimento em dia fixo do mês entrou na T17. |
 | 1.0.9 | 22/11 | Folha de ajuda (?) com "Fechar" escrito embaixo (antes: X em botão largo no topo). Kit no Hoje com o texto centralizado no fundo destacado (Chrome novo reservava espaço para a lista oculta). |
 | 1.0.8 | 21/11 | Papel Desenvolvedor: segredo `DEVELOPER_EMAILS` (Cloudflare, Production e Preview) marca o administrador de suporte técnico. Mantém permissões, aparece como "Desenvolvedor", sai das iniciais/escolhas de equipe para os outros e continua visível em Acessos como "Desenvolvedor (suporte técnico)". Sem o segredo, nada muda. Segredo cadastrado pelo Felipe em 22/11 (republicado para valer). |
 | 1.0.7 | 21/11 | Ajuda (?) na etapa Pagamento do pedido explicando cada opção (a definir, adiantado, na entrega, a prazo, pagar no fechamento). Kit repetido: mensagem clara orientando a editar o kit existente (antes: "Registro já existente"). |

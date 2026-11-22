@@ -4,7 +4,7 @@ export const releaseNotes = [
     version: '1.0.10',
     items: [
       'Fechamento explicado como a fatura do cartão, com exemplo, no (?) do pedido a prazo.',
-      'Ajuda: nova seção Fechamento e prazos, aberta direto pelo (?).',
+      'Ajuda: nova seção Fechamento e prazos, em Rotinas e financeiro, aberta direto pelo (?).',
     ],
   },
   {
