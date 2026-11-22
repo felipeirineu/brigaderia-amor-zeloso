@@ -2,8 +2,9 @@
 
 Em `worker/calendar.ts`, filtrar a condição por entregas antes do limite de perfis com fechamento por data. O cálculo de vencimentos continua vindo dos recebíveis. No teste de integração da T18, salvar a condição no cadastro e conferir Agenda e ICS antes e depois da entrega efetiva, junto de um cliente com fechamento semanal.
 
-- **Produzido** — Agenda e exportação ICS voltam a abrir quando há cliente com condição a cada X entregas. O fechamento semanal permanece no calendário. A cobrança do ciclo aparece no vencimento efetivo, conforme os recebíveis.
+- **Produzido** — Agenda e exportação ICS voltam a abrir quando há cliente com condição a cada X entregas. O fechamento semanal permanece no calendário. A cobrança do ciclo aparece no vencimento efetivo, conforme os recebíveis. A versão 1.5.0 inclui a correção de rolagem do cadastro no computador da 1.4.4.
 - **Testes executados** — reproduzi o erro 500 e confirmei a correção com o teste de integração da T18 e a suíte P1. Validação da gestão e Segurança do PR já haviam passado em `0983617`.
+- Com a 1.4.4 incorporada, passaram o build de Pages e sete testes de tela de Agenda, T18 e rolagem do cadastro no computador. O cenário de rolagem é exclusivo do Chromium desktop.
 - **Limitações** — a integração externa Workers Builds falhou no commit anterior. A prévia do Pages e os workflows do GitHub Actions passaram.
 - **Pendências** — conferir os checks automáticos no novo commit e aguardar a revisão do Claude.
 

@@ -8,6 +8,10 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '1.4.4',
+    items: ['No computador, o cadastro de cliente rola até o fim.'],
+  },
+  {
     version: '1.4.3',
     items: [
       'Produzir hoje e amanhã: doces por sabor em unidades e caixas contadas à parte, sem números quebrados.',
