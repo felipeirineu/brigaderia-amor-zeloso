@@ -637,6 +637,13 @@ Hoje o pedido aceita um só responsável pela entrega (`courier`: `owner`, `part
 - **Testes:** integração (gravar, editar, recorrência, relatórios, backup/restauração) e E2E no celular.
 - Versão **1.3.0** (minor: muda o banco).
 
+### T17 — Pedido já entregue e pagamento "Na próxima entrega" (pedido do Felipe em 22/11)
+
+1. **Cadastrar pedido já entregue.** Às vezes o Tiago ou a Alda registram o pedido depois de entregar. Na revisão do pedido, opção "Já foi entregue" (com data e hora da entrega, padrão agora). O pedido nasce entregue: não entra em "Produzir hoje e amanhã" e já conta em "A receber" (ou em "Recebido" se o pagamento for registrado). Validar no servidor (mesmas regras da mudança de status para entregue: estoque, auditoria, financeiro) numa única operação idempotente, sem estado intermediário.
+2. **Pagamento "Na próxima entrega".** Novo modo de pagamento para estabelecimentos e pessoas: o valor fica "a receber" sem vencimento até a próxima entrega ao mesmo cliente; quando a próxima entrega for marcada como entregue, o vencimento passa a ser a data dela. Aparece no (?) do pagamento, nos relatórios e no filtro do Financeiro. Se mudar o banco (enum/CHECK), migração com aprovação do Felipe.
+- Testes de integração (financeiro, recebíveis, produção, relatórios) e E2E no celular.
+- Versão **1.4.0** (ou junto com a próxima minor). Pode vir antes da T15 se o Felipe preferir.
+
 ## Versões do app
 
 Formato **MAIOR.MENOR.CORREÇÃO**. Quem sobe o número é o **Claude**, ao publicar:
@@ -649,6 +656,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 1.0.9 | 22/11 | Folha de ajuda (?) com "Fechar" escrito embaixo (antes: X em botão largo no topo). Kit no Hoje com o texto centralizado no fundo destacado (Chrome novo reservava espaço para a lista oculta). |
 | 1.0.8 | 21/11 | Papel Desenvolvedor: segredo `DEVELOPER_EMAILS` (Cloudflare, Production e Preview) marca o administrador de suporte técnico. Mantém permissões, aparece como "Desenvolvedor", sai das iniciais/escolhas de equipe para os outros e continua visível em Acessos como "Desenvolvedor (suporte técnico)". Sem o segredo, nada muda. Segredo cadastrado pelo Felipe em 22/11 (republicado para valer). |
 | 1.0.7 | 21/11 | Ajuda (?) na etapa Pagamento do pedido explicando cada opção (a definir, adiantado, na entrega, a prazo, pagar no fechamento). Kit repetido: mensagem clara orientando a editar o kit existente (antes: "Registro já existente"). |
 | 1.0.6 | 21/11 | Ativar avisos tenta o registro de novo e, se o serviço de push do celular recusar ("push service error", visto num Xiaomi com HyperOS 2), explica em português o que conferir. |

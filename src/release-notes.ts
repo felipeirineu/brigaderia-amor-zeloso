@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.0.9',
+    items: [
+      'Ajuda (?) com o botão Fechar embaixo, como nas outras folhas.',
+      'Kits no Hoje com o texto no centro do fundo destacado.',
+    ],
+  },
+  {
     version: '1.0.8',
     items: [
       'Papel Desenvolvedor para o suporte técnico, fora das escolhas de equipe da operação.',

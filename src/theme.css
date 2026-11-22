@@ -2047,3 +2047,22 @@ body:has(.mix-sheet) {
 .order-section-head .order-section-label {
   margin: 0;
 }
+
+/* Hoje, kit fechado: o Chrome novo reserva espaço para a lista oculta dos
+   sabores; o texto fica no centro vertical do fundo destacado. */
+.delivery-flavors .delivery-mix:not([open]) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 0;
+}
+.delivery-flavors .delivery-mix:not([open])::details-content {
+  display: none;
+}
+
+/* Folha de ajuda: "Fechar" escrito, embaixo, na largura toda. */
+.help-sheet .sheet-close {
+  float: none;
+  display: flex;
+  justify-content: center;
+  background: var(--az-tonal);
+}
