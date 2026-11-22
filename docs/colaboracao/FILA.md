@@ -7,7 +7,7 @@
 
 `VEZ: CODEX` — tarefa **T18** (pagar a cada X entregas; prévia `previas/t18-cobrar-a-cada-x-entregas.png` aprovada; detalhes abaixo). Versão **1.5.0**. Base: main atual (1.4.0, com a T16 e a migração 0029). Se precisar de migração, use a **0030**. Faça **push parcial** no branch `codex/t18-...` durante o trabalho. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
-**Pendências do Felipe (fora do código):** aplicar a migração **0029** (T16) pela Homologação D1 (backup → PRE_CHECAGEM → APLICAR_PENDENTES → PRE_CHECAGEM). Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
+**Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
 
 
@@ -79,7 +79,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **publicada** 22/11 (PR #23, integrada pelo Claude) como **1.1.0** — migração **0028** aplicada pelo Felipe em 22/11 (28 aplicadas, nenhuma pendente) |
 | T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" + vencimento em dia fixo | **publicada** 22/11 (PR #24) como **1.2.0** — sem migração |
 | T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | **publicada** 22/11 (PR #25) como **1.3.0** |
-| T16 | Entrega feita pelos dois (Tiago e Alda) | **publicada** 22/11 (PR #26) como **1.4.0** — migração **0029** pendente (Felipe) |
+| T16 | Entrega feita pelos dois (Tiago e Alda) | **publicada** 22/11 (PR #26) como **1.4.0** — migração **0029** aplicada pelo Felipe em 22/11 (29 aplicadas; 6 pedidos e 14 eventos preservados) |
 | T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | prévia **aprovada** 22/11; **vez do Codex** — versão **1.5.0** |
 
 ### T0 — R17
