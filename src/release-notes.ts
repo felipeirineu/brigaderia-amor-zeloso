@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.4.2',
+    items: [
+      'Mapa: o último app usado aparece destacado mesmo logo após abrir o app.',
+      'Estoque e cadastros: o que você digita logo após salvar não é mais apagado.',
+    ],
+  },
+  {
     version: '1.4.1',
     items: [
       'Calendário do Hoje com os dias do mesmo tamanho, número no centro.',

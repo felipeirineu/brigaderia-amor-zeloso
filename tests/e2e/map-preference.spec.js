@@ -65,8 +65,17 @@ test('R6-2 mapa codificado e preferência local por usuário', async ({
     await sheet
       .getByRole('button', { name: 'Fechar mapa', exact: true })
       .click();
+    // Reabre com o contexto da equipe atrasado e toca em Mapa antes dele:
+    // a preferência aparece quando o usuário é conhecido (antes falhava às vezes).
+    let release;
+    const gate = new Promise((resolve) => (release = resolve));
+    await p.route('**/api/field/context', async (route) => {
+      await gate;
+      await route.continue();
+    });
     await p.reload();
     await p.getByRole('button', { name: 'Mapa', exact: true }).click();
+    release();
     await expect(waze).toHaveAttribute('data-preferred', 'true');
     await expect(sheet.getByRole('status')).toContainText('Waze');
     const saved = await p.evaluate(() =>

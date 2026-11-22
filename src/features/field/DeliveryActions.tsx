@@ -1,5 +1,5 @@
 import { DeliveryMessageSheet } from './DeliveryMessageSheet';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { RouteInfo } from './RouteInfo';
 import {
   appleMapsAvailable,
@@ -23,11 +23,17 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
     sheet = useRef<HTMLDialogElement>(null);
   const [notice, setNotice] = useState(''),
     [messageOpen, setMessageOpen] = useState(false),
-    [preferred, setPreferred] = useState<MapApp | null>(null);
+    [chosen, setChosen] = useState<MapApp | null>(null);
   const user = field?.data?.user_id ?? '';
+  // A preferência é por usuário. Se o Mapa abrir antes de o contexto da
+  // equipe carregar, ela aparece assim que o usuário for conhecido, e uma
+  // escolha feita nesse intervalo é gravada quando ele chegar.
+  const preferred = chosen ?? readMapApp(user);
+  useEffect(() => {
+    if (chosen && user) rememberMapApp(user, chosen);
+  }, [chosen, user]);
   function choose(app: MapApp) {
-    rememberMapApp(user, app);
-    setPreferred(app);
+    setChosen(app);
   }
   const place = field?.data?.order_places.find((p) => p.order_id === order.id)
     ?.data ?? {
@@ -58,7 +64,7 @@ export function DeliveryActions({ order }: { order: OperationalOrder }) {
           disabled={!available}
           onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
             trigger.current = e.currentTarget;
-            setPreferred(readMapApp(user));
+            setChosen(null);
             sheet.current?.showModal();
           }}
         >

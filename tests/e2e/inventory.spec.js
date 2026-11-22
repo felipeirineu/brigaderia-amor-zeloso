@@ -40,6 +40,14 @@ test('P1-6 entrada, consumo e alerta de mínimo sem débito implícito', async (
     await p
       .getByLabel('Motivo do movimento ou estorno')
       .fill('Entrada DEMONSTRAÇÃO');
+    // Segura a recarga do histórico: digitar o próximo movimento enquanto
+    // ela termina não pode ser apagado (antes falhava às vezes no CI).
+    let release;
+    const gate = new Promise((resolve) => (release = resolve));
+    await p.route(/\/api\/p1\/inventory\/[^/?]+\?from=/, async (route) => {
+      if (route.request().method() === 'GET') await gate;
+      await route.continue();
+    });
     await p
       .getByRole('button', { name: 'Salvar movimento', exact: true })
       .click();
@@ -49,6 +57,10 @@ test('P1-6 entrada, consumo e alerta de mínimo sem débito implícito', async (
     await p
       .getByLabel('Motivo do movimento ou estorno')
       .fill('Produção DEMONSTRAÇÃO');
+    release();
+    await expect(p.getByLabel('Quantidade do movimento (g)')).toHaveValue(
+      '500',
+    );
     await p
       .getByRole('button', { name: 'Salvar movimento', exact: true })
       .click();

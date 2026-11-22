@@ -21,8 +21,10 @@ export function useP1Save(refresh: () => Promise<void>) {
       request.current = { signature, key: crypto.randomUUID() };
     try {
       await api(path, method, data, request.current.key);
-      await refresh();
+      // Limpa o formulário assim que o servidor confirma, antes de recarregar:
+      // o que a pessoa digitar durante a recarga não é apagado depois.
       done?.();
+      await refresh();
       setNotice(
         'Dados salvos. Custos e preços são estimativas, sem compras ou alterações de preço automáticas.',
       );
