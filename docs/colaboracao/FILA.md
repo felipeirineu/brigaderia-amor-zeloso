@@ -5,14 +5,11 @@
 
 ## VEZ
 
-`VEZ: CODEX` — **terminar a T18** no branch `codex/t18-delivery-cycle` (versão **1.5.0**). Revisão parcial do Claude (22/11) sobre `ec59ef8`: a lógica de `shared/delivery-cycle.ts` está correta (X-ésima soma as X, reinício sem depender de pagamento, desfazer/cancelar recompõe, isolamento por cliente, projeção do dia sem vencimento). **Falta:** teste E2E da T18 no celular (escolha da condição, contagem "Nª de X", aviso "Cobrar hoje" com Cobrar no WhatsApp/Registrar recebimento), capturas `t18-*.png` só com DEMONSTRAÇÃO, relatório final (Produzido / Testes executados / Limitações / Pendências) em `CODEX_PARA_CLAUDE.md` e no PR, e **abrir o pull request**.
-**Decisão do Felipe (22/11) — troca de condição com ciclo incompleto:** hoje as entregas de um ciclo incompleto ficam em "A receber" sem vencimento para sempre. Mude para **fechar o ciclo incompleto na troca**: as entregas pendentes do ciclo antigo vencem na data da **primeira entrega efetiva sob a condição nova** (ou na data da troca da condição do cliente, se ela for registrada antes de qualquer nova entrega — escolha a mais simples e documente), aparecem no Hoje com o aviso "Cobrar hoje" e na cobrança do WhatsApp com o total delas. Cobrir com teste unitário e de integração (troca a meio do ciclo, troca para outro X, troca para Na entrega/A prazo por data).
-
-**Pendência do Claude (junto com a revisão da T18):** no Hoje, ao abrir "ver sabores" de um kit, o Chrome do Felipe mostra um espaço vazio grande entre "1× Kit 12 · 30 g" e a lista (mesma altura extra que o Chrome reserva para o conteúdo do `<details>`; o oval fechado já foi resolvido na 1.4.3). Reduzir esse espaço sem quebrar o abrir/fechar.
+`VEZ: CODEX` — tarefa **T20** (pedidos em lote; prévia `previas/t20-pedidos-em-lote.png` aprovada; detalhes abaixo). Versão **1.6.0**. Base: main atual (1.5.0, com a T18). Faça **push parcial** no branch `codex/t20-...` durante o trabalho. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub. Depois vem a **T19**.
 
 **Pendência do Claude (pedido do Felipe, 22/11):** quando os pedidos do Tiago estiverem publicados (1.4.4 cadastro no computador, T18, T20, T19), escrever para o Felipe uma mensagem curta de WhatsApp para o Tiago resumindo o que foi corrigido e adicionado, em linguagem simples e com onde encontrar cada coisa.
 
-**Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
+**Pendências do Felipe (fora do código):** republicar o agendador dos avisos (workflow "Ativar lembretes (manual)" → REPUBLICAR_AGENDADOR) para o aviso "Cobrar hoje" da T18. Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
 
 
@@ -87,8 +84,8 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" + vencimento em dia fixo | **publicada** 22/11 (PR #24) como **1.2.0** — sem migração |
 | T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | **publicada** 22/11 (PR #25) como **1.3.0** |
 | T16 | Entrega feita pelos dois (Tiago e Alda) | **publicada** 22/11 (PR #26) como **1.4.0** — migração **0029** aplicada pelo Felipe em 22/11 (29 aplicadas; 6 pedidos e 14 eventos preservados) |
-| T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | prévia **aprovada** 22/11; **vez do Codex** — versão **1.5.0** |
-| T20 | Pedidos em lote: selecionar vários (ou todos do dia) e mudar data ou status de uma vez | prévia **aprovada** 22/11; **depois da T18** — versão **1.6.0** |
+| T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | **publicada** 22/11 (PR #27) como **1.5.0** — republicar o agendador (Felipe) |
+| T20 | Pedidos em lote: selecionar vários (ou todos do dia) e mudar data ou status de uma vez | prévia **aprovada** 22/11; **vez do Codex** — versão **1.6.0** |
 | T19 | Fichas: custo por ingrediente (lote e por doce), custos não calculados (20%), preço sugerido por doce | prévia **aprovada** 22/11; **depois da T20** — versão **1.7.0** — migração (Felipe aplica) |
 
 ### T0 — R17
