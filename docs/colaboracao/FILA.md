@@ -5,7 +5,8 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T17** (pedido já entregue no cadastro, pagamento "Na próxima entrega" e vencimento em dia fixo do mês; detalhes abaixo). Versão **1.2.0**. Base: main atual (1.0.10). **A T14 já está no main como 1.1.0** (migração **0028**): antes de abrir o PR, incorpore o main atual; se a T17 precisar de migração, use a **0029**. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
+`VEZ: CODEX` — **correção da T17 (PR #24), CI vermelho**. Diagnóstico do Claude (22/11): o CI completo do PR #24 (run 44984175967) e o da integração no branch do Claude (run 44984769157) falham no mesmo teste, **só no `webkit-mobile`**: `tests/e2e/t14-feedback.spec.js:21` — no **terceiro** `page.goto(orderUrl)` (depois de "Voltar ao Hoje"), o cabeçalho "Ops, algo deu errado nesta tela" não aparece em 5 s. Na 1.1.0 (T14 sem a T17) o mesmo teste passava no WebKit em 5,8 s; agora falha em ~9–10 s, ou seja, a tela de erro não aparece nessa terceira carga. Chromium móvel e desktop passam; o Claude não tem WebKit no ambiente dele. Investigue a causa no WebKit (não aumente timeout nem pule o teste sem explicar a causa) e corrija no próprio branch `codex/t17-delivered-payment`, no mesmo PR #24.
+**Antes, incorpore o branch `claude/brigaderia-project-analysis-tf66ax`**: ele já tem a T17 com um ajuste do Claude — `fixedDueDate` agora usa o último dia do mês quando o dia escolhido não existe (30 em fevereiro vence em 28/29, como na fatura do cartão), com testes, textos da Ajuda e `docs/FASE_T17.md` atualizados — e a especificação da T18. Depois da correção, a próxima tarefa é a **T15**.
 
 **Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
