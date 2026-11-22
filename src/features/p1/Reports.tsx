@@ -18,6 +18,8 @@ interface Report {
   without_deliveries: { id: string; name: string; last_delivery: string }[];
   sales_cents: number;
   orders_count: number;
+  estimated_cost_cents: number | null;
+  cost_missing_orders: number;
   received_cents: number;
   receivable_cents: number;
   position_day: string;
@@ -180,6 +182,15 @@ export function Reports({ followup = false }: { followup?: boolean }) {
               {view.data.orders_count} pedidos pela data efetiva de
               entrega/retirada.
             </p>
+            {view.data.orders_count > 0 && (
+              <p>
+                Custo estimado atual:{' '}
+                {view.data.estimated_cost_cents === null
+                  ? `indisponível em ${view.data.cost_missing_orders} pedido(s)`
+                  : money(view.data.estimated_cost_cents)}
+                .
+              </p>
+            )}
             <p>
               Recebido líquido no período: {money(view.data.received_cents)}{' '}
               (cliente/período; dinheiro não alocado não tem condição de

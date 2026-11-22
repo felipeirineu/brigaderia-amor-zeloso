@@ -1,8 +1,9 @@
+import type { RecipeEstimate } from '../../../worker/recipe-domain';
 import { SkeletonList } from '../../components/Skeleton';
 import { Button } from '../../components/Button';
 import { MoneyField, QuantityField } from '../../components/NumericInputs';
 import { priceForMargin } from '../../../shared/costing';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import { Failure, useRemote } from '../operations/common';
 import { money, parsePrice } from '../api';
@@ -34,13 +35,9 @@ interface Recipe {
     unit: string;
     quantity_milli: number;
   }[];
-  estimate: {
-    missing: string[];
-    total_cents: number | null;
-    unit_cost_cents: number | null;
-    box_cost_cents: number | null;
-    suggested_price_cents: number | null;
-  };
+  unmeasured_bps: number | null;
+  units_per_box: number | null;
+  estimate: RecipeEstimate;
 }
 const empty = () => ({
   name: '',
@@ -49,6 +46,7 @@ const empty = () => ({
   packaging: '',
   labor: '',
   overhead: '',
+  unmeasured: '20',
   margin: '',
   active: true,
 });
@@ -204,7 +202,11 @@ function simulatedPrice(cost: number | null, margin: string) {
 export function Recipes({
   weightCosting = false,
 }: { weightCosting?: boolean } = {}) {
-  const view = useRemote<{ role: string; items: Recipe[] }>('p1/recipes'),
+  const view = useRemote<{
+      role: string;
+      items: Recipe[];
+      unmeasured_supported: boolean;
+    }>('p1/recipes'),
     supplies = useRemote<{ items: Supply[] }>('p1/supplies'),
     products = useRemote<
       {
@@ -218,6 +220,7 @@ export function Recipes({
     [form, setForm] = useState(empty),
     [simulation, setSimulation] = useState(''),
     [components, setComponents] = useState([{ supply_id: '', quantity: '' }]);
+  const formRef = useRef<HTMLFormElement>(null);
   const options =
     products.data?.flatMap((p) =>
       p.variants
@@ -251,6 +254,7 @@ export function Recipes({
       <p role="status">{save.notice}</p>
       {view.data?.role === 'owner' && (
         <form
+          ref={formRef}
           className="panel data-form"
           onSubmit={(e) => {
             e.preventDefault();
@@ -264,6 +268,13 @@ export function Recipes({
                   packaging_cents: parsePrice(form.packaging),
                   labor_cents: parsePrice(form.labor),
                   overhead_cents: parsePrice(form.overhead),
+                  ...(view.data?.unmeasured_supported
+                    ? {
+                        unmeasured_bps: Math.round(
+                          Number(form.unmeasured) * 100,
+                        ),
+                      }
+                    : {}),
                   margin_bps: parsePrice(form.margin),
                   active: form.active,
                   components: components.map((c) => ({
@@ -388,7 +399,6 @@ export function Recipes({
               ['packaging', 'Embalagens por lote (R$)'],
               ['labor', 'Mão de obra por lote (R$)'],
               ['overhead', 'Outros custos por lote (R$)'],
-              ['margin', 'Margem desejada (%)'],
             ] as const
           ).map(([key, label]) => (
             <label key={key}>
@@ -400,6 +410,35 @@ export function Recipes({
               />
             </label>
           ))}
+          {view.data?.unmeasured_supported && (
+            <label>
+              Custos não calculados (%)
+              <input
+                required
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                value={form.unmeasured}
+                aria-describedby="recipe-unmeasured-help"
+                onChange={(e) =>
+                  setForm({ ...form, unmeasured: e.target.value })
+                }
+              />
+              <small id="recipe-unmeasured-help">
+                Gás, energia, água, perdas e pequenos gastos difíceis de medir.
+                Somado ao custo de produção antes da margem. Padrão de 20%.
+              </small>
+            </label>
+          )}
+          <label>
+            Margem desejada (%)
+            <MoneyField
+              required
+              value={form.margin}
+              onValueChange={(value) => setForm({ ...form, margin: value })}
+            />
+          </label>
           <label>
             <input
               type="checkbox"
@@ -436,48 +475,28 @@ export function Recipes({
         </p>
       </section>
       {!view.data && !view.error && <SkeletonList label="Carregando fichas…" />}
+      {view.data?.unmeasured_supported && (
+        <p className="recipe-unmeasured-notice">
+          O cálculo das fichas agora inclui custos não calculados. Fichas já
+          cadastradas começam com 20%, que pode ser ajustado em cada ficha.
+        </p>
+      )}
       {view.data?.items.map((r) => (
-        <article className="panel" key={r.id}>
+        <article className="panel recipe-cost-card" key={r.id}>
           <h2>
-            {r.name} · {r.active ? 'Ativa' : 'Inativa'}
+            {r.name}
+            {!r.active && ' · Inativa'}
           </h2>
           <p>
-            Rende {r.yield_units} unidades; margem alvo{' '}
+            Rende {r.yield_units} doces · margem{' '}
             {(r.margin_bps / 100).toLocaleString('pt-BR')}%.
           </p>
-          <ul>
-            {r.components.map((c) => (
-              <li key={c.supply_id}>
-                {c.name}: {quantityInput(c.quantity_milli)} {unitName(c.unit)}
-              </li>
-            ))}
-          </ul>
-          {r.estimate.missing.length > 0 ? (
-            <p role="alert">
-              Custo pendente: {r.estimate.missing.join(', ')}. Não há sugestão
-              de preço.
-            </p>
-          ) : (
-            <>
-              <p>
-                Custo estimado do lote: {money(r.estimate.total_cents!)} · por
-                unidade: {money(r.estimate.unit_cost_cents!)}
-              </p>
-              {r.estimate.suggested_price_cents !== null ? (
-                <p>
-                  Custo por embalagem vendida:{' '}
-                  {money(r.estimate.box_cost_cents!)} · preço sugerido:{' '}
-                  {money(r.estimate.suggested_price_cents)}
-                </p>
-              ) : (
-                <p>Vincule uma variante para estimar o preço da embalagem.</p>
-              )}
-            </>
-          )}
+          <RecipeCostTable recipe={r} />
           {view.data!.role === 'owner' && (
             <Button
               onClick={() => {
                 setEditing(r);
+                formRef.current?.scrollIntoView({ block: 'start' });
                 setForm({
                   name: r.name,
                   variant: r.variant_id || '',
@@ -489,6 +508,7 @@ export function Recipes({
                   overhead: (r.overhead_cents / 100)
                     .toFixed(2)
                     .replace('.', ','),
+                  unmeasured: String((r.unmeasured_bps ?? 2000) / 100),
                   margin: (r.margin_bps / 100).toFixed(2).replace('.', ','),
                   active: !!r.active,
                 });
@@ -512,11 +532,114 @@ export function Recipes({
             </p>
           )}
           <p>
-            Estimativa com arredondamento para cima; não altera preços, pedidos
-            ou caixa automaticamente.
+            {r.unmeasured_bps === null
+              ? 'O custo por doce do esquema anterior é arredondado para cima.'
+              : 'Custo por doce é o valor do lote dividido pelo rendimento, arredondado ao centavo.'}{' '}
+            Os preços sugeridos são estimativas.
           </p>
         </article>
       ))}
+    </>
+  );
+}
+
+function RecipeCostTable({ recipe: r }: { recipe: Recipe }) {
+  const estimate = r.estimate;
+  const amount = (cents: number | null) =>
+    cents === null ? '—' : money(cents);
+  const perUnit = r.unmeasured_bps === null ? Math.ceil : Math.round;
+  const fixedRows = [
+    ['Embalagens', r.packaging_cents],
+    ['Mão de obra', r.labor_cents],
+    ['Outros custos', r.overhead_cents],
+  ] as const;
+  return (
+    <>
+      <table className="recipe-cost-table" aria-label="Custos por ingrediente">
+        <thead>
+          <tr>
+            <th scope="col">Ingrediente</th>
+            <th scope="col">Lote</th>
+            <th scope="col">Por doce</th>
+          </tr>
+        </thead>
+        <tbody>
+          {r.components.map((c) => {
+            const cost = estimate.ingredient_costs.find(
+              (line) => line.supply_id === c.supply_id,
+            );
+            return (
+              <tr key={c.supply_id}>
+                <th scope="row">
+                  {c.name}
+                  <small>
+                    {quantityInput(c.quantity_milli)} {unitName(c.unit)}
+                  </small>
+                </th>
+                <td>{amount(cost?.batch_cents ?? null)}</td>
+                <td>{amount(cost?.unit_cents ?? null)}</td>
+              </tr>
+            );
+          })}
+          {fixedRows.map(([name, cost]) => (
+            <tr key={name}>
+              <th scope="row">{name}</th>
+              <td>{money(cost)}</td>
+              <td>{money(perUnit(cost / r.yield_units))}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr>
+            <th scope="row">Custo de produção</th>
+            <td>{amount(estimate.production_cents)}</td>
+            <td>{amount(estimate.production_unit_cents)}</td>
+          </tr>
+          {r.unmeasured_bps !== null && (
+            <tr>
+              <th scope="row">
+                Custos não calculados (
+                {(r.unmeasured_bps / 100).toLocaleString('pt-BR')}%)
+              </th>
+              <td>{amount(estimate.unmeasured_cents)}</td>
+              <td>{amount(estimate.unmeasured_unit_cents)}</td>
+            </tr>
+          )}
+          <tr>
+            <th scope="row">Custo total</th>
+            <td>{amount(estimate.total_cents)}</td>
+            <td>{amount(estimate.unit_cost_cents)}</td>
+          </tr>
+        </tfoot>
+      </table>
+      {estimate.missing.length ? (
+        <p role="alert">
+          Custo pendente: {estimate.missing.join(', ')}. A sugestão ficará
+          disponível após completar os custos.
+        </p>
+      ) : (
+        <>
+          <dl className="recipe-suggested-prices">
+            <div>
+              <dt>Preço sugerido do lote</dt>
+              <dd>{amount(estimate.suggested_batch_cents)}</dd>
+            </div>
+            <div>
+              <dt>Preço sugerido por doce</dt>
+              <dd>{amount(estimate.suggested_unit_cents)}</dd>
+            </div>
+          </dl>
+          {estimate.suggested_price_cents !== null ? (
+            <p>
+              Na caixa de {r.units_per_box}:{' '}
+              {money(estimate.suggested_price_cents)} sugerido · custo{' '}
+              {amount(estimate.box_cost_cents)}.
+            </p>
+          ) : (
+            <p>Vincule uma variante para estimar o preço da embalagem.</p>
+          )}
+        </>
+      )}
     </>
   );
 }

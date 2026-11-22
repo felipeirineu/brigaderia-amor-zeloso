@@ -1,3 +1,4 @@
+import { rateForWeight } from './recipe-percent';
 import { p1Ready } from './p1-ready';
 import { visiblePhone } from '../shared/phone';
 import { kitLabel } from '../shared/kits';
@@ -120,9 +121,16 @@ export async function costCatalog(db: D1Database, org: string) {
                   );
                 else {
                   // Apenas custo unitário: sem caixa de venda, opcionais ou canal iFood presumidos.
+                  const overhead = rateForWeight(
+                    legacy.filter(
+                      (r) => r.active && r.product_id === s.product_id,
+                    ),
+                    s.weight_grams,
+                    settings!.data.overhead_bps,
+                  );
                   const result = calculateWeightKit(
                     data,
-                    settings!.data,
+                    { ...settings!.data, overhead_bps: overhead },
                     {
                       id: 'sample',
                       weight_grams: s.weight_grams,
@@ -145,7 +153,7 @@ export async function costCatalog(db: D1Database, org: string) {
                   else {
                     unit = safeQuantity(
                       (BigInt(result.unit_cost_cents) *
-                        BigInt(10000 + settings!.data.overhead_bps) +
+                        BigInt(10000 + overhead) +
                         9999n) /
                         10000n,
                     );

@@ -30,9 +30,9 @@ try {
     },
     recipe = await call('p1/recipes', draft);
   let list = await call('p1/recipes', undefined, 'GET');
-  assert.equal(list.items[0].estimate.total_cents, 500);
-  assert.equal(list.items[0].estimate.unit_cost_cents, 167);
-  assert.equal(list.items[0].estimate.suggested_price_cents, 668);
+  assert.equal(list.items[0].estimate.total_cents, 600);
+  assert.equal(list.items[0].estimate.unit_cost_cents, 200);
+  assert.equal(list.items[0].estimate.suggested_price_cents, 800);
   const shopping = await call(
     'p1/shopping?from=2030-01-07&to=2030-01-07',
     undefined,

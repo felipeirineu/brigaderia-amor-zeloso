@@ -45,6 +45,8 @@ export function CostingSettingsForm({
       />
       <p>
         O adicional é aplicado ao total, incluindo a embalagem, antes da margem.
+        Se as fichas técnicas ativas do sabor e tamanho tiverem o mesmo
+        percentual, a calculadora usa esse valor.
       </p>
       <fieldset>
         <legend>Forminhas por tamanho</legend>

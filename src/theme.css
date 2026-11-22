@@ -2959,3 +2959,69 @@ body:has(.mix-sheet) {
     bottom: 0;
   }
 }
+
+.recipe-cost-card > h2,
+.recipe-cost-card > h2 + p {
+  margin-block: 0 var(--az-space-2);
+}
+.recipe-cost-card > h2 + p,
+.recipe-cost-table small {
+  color: var(--az-muted);
+}
+.recipe-cost-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+.recipe-cost-table :is(th, td) {
+  padding: var(--az-space-2) var(--az-space-1);
+  border-bottom: 1px solid var(--az-control-border);
+  text-align: end;
+}
+.recipe-cost-table th:first-child {
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+.recipe-cost-table thead th {
+  color: var(--az-gold-ink);
+  text-transform: uppercase;
+  font-size: 0.78rem;
+}
+.recipe-cost-table tbody th {
+  font-weight: 500;
+}
+.recipe-cost-table small {
+  display: block;
+}
+.recipe-cost-table td {
+  white-space: nowrap;
+}
+.recipe-cost-table tfoot tr:first-child,
+.recipe-cost-table tfoot tr:last-child {
+  font-weight: 700;
+}
+.recipe-suggested-prices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--az-space-2);
+  margin-block: var(--az-space-3) var(--az-space-2);
+}
+.recipe-suggested-prices div,
+.recipe-unmeasured-notice {
+  padding: var(--az-space-3);
+  border-radius: var(--az-radius-field);
+  background: var(--az-tonal);
+}
+.recipe-suggested-prices div:last-child {
+  background: var(--az-choc);
+  color: var(--az-cream);
+}
+.recipe-suggested-prices dt {
+  font-size: 0.81rem;
+}
+.recipe-suggested-prices dd {
+  margin: 0;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.7.0',
+    items: [
+      'A ficha mostra o custo de cada ingrediente por lote e por doce, com os dois preços sugeridos.',
+      'Custos não calculados começam em 20% nas fichas; ajuste o percentual ao editar.',
+    ],
+  },
+  {
     version: '1.6.0',
     items: [
       'Em Pedidos, selecione vários para mudar a data ou avançar as etapas de uma vez.',

@@ -289,7 +289,7 @@ try {
     samples: [{ product_id: legacy.id, units: 2, weight_grams: 10 }],
   });
   const lc = await call('visits/' + lv.id + '/costs', undefined, 'GET');
-  assert.equal(lc.estimate.estimated_cents, 20);
+  assert.equal(lc.estimate.estimated_cents, 24);
   assert.equal(lc.estimate.lines[0].source, 'recipe');
   // Conversão no mês seguinte: tempo/CAC usam a primeira visita histórica, não um denominador de outro grupo.
   const rec = JSON.parse(

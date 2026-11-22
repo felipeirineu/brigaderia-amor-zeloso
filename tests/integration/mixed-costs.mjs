@@ -27,8 +27,8 @@ try {
   );
   recipes.push(await seedAnalysisRecipe(call, variants[2], 2));
   const cost = await call(costPath, undefined, 'GET', operator);
-  assert.equal(cost.estimated_cost_cents, 798);
-  assert.equal(cost.items.find((i) => i.mixed).estimated_cost_cents, 486);
+  assert.equal(cost.estimated_cost_cents, 948);
+  assert.equal(cost.items.find((i) => i.mixed).estimated_cost_cents, 576);
   const totals = Object.fromEntries(
     cost.items
       .flatMap((i) => i.components)
@@ -36,8 +36,8 @@ try {
   );
   assert.deepEqual(
     variants.map((v) => totals[v.id]),
-    [16, 26, 37],
-    'inclui custos da ficha, arredondados para cima por unidade',
+    [19, 31, 43],
+    'inclui custos da ficha, arredondados ao centavo por unidade',
   );
   const gamma = cost.items
     .flatMap((i) => i.components)
@@ -45,7 +45,7 @@ try {
   assert.equal(gamma.units, 2);
   assert.equal(
     gamma.estimated_cost_cents,
-    74,
+    86,
     'não aplica caixa inteira do componente',
   );
   const shopping = await call(shoppingPath, undefined, 'GET');
@@ -100,7 +100,7 @@ try {
   await updateSupply({ pack_cost_cents: 0 });
   assert.equal(
     (await call(costPath, undefined, 'GET')).estimated_cost_cents,
-    638,
+    756,
     'zero cadastrado é custo conhecido',
   );
   await updateSupply({ pack_cost_cents: 1000, active: false });

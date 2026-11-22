@@ -2,6 +2,7 @@ import { weightCostingReady, weightSupplyInUse } from './weight-costing';
 import { readKitItems } from './kit-order-items';
 import { flavorLines } from './flavor-lines';
 import { z } from 'zod';
+import { recipeUnmeasuredReady } from './recipe-percent';
 import { HttpError, json, type Actor } from './security';
 import { ownerOnly, p1Mutation, requestRange } from './p1-common';
 import { addDays, utcStart } from './operations-domain';
@@ -27,13 +28,19 @@ interface Recipe {
   active: number;
   version: number;
   units_per_box: number | null;
+  unmeasured_bps: number | null;
   components: (CostComponent & { unit: string })[];
 }
-export async function readRecipes(db: D1Database, org: string) {
+export async function readRecipes(
+  db: D1Database,
+  org: string,
+  unmeasured?: boolean,
+) {
+  const ready = unmeasured ?? (await recipeUnmeasuredReady(db));
   const rows = (
     await db
       .prepare(
-        'SELECT r.id,r.name,r.variant_id,r.yield_units,r.packaging_cents,r.labor_cents,r.overhead_cents,r.margin_bps,r.active,r.version,v.units_per_box,v.product_id,v.weight_grams FROM recipes r LEFT JOIN product_variants v ON v.organization_id=r.organization_id AND v.id=r.variant_id WHERE r.organization_id=? ORDER BY r.active DESC,r.name LIMIT 201',
+        `SELECT r.id,r.name,r.variant_id,r.yield_units,r.packaging_cents,r.labor_cents,r.overhead_cents,r.margin_bps,r.active,r.version,v.units_per_box,v.product_id,v.weight_grams,${ready ? 'r.unmeasured_bps' : 'NULL'} AS unmeasured_bps FROM recipes r LEFT JOIN product_variants v ON v.organization_id=r.organization_id AND v.id=r.variant_id WHERE r.organization_id=? ORDER BY r.active DESC,r.name LIMIT 201`,
       )
       .bind(org)
       .all<Omit<Recipe, 'components'>>()
@@ -77,10 +84,12 @@ export async function recipes(
         throw new HttpError(409, 'Mais de 500 insumos; implemente paginação.');
       return json({ role: a.role, items: rows });
     }
-    const rows = await readRecipes(db, org);
+    const ready = await recipeUnmeasuredReady(db);
+    const rows = await readRecipes(db, org, ready);
     if (resource === 'recipes')
       return json({
         role: a.role,
+        unmeasured_supported: ready,
         items: rows.map((r) => ({
           ...r,
           estimate: estimateRecipe(r, r.components),
@@ -384,6 +393,21 @@ export async function recipes(
       };
     }
     const d = recipeSchema.parse(raw);
+    const ready = await recipeUnmeasuredReady(db);
+    if (!ready && d.unmeasured_bps !== undefined)
+      throw new HttpError(
+        409,
+        'Custos não calculados aguardam a migração 0030.',
+      );
+    const unmeasured = ready ? [d.unmeasured_bps ?? null] : [];
+    if (
+      id &&
+      !(await db
+        .prepare('SELECT 1 FROM recipes WHERE organization_id=? AND id=?')
+        .bind(org, id)
+        .first())
+    )
+      throw new HttpError(404, 'Ficha não encontrada.');
     if (id && !d.version) throw new HttpError(400, 'Informe versão.');
     if (
       d.variant_id &&
@@ -413,7 +437,7 @@ export async function recipes(
       first: id
         ? db
             .prepare(
-              'UPDATE recipes SET name=?,variant_id=?,yield_units=?,packaging_cents=?,labor_cents=?,overhead_cents=?,margin_bps=?,active=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?',
+              `UPDATE recipes SET name=?,variant_id=?,yield_units=?,packaging_cents=?,labor_cents=?,overhead_cents=?,margin_bps=?,active=?${ready ? ',unmeasured_bps=COALESCE(?,unmeasured_bps)' : ''},version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?`,
             )
             .bind(
               d.name,
@@ -424,6 +448,7 @@ export async function recipes(
               d.overhead_cents,
               d.margin_bps,
               +d.active,
+              ...unmeasured,
               nonce,
               org,
               entity,
@@ -431,7 +456,7 @@ export async function recipes(
             )
         : db
             .prepare(
-              'INSERT INTO recipes(id,organization_id,name,variant_id,yield_units,packaging_cents,labor_cents,overhead_cents,margin_bps,active,mutation_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)',
+              `INSERT INTO recipes(id,organization_id,name,variant_id,yield_units,packaging_cents,labor_cents,overhead_cents,margin_bps,active,mutation_id${ready ? ',unmeasured_bps' : ''}) VALUES(?,?,?,?,?,?,?,?,?,?,?${ready ? ',COALESCE(?,2000)' : ''})`,
             )
             .bind(
               entity,
@@ -445,6 +470,7 @@ export async function recipes(
               d.margin_bps,
               +d.active,
               nonce,
+              ...unmeasured,
             ),
       rest: (g, args) => [
         db

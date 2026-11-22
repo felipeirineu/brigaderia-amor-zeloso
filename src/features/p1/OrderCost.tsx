@@ -30,8 +30,8 @@ function CostDetails({ id, version }: { id: string; version: number }) {
       {view.data && (
         <>
           <p>
-            Fichas e custos atuais. O custo unitário da ficha é arredondado para
-            cima e multiplicado pelas unidades de cada sabor.
+            Fichas e custos atuais. O custo por doce considera o percentual
+            salvo na ficha e é multiplicado pelas unidades de cada sabor.
           </p>
           <h3>
             {view.data.estimated_cost_cents === null

@@ -113,8 +113,8 @@ test('relatórios CSV, despesa/estorno, ficha/preço e compras privadas', async 
       .getByRole('button', { name: 'Salvar ficha', exact: true })
       .click();
     await expect(
-      page.getByText('Custo por embalagem vendida:', { exact: false }),
-    ).toContainText('6,68');
+      page.getByText('Na caixa de 2:', { exact: false }),
+    ).toContainText('8,00');
     const simulationWrites = [];
     page.on('request', (r) => {
       if (['POST', 'PUT', 'DELETE'].includes(r.method()))
@@ -123,7 +123,7 @@ test('relatórios CSV, despesa/estorno, ficha/preço e compras privadas', async 
     await page.getByLabel('Simular margem (%)').fill('30,00');
     await expect(
       page.getByText('Preço na margem simulada:', { exact: false }),
-    ).toContainText('4,78');
+    ).toContainText('5,72');
     expect(simulationWrites).toHaveLength(0);
     await page.goto(t.url + '/gestao/compras');
     await page.getByLabel('Produção de', { exact: true }).fill('2030-01-07');

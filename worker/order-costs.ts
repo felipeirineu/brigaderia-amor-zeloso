@@ -2,8 +2,12 @@ import { readKitItems } from './kit-order-items';
 import { z } from 'zod';
 import { HttpError, json, type Actor } from './security';
 import { readRecipes } from './recipes';
-import { estimateRecipe, safeQuantity } from './recipe-domain';
-import { flavorLines } from './flavor-lines';
+import {
+  estimateRecipe,
+  safeQuantity,
+  type RecipeEstimate,
+} from './recipe-domain';
+import { flavorLines, type FlavorLine } from './flavor-lines';
 export async function orderCosts(
   req: Request,
   db: D1Database,
@@ -21,8 +25,97 @@ export async function orderCosts(
     .bind(org, id)
     .first<{ id: string; version: number }>();
   if (!order) throw new HttpError(404, 'Pedido não encontrado.');
-  const recipes = await readRecipes(db, org),
-    lines = await flavorLines(db, org, [order.id]);
+  const lines = await flavorLines(db, org, [order.id]);
+  const estimates = await estimateOrderCosts(db, org, [order.id], lines);
+  const current = await db
+    .prepare(
+      'SELECT version FROM orders WHERE organization_id=? AND id=? AND active=1',
+    )
+    .bind(org, id)
+    .first<{ version: number }>();
+  if (current?.version !== order.version)
+    throw new HttpError(
+      409,
+      'Pedido alterado durante o cálculo. Atualize e tente novamente.',
+    );
+  return json({
+    order_id: order.id,
+    order_version: order.version,
+    basis: 'fichas e custos atuais; custo por doce × unidades',
+    ...estimates.get(order.id)!,
+  });
+}
+
+export async function estimateOrderCosts(
+  db: D1Database,
+  org: string,
+  ids: string[],
+  lines: FlavorLine[],
+) {
+  const results = new Map<string, ReturnType<typeof orderEstimate>>();
+  if (!ids.length) return results;
+  const recipes = await readRecipes(db, org);
+  const linesByOrder = groupByOrder(lines);
+  const kits = lines.some((line) => line.kit_id)
+    ? await readKitItems(db, org, ids)
+    : [];
+  const supplies = kits.length
+    ? (
+        await db
+          .prepare(
+            'SELECT id,name,unit,pack_cost_cents,pack_quantity_milli,active FROM supplies WHERE organization_id=? AND id IN(SELECT value FROM json_each(?))',
+          )
+          .bind(org, JSON.stringify(kits.map((k) => k.packaging_supply_id)))
+          .all<{
+            id: string;
+            name: string;
+            unit: string;
+            pack_cost_cents: number | null;
+            pack_quantity_milli: number;
+            active: number;
+          }>()
+      ).results
+    : [];
+  const kitsByOrder = groupByOrder(kits);
+  const recipeEstimates = new Map<string, RecipeEstimate>();
+  for (const id of ids)
+    results.set(
+      id,
+      orderEstimate(
+        linesByOrder.get(id) ?? [],
+        kitsByOrder.get(id) ?? [],
+        supplies,
+        recipes,
+        recipeEstimates,
+      ),
+    );
+  return results;
+}
+
+function groupByOrder<T extends { order_id: string }>(rows: T[]) {
+  const result = new Map<string, T[]>();
+  for (const row of rows) {
+    const group = result.get(row.order_id);
+    if (group) group.push(row);
+    else result.set(row.order_id, [row]);
+  }
+  return result;
+}
+
+function orderEstimate(
+  lines: FlavorLine[],
+  kits: Awaited<ReturnType<typeof readKitItems>>,
+  supplies: {
+    id: string;
+    name: string;
+    unit: string;
+    pack_cost_cents: number | null;
+    pack_quantity_milli: number;
+    active: number;
+  }[],
+  recipes: Awaited<ReturnType<typeof readRecipes>>,
+  recipeEstimates: Map<string, RecipeEstimate>,
+) {
   const missing = new Set<string>();
   const sum = (values: number[], label: string) => {
     try {
@@ -73,10 +166,15 @@ export async function orderCosts(
       missing.add('Ficha sem insumos: ' + recipe.name);
     else {
       try {
-        const estimate = estimateRecipe(
-          line.kit_id ? { ...recipe, packaging_cents: 0 } : recipe,
-          recipe.components,
-        );
+        const key = recipe.id + (line.kit_id ? ':kit' : '');
+        let estimate = recipeEstimates.get(key);
+        if (!estimate) {
+          estimate = estimateRecipe(
+            line.kit_id ? { ...recipe, packaging_cents: 0 } : recipe,
+            recipe.components,
+          );
+          recipeEstimates.set(key, estimate);
+        }
         unitCost = estimate.unit_cost_cents;
         for (const name of estimate.missing)
           missing.add(recipe.name + ': insumo sem custo ou inativo — ' + name);
@@ -100,24 +198,6 @@ export async function orderCosts(
         : sum([item.estimated_cost_cents, cost], 'item do pedido');
     items.set(line.item_id, item);
   }
-  const kits = await readKitItems(db, org, [order.id]);
-  const supplies = kits.length
-    ? (
-        await db
-          .prepare(
-            'SELECT id,name,unit,pack_cost_cents,pack_quantity_milli,active FROM supplies WHERE organization_id=? AND id IN(SELECT value FROM json_each(?))',
-          )
-          .bind(org, JSON.stringify(kits.map((k) => k.packaging_supply_id)))
-          .all<{
-            id: string;
-            name: string;
-            unit: string;
-            pack_cost_cents: number | null;
-            pack_quantity_milli: number;
-            active: number;
-          }>()
-      ).results
-    : [];
   for (const kit of kits) {
     const item = items.get(kit.id);
     const supply = supplies.find((s) => s.id === kit.packaging_supply_id);
@@ -150,30 +230,11 @@ export async function orderCosts(
   if (!output.length) missing.add('Pedido sem itens calculáveis.');
   const incomplete =
     missing.size > 0 || output.some((i) => i.estimated_cost_cents === null);
-  const current = await db
-    .prepare(
-      'SELECT version FROM orders WHERE organization_id=? AND id=? AND active=1',
-    )
-    .bind(org, id)
-    .first<{ version: number }>();
-  if (current?.version !== order.version)
-    throw new HttpError(
-      409,
-      'Pedido alterado durante o cálculo. Atualize e tente novamente.',
-    );
   const total = incomplete
     ? null
     : sum(
         output.map((i) => i.estimated_cost_cents!),
         'pedido',
       );
-  return json({
-    order_id: order.id,
-    order_version: order.version,
-    basis:
-      'fichas e custos atuais; custo unitário arredondado para cima × unidades',
-    missing: [...missing],
-    items: output,
-    estimated_cost_cents: total,
-  });
+  return { missing: [...missing], items: output, estimated_cost_cents: total };
 }

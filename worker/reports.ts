@@ -1,3 +1,4 @@
+import { estimateOrderCosts } from './order-costs';
 import { paymentModeLabels } from '../shared/finance';
 import { flavorLines, flavorItemTexts } from './flavor-lines';
 import { z } from 'zod';
@@ -134,6 +135,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     group.push(item);
     linesByOrder.set(item.order_id, group);
   }
+  const estimates = await estimateOrderCosts(db, org, selected, items);
   const orders = sold.map((o) => ({
     id: o.id,
     customer_name: o.customer_name,
@@ -145,6 +147,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     condition: o.terms.mode,
     cycle: o.terms.cycle,
     every_deliveries: o.terms.every_deliveries ?? null,
+    estimated_cost_cents: estimates.get(o.id)?.estimated_cost_cents ?? null,
   }));
   const days =
       Math.round(
@@ -213,6 +216,12 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         ? 'cliente/período'
         : 'recebimentos do cliente/período, sem atribuir condição ao dinheiro não alocado',
     receivable_cents: ageing.reduce((n, o) => n + o.balance_cents, 0),
+    estimated_cost_cents:
+      orders.length && orders.every((o) => o.estimated_cost_cents !== null)
+        ? orders.reduce((n, o) => n + o.estimated_cost_cents!, 0)
+        : null,
+    cost_missing_orders: orders.filter((o) => o.estimated_cost_cents === null)
+      .length,
     orders,
     customers: [...clients.values()].sort(
       (a, b) => b.total_cents - a.total_cents || a.name.localeCompare(b.name),
@@ -249,6 +258,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         moneyColumn('Saldo atual'),
         label('Condição'),
         label('Periodicidade'),
+        moneyColumn('Custo estimado atual'),
       ],
       rows: orders.map((o) => [
         o.id,
@@ -264,6 +274,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         o.cycle === 'deliveries'
           ? `A cada ${o.every_deliveries} entregas`
           : o.cycle,
+        o.estimated_cost_cents,
       ]),
     },
     customers: {

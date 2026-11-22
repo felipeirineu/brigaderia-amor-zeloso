@@ -1,3 +1,4 @@
+import { productRecipeRates, rateForWeight } from './recipe-percent';
 import { z } from 'zod';
 import {
   calculateWeightKit,
@@ -214,6 +215,7 @@ export async function weightCosting(
       if (new Set(selected).size !== selected.length)
         throw new HttpError(400, 'Opcional repetido.');
       const settings = await readCostingSettings(db, org);
+      const recipeRates = await productRecipeRates(db, org, row.product_id);
       if (selected.some((s) => !settings.data.optional_supply_ids.includes(s)))
         throw new HttpError(400, 'Opcional não autorizado.');
       const margin = url.searchParams.has('margin')
@@ -259,7 +261,14 @@ export async function weightCosting(
           rows: kits.map((k) =>
             calculateWeightKit(
               data,
-              settings.data,
+              {
+                ...settings.data,
+                overhead_bps: rateForWeight(
+                  recipeRates,
+                  k.weight_grams,
+                  settings.data.overhead_bps,
+                ),
+              },
               k,
               supplies,
               selected,
