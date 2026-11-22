@@ -5,7 +5,8 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T18** (pagar a cada X entregas; prévia `previas/t18-cobrar-a-cada-x-entregas.png` aprovada; detalhes abaixo). Versão **1.5.0**. Base: main atual (1.4.0, com a T16 e a migração 0029). Se precisar de migração, use a **0030**. Faça **push parcial** no branch `codex/t18-...` durante o trabalho. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
+`VEZ: CODEX` — **terminar a T18** no branch `codex/t18-delivery-cycle` (versão **1.5.0**). Revisão parcial do Claude (22/11) sobre `ec59ef8`: a lógica de `shared/delivery-cycle.ts` está correta (X-ésima soma as X, reinício sem depender de pagamento, desfazer/cancelar recompõe, isolamento por cliente, projeção do dia sem vencimento). **Falta:** teste E2E da T18 no celular (escolha da condição, contagem "Nª de X", aviso "Cobrar hoje" com Cobrar no WhatsApp/Registrar recebimento), capturas `t18-*.png` só com DEMONSTRAÇÃO, relatório final (Produzido / Testes executados / Limitações / Pendências) em `CODEX_PARA_CLAUDE.md` e no PR, e **abrir o pull request**.
+**Decisão do Felipe (22/11) — troca de condição com ciclo incompleto:** hoje as entregas de um ciclo incompleto ficam em "A receber" sem vencimento para sempre. Mude para **fechar o ciclo incompleto na troca**: as entregas pendentes do ciclo antigo vencem na data da **primeira entrega efetiva sob a condição nova** (ou na data da troca da condição do cliente, se ela for registrada antes de qualquer nova entrega — escolha a mais simples e documente), aparecem no Hoje com o aviso "Cobrar hoje" e na cobrança do WhatsApp com o total delas. Cobrir com teste unitário e de integração (troca a meio do ciclo, troca para outro X, troca para Na entrega/A prazo por data).
 
 **Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
