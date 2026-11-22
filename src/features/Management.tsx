@@ -237,8 +237,10 @@ function useSave(reload: () => Promise<void>) {
     try {
       await fn();
       done?.();
-      await reload();
+      // Avisa assim que o servidor confirma; a recarga da lista vem depois
+      // (com internet lenta, o aviso não fica esperando a lista).
       setNotice('Alteração salva no servidor.');
+      await reload();
     } catch (e) {
       setError((e as Error).message);
     } finally {

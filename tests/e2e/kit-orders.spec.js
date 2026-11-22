@@ -187,12 +187,21 @@ test('R15-B monta kit25/15g com cinco sabores no celular e PC preserva preço ao
     await desktop
       .getByLabel('Quantos kits iguais de Kit 25 · 15 g', { exact: true })
       .fill('2');
+    // Segura a recarga da lista: o aviso de salvo não pode depender dela
+    // (antes falhava às vezes no CI, com a recarga lenta).
+    let release;
+    const gate = new Promise((resolve) => (release = resolve));
+    await desktop.route(/\/api\/orders(\?|$)/, async (route) => {
+      if (route.request().method() === 'GET') await gate;
+      await route.continue();
+    });
     await desktop
       .getByRole('button', { name: 'Salvar pedido', exact: true })
       .click();
     await expect(desktop.getByRole('status')).toContainText(
       'Alteração salva no servidor.',
     );
+    release();
     order = await call('orders/' + order.id, undefined, 'GET');
     expect(order.total_cents).toBe(24690);
     expect(order.items[0].quantity).toBe(2);
