@@ -2154,15 +2154,23 @@ body:has(.mix-sheet) {
   margin: 0;
 }
 
-/* Hoje, kit fechado: o Chrome novo reserva espaço para a lista oculta dos
-   sabores; o texto fica no centro vertical do fundo destacado. */
+/* Hoje, kit fechado: o fundo oval fica no próprio texto (summary), não no
+   <details>. Alguns Chrome reservam altura para a lista oculta dos sabores;
+   assim essa altura fica transparente e o texto sempre no centro do oval. */
 .delivery-flavors .delivery-mix:not([open]) {
-  display: inline-flex;
-  align-items: center;
-  min-height: 0;
+  padding: 0;
+  background: transparent;
 }
 .delivery-flavors .delivery-mix:not([open])::details-content {
   display: none;
+}
+.delivery-flavors .delivery-mix:not([open]) > summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--az-tonal);
 }
 
 /* Folha de ajuda: "Fechar" escrito, embaixo, na largura toda. */

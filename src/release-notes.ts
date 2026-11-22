@@ -5,6 +5,7 @@ export const releaseNotes = [
     items: [
       'Produzir hoje e amanhã: doces por sabor em unidades e caixas contadas à parte, sem números quebrados.',
       'Pedido: data, valor e status no topo, com Mapa, WhatsApp, Uber e 99 e o deslocamento recolhido.',
+      'Kits no Hoje com o texto centralizado no oval em todos os celulares.',
     ],
   },
   {
