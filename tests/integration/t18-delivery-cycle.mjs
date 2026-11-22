@@ -6,6 +6,7 @@ import { decryptPush, pushKeys, receiver } from '../helpers/push-project.mjs';
 const device = await receiver('https://fcm.googleapis.com/DEMONSTRACAO-T18');
 const sent = [];
 const t = await runtime({
+  migrationLimit: 28,
   financeEnabled: true,
   p1Enabled: true,
   mobileEnabled: true,
@@ -216,6 +217,44 @@ try {
       })
     ).status,
     400,
+  );
+  const late = await call(
+    'mobile/orders',
+    {
+      ...data,
+      due_at: prior.toISOString(),
+    },
+    'POST',
+    operator,
+  );
+  for (const to of [
+    'in_production',
+    'ready',
+    'out_for_delivery',
+    'delivered',
+  ]) {
+    const latest = await call('orders/' + late.id, undefined, 'GET', operator);
+    await call(
+      'orders/' + late.id + '/status',
+      { version: latest.version, to },
+      'POST',
+      operator,
+    );
+  }
+  const lateDashboard = await call(
+    'today?date=' + today,
+    undefined,
+    'GET',
+    operator,
+  );
+  assert.equal(
+    lateDashboard.orders.find((o) => o.id === late.id)?.status,
+    'delivered',
+  );
+  assert.deepEqual(
+    lateDashboard.delivery_cycles.find((c) => c.order_id === late.id)
+      ?.order_ids,
+    [third.id, late.id],
   );
   console.log(
     'OK T18 compatibilidade, projeção, retirada, desfazer, reinício, recebimento, relatórios, isolamento e push deduplicado.',
