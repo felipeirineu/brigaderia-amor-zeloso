@@ -7,7 +7,7 @@
 
 `VEZ: CODEX` — tarefa **T17** (pedido já entregue no cadastro, pagamento "Na próxima entrega" e vencimento em dia fixo do mês; detalhes abaixo). Versão **1.2.0**. Base: main atual (1.0.10). **A T14 já está no main como 1.1.0** (migração **0028**): antes de abrir o PR, incorpore o main atual; se a T17 precisar de migração, use a **0029**. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
-**Pendências do Felipe (fora do código):** quando o Claude publicar a 1.1.0 (T14), aplicar a migração **0028** pela Homologação D1 (backup → PRE_CHECAGEM → APLICAR_PENDENTES). Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
+**Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
 
 
@@ -76,7 +76,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | **publicada** 18/11 (PR #20) como **0.23.0** — migração **0027** pendente (Felipe) |
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
 | T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
-| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **publicada** 22/11 (PR #23, integrada pelo Claude) como **1.1.0** — migração **0028** pendente (Felipe) |
+| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **publicada** 22/11 (PR #23, integrada pelo Claude) como **1.1.0** — migração **0028** aplicada pelo Felipe em 22/11 (28 aplicadas, nenhuma pendente) |
 | T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" | **depois da T14** (Felipe pediu antes da T15 em 22/11) — versão **1.2.0** |
 | T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | prévia **aprovada** 20/11; **depois da T17** — versão **1.3.0** |
 | T16 | Entrega feita pelos dois (Tiago e Alda) | **depois da T15** — versão **1.4.0** — migração (Felipe aplica) |
