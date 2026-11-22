@@ -144,6 +144,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     balance_cents: o.balance_cents,
     condition: o.terms.mode,
     cycle: o.terms.cycle,
+    every_deliveries: o.terms.every_deliveries ?? null,
   }));
   const days =
       Math.round(
@@ -260,7 +261,9 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         o.condition === 'next_delivery'
           ? paymentModeLabels.next_delivery
           : o.condition,
-        o.cycle,
+        o.cycle === 'deliveries'
+          ? `A cada ${o.every_deliveries} entregas`
+          : o.cycle,
       ]),
     },
     customers: {

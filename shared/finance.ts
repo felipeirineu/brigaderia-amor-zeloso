@@ -1,10 +1,16 @@
+import {
+  deliveryCycleDefault,
+  deliveryCycleMax,
+  deliveryCycleMin,
+} from './delivery-cycle';
 export type Terms = {
   mode: 'unset' | 'advance' | 'delivery' | 'next_delivery' | 'credit';
-  cycle: 'weekly' | 'monthly' | 'fixed_days' | 'fourteen_days';
+  cycle: 'weekly' | 'monthly' | 'fixed_days' | 'fourteen_days' | 'deliveries';
   fixed_days: number[];
   base_date: string;
   week_end: number;
   due_days: number | null;
+  every_deliveries?: number;
   due_day_of_month?: number | null;
 };
 export const paymentModeLabels: Record<Terms['mode'], string> = {
@@ -16,6 +22,57 @@ export const paymentModeLabels: Record<Terms['mode'], string> = {
 };
 export const dueDayLabel = (day: number) =>
   day === 31 ? 'último dia do mês' : `dia ${day} do mês`;
+export function deliveryCycleSize(terms: Terms) {
+  const n = terms.every_deliveries;
+  return terms.mode === 'credit' &&
+    terms.cycle === 'deliveries' &&
+    n != null &&
+    Number.isInteger(n) &&
+    n >= deliveryCycleMin &&
+    n <= deliveryCycleMax
+    ? n
+    : null;
+}
+export function setTermsCycle(terms: Terms, cycle: Terms['cycle']): Terms {
+  if (cycle === 'deliveries')
+    return {
+      ...terms,
+      cycle,
+      every_deliveries: deliveryCycleSize(terms) ?? deliveryCycleDefault,
+      due_days: null,
+      due_day_of_month: undefined,
+    };
+  return {
+    ...terms,
+    cycle,
+    every_deliveries: undefined,
+    due_days: terms.due_day_of_month != null ? null : (terms.due_days ?? 0),
+  };
+}
+export function setTermsMode(terms: Terms, mode: Terms['mode']): Terms {
+  if (mode === 'credit')
+    return {
+      ...terms,
+      mode,
+      due_days:
+        terms.cycle === 'deliveries' || terms.due_day_of_month != null
+          ? null
+          : (terms.due_days ?? 0),
+    };
+  return {
+    ...terms,
+    mode,
+    cycle: terms.cycle === 'deliveries' ? 'fixed_days' : terms.cycle,
+    every_deliveries: undefined,
+    due_day_of_month: undefined,
+  };
+}
+export function termsModeLabel(terms: Terms) {
+  const count = deliveryCycleSize(terms);
+  return count
+    ? `A prazo · a cada ${count} entregas`
+    : paymentModeLabels[terms.mode];
+}
 export const emptyTerms = (): Terms => ({
   mode: 'unset',
   cycle: 'fixed_days',
@@ -88,16 +145,25 @@ export function termsDueDate(
   {
     closing,
     nextDelivery,
-  }: { closing?: string | null; nextDelivery?: string | null } = {},
+    deliveryCycle,
+  }: {
+    closing?: string | null;
+    nextDelivery?: string | null;
+    deliveryCycle?: string | null;
+  } = {},
 ) {
   if (terms.mode === 'unset') return null;
   if (terms.mode === 'next_delivery') return nextDelivery ?? null;
+  if (terms.mode === 'credit' && terms.cycle === 'deliveries')
+    return deliveryCycle ?? null;
   if (terms.mode === 'credit')
     return closing || closingPeriod(day, terms).due_on;
   return day;
 }
 /** Datas civis do negócio, intervalos inclusivos, independentes do fuso do navegador. */
 export function closingPeriod(day: string, t: Terms) {
+  if (t.cycle === 'deliveries')
+    throw new Error('Fechamento por entregas não usa período fixo.');
   let start: string, end: string;
   if (t.cycle === 'fourteen_days') {
     if (!t.base_date) throw new Error('Informe a data-base.');

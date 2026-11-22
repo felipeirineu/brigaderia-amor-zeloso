@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.5.0',
+    items: [
+      'A prazo pode fechar a cada 2 a 12 entregas, com vencimento na última.',
+      'O Hoje mostra a contagem e reúne a cobrança e o recebimento do ciclo.',
+    ],
+  },
+  {
     version: '1.4.4',
     items: ['No computador, o cadastro de cliente rola até o fim.'],
   },

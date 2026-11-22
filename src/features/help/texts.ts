@@ -86,6 +86,7 @@ export const helpTexts = {
       'Fechamento: o dia em que a conta fecha. Semanal (todo domingo), Quinzenal (dia 15 e último dia do mês) ou Mensal (último dia do mês).',
       'Pagar: quando a conta vence. No fechamento (no mesmo dia), 7 dias depois, 15 dias depois ou Dia do mês (se o mês não tiver esse dia, vence no último dia).',
       'Em Dia do mês vale a primeira ocorrência depois do fechamento. Se fecha dia 15 e o vencimento é dia 10, vence dia 10 do mês seguinte.',
+      'A cada X entregas: com 4 escolhidas, a quarta entrega efetiva fecha e vence no mesmo dia, somando as quatro. A quinta começa outro ciclo.',
       'Exemplo: uma conveniência recebe 1 Kit 12 de R$ 42,00 toda terça e sexta, em Quinzenal e 7 dias depois. Entregas nos dias 3, 6, 10 e 13: R$ 168,00. A conta fecha no dia 15 e vence no dia 22.',
     ],
     more: '/gestao/ajuda#fechamento-prazos',

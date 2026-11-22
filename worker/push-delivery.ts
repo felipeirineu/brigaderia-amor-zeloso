@@ -1,4 +1,8 @@
 import {
+  deliveryCyclePushPrefix,
+  enqueueDeliveryCyclePush,
+} from './delivery-cycle-push';
+import {
   enqueueFeedbackPush,
   feedbackPushReady,
   validFeedbackJob,
@@ -36,6 +40,10 @@ export async function processPushJobs(
   const db = env.DB;
   if (!db || !pushConfigured(env) || !(await pushSchema(db)))
     return { configured: false, claimed: 0, sent: 0, failed: 0 };
+  const cyclePush =
+    !only && env.FINANCE_ENABLED !== 'false'
+      ? await enqueueDeliveryCyclePush(db, clock)
+      : null;
   const [backup, feedbackReady] = await Promise.all([
     backupSchema(db),
     feedbackPushReady(db),
@@ -125,7 +133,17 @@ export async function processPushJobs(
           )
           .bind(job.organization_id, job.id, nonce)
           .first();
-        if (!valid) state = 'cancelled';
+        const deliveryCycle = job.schedule_key.startsWith(
+          deliveryCyclePushPrefix,
+        );
+        if (
+          !valid ||
+          (deliveryCycle &&
+            (!cyclePush ||
+              job.schedule_key !== cyclePush.key ||
+              !cyclePush.eligible.has(job.organization_id)))
+        )
+          state = 'cancelled';
         else {
           const subscription = JSON.parse(job.subscription) as PushSubscription;
           pushEndpoint(subscription.endpoint);
@@ -136,7 +154,9 @@ export async function processPushJobs(
                   ? 'Está na hora de fazer o backup!'
                   : job.feedback_id
                     ? 'Nova sugestão no app'
-                    : 'Amor Zeloso · Lembrete',
+                    : deliveryCycle
+                      ? 'Amor Zeloso · Cobrança no Hoje'
+                      : 'Amor Zeloso · Lembrete',
                 body: job.backup_key
                   ? backupLastLabel(
                       { last_backup_at: job.last_backup_at },
@@ -144,9 +164,11 @@ export async function processPushJobs(
                     )
                   : job.feedback_id
                     ? 'Veja em Recebidas.'
-                    : job.reminder_id
-                      ? `${job.title} · ${relativeDateTime(job.due_at!)}`
-                      : 'Aviso de teste deste aparelho.',
+                    : deliveryCycle
+                      ? 'Confira as entregas que fecham um ciclo hoje.'
+                      : job.reminder_id
+                        ? `${job.title} · ${relativeDateTime(job.due_at!)}`
+                        : 'Aviso de teste deste aparelho.',
                 tag: job.backup_key
                   ? 'az-backup-' + job.organization_id
                   : 'az-' + job.id,

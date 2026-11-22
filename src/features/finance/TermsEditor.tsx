@@ -1,6 +1,11 @@
+import { DeliveryCycleEditor } from './DeliveryCycleEditor';
 import { DueDayInput } from './DueDayInput';
 import { HelpTip } from '../../components/HelpTip';
-import type { Terms } from '../../../shared/finance';
+import {
+  setTermsCycle,
+  setTermsMode,
+  type Terms,
+} from '../../../shared/finance';
 export function TermsEditor({
   value,
   onChange,
@@ -21,15 +26,7 @@ export function TermsEditor({
         <select
           value={value.mode}
           onChange={(e) =>
-            onChange(
-              e.target.value === 'credit'
-                ? { ...value, mode: 'credit', due_days: value.due_days ?? 0 }
-                : {
-                    ...value,
-                    mode: e.target.value as Terms['mode'],
-                    due_day_of_month: undefined,
-                  },
-            )
+            onChange(setTermsMode(value, e.target.value as Terms['mode']))
           }
         >
           <option value="unset">A definir</option>
@@ -60,13 +57,14 @@ export function TermsEditor({
             <select
               value={value.cycle}
               onChange={(e) =>
-                onChange({ ...value, cycle: e.target.value as Terms['cycle'] })
+                onChange(setTermsCycle(value, e.target.value as Terms['cycle']))
               }
             >
               <option value="weekly">Semanal</option>
               <option value="monthly">Mensal</option>
               <option value="fixed_days">Dias fixos do mês</option>
               <option value="fourteen_days">A cada 14 dias</option>
+              <option value="deliveries">A cada X entregas</option>
             </select>
           </label>
           {value.cycle === 'fixed_days' && (
@@ -125,7 +123,11 @@ export function TermsEditor({
               </select>
             </label>
           )}
-          <DueDayInput value={value} onChange={onChange} />
+          {value.cycle === 'deliveries' ? (
+            <DeliveryCycleEditor value={value} onChange={onChange} />
+          ) : (
+            <DueDayInput value={value} onChange={onChange} />
+          )}
         </>
       )}
       <p>

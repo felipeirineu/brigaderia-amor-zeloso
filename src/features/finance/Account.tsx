@@ -1,4 +1,10 @@
-import { dueDayLabel, paymentModeLabels } from '../../../shared/finance';
+import type { DeliveryCycle } from '../../../shared/delivery-cycle';
+import {
+  deliveryCycleSize,
+  dueDayLabel,
+  termsModeLabel,
+  type B2BProfile,
+} from '../../../shared/finance';
 import { WhatsAppLink } from '../../components/TestEnvironment';
 import { useConfirm, usePrompt } from '../../components/confirm-context';
 import { SkeletonList } from '../../components/Skeleton';
@@ -64,6 +70,13 @@ export interface View {
     created_at: string;
     can_reverse: boolean;
   }[];
+  profile: B2BProfile;
+  delivery_cycle_progress: DeliveryCycle | null;
+  delivery_cycles?: (DeliveryCycle & {
+    id: string;
+    balance_cents: number;
+    total_cents: number;
+  })[];
   closings: {
     id: string;
     status: string;
@@ -128,14 +141,22 @@ export function Account() {
   }, [view.data, search]);
   const root = `finance/customers/${id}`,
     data = view.data;
-  async function charge(closing_id?: string) {
+  const progress = data?.delivery_cycle_progress;
+  const preferredSize =
+    data &&
+    deliveryCycleSize(data.profile?.terms ?? ({ mode: 'unset' } as Terms));
+  const cycleSize = preferredSize || progress?.size;
+  const cycleCount =
+    progress?.size === cycleSize ? (progress?.orders.length ?? 0) : 0;
+
+  async function charge(closing_id?: string, delivery_cycle_id?: string) {
     if (pending.current) return;
     pending.current = true;
     setBusy(true);
     setError('');
     try {
       setPreview(
-        await api(root + '/charge', 'POST', closing_id ? { closing_id } : {}),
+        await api(root + '/charge', 'POST', { closing_id, delivery_cycle_id }),
       );
     } catch (e) {
       setError((e as Error).message);
@@ -161,6 +182,14 @@ export function Account() {
           </Button>
           <section className="panel">
             <h2>A receber: {money(data.receivable_cents)}</h2>
+            {cycleSize && (
+              <div className="delivery-cycle-account">
+                <p>Condição: A prazo · a cada {cycleSize} entregas</p>
+                <p>
+                  Entregas neste ciclo: {cycleCount} de {cycleSize}
+                </p>
+              </div>
+            )}
             <p>
               Recebimentos líquidos registrados: {money(data.received_cents)}
             </p>
@@ -204,7 +233,9 @@ export function Account() {
                     version: data.version,
                     ...(type === 'order'
                       ? { order_id: record }
-                      : { closing_id: record }),
+                      : type === 'cycle'
+                        ? { delivery_cycle_id: record }
+                        : { closing_id: record }),
                     kind,
                     amount_cents: parsePrice(amount),
                     method,
@@ -241,6 +272,15 @@ export function Account() {
                       Pedido {o.number ? 'nº ' + o.number : o.id.slice(0, 8)} ·{' '}
                       {civilDate(o.business_date)} · saldo{' '}
                       {money(o.balance_cents)}
+                    </option>
+                  ))}
+                {(data.delivery_cycles ?? [])
+                  .filter((c) => c.balance_cents > 0)
+                  .map((c) => (
+                    <option key={c.id} value={`cycle:${c.id}`}>
+                      Ciclo · {c.orders.length}{' '}
+                      {c.orders.length === 1 ? 'entrega' : 'entregas'} ·{' '}
+                      {civilDate(c.due_on!)} · {money(c.balance_cents)}
                     </option>
                   ))}
                 {data.closings
@@ -366,8 +406,7 @@ export function Account() {
                     : o.terms.mode === 'next_delivery'
                       ? 'Vencimento na próxima entrega.'
                       : 'Condição/vencimento a definir.'}{' '}
-                  {o.terms.mode !== 'unset' &&
-                    ' · ' + paymentModeLabels[o.terms.mode]}
+                  {o.terms.mode !== 'unset' && ' · ' + termsModeLabel(o.terms)}
                   {o.terms.mode === 'credit' &&
                     o.terms.due_day_of_month != null &&
                     ' · ' + dueDayLabel(o.terms.due_day_of_month)}
@@ -391,6 +430,7 @@ export function Account() {
                 )}
                 {['delivered', 'picked_up'].includes(o.status) &&
                   o.terms.mode === 'credit' &&
+                  o.terms.cycle !== 'deliveries' &&
                   !o.closing_id && (
                     <Button
                       disabled={busy}
@@ -451,7 +491,48 @@ export function Account() {
           )}
           <section className="panel">
             <h2>Fechamentos</h2>
-            {data.closings.length === 0 && <p>Nenhum fechamento.</p>}
+            {(data.delivery_cycles ?? []).map((c) => (
+              <article className="panel" key={c.id}>
+                <h3>
+                  {c.closed_on_change
+                    ? 'Ciclo encerrado na troca'
+                    : `Ciclo de ${c.size} entregas`}
+                </h3>
+                <p>{c.days.map(civilDate).join(', ')}</p>
+                <p>
+                  Total: {money(c.total_cents)} · saldo {money(c.balance_cents)}{' '}
+                  · vence {civilDate(c.due_on!)}
+                </p>
+                {c.balance_cents > 0 && (
+                  <>
+                    <Button
+                      disabled={busy}
+                      onClick={() => void charge(undefined, c.id)}
+                    >
+                      Cobrar no WhatsApp
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setTarget('cycle:' + c.id);
+                        setKind('payment');
+                        setAmount(
+                          (c.balance_cents / 100).toFixed(2).replace('.', ','),
+                        );
+                        key.current = crypto.randomUUID();
+                        document
+                          .getElementById('receive-payment')
+                          ?.scrollIntoView({ block: 'start' });
+                      }}
+                    >
+                      Registrar recebimento
+                    </Button>
+                  </>
+                )}
+              </article>
+            ))}
+            {data.closings.length === 0 && !data.delivery_cycles?.length && (
+              <p>Nenhum fechamento.</p>
+            )}
             {data.closings.map((c) => (
               <article key={c.id}>
                 <h3>

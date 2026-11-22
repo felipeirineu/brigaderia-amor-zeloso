@@ -1,21 +1,40 @@
 import { z } from 'zod';
-import { emptyTerms } from '../shared/finance';
+import { deliveryCycleSize, emptyTerms } from '../shared/finance';
 const text = (n: number) => z.string().trim().max(n);
 export const termsSchema = z
   .object({
     mode: z.enum(['unset', 'advance', 'delivery', 'next_delivery', 'credit']),
-    cycle: z.enum(['weekly', 'monthly', 'fixed_days', 'fourteen_days']),
+    cycle: z.enum([
+      'weekly',
+      'monthly',
+      'fixed_days',
+      'fourteen_days',
+      'deliveries',
+    ]),
     fixed_days: z.array(z.number().int().min(1).max(31)).min(1).max(31),
     base_date: z.union([z.iso.date(), z.literal('')]),
     week_end: z.number().int().min(1).max(7),
     due_days: z.number().int().min(0).max(365).nullable(),
+    every_deliveries: z.number().int().min(2).max(12).optional(),
     due_day_of_month: z.number().int().min(1).max(31).nullable().optional(),
   })
   .strict()
   .refine(
     (t) =>
-      t.mode !== 'credit' || t.due_days !== null || t.due_day_of_month != null,
+      t.mode !== 'credit' ||
+      t.cycle === 'deliveries' ||
+      t.due_days !== null ||
+      t.due_day_of_month != null,
     'Informe o prazo após fechamento.',
+  )
+  .refine(
+    (t) =>
+      t.cycle === 'deliveries'
+        ? deliveryCycleSize(t) !== null &&
+          t.due_days === null &&
+          t.due_day_of_month == null
+        : t.every_deliveries === undefined,
+    'Escolha entre 2 e 12 entregas com vencimento na última entrega.',
   )
   .refine(
     (t) =>
@@ -59,6 +78,7 @@ export const paymentSchema = z
     version: z.number().int().positive(),
     order_id: z.uuid().optional(),
     closing_id: z.uuid().optional(),
+    delivery_cycle_id: z.uuid().optional(),
     kind: z.enum(['payment', 'deposit']),
     amount_cents: z.number().int().positive().max(1000000000),
     method: z.enum(['pix', 'cash', 'debit', 'credit', 'transfer', 'other']),
@@ -66,7 +86,9 @@ export const paymentSchema = z
   })
   .strict()
   .refine(
-    (d) => !!d.order_id !== !!d.closing_id,
+    (d) =>
+      [d.order_id, d.closing_id, d.delivery_cycle_id].filter(Boolean).length ===
+      1,
     'Selecione pedido ou fechamento.',
   );
 /**

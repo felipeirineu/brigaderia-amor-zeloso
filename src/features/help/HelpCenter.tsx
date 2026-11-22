@@ -476,6 +476,13 @@ export function HelpCenter({
               saldo fica a receber sem vencimento até a próxima entrega
               realizada para o mesmo cliente.
             </p>
+            <p>
+              Em <strong>A cada X entregas</strong>, escolha de 2 a 12. Se
+              escolher 4, a quarta entrega efetiva fecha e vence no mesmo dia,
+              somando as quatro. A quinta inicia outro ciclo. O saldo anterior
+              continua a receber. Cancelar ou desfazer uma entrega recalcula a
+              contagem.
+            </p>
             <h3>Quando a conta fecha</h3>
             <ul>
               <li>

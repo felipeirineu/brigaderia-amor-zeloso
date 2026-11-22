@@ -14,15 +14,18 @@ export interface ReceiptResult {
 }
 export function QuickReceipt({
   order,
+  deliveryCycle = false,
   onClose,
   onSaved,
 }: {
   order: OperationalOrder;
+  deliveryCycle?: boolean;
   onClose: () => void;
   onSaved: (r: ReceiptResult) => void;
 }) {
   const view = useRemote<{
       version: number;
+      delivery_cycles?: { id: string; balance_cents: number }[];
       orders: {
         id: string;
         version: number;
@@ -45,13 +48,22 @@ export function QuickReceipt({
     dialog.current?.showModal();
     return () => trigger.current?.focus();
   }, []);
-  const current = view.data?.orders.find((o) => o.id === order.id),
+  const actual = view.data?.orders.find((o) => o.id === order.id);
+  const cycle = deliveryCycle
+    ? view.data?.delivery_cycles?.find((c) => c.id === order.id)
+    : null;
+  const current = deliveryCycle
+      ? cycle && actual
+        ? { ...actual, balance_cents: cycle.balance_cents }
+        : null
+      : actual,
     value =
       amount ??
       (current
         ? (current.balance_cents / 100).toFixed(2).replace('.', ',')
         : '');
   const combined =
+    !deliveryCycle &&
     current?.terms.mode === 'delivery' &&
     (current.status === 'out_for_delivery' ||
       (current.status === 'ready' && order.delivery_type === 'pickup'));
@@ -61,20 +73,25 @@ export function QuickReceipt({
     setBusy(true);
     setError('');
     try {
-      const data = {
+      const common = {
         version: view.data.version,
-        order_id: order.id,
-        order_version: current.version,
         amount_cents: parsePrice(value),
         method,
         paid_on: day,
-        deliver,
       };
+      const data = deliveryCycle
+        ? { ...common, delivery_cycle_id: order.id, kind: 'payment' }
+        : {
+            ...common,
+            order_id: order.id,
+            order_version: current.version,
+            deliver,
+          };
       const signature = JSON.stringify(data);
       if (request.current?.body !== signature)
         request.current = { body: signature, key: crypto.randomUUID() };
       const result = await api<ReceiptResult>(
-        `finance/customers/${order.customer_id}/receive-today`,
+        `finance/customers/${order.customer_id}/${deliveryCycle ? 'payments' : 'receive-today'}`,
         'POST',
         data,
         request.current!.key,
@@ -112,8 +129,9 @@ export function QuickReceipt({
             }}
           >
             <p>
-              Saldo do pedido: {money(current.balance_cents)}. Confira o
-              recebimento antes de registrar.
+              Saldo {deliveryCycle ? 'do ciclo' : 'do pedido'}:{' '}
+              {money(current.balance_cents)}. Confira o recebimento antes de
+              registrar.
             </p>
             <MoneyField
               label="Valor recebido (R$)"
@@ -164,7 +182,13 @@ export function QuickReceipt({
             <p>Registro manual. Não consulta o banco nem envia mensagem.</p>
           </form>
         ) : (
-          !view.error && <p role="status">Conferindo saldo e versão…</p>
+          !view.error && (
+            <p role="status">
+              {view.data && deliveryCycle
+                ? 'O ciclo mudou. Reabra a cobrança.'
+                : 'Conferindo saldo e versão…'}
+            </p>
+          )
         )}
         <Button
           disabled={busy}

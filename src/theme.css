@@ -1703,11 +1703,16 @@ textarea::placeholder {
   flex-basis: 100%;
   border-radius: var(--az-radius-field);
 }
+.delivery-flavors .delivery-mix[open] > summary {
+  display: flex;
+  align-items: center;
+  min-height: 26px;
+}
 .delivery-flavors .delivery-mix[open] .delivery-mix-toggle {
   display: none;
 }
 .delivery-flavors .delivery-mix ul {
-  margin: 6px 0 2px;
+  margin: 4px 0 2px;
   padding-left: 18px;
   font-weight: 500;
 }
@@ -2679,6 +2684,37 @@ body:has(.mix-sheet) {
   width: 24px;
   min-width: 24px;
   height: 24px;
+}
+
+.delivery-cycle-editor > label,
+.delivery-cycle-editor .numeric-field {
+  margin-block: var(--az-space-3);
+}
+.delivery-cycle-notice {
+  padding: var(--az-space-3);
+  margin-block: var(--az-space-3);
+  border: 1px solid var(--az-control-border);
+  border-radius: var(--az-radius-field);
+  background: var(--az-warn-bg);
+  color: var(--az-ink);
+}
+.delivery-cycle-notice p,
+.delivery-cycle-account p {
+  margin: var(--az-space-1) 0;
+}
+.delivery-cycle-progress {
+  color: var(--az-muted);
+  font-size: 0.875rem;
+}
+.delivery-cycle-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--az-space-2);
+  margin-top: var(--az-space-2);
+}
+.delivery-cycle-actions .az-button {
+  white-space: normal;
+  padding-inline: var(--az-space-2);
 }
 
 /* Calendário de dias: cada dia ocupa a coluna inteira, número no centro
