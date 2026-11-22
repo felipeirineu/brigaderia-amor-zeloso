@@ -80,9 +80,9 @@ test('operação móvel: Hoje por papel, status/desfazer, recorrência, WhatsApp
     await expect(page.locator('.production-packaging')).toContainText(
       '2 caixas',
     );
-    await expect(
-      page.locator('.production-list .production-units'),
-    ).toHaveText('4');
+    await expect(page.locator('.production-list .production-units')).toHaveText(
+      '4',
+    );
     await page.screenshot({
       path: `test-results/today-owner-${testInfo.project.name}.png`,
       fullPage: true,
