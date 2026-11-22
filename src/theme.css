@@ -2534,7 +2534,11 @@ body:has(.mix-sheet) {
     position: fixed;
     inset: var(--az-space-5) var(--az-space-5) var(--az-space-5) auto;
     width: min(540px, calc(100vw - var(--desktop-sidebar-width) - 340px));
-    max-height: none;
+    /* Altura da tela e rolagem própria: o cadastro inteiro fica alcançável
+       (sem isso a folha passava da borda de baixo, sem rolar). */
+    height: auto;
+    max-height: calc(100dvh - 2 * var(--az-space-5));
+    overflow-y: auto;
     margin: 0;
   }
   .operations-active .customer-records,

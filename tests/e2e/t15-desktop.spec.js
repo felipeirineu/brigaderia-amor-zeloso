@@ -218,6 +218,12 @@ test('T15 gestão em duas colunas, navegação, filtros e ações no computador'
     expect((await customerSheet.boundingBox()).x).toBeGreaterThan(
       customerLeft + 260,
     );
+    // A folha cabe na tela e rola até o fim do cadastro.
+    const sheetBox = await customerSheet.boundingBox();
+    expect(sheetBox.y + sheetBox.height).toBeLessThanOrEqual(860);
+    const save = customerSheet.getByRole('button', { name: 'Salvar cliente' });
+    await save.scrollIntoViewIfNeeded();
+    await expect(save).toBeInViewport();
     await customerSheet
       .getByRole('button', { name: 'Fechar', exact: true })
       .click();
