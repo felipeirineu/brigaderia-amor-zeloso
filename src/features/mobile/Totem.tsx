@@ -1861,7 +1861,10 @@ export function Totem({
           </div>
           {terms.mode === 'credit' && (
             <>
-              <h3 className="order-section-label">Fechamento</h3>
+              <div className="order-section-head">
+                <h3 className="order-section-label">Fechamento</h3>
+                <HelpTip topic="closing" />
+              </div>
               <div className="chips" role="group" aria-label="Fechamento">
                 {(
                   [

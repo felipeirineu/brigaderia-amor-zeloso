@@ -2066,3 +2066,13 @@ body:has(.mix-sheet) {
   justify-content: center;
   background: var(--az-tonal);
 }
+
+/* Linha de ajuda (?) no formulário de condição de pagamento. */
+.terms-closing-help {
+  display: flex;
+  align-items: center;
+  gap: var(--az-space-1);
+  margin: var(--az-space-1) 0;
+  font-size: 0.875rem;
+  color: var(--az-muted);
+}

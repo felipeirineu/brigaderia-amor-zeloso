@@ -38,11 +38,7 @@ export const helpTexts = {
   },
   payment: {
     title: 'Condição de pagamento',
-    text: 'Adiantado, na entrega ou a prazo definem quando cobrar. Quando o financeiro estiver ativado, a condição é copiada para o pedido; não equivale a recebimento. A prazo exige vencimento configurado e é para estabelecimentos. Para pessoa, escolha adiantado ou na entrega; condição não registra recebimento.',
-  },
-  closing: {
-    title: 'Fechamento',
-    text: 'Agrupa entregas e pagamentos do cliente em um período. Quando o financeiro estiver ativado, escolha semanal, mensal, dias fixos ou 14 dias. Feche após terminar o período; o extrato preserva entregas, pagamentos e saldo.',
+    text: 'É o jeito de pagar que já vem marcado nos pedidos deste cliente. Adiantado: paga antes de receber. Na entrega: paga quando recebe. A prazo (só estabelecimentos): paga tudo junto no fechamento; veja o (?) de Fechamento. A condição só organiza a cobrança; o pagamento é registrado em Registrar recebimento.',
   },
   balance: {
     title: 'Saldo / a receber',
@@ -74,14 +70,24 @@ export const helpTexts = {
   },
   orderPayment: {
     title: 'Como o cliente paga',
-    text: 'Escolha quando este pedido será cobrado. A escolha aparece no Financeiro, para saber o que falta receber; ela não registra o pagamento.',
+    text: 'Escolha quando cobrar este pedido. Isso só organiza a cobrança; o pagamento é registrado depois, quando o dinheiro entrar.',
     steps: [
-      'A definir: ainda não combinado. O pedido fica sem data de cobrança até você escolher.',
-      'Adiantado: o cliente paga antes de receber os doces, por exemplo por Pix ao fazer o pedido.',
-      'Na entrega: o cliente paga quando recebe os doces.',
-      'A prazo (só estabelecimentos): as entregas do período se acumulam e são cobradas juntas num fechamento semanal, quinzenal (dia 15 e fim do mês) ou mensal.',
-      'Pagar no fechamento: a cobrança vence no dia em que o período fecha. 7 ou 15 dias depois: o cliente ganha esse prazo extra após o fechamento.',
-      'Para gerar o fechamento e cobrar pelo WhatsApp, abra a conta do cliente no Financeiro. O padrão de cada cliente também muda lá.',
+      'A definir: ainda não combinaram. O pedido não aparece como cobrança.',
+      'Adiantado: o cliente paga antes de receber, por exemplo por Pix ao encomendar.',
+      'Na entrega: o cliente paga na hora em que recebe os doces.',
+      'A prazo (só estabelecimentos): o cliente não paga a cada entrega; paga tudo junto no fechamento. Toque no (?) de Fechamento para ver um exemplo.',
+    ],
+  },
+  closing: {
+    title: 'Fechamento: como funciona o a prazo',
+    text: 'O cliente a prazo não paga a cada entrega. O app soma as entregas de um período e gera uma conta só. Essa conta é o fechamento.',
+    steps: [
+      'Fechamento é o período que o app soma: Semanal (de segunda a domingo), Quinzenal (do dia 1 ao 15 e do dia 16 ao fim do mês) ou Mensal (o mês inteiro).',
+      'Pagar é quando a conta vence: No fechamento (no último dia do período), 7 dias depois ou 15 dias depois.',
+      'Exemplo: a Padaria Exemplo está em Quinzenal e 7 dias depois. Recebe um kit de R$ 42,00 nos dias 3, 8 e 12. No dia 15 o período fecha: a conta é R$ 126,00 e vence no dia 22.',
+      'Uma entrega no dia 18 já vai para a conta seguinte: a que fecha no fim do mês e vence 7 dias depois.',
+      'Para cobrar: Financeiro, conta do cliente, Gerar fechamento e depois Cobrar fechamento no WhatsApp. Você confere a mensagem e envia.',
+      'Quando o cliente pagar, toque em Registrar recebimento na conta dele.',
     ],
   },
   push: {

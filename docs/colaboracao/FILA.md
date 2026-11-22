@@ -76,8 +76,10 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | **publicada** 18/11 (PR #20) como **0.23.0** — migração **0027** pendente (Felipe) |
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
 | T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
-| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **vez do Codex** — versão **1.1.0** — migração nova (Felipe aplica) |
-| T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | prévia **aprovada** 20/11; **depois da T14** — versão **1.2.0** |
+| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | PR #23 entregue; **integração pelo Claude** — versão **1.1.0** — migração 0028 (Felipe aplica) |
+| T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" | **depois da T14** (Felipe pediu antes da T15 em 22/11) — versão **1.2.0** |
+| T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | prévia **aprovada** 20/11; **depois da T17** — versão **1.3.0** |
+| T16 | Entrega feita pelos dois (Tiago e Alda) | **depois da T15** — versão **1.4.0** — migração (Felipe aplica) |
 
 ### T0 — R17
 
@@ -595,7 +597,7 @@ Seguir a prévia. **Na interface, nunca o nome de uma pessoa:** dizer "quem cuid
    - push: teste da fila com aviso sem conteúdo.
 8. Versão **1.1.0** (com nota em `release-notes.ts`, que a partir da 1.0.0 aparece para eles como Novidades). Capturas `t14-*.png` em claro e escuro, só com DEMONSTRAÇÃO.
 
-### T15 — Versão de computador (prévia `previas/computador-hoje.png` **aprovada pelo Felipe em 20/11: "mil vezes melhor"**; fazer depois da T14)
+### T15 — Versão de computador (prévia `previas/computador-hoje.png` **aprovada pelo Felipe em 20/11: "mil vezes melhor"**; fazer depois da T17)
 
 Só telas **≥ 1024 px de largura**. **O celular não muda nada**, e os testes de celular continuam iguais.
 
@@ -624,7 +626,7 @@ Só telas **≥ 1024 px de largura**. **O celular não muda nada**, e os testes 
 6. **Testes:**
    - E2E em `chromium-desktop` (1366×860): menu lateral com logo; cabeçalho sem os textos removidos; 4 valores na mesma linha; duas colunas no Hoje; + Novo abre o menu.
    - Garantir que `chromium-mobile` e `webkit-mobile` não mudaram: rodar a bateria inteira.
-7. Versão **1.2.0** (nota em `release-notes.ts`). Capturas `t15-*.png` de Hoje, Pedidos, Clientes, Mais e Relatórios, em claro e escuro, só com DEMONSTRAÇÃO.
+7. Versão **1.3.0** (nota em `release-notes.ts`). Capturas `t15-*.png` de Hoje, Pedidos, Clientes, Mais e Relatórios, em claro e escuro, só com DEMONSTRAÇÃO.
 
 ### T16 — Entrega feita pelos dois (pedido do Felipe em 21/11; fazer depois da T15)
 
@@ -635,14 +637,14 @@ Hoje o pedido aceita um só responsável pela entrega (`courier`: `owner`, `part
 - **Relatórios e custos:** a entrega feita pelos dois conta uma vez por pedido (não duplicar entregas nem taxas). Onde houver contagem por pessoa, contar para os dois e dizer isso na tela.
 - **Compatibilidade:** o app antigo e bancos sem a migração continuam funcionando, sem a opção nova (mesmo padrão das migrações anteriores).
 - **Testes:** integração (gravar, editar, recorrência, relatórios, backup/restauração) e E2E no celular.
-- Versão **1.3.0** (minor: muda o banco).
+- Versão **1.4.0** (minor: muda o banco).
 
-### T17 — Pedido já entregue e pagamento "Na próxima entrega" (pedido do Felipe em 22/11)
+### T17 — Pedido já entregue e pagamento "Na próxima entrega" (pedido do Felipe em 22/11; **fazer depois da T14 e antes da T15**)
 
 1. **Cadastrar pedido já entregue.** Às vezes o Tiago ou a Alda registram o pedido depois de entregar. Na revisão do pedido, opção "Já foi entregue" (com data e hora da entrega, padrão agora). O pedido nasce entregue: não entra em "Produzir hoje e amanhã" e já conta em "A receber" (ou em "Recebido" se o pagamento for registrado). Validar no servidor (mesmas regras da mudança de status para entregue: estoque, auditoria, financeiro) numa única operação idempotente, sem estado intermediário.
 2. **Pagamento "Na próxima entrega".** Novo modo de pagamento para estabelecimentos e pessoas: o valor fica "a receber" sem vencimento até a próxima entrega ao mesmo cliente; quando a próxima entrega for marcada como entregue, o vencimento passa a ser a data dela. Aparece no (?) do pagamento, nos relatórios e no filtro do Financeiro. Se mudar o banco (enum/CHECK), migração com aprovação do Felipe.
 - Testes de integração (financeiro, recebíveis, produção, relatórios) e E2E no celular.
-- Versão **1.4.0** (ou junto com a próxima minor). Pode vir antes da T15 se o Felipe preferir.
+- Versão **1.2.0**. O Felipe pediu em 22/11 para vir antes da T15.
 
 ## Versões do app
 

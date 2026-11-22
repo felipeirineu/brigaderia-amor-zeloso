@@ -1,6 +1,12 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.0.10',
+    items: [
+      'Fechamento explicado com um exemplo no (?) do pedido a prazo e no Financeiro.',
+    ],
+  },
+  {
     version: '1.0.9',
     items: [
       'Ajuda (?) com o botão Fechar embaixo, como nas outras folhas.',
