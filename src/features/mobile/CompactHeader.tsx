@@ -1,3 +1,4 @@
+import { roleLabel } from '../../role-label';
 import { nameInitials } from '../../../shared/initials';
 import { Button } from '../../components/Button';
 import { useEffect, useState, useRef } from 'react';
@@ -47,11 +48,13 @@ const titles: Record<string, string> = {
 };
 export function CompactHeader({
   role,
+  developer = false,
   online,
   operations,
   onLogout,
 }: {
   role: string;
+  developer?: boolean;
   online: boolean;
   operations: boolean;
   onLogout: () => void;
@@ -131,7 +134,7 @@ export function CompactHeader({
               <X size={20} aria-hidden="true" />
             </Button>
           </div>
-          <p>{role === 'owner' ? 'Administrador' : 'Operador'}</p>
+          <p>{roleLabel(role, developer)}</p>
           <Button
             to="/gestao/preferencias"
             className="profile-menu-item"

@@ -1,3 +1,4 @@
+import { HelpTip } from '../../components/HelpTip';
 import type { Terms } from '../../../shared/finance';
 export function TermsEditor({
   value,
@@ -11,6 +12,9 @@ export function TermsEditor({
   return (
     <fieldset>
       <legend>Condição de pagamento</legend>
+      <p className="terms-closing-help">
+        Entenda as opções <HelpTip topic="payment" />
+      </p>
       <label>
         Quando cobrar
         <select
@@ -38,6 +42,9 @@ export function TermsEditor({
       )}
       {!person && value.mode === 'credit' && (
         <>
+          <p className="terms-closing-help">
+            Como funciona o fechamento <HelpTip topic="closing" />
+          </p>
           <label>
             Periodicidade
             <select

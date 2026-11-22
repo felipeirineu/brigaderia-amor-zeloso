@@ -47,10 +47,12 @@ try {
     kit = await call('p1/kits', data, 'POST', owner, key);
   assert.equal((await call('p1/kits', data, 'POST', owner, key)).id, kit.id);
   assert.equal((await call('p1/kits', undefined, 'GET')).length, 2);
-  assert.equal(
-    (await request('p1/kits', 'POST', data)).status,
-    409,
-    'combinação duplicada',
+  const duplicate = await request('p1/kits', 'POST', data);
+  assert.equal(duplicate.status, 409, 'combinação duplicada');
+  assert.match(
+    (await duplicate.json()).error,
+    /Já existe um kit de .* toque em Editar/,
+    'mensagem orienta editar o kit existente',
   );
   for (const change of [
     { weight_grams: 0 },

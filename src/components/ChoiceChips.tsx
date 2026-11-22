@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Button } from './Button';
 export function ChoiceChips({
   label,
@@ -10,7 +11,7 @@ export function ChoiceChips({
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: readonly (readonly [string, string])[];
+  options: readonly (readonly [string, ReactNode])[];
 }) {
   return (
     <fieldset className={'choice-chips ' + className}>

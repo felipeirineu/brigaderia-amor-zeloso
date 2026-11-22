@@ -1,3 +1,4 @@
+import { developerEmails, notDeveloper } from './developers';
 import { z } from 'zod';
 import { HttpError, hash, json, type Actor, type Env } from './security';
 import { p1Mutation } from './p1-common';
@@ -62,9 +63,9 @@ export async function push(req: Request, env: Env, a: Actor) {
       ? (
           await db
             .prepare(
-              "SELECT m.user_id id,m.role,COALESCE(p.display_name,CASE WHEN m.role='owner' THEN 'Administrador' ELSE 'Operador' END) display_name FROM memberships m LEFT JOIN display_profiles p ON p.organization_id=m.organization_id AND p.id=m.user_id WHERE m.organization_id=? ORDER BY m.role,m.user_id",
+              `SELECT m.user_id id,m.role,COALESCE(p.display_name,CASE WHEN m.role='owner' THEN 'Administrador' ELSE 'Operador' END) display_name FROM memberships m LEFT JOIN display_profiles p ON p.organization_id=m.organization_id AND p.id=m.user_id WHERE m.organization_id=? AND (m.user_id=? OR ${notDeveloper('m')}) ORDER BY m.role,m.user_id`,
             )
-            .bind(org)
+            .bind(org, a.user_id, JSON.stringify(developerEmails(env)))
             .all()
         ).results
       : [];

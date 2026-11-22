@@ -1933,3 +1933,252 @@ body:has(.mix-sheet) {
   overflow: hidden;
   clip-path: inset(50%);
 }
+
+/* Montagem do kit compacta (20/11): escolhas em linha, caixa leve,
+   sabores alinhados à esquerda e ações organizadas. */
+.kit-montage h4 {
+  margin: 0 0 var(--az-space-2);
+}
+.kit-montage .chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--az-space-2);
+}
+.kit-montage .chips .az-button {
+  min-height: 40px;
+  padding: 6px 14px;
+  font-size: 0.875rem;
+}
+.kit-montage [role='status'] {
+  margin: var(--az-space-3) 0 var(--az-space-2);
+  font-weight: 650;
+  color: var(--az-gold-ink);
+}
+.kit-montage .kit-slots {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+  max-width: 260px;
+  margin: 0 0 var(--az-space-3);
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--az-tonal);
+}
+.kit-montage .kit-slot {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+  border: 1.5px dashed var(--az-control-border);
+}
+.kit-montage .kit-slot.filled {
+  border: 0;
+  background: var(--az-gold);
+}
+.kit-montage .kit-composition .kit-flavor-name .az-button-label,
+.kit-montage .kit-composition .flavor-name,
+.kit-montage .kit-composition .kit-flavor-name strong {
+  justify-content: flex-start;
+  text-align: left;
+}
+.kit-montage .kit-composition .kit-flavor-name {
+  justify-content: flex-start;
+  padding-inline: 0;
+}
+.kit-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--az-space-2);
+  margin-top: var(--az-space-3);
+}
+.kit-actions .az-button {
+  min-height: 44px;
+  font-size: 0.875rem;
+}
+.kit-actions .az-button--primary {
+  grid-column: 1 / -1;
+  order: -1;
+  min-height: 52px;
+  font-size: 1rem;
+}
+.kit-actions .az-button:last-child {
+  grid-column: 1 / -1;
+}
+
+/* Kits escolhidos: linhas compactas abaixo da grade de sabores (20/11). */
+.kit-editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--az-space-2);
+}
+.kit-editor > .kit-lines-title,
+.kit-editor > .kit-line {
+  order: 10;
+}
+.kit-editor > .kit-lines-title {
+  margin: var(--az-space-3) 0 0;
+  font-size: 0.9375rem;
+}
+.kit-editor > .kit-line {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 2px var(--az-space-2);
+  margin: 0;
+  padding: var(--az-space-3) var(--az-space-4);
+  border-radius: var(--az-radius-field);
+}
+.kit-line > h4 {
+  margin: 0;
+  font-size: 0.9375rem;
+}
+.kit-line > p {
+  grid-column: 1;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--az-muted);
+}
+.kit-line > .numeric-field {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+.kit-line .numeric-field > label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.kit-line .quantity-control {
+  display: grid;
+  grid-template-columns: 36px 44px 36px;
+  gap: 4px;
+  align-items: center;
+}
+.kit-line .quantity-control input {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0;
+  text-align: center;
+}
+.kit-line .quantity-minus {
+  grid-column: 1;
+  grid-row: 1;
+}
+.kit-line .quantity-control .az-button {
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0;
+}
+.kit-line .quantity-control small {
+  grid-column: 1 / -1;
+}
+.kit-line > .az-button {
+  min-height: 32px;
+  padding: 0 var(--az-space-2);
+  background: transparent;
+  box-shadow: none;
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  justify-self: start;
+}
+.kit-line > .az-button:last-child {
+  grid-column: 2;
+  justify-self: end;
+}
+.kit-line > .alcohol-tag {
+  grid-column: 1;
+  justify-self: start;
+}
+.kit-line .quantity-control input {
+  width: 44px;
+}
+.kit-line .quantity-control > .az-button:not(.quantity-minus) {
+  grid-column: 3;
+  grid-row: 1;
+}
+.kit-line > p:last-of-type {
+  grid-row: 3;
+  font-weight: 600;
+  color: var(--az-ink);
+}
+.kit-line > .az-button {
+  grid-row: 4;
+  grid-column: 1;
+}
+.kit-line > .az-button:last-child {
+  grid-row: 4;
+  grid-column: 2;
+}
+
+/* Quantidade por kit em duas colunas (20/11): "12 doces" em cima e o
+   preço embaixo, para as quatro opções caberem em duas linhas. */
+.kit-montage .kit-qty .chips {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.kit-montage .kit-qty .chips .az-button {
+  width: 100%;
+  justify-content: center;
+  min-height: 52px;
+  padding: 6px 10px;
+}
+.kit-qty-label {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+}
+.kit-qty-label small {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+/* Nome do sabor no centro vertical da linha, alinhado com foto e botões. */
+.kit-composition .mix-row > .kit-flavor-name {
+  align-self: stretch;
+  justify-content: center;
+}
+
+/* Título de seção com (?) ao lado, sem herdar maiúsculas na folha de ajuda. */
+.order-section-head {
+  display: flex;
+  align-items: center;
+  gap: var(--az-space-2);
+  margin: 18px 0 8px;
+}
+.order-section-head .order-section-label {
+  margin: 0;
+}
+
+/* Hoje, kit fechado: o Chrome novo reserva espaço para a lista oculta dos
+   sabores; o texto fica no centro vertical do fundo destacado. */
+.delivery-flavors .delivery-mix:not([open]) {
+  display: inline-flex;
+  align-items: center;
+  min-height: 0;
+}
+.delivery-flavors .delivery-mix:not([open])::details-content {
+  display: none;
+}
+
+/* Folha de ajuda: "Fechar" escrito, embaixo, na largura toda. */
+.help-sheet .sheet-close {
+  float: none;
+  display: flex;
+  justify-content: center;
+  background: var(--az-tonal);
+}
+
+/* Linha de ajuda (?) no formulário de condição de pagamento. */
+.terms-closing-help {
+  display: flex;
+  align-items: center;
+  gap: var(--az-space-1);
+  margin: var(--az-space-1) 0;
+  font-size: 0.875rem;
+  color: var(--az-muted);
+}

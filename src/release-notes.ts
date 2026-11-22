@@ -8,6 +8,69 @@ export const releaseNotes = [
     ],
   },
   {
+    version: '1.0.10',
+    items: [
+      'Fechamento explicado como a fatura do cartão, com exemplo, no (?) do pedido a prazo.',
+      'Ajuda: nova seção Fechamento e prazos, em Rotinas e financeiro, aberta direto pelo (?).',
+    ],
+  },
+  {
+    version: '1.0.9',
+    items: [
+      'Ajuda (?) com o botão Fechar embaixo, como nas outras folhas.',
+      'Kits no Hoje com o texto no centro do fundo destacado.',
+    ],
+  },
+  {
+    version: '1.0.8',
+    items: [
+      'Papel Desenvolvedor para o suporte técnico, fora das escolhas de equipe da operação.',
+    ],
+  },
+  {
+    version: '1.0.7',
+    items: [
+      'Ajuda (?) no pagamento do pedido explica cada opção, inclusive pagar no fechamento.',
+      'Kit repetido: o aviso diz qual kit já existe e orienta a editar.',
+    ],
+  },
+  {
+    version: '1.0.6',
+    items: [
+      'Ativar avisos tenta de novo sozinho e explica o que conferir se o celular recusar.',
+    ],
+  },
+  {
+    version: '1.0.5',
+    items: [
+      'Quantidade por kit em duas colunas: escolha mais rápida.',
+      'Nomes dos sabores alinhados ao centro de cada linha do kit.',
+    ],
+  },
+  {
+    version: '1.0.4',
+    items: [
+      'Menu Mais mais enxuto: a importação inicial, já concluída, saiu do menu.',
+    ],
+  },
+  {
+    version: '1.0.3',
+    items: [
+      'Notificações no Android com o ícone de brigadeiro na barra de avisos.',
+    ],
+  },
+  {
+    version: '1.0.2',
+    items: ['Kits escolhidos aparecem em linhas compactas abaixo dos sabores.'],
+  },
+  {
+    version: '1.0.1',
+    items: [
+      'Caixa Mista de volta na escolha dos sabores com kits.',
+      'Montagem do kit mais compacta e organizada.',
+    ],
+  },
+  {
     version: '1.0.0',
     title: 'Bem-vindos ao app da Brigaderia Amor Zeloso',
     items: [

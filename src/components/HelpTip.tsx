@@ -1,6 +1,6 @@
 import { Button } from './Button';
 import { useId, useRef } from 'react';
-import { CircleHelp, X } from 'lucide-react';
+import { CircleHelp } from 'lucide-react';
 
 import { helpTexts, type HelpTopic } from '../features/help/texts';
 export function HelpTip({
@@ -36,13 +36,6 @@ export function HelpTip({
         }}
       >
         <div className="sheet-body">
-          <Button
-            className="sheet-close"
-            aria-label="Fechar ajuda"
-            onClick={() => dialog.current?.close()}
-          >
-            <X size={20} aria-hidden="true" />
-          </Button>
           <h2 id={id}>{text.title}</h2>
           <p>{text.text}</p>
           {'steps' in text && (
@@ -53,11 +46,19 @@ export function HelpTip({
             </ol>
           )}
           <Button
-            to="/gestao/ajuda"
+            to={'more' in text ? text.more : '/gestao/ajuda'}
             onClick={() => dialog.current?.close()}
             variant="ghost"
           >
-            Ver no tutorial
+            {'more' in text ? 'Ver explicação completa' : 'Ver no tutorial'}
+          </Button>
+          {/* "Fechar" escrito e embaixo, como nas outras folhas. */}
+          <Button
+            className="sheet-close"
+            aria-label="Fechar ajuda"
+            onClick={() => dialog.current?.close()}
+          >
+            Fechar
           </Button>
         </div>
       </dialog>

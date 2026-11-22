@@ -207,6 +207,20 @@ export function HelpCenter({
 }) {
   const [example, setExample] = useState(false);
   const field = useField();
+  const location = useLocation(),
+    closingRef = useRef<HTMLDetailsElement>(null);
+  // O (?) de Fechamento abre a ajuda já nesta seção.
+  useEffect(() => {
+    if (location.hash !== '#fechamento-prazos' || !closingRef.current) return;
+    const el = closingRef.current;
+    el.open = true;
+    // Depois da volta ao topo que o app faz ao trocar de tela.
+    const timer = window.setTimeout(
+      () => el.scrollIntoView({ block: 'start' }),
+      80,
+    );
+    return () => window.clearTimeout(timer);
+  }, [location.hash]);
   return (
     <>
       <h1 className="mobile-context-title">Ajuda</h1>
@@ -275,7 +289,7 @@ export function HelpCenter({
           {p1
             ? 'Consulte também os roteiros de agenda, custos e compras abaixo.'
             : financial
-              ? 'Recebimentos e fechamentos têm roteiro abaixo. Ficha técnica depende da ativação P1.'
+              ? 'Recebimentos e fechamentos têm roteiro abaixo. Ficha técnica, agenda e compras ainda não foram ativadas.'
               : 'Recebimentos e fechamentos dependem da ativação financeira; ficha técnica segue em preparação.'}
         </p>
         <Button to="/gestao/recorrentes" variant="ghost">
@@ -386,79 +400,175 @@ export function HelpCenter({
           </details>
         </section>
       )}
-      {p1 && (
+      {(p1 || financial) && (
         <section className="panel">
-          <h2>Rotinas P1</h2>
-          <details>
-            <DisclosureSummary>Agenda e lembretes</DisclosureSummary>
-            <ol>
-              <li>
-                Em Mais → Agenda, escolha uma data e Semana/Mês; filtre o tipo
-                de evento.
-              </li>
-              <li>
-                Para calendário do aparelho, exporte ICS e importe somente no
-                calendário autorizado. Confira e salve o alarme no aparelho.
-              </li>
-              <li>
-                Em Lembretes, registre título/prazo e cliente opcional. Escolha
-                o aviso e os responsáveis pelos nomes de perfil. Pendentes
-                vencidos e do dia aparecem no Hoje; conclua quando realizado.
-              </li>
-              <li>
-                Ative avisos em Perfil → Preferências e envie um aviso de teste.
-                No iPhone, use iOS 16.4+ e o app instalado na Tela de Início. Se
-                não receber, use Adicionar ao calendário do celular no lembrete.
-                Avisos podem atrasar; após editar, substitua também o evento
-                importado.
-              </li>
-            </ol>
-            <Button to="/gestao/agenda" variant="ghost">
-              Abrir agenda
-            </Button>
-          </details>
-          <details>
-            <DisclosureSummary>Relatórios e fluxo</DisclosureSummary>
+          <h2>Rotinas e financeiro</h2>
+          <details id="fechamento-prazos" ref={closingRef}>
+            <DisclosureSummary>Fechamento e prazos</DisclosureSummary>
             <p>
-              Vendas usam entregas efetivas. Aging é posição atual. Recebimentos
-              e despesas registrados formam fluxo, não saldo bancário ou lucro.
-              O administrador registra/estorna despesas; a taxa de entrega não
-              vira gasto sozinha.
+              Para estabelecimentos <strong>a prazo</strong>. Funciona como a
+              fatura do cartão de crédito: o cliente não paga a cada entrega;
+              paga tudo de uma vez depois que a conta fecha.
             </p>
-            <Button to="/gestao/relatorios" variant="ghost">
-              Abrir relatórios
-            </Button>
-          </details>
-          <details>
-            <DisclosureSummary>
-              Ficha, preço estimado e compras
-            </DisclosureSummary>
+            <h3>A comparação com o cartão</h3>
+            <ul>
+              <li>Compras no cartão = entregas da Brigaderia.</li>
+              <li>
+                Fechamento da fatura = <strong>Fechamento</strong>: o app soma
+                as entregas do período.
+              </li>
+              <li>
+                Vencimento da fatura = <strong>Pagar</strong>: no fechamento, 7
+                dias depois ou 15 dias depois.
+              </li>
+              <li>
+                Pagar a fatura inteira = o cliente paga todas as entregas
+                juntas.
+              </li>
+            </ul>
+            <h3>Quando a conta fecha</h3>
+            <ul>
+              <li>
+                <strong>Semanal:</strong> soma de segunda a domingo; fecha no
+                domingo.
+              </li>
+              <li>
+                <strong>Quinzenal:</strong> soma do dia 1 ao 15 (fecha no dia
+                15) e do dia 16 ao fim do mês (fecha no último dia).
+              </li>
+              <li>
+                <strong>Mensal:</strong> soma o mês inteiro; fecha no último
+                dia.
+              </li>
+            </ul>
+            <h3>Exemplo</h3>
+            <p>
+              Uma conveniência recebe 1 Kit 12 de R$ 42,00 toda terça e sexta.
+              Está em <strong>A prazo · Quinzenal · 7 dias depois</strong>.
+            </p>
+            <ul>
+              <li>
+                1ª quinzena: entregas nos dias 3, 6, 10 e 13 = 4 kits ={' '}
+                <strong>R$ 168,00</strong>. Fecha no dia 15 e vence no dia 22.
+              </li>
+              <li>
+                2ª quinzena: entregas nos dias 17, 20, 24 e 27 ={' '}
+                <strong>R$ 168,00</strong>. Fecha no último dia do mês e vence 7
+                dias depois, já no mês seguinte.
+              </li>
+            </ul>
+            <h3>Passo a passo</h3>
             <ol>
               <li>
-                O administrador cadastra insumos, quantidade da embalagem e
-                preço informado. Sem preço conhecido, deixe vazio.
+                Durante o período: entregue normalmente e marque cada pedido
+                como Entregue. Não cobre na hora.
               </li>
               <li>
-                Cadastre uma ficha, rendimento e quantidades na unidade do
-                insumo; informe custos adicionais e margem desejada. O preço
-                sugerido não altera produtos.
+                No dia do fechamento (ou logo depois): Financeiro → conta do
+                cliente → Gerar fechamento. O app soma tudo.
               </li>
               <li>
-                Na Lista de compras, escolha o prazo dos confirmados/em
-                produção. Confira lotes, pendências e estoque manual antes de
-                comprar. Não há compra nem baixa automática.
+                Toque em Cobrar fechamento no WhatsApp, confira a mensagem e
+                envie.
               </li>
               <li>
-                No detalhe do pedido, abra Custo estimado do pedido. A consulta
-                está disponível também ao operador. Usa fichas e custos atuais;
-                sem ficha ou preço, a estimativa fica indisponível. Não é lucro
-                apurado e não inclui entrega ou despesas fora da ficha.
+                Quando o cliente pagar: Registrar recebimento na conta dele.
               </li>
             </ol>
-            <Button to="/gestao/fichas" variant="ghost">
-              Abrir fichas
+            <h3>Dicas</h3>
+            <ul>
+              <li>
+                <strong>No fechamento</strong> vence no mesmo dia em que a conta
+                fecha. <strong>15 dias depois</strong> dá mais folga ao cliente.
+              </li>
+              <li>
+                O padrão de cada cliente fica em Financeiro → conta do cliente →
+                Condição de pagamento. No pedido, a escolha vale só para aquele
+                pedido.
+              </li>
+              <li>Para pessoa física, use Adiantado ou Na entrega.</li>
+            </ul>
+            <Button to="/gestao/financeiro" variant="ghost">
+              Abrir financeiro
             </Button>
           </details>
+          {p1 && (
+            <>
+              <details>
+                <DisclosureSummary>Agenda e lembretes</DisclosureSummary>
+                <ol>
+                  <li>
+                    Em Mais → Agenda, escolha uma data e Semana/Mês; filtre o
+                    tipo de evento.
+                  </li>
+                  <li>
+                    Para calendário do aparelho, exporte ICS e importe somente
+                    no calendário autorizado. Confira e salve o alarme no
+                    aparelho.
+                  </li>
+                  <li>
+                    Em Lembretes, registre título/prazo e cliente opcional.
+                    Escolha o aviso e os responsáveis pelos nomes de perfil.
+                    Pendentes vencidos e do dia aparecem no Hoje; conclua quando
+                    realizado.
+                  </li>
+                  <li>
+                    Ative avisos em Perfil → Preferências e envie um aviso de
+                    teste. No iPhone, use iOS 16.4+ e o app instalado na Tela de
+                    Início. Se não receber, use Adicionar ao calendário do
+                    celular no lembrete. Avisos podem atrasar; após editar,
+                    substitua também o evento importado.
+                  </li>
+                </ol>
+                <Button to="/gestao/agenda" variant="ghost">
+                  Abrir agenda
+                </Button>
+              </details>
+              <details>
+                <DisclosureSummary>Relatórios e fluxo</DisclosureSummary>
+                <p>
+                  Vendas usam entregas efetivas. Aging é posição atual.
+                  Recebimentos e despesas registrados formam fluxo, não saldo
+                  bancário ou lucro. O administrador registra/estorna despesas;
+                  a taxa de entrega não vira gasto sozinha.
+                </p>
+                <Button to="/gestao/relatorios" variant="ghost">
+                  Abrir relatórios
+                </Button>
+              </details>
+              <details>
+                <DisclosureSummary>
+                  Ficha, preço estimado e compras
+                </DisclosureSummary>
+                <ol>
+                  <li>
+                    O administrador cadastra insumos, quantidade da embalagem e
+                    preço informado. Sem preço conhecido, deixe vazio.
+                  </li>
+                  <li>
+                    Cadastre uma ficha, rendimento e quantidades na unidade do
+                    insumo; informe custos adicionais e margem desejada. O preço
+                    sugerido não altera produtos.
+                  </li>
+                  <li>
+                    Na Lista de compras, escolha o prazo dos confirmados/em
+                    produção. Confira lotes, pendências e estoque manual antes
+                    de comprar. Não há compra nem baixa automática.
+                  </li>
+                  <li>
+                    No detalhe do pedido, abra Custo estimado do pedido. A
+                    consulta está disponível também ao operador. Usa fichas e
+                    custos atuais; sem ficha ou preço, a estimativa fica
+                    indisponível. Não é lucro apurado e não inclui entrega ou
+                    despesas fora da ficha.
+                  </li>
+                </ol>
+                <Button to="/gestao/fichas" variant="ghost">
+                  Abrir fichas
+                </Button>
+              </details>
+            </>
+          )}
         </section>
       )}
 

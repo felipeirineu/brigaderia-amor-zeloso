@@ -209,8 +209,65 @@ export async function temporaryScheduler(config, env) {
     throw error;
   }
 }
+/**
+ * Motivo legível de uma falha do Wrangler, só para etapas sem segredo no stdin
+ * (publicar o agendador). Mantém apenas linhas de erro/código e oculta qualquer
+ * sequência longa que possa ser credencial ou identificador.
+ */
+export function cloudflareDiagnostic(text) {
+  return String(text ?? '')
+    .split(/\r?\n/)
+    .map((line) =>
+      // Remove cores do terminal (ESC[...m) sem regex de caractere de controle.
+      line
+        .split(String.fromCharCode(27))
+        .join('')
+        .replace(/\[[0-9;]*m/g, '')
+        .trim(),
+    )
+    .filter((line) =>
+      /error|erro|code[: ]+\d+|authentication|permission|unauthori[sz]ed|forbidden|not found|invalid/i.test(
+        line,
+      ),
+    )
+    .map((line) => line.replace(/[\w-]{24,}/g, '[oculto]').slice(0, 220))
+    .filter((line, i, all) => line && all.indexOf(line) === i)
+    .slice(0, 6)
+    .join(' | ');
+}
 export function wrangler(args, input, env, temporary) {
   // stdio pipe: não exibir stdout/stderr/stack (podem conter o corpo do stdin).
+  if (input === undefined)
+    try {
+      execFileSync(
+        process.execPath,
+        [resolve(root, 'node_modules/wrangler/bin/wrangler.js'), ...args],
+        {
+          cwd: root,
+          encoding: 'utf8',
+          stdio: ['ignore', 'pipe', 'pipe'],
+          timeout: 180000,
+          env: {
+            ...env,
+            CI: 'true',
+            WRANGLER_SEND_METRICS: 'false',
+            WRANGLER_LOG: 'error',
+            WRANGLER_LOG_SANITIZE: 'true',
+            WRANGLER_LOG_PATH: temporary.logPath,
+          },
+        },
+      );
+      return;
+    } catch (error) {
+      const why = cloudflareDiagnostic(
+        String(error?.stderr ?? '') + '\n' + String(error?.stdout ?? ''),
+      );
+      fail(
+        'A Cloudflare recusou a publicação do agendador' +
+          (why ? ': ' + why : '.') +
+          ' Nenhuma chave foi exibida.',
+      );
+    }
   execFileSync(
     process.execPath,
     [resolve(root, 'node_modules/wrangler/bin/wrangler.js'), ...args],

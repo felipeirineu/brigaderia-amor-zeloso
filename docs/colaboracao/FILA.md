@@ -5,9 +5,9 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T14** (tela de erro e Sugestões/Recebidas; prévia aprovada; detalhes abaixo). Versão **1.1.0** (o app virou **1.0.0** em 20/11, dia da entrega). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub. Base: main com 1.0.0 (modo escuro e passeio novos, feitos pelo Claude).
+`VEZ: CODEX` — tarefa **T17** (pedido já entregue no cadastro, pagamento "Na próxima entrega" e vencimento em dia fixo do mês; detalhes abaixo). Versão **1.2.0**. Base: main atual (1.0.10). **A T14 (PR #23) está sendo integrada pelo Claude em paralelo** e entra no main como 1.1.0 com a migração **0028**: antes de abrir o PR, incorpore o main atual; se a T17 precisar de migração, use o número seguinte ao último do main (0029 se a T14 já estiver lá). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
-**Pendências do Felipe (fora do código):** aplicar a migração **0027** (lembrete de backup) pela Homologação D1: PRE_CHECAGEM → APLICAR_PENDENTES. cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
+**Pendências do Felipe (fora do código):** quando o Claude publicar a 1.1.0 (T14), aplicar a migração **0028** pela Homologação D1 (backup → PRE_CHECAGEM → APLICAR_PENDENTES). Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
 
 
@@ -76,7 +76,10 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | **publicada** 18/11 (PR #20) como **0.23.0** — migração **0027** pendente (Felipe) |
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
 | T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
-| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **vez do Codex** — versão **1.1.0** — migração nova (Felipe aplica) |
+| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | PR #23 entregue; **integração pelo Claude** — versão **1.1.0** — migração 0028 (Felipe aplica) |
+| T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" | **depois da T14** (Felipe pediu antes da T15 em 22/11) — versão **1.2.0** |
+| T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | prévia **aprovada** 20/11; **depois da T17** — versão **1.3.0** |
+| T16 | Entrega feita pelos dois (Tiago e Alda) | **depois da T15** — versão **1.4.0** — migração (Felipe aplica) |
 
 ### T0 — R17
 
@@ -594,6 +597,56 @@ Seguir a prévia. **Na interface, nunca o nome de uma pessoa:** dizer "quem cuid
    - push: teste da fila com aviso sem conteúdo.
 8. Versão **1.1.0** (com nota em `release-notes.ts`, que a partir da 1.0.0 aparece para eles como Novidades). Capturas `t14-*.png` em claro e escuro, só com DEMONSTRAÇÃO.
 
+### T15 — Versão de computador (prévia `previas/computador-hoje.png` **aprovada pelo Felipe em 20/11: "mil vezes melhor"**; fazer depois da T17)
+
+Só telas **≥ 1024 px de largura**. **O celular não muda nada**, e os testes de celular continuam iguais.
+
+1. **Menu lateral:**
+   - logo + "Amor Zeloso / Gestão" no topo;
+   - grupo principal: Hoje, Pedidos, Clientes;
+   - separador e o grupo secundário: Produtos e kits, Pedidos padrão, Relatórios, Mais;
+   - Acessos e Ajuda ficam em Mais e no avatar;
+   - botão **+ Novo** fixo no pé, abrindo o mesmo menu "O que vamos preparar?".
+2. **Cabeçalho em uma linha:**
+   - título da tela (serifado) + data em dourado à esquerda;
+   - à direita, o seletor de dia (só no Hoje), o (?) da ajuda e o avatar com o menu da conta (Sair, Preferências, Conhecer o app).
+   - **Remover no computador:** "Área privada · Administrador", "Conheça os atalhos / Conhecer o app" soltos, "SUA ROTINA", o segundo título "Hoje" e o campo "Dia de trabalho" (o seletor faz esse papel).
+3. **Hoje:**
+   - frase-resumo "Boa tarde, {nome}. N entregas hoje · N lembretes.";
+   - os 4 valores em **uma linha**;
+   - duas colunas: à esquerda, **Entregas do dia** (horário · endereço/retirada · itens · situação, link "Ver pedidos"); à direita, **Produzir hoje e amanhã** (foto, barra, quantidade, link "Gerar pedidos da semana") e **Lembretes** ("+ Novo lembrete").
+   - Avisos (base, backup) ficam no topo, na largura toda.
+4. **Demais telas, mesmo padrão:**
+   - **Pedidos e Clientes:** lista à esquerda e detalhe ou folha à direita, quando couber.
+   - **Formulários:** largura máxima de ~720 px, centralizados.
+   - **Mais:** grade de 3 colunas.
+   - **Relatórios:** filtros numa linha.
+   - Nada de cartão esticado de ponta a ponta.
+5. Claro e escuro (o escuro A+D já aprovado). Mesmos tokens do `theme.css`.
+6. **Testes:**
+   - E2E em `chromium-desktop` (1366×860): menu lateral com logo; cabeçalho sem os textos removidos; 4 valores na mesma linha; duas colunas no Hoje; + Novo abre o menu.
+   - Garantir que `chromium-mobile` e `webkit-mobile` não mudaram: rodar a bateria inteira.
+7. Versão **1.3.0** (nota em `release-notes.ts`). Capturas `t15-*.png` de Hoje, Pedidos, Clientes, Mais e Relatórios, em claro e escuro, só com DEMONSTRAÇÃO.
+
+### T16 — Entrega feita pelos dois (pedido do Felipe em 21/11; fazer depois da T15)
+
+Hoje o pedido aceita um só responsável pela entrega (`courier`: `owner`, `partner`, `courier` ou `unassigned`), mas o Tiago e a Alda às vezes entregam juntos.
+
+- **Banco:** migração nova permitindo o valor `both` ("Tiago e Alda") em `orders.courier` e `recurring_templates.courier`. Como é um `CHECK`, exige reconstruir as tabelas preservando dados, índices e gatilhos. Teste de migração sobre cópia com pedidos existentes. **Aplicar no banco real só com aprovação do Felipe** (Homologação: PRE_CHECAGEM → APLICAR_PENDENTES).
+- **Telas:** nova opção "Os dois" na escolha de quem entrega (detalhe do pedido, fluxo do celular, pedido padrão e Hoje). Mostrar as iniciais dos dois.
+- **Relatórios e custos:** a entrega feita pelos dois conta uma vez por pedido (não duplicar entregas nem taxas). Onde houver contagem por pessoa, contar para os dois e dizer isso na tela.
+- **Compatibilidade:** o app antigo e bancos sem a migração continuam funcionando, sem a opção nova (mesmo padrão das migrações anteriores).
+- **Testes:** integração (gravar, editar, recorrência, relatórios, backup/restauração) e E2E no celular.
+- Versão **1.4.0** (minor: muda o banco).
+
+### T17 — Pedido já entregue e pagamento "Na próxima entrega" (pedido do Felipe em 22/11; **fazer depois da T14 e antes da T15**)
+
+1. **Cadastrar pedido já entregue.** Às vezes o Tiago ou a Alda registram o pedido depois de entregar. Na revisão do pedido, opção "Já foi entregue" (com data e hora da entrega, padrão agora). O pedido nasce entregue: não entra em "Produzir hoje e amanhã" e já conta em "A receber" (ou em "Recebido" se o pagamento for registrado). Validar no servidor (mesmas regras da mudança de status para entregue: estoque, auditoria, financeiro) numa única operação idempotente, sem estado intermediário.
+2. **Pagamento "Na próxima entrega".** Novo modo de pagamento para estabelecimentos e pessoas: o valor fica "a receber" sem vencimento até a próxima entrega ao mesmo cliente; quando a próxima entrega for marcada como entregue, o vencimento passa a ser a data dela. Aparece no (?) do pagamento, nos relatórios e no filtro do Financeiro. Se mudar o banco (enum/CHECK), migração com aprovação do Felipe.
+3. **Vencimento em dia fixo do mês** (como a fatura do cartão; pedido do Felipe em 22/11). Em "Pagar", além de "No fechamento", "7 dias depois" e "15 dias depois", a opção "Dia do mês" com um número de 1 a 31 (31 = último dia). O vencimento é a próxima ocorrência desse dia **depois** do fechamento (ex.: quinzenal, dia 10 → a conta que fecha no dia 15 vence no dia 10 do mês seguinte; a que fecha no fim do mês vence no dia 10 seguinte). Guardar nos `terms` (JSON) sem quebrar `due_days`; validar no servidor; mostrar no pedido, no Financeiro (condição do cliente), no extrato e na mensagem de cobrança. Atualizar o (?) "Fechamento" e a seção "Fechamento e prazos" da Ajuda.
+- Testes de integração (financeiro, recebíveis, produção, relatórios) e E2E no celular.
+- Versão **1.2.0**. O Felipe pediu em 22/11 para vir antes da T15.
+
 ## Versões do app
 
 Formato **MAIOR.MENOR.CORREÇÃO**. Quem sobe o número é o **Claude**, ao publicar:
@@ -606,6 +659,16 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| 1.0.10 | 22/11 | Fechamento explicado como a fatura do cartão: resumo com exemplo no (?) de Fechamento (pedido a prazo) e no Financeiro; seção "Fechamento e prazos" em Ajuda → Rotinas e financeiro (antes "Rotinas P1"; aparece com financeiro ou P1), aberta direto pelo link "Ver explicação completa". Fila: T17 antes da T15; vencimento em dia fixo do mês entrou na T17. |
+| 1.0.9 | 22/11 | Folha de ajuda (?) com "Fechar" escrito embaixo (antes: X em botão largo no topo). Kit no Hoje com o texto centralizado no fundo destacado (Chrome novo reservava espaço para a lista oculta). |
+| 1.0.8 | 21/11 | Papel Desenvolvedor: segredo `DEVELOPER_EMAILS` (Cloudflare, Production e Preview) marca o administrador de suporte técnico. Mantém permissões, aparece como "Desenvolvedor", sai das iniciais/escolhas de equipe para os outros e continua visível em Acessos como "Desenvolvedor (suporte técnico)". Sem o segredo, nada muda. Segredo cadastrado pelo Felipe em 22/11 (republicado para valer). |
+| 1.0.7 | 21/11 | Ajuda (?) na etapa Pagamento do pedido explicando cada opção (a definir, adiantado, na entrega, a prazo, pagar no fechamento). Kit repetido: mensagem clara orientando a editar o kit existente (antes: "Registro já existente"). |
+| 1.0.6 | 21/11 | Ativar avisos tenta o registro de novo e, se o serviço de push do celular recusar ("push service error", visto num Xiaomi com HyperOS 2), explica em português o que conferir. |
+| 1.0.5 | 20/11 | Quantidade por kit em duas colunas (preço abaixo); nomes dos sabores no centro vertical da linha; sai a dica fixa de uso por peso ("Revenda e presentes"), que não era dado cadastrado. |
+| 1.0.4 | 20/11 | "Importar cadastro inicial" sai do menu Mais (já usado; a rota continua). Caixa Mista no modo rápido e montagem compacta dos kits. |
+| 1.0.3 | 20/11 | Ícone monocromático das notificações (silhueta de brigadeiro, `/icons/badge-96.png`). Notificações testadas no Android do Felipe. |
+| 1.0.2 | 20/11 | Kits escolhidos em linhas compactas ("No pedido") abaixo da grade de sabores, em vez de cartões grandes no topo. |
+| 1.0.1 | 20/11 | Caixa Mista de volta na grade de kits (abre a montagem do kit); montagem do kit compacta; botão de notificações mostra o motivo da recusa ao publicar o agendador. |
 | **1.0.0** | 20/11 | **Entrega ao Tiago e à Alda.** Boas-vindas com convite ao passeio; Novidades ativas a partir daqui; menu + com contorno; "Fechar" largo e tocar fora fecha folhas simples. A folha de boas-vindas não abre sozinha em testes automáticos (`az-release-e2e` liga no teste das Novidades). |
 | 0.26.1 | 20/11 | Boas-vindas com convite ao passeio; passeio renovado (5 passos por papel, Voltar, destaque dourado); Montar Caixa Mista trava a rolagem do fundo. |
 | 0.26.0 | 20/11 | Modo escuro A+D médio: fundo preto, cartões marrons com contorno dourado, campos vazados. |
@@ -668,3 +731,4 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 | 19/11 | — | Ambiente de teste configurado pelo Felipe | Environment `ambiente-teste`, Access com `teste.`/`*.`, workflow: ATUALIZAR_APP, VERIFICAR, APLICAR_MIGRACOES, COPIAR_DO_REAL verdes (27 migrações, 16 clientes, 9 produtos, 0 violações). Prévias do Pages restritas à branch `teste`. |
 | 19/11 | — | 0.25.1 (Claude) | Testes do Felipe no ambiente de teste: mapa em outro endereço, Apple Maps no Android, Waze sem app, sabores da Caixa Mista estourando o cartão. CI completo e Segurança verdes. **Codex: escreva sempre "Caixa Mista" / "Caixas Mistas".** |
 | 20/11 | — | Notificações (Felipe) | ATIVAR gravou as 3 chaves no Pages e no agendador, mas a publicação do agendador falhou (cron ausente; provável permissão D1 no token). Próximo: permissão D1 no token e REPUBLICAR_AGENDADOR. Publicação extra na main para o Pages pegar as chaves. |
+| 20/11 | — | Notificações ATIVAS (Felipe) | Com Account Settings Read no token, REPUBLICAR_AGENDADOR verde; VERIFICAR: 3 chaves no Pages e no agendador, cron de 5 min presente. A 1.0.1 já foi publicada depois das chaves. Falta o teste em cada aparelho. |

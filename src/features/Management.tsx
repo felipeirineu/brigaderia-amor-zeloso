@@ -4,6 +4,7 @@ import {
   FeedbackInbox,
 } from './feedback/Feedback';
 import { ManagementRoutes } from './feedback/ManagementError';
+import { roleLabel } from '../role-label';
 import { ConfirmProvider } from '../components/ConfirmSheet';
 import {
   EnvironmentScope,
@@ -113,6 +114,7 @@ import { Mascot } from '../components/Mascot';
 
 interface Session {
   feedback?: boolean;
+  developer?: boolean;
   environment?: 'teste' | 'producao';
   prospect_followup?: boolean;
   visits?: boolean;
@@ -1728,7 +1730,9 @@ function Overview() {
   );
 }
 function Accesses() {
-  const list = useList<{ email: string; role: string }>('members');
+  const list = useList<{ email: string; role: string; developer?: boolean }>(
+    'members',
+  );
   const save = useSave(list.reload);
   const [email, setEmail] = useState('');
   const [role, setRole] = useState('operator');
@@ -1774,7 +1778,10 @@ function Accesses() {
       <ul>
         {list.data.map((m) => (
           <li key={m.email}>
-            {m.email} · {m.role === 'owner' ? 'Administrador' : 'Operador'}
+            {m.email} ·{' '}
+            {m.developer
+              ? 'Desenvolvedor (suporte técnico)'
+              : roleLabel(m.role)}
           </li>
         ))}
       </ul>
@@ -1904,14 +1911,14 @@ export function Management() {
           >
             <CompactHeader
               role={session.role}
+              developer={!!session.developer}
               online={online}
               operations={!!session.operations}
               onLogout={() => void logout()}
             />
             <header className="management-header">
               <p>
-                Área privada ·{' '}
-                {session.role === 'owner' ? 'Administrador' : 'Operador'}
+                Área privada · {roleLabel(session.role, !!session.developer)}
               </p>
               <Button disabled={!online} onClick={() => void logout()}>
                 Sair
@@ -2394,15 +2401,8 @@ function More({
                 ...(role === 'owner'
                   ? [
                       ['importar-clientes', 'Importar clientes', 'clientes'],
-                      ...(p1
-                        ? [
-                            [
-                              'importar-cadastro',
-                              'Importar cadastro inicial',
-                              'produtos',
-                            ],
-                          ]
-                        : []),
+                      // "Importar cadastro inicial" já foi usado (20/11); a rota
+                      // /gestao/importar-cadastro continua, sem atalho no menu.
                       ['backup', 'Backup privado', 'configuracoes'],
                     ]
                   : []),

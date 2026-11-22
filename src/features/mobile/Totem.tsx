@@ -66,6 +66,7 @@ import {
   type Terms,
 } from '../../../shared/finance';
 import { Mascot } from '../../components/Mascot';
+import { HelpTip } from '../../components/HelpTip';
 interface Product {
   id: string;
   name: string;
@@ -1814,7 +1815,10 @@ export function Totem({
       {step === PAYMENT && (
         <>
           <h2 className="wizard-question">Como vai pagar?</h2>
-          <h3 className="order-section-label">Pagamento</h3>
+          <div className="order-section-head">
+            <h3 className="order-section-label">Pagamento</h3>
+            <HelpTip topic="orderPayment" />
+          </div>
           <div className="chips" aria-label="Condição de pagamento">
             {(['unset', 'advance', 'delivery', 'credit'] as const)
               .filter(
@@ -1857,7 +1861,10 @@ export function Totem({
           </div>
           {terms.mode === 'credit' && (
             <>
-              <h3 className="order-section-label">Fechamento</h3>
+              <div className="order-section-head">
+                <h3 className="order-section-label">Fechamento</h3>
+                <HelpTip topic="closing" />
+              </div>
               <div className="chips" role="group" aria-label="Fechamento">
                 {(
                   [
