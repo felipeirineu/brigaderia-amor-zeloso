@@ -43,10 +43,12 @@ export function OrderDetail({
   financial = false,
   mobile = false,
   p1 = false,
+  onChanged,
 }: {
   financial?: boolean;
   mobile?: boolean;
   p1?: boolean;
+  onChanged?: () => Promise<void>;
 }) {
   const askConfirmation = useConfirm();
   const askPrompt = usePrompt();
@@ -96,6 +98,7 @@ export function OrderDetail({
       key.current = crypto.randomUUID();
       await view.refresh();
       await history.refresh();
+      await onChanged?.();
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -132,7 +135,8 @@ export function OrderDetail({
   return (
     <>
       <Button to="/gestao/pedidos" variant="ghost">
-        <ArrowLeft size={20} aria-hidden="true" /> Pedidos
+        <ArrowLeft size={20} aria-hidden="true" />
+        {onChanged ? 'Voltar para Pedidos' : 'Pedidos'}
       </Button>
       <Failure message={error || view.error || history.error} />
       {order ? (

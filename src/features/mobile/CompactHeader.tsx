@@ -1,7 +1,7 @@
 import { roleLabel } from '../../role-label';
 import { nameInitials } from '../../../shared/initials';
 import { Button } from '../../components/Button';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, type Ref } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   CircleUserRound,
@@ -51,12 +51,18 @@ export function CompactHeader({
   developer = false,
   online,
   operations,
+  calendarSlot,
+  desktop = false,
+  ownerAccess,
   onLogout,
 }: {
   role: string;
   developer?: boolean;
   online: boolean;
   operations: boolean;
+  desktop?: boolean;
+  calendarSlot?: Ref<HTMLSpanElement>;
+  ownerAccess?: boolean;
   onLogout: () => void;
 }) {
   const [workday, setWorkday] = useState(fortalezaDay);
@@ -99,7 +105,29 @@ export function CompactHeader({
         >
           {title}
         </strong>
+        {desktop && (
+          <time className="desktop-header-date" dateTime={workday}>
+            {new Intl.DateTimeFormat('pt-BR', {
+              timeZone: 'America/Fortaleza',
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long',
+            }).format(new Date(workday + 'T12:00Z'))}
+          </time>
+        )}
         <span id="mobile-header-actions" />
+        {desktop && (
+          <>
+            <span className="desktop-calendar-slot" ref={calendarSlot} />
+            <Button
+              className="desktop-header-help"
+              to="/gestao/ajuda"
+              aria-label="Ajuda da gestão"
+              variant="tonal"
+              icon={<CircleHelp size={20} aria-hidden="true" />}
+            />
+          </>
+        )}
         <Button
           ref={trigger}
           className="profile-menu-trigger"
@@ -177,6 +205,17 @@ export function CompactHeader({
           >
             Ajuda
           </Button>
+          {desktop && ownerAccess && (
+            <Button
+              className="profile-menu-item desktop-profile-access"
+              icon={<Settings size={20} aria-hidden="true" />}
+              to="/gestao/acessos"
+              onClick={() => menu.current?.close()}
+              variant="ghost"
+            >
+              Acessos
+            </Button>
+          )}
           <Button
             className="profile-menu-item"
             variant="danger"

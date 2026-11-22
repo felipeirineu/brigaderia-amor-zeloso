@@ -88,7 +88,7 @@ export function Reports({ followup = false }: { followup?: boolean }) {
       )}
       <h1 className="mobile-context-title">Relatórios</h1>
       <Failure message={view.error || customers.error} />
-      <div className="data-form panel">
+      <div className="data-form panel desktop-report-filters">
         <label>
           Vendas de
           <input

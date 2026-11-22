@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.3.0',
+    items: [
+      'No computador, navegue pelo menu lateral e veja entregas, produção e lembretes em duas colunas.',
+      'Abra um pedido ao lado da lista e confira os filtros dos relatórios em uma linha.',
+    ],
+  },
+  {
     version: '1.2.0',
     items: [
       'Na revisão, registre pedidos já entregues e o que foi recebido.',
