@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T20** (pedidos em lote; prévia `previas/t20-pedidos-em-lote.png` aprovada; detalhes abaixo). Versão **1.6.0**. Base: main atual (1.5.0, com a T18). Faça **push parcial** no branch `codex/t20-...` durante o trabalho. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub. Depois vem a **T19**.
+`VEZ: CODEX` — tarefa **T19** (fichas: custo por ingrediente, custos não calculados 20% em todas as fichas, preço sugerido por doce; prévia `previas/t19-fichas-custos.png` aprovada; detalhes abaixo). Versão **1.7.0**, **com migração** (próximo número livre do main; aplicação no banco real só pelo Felipe). Base: main atual (1.6.0, com a T20). Faça **push parcial** no branch `codex/t19-...`. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
 **Pendência do Claude (pedido do Felipe, 22/11):** quando os pedidos do Tiago estiverem publicados (1.4.4 cadastro no computador, T18, T20, T19), escrever para o Felipe uma mensagem curta de WhatsApp para o Tiago resumindo o que foi corrigido e adicionado, em linguagem simples e com onde encontrar cada coisa.
 
@@ -85,8 +85,8 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | **publicada** 22/11 (PR #25) como **1.3.0** |
 | T16 | Entrega feita pelos dois (Tiago e Alda) | **publicada** 22/11 (PR #26) como **1.4.0** — migração **0029** aplicada pelo Felipe em 22/11 (29 aplicadas; 6 pedidos e 14 eventos preservados) |
 | T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | **publicada** 22/11 (PR #27) como **1.5.0** — republicar o agendador (Felipe) |
-| T20 | Pedidos em lote: selecionar vários (ou todos do dia) e mudar data ou status de uma vez | prévia **aprovada** 22/11; **vez do Codex** — versão **1.6.0** |
-| T19 | Fichas: custo por ingrediente (lote e por doce), custos não calculados (20%), preço sugerido por doce | prévia **aprovada** 22/11; **depois da T20** — versão **1.7.0** — migração (Felipe aplica) |
+| T20 | Pedidos em lote: selecionar vários (ou todos do dia) e mudar data ou status de uma vez | **publicada** 22/11 (PR #28) como **1.6.0** — sem migração |
+| T19 | Fichas: custo por ingrediente (lote e por doce), custos não calculados (20%), preço sugerido por doce | prévia **aprovada** 22/11; **vez do Codex** — versão **1.7.0** — migração (Felipe aplica) |
 
 ### T0 — R17
 
@@ -703,6 +703,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| **1.6.0** | 22/11 | **T20** (PR #28): pedidos em lote — Selecionar (ou toque longo), Todos do dia, Mudar data (mantém o horário), Avançar etapa, Marcar entregue (registra cada etapa; retirada vira Retirado), pulados com motivo, Desfazer por 30 s; recalcula vencimentos T17/T18. Celular e computador. Sem migração. CI completo do próprio PR usado para publicar. |
 | **1.5.0** | 22/11 | **T18** (PR #27): a prazo "A cada X entregas" (2 a 12), vencimento na última entrega efetiva, ciclo recomeça mesmo com saldo aberto; troca de condição fecha o ciclo incompleto na primeira entrega sob a regra nova; Hoje com "Nª de X" e "Cobrar hoje" (WhatsApp assistido e recebimento do ciclo); conta com progresso; aviso da manhã (requer REPUBLICAR_AGENDADOR); Agenda/ICS corrigidos; menos espaço ao abrir "ver sabores". Sem migração. Claude: `useSave` mostra "Alteração salva no servidor" logo após o servidor confirmar (antes esperava a recarga da lista — teste `kit-orders` instável). Teste de rolagem no computador (`t15-desktop-scroll`). |
 | 1.4.4 | 22/11 | Computador: a folha lateral de cliente (novo/editar) passa a ter altura da tela e rolagem própria (com `max-height: none` e `height: fit-content` do `dialog`, passava da borda de baixo sem rolar e não dava para salvar). Teste em `t15-desktop.spec.js`. Relatado pelo Tiago. |
 | 1.4.3 | 22/11 | Prévia `previas/producao-e-acoes-do-pedido.png` aprovada: "Produzir hoje e amanhã" agrupado por dia e tamanho do doce, unidades inteiras por sabor (kits do mesmo tamanho somados, linha "25 nas caixas de 12 · 10 avulsos") e bloco "Embalagens" com caixas contadas dos itens pedidos (novo `packaging` em `/api/today`); sai o "cx eq.". Detalhe do pedido: data · valor · pagamento e status no topo, fileira Mapa/WhatsApp/Uber/99 (mesmo componente do Hoje) e "Deslocamento" recolhido com Voltar para a base e Registrar valor pago. Kit fechado no Hoje: o oval passa a ficar no `summary` (no Chrome do Felipe a correção da 1.0.9 não valia). |
