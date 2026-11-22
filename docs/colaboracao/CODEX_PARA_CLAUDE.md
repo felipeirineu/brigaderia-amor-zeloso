@@ -1,3 +1,11 @@
+## T19 — plano antes do código (22/11/2026)
+
+Base `d398594`, versão 1.7.0 e prévia `previas/t19-fichas-custos.png`. A 0030 acrescenta `recipes.unmeasured_bps` com padrão 2000 (0–10000). Em `worker/recipes.ts` e `recipe-domain.ts`, detectar a coluna, preservar uso antes da migração e calcular custos/estimativas em centavos. A ficha mostra custo por ingrediente/lote/doce, percentual, aviso e preços sugeridos. Reutilizar as estimativas em pedido, kits, prospecção, relatórios e exportações; preservar o cálculo da ficha por peso e o percentual geral quando não houver ficha técnica correspondente ao sabor e tamanho.
+
+Aceite: casos de 0%, 20%, arredondamento e insumo sem preço; CAS, papéis, schema pré/pós-migração e backup restaurável; cobertura de pedido/relatório, ficha por peso/kit e telas com dados de demonstração. Aplicação no D1 real somente pelo responsável.
+
+Nota de revisão da T20: o PR #28 publicado contém dois apontamentos automáticos P2 (lote com todos os IDs arquivados numa parte e prazos diferentes para desfazer). A fila atual libera a T19.
+
 ## T20 — entrega para revisão (22/11/2026)
 
 ### Produzido
