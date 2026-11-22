@@ -5,8 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — **correção da T17 (PR #24), CI vermelho**. Diagnóstico do Claude (22/11): o CI completo do PR #24 (run 44984175967) e o da integração no branch do Claude (run 44984769157) falham no mesmo teste, **só no `webkit-mobile`**: `tests/e2e/t14-feedback.spec.js:21` — no **terceiro** `page.goto(orderUrl)` (depois de "Voltar ao Hoje"), o cabeçalho "Ops, algo deu errado nesta tela" não aparece em 5 s. Na 1.1.0 (T14 sem a T17) o mesmo teste passava no WebKit em 5,8 s; agora falha em ~9–10 s, ou seja, a tela de erro não aparece nessa terceira carga. Chromium móvel e desktop passam; o Claude não tem WebKit no ambiente dele. Investigue a causa no WebKit (não aumente timeout nem pule o teste sem explicar a causa) e corrija no próprio branch `codex/t17-delivered-payment`, no mesmo PR #24.
-**Antes, incorpore o branch `claude/brigaderia-project-analysis-tf66ax`**: ele já tem a T17 com um ajuste do Claude — `fixedDueDate` agora usa o último dia do mês quando o dia escolhido não existe (30 em fevereiro vence em 28/29, como na fatura do cartão), com testes, textos da Ajuda e `docs/FASE_T17.md` atualizados — e a especificação da T18. Depois da correção, a próxima tarefa é a **T15**.
+`VEZ: CODEX` — tarefa **T15** (versão de computador; prévia `previas/computador-hoje.png` aprovada; detalhes abaixo). Versão **1.3.0**. Base: main atual (1.2.0, com a T17). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
 **Pendências do Felipe (fora do código):** Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
@@ -78,7 +77,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
 | T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
 | T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **publicada** 22/11 (PR #23, integrada pelo Claude) como **1.1.0** — migração **0028** aplicada pelo Felipe em 22/11 (28 aplicadas, nenhuma pendente) |
-| T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" | **depois da T14** (Felipe pediu antes da T15 em 22/11) — versão **1.2.0** |
+| T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" + vencimento em dia fixo | **publicada** 22/11 (PR #24) como **1.2.0** — sem migração |
 | T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | prévia **aprovada** 20/11; **depois da T17** — versão **1.3.0** |
 | T16 | Entrega feita pelos dois (Tiago e Alda) | **depois da T15** — versão **1.4.0** — migração (Felipe aplica) |
 | T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | prévia **aprovada** 22/11; **depois da T15** — versão **1.5.0** |
@@ -674,6 +673,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| **1.2.0** | 22/11 | **T17** (PR #24): "Já foi entregue" no novo pedido (com recebimento opcional, fora da produção, direto no financeiro); pagamento "Na próxima entrega"; "Dia do mês" no vencimento a prazo (dia inexistente vence no último dia do mês — ajuste do Claude). Sem migração. Teste da T14 no WebKit passou a simular o erro no servidor de teste (page.route não intercepta após recarga no WebKit). |
 | **1.1.0** | 22/11 | **T14** (PR #23): tela de erro amigável (recarregar, voltar ao Hoje, contar o que houve), Sugestões e problemas no menu Mais e Recebidas para o administrador. Migração **0028** (Felipe aplica; sem ela o canal fica oculto). Integração: `z.config({ jitless: true })` em `src/zod-csp.ts`, importado primeiro em `main.tsx` (a T14 usava schema antes de `order-draft.ts` e violava a CSP). |
 | 1.0.10 | 22/11 | Fechamento explicado como a fatura do cartão: resumo com exemplo no (?) de Fechamento (pedido a prazo) e no Financeiro; seção "Fechamento e prazos" em Ajuda → Rotinas e financeiro (antes "Rotinas P1"; aparece com financeiro ou P1), aberta direto pelo link "Ver explicação completa". Fila: T17 antes da T15; vencimento em dia fixo do mês entrou na T17. |
 | 1.0.9 | 22/11 | Folha de ajuda (?) com "Fechar" escrito embaixo (antes: X em botão largo no topo). Kit no Hoje com o texto centralizado no fundo destacado (Chrome novo reservava espaço para a lista oculta). |
