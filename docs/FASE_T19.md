@@ -1,6 +1,6 @@
 # T19 — custos da ficha técnica
 
-Em **Mais → Fichas técnicas**, a tabela mostra o custo de cada insumo, embalagens, mão de obra, outros custos, custo de produção e custo total. O valor por doce é o custo do lote dividido pelo rendimento, arredondado ao centavo mais próximo. Empates arredondam para cima. Cada linha arredonda separadamente, então a soma das linhas por doce pode diferir do total por um centavo. O consumo de cada embalagem de insumo arredonda para cima ao centavo.
+Em **Mais → Fichas técnicas**, a tabela mostra o custo de cada insumo, embalagens, mão de obra, outros custos, custo de produção e custo total. O valor por doce é o custo do lote dividido pelo rendimento, arredondado ao centavo mais próximo. Empates arredondam para cima. Cada linha arredonda separadamente, então a soma das linhas por doce pode diferir do total informado. O consumo de cada embalagem de insumo arredonda para cima ao centavo.
 
 **Custos não calculados (%)** começa em 20% nas fichas novas e existentes. Aceita 0% a 100%, com até duas casas decimais. Cobre gás, energia, água, perdas e pequenos gastos difíceis de medir. O percentual é calculado sobre o custo de produção e arredondado ao centavo antes de aplicar a margem. O preço sugerido do lote arredonda para cima ao centavo para preservar a margem. As sugestões por doce e caixa são proporcionais ao lote, arredondadas ao centavo mais próximo. As sugestões ficam indisponíveis com insumo sem custo ou inativo.
 

@@ -77,3 +77,9 @@ Comparei as três telas da prévia aprovada com as capturas `t20-selecao.png`, `
 Conferi seleção, mudança de data preservando os horários, entrega, retirada, desfazer e ausência de erros de execução no fluxo automatizado. Todas as capturas usam dados de demonstração.
 
 final result: passed
+
+## T19 — custos por ficha (22/11/2026)
+
+Comparei a prévia aprovada com `t19-ficha.png` e `t19-editar-ficha.png`, capturadas em largura de 390 px. A ficha mostra ingrediente, lote e por doce, seguida pelas linhas de produção, percentual e total. Os preços ficam lado a lado, com a caixa vinculada logo abaixo. A edição põe **Custos não calculados (%)** entre outros custos e margem. O teste preenche 0% e confere o total recalculado e a ausência de rolagem horizontal. O preço sugerido do lote mantém o arredondamento para cima do app, que dá um centavo a mais do que a prévia no exemplo fictício.
+
+final result: passed

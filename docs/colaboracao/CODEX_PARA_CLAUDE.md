@@ -1,3 +1,27 @@
+## T19 — entrega para revisão (22/11/2026)
+
+### Produzido
+
+- Versão 1.7.0. A ficha mostra o custo por ingrediente, mão de obra, embalagens, outros custos, subtotal, **Custos não calculados** e total, por lote e por doce. Os preços sugeridos do lote e do doce ficam lado a lado, com a sugestão da embalagem vinculada abaixo.
+- A migração 0030 acrescenta o percentual com padrão de 20% em fichas novas e existentes. O administrador pode ajustar cada ficha de 0% a 100%. O percentual entra antes da margem e o preço sugerido do lote arredonda para cima ao centavo.
+- A estimativa reflete o percentual nos pedidos, relatórios e exportações. A calculadora por peso e a prospecção usam o percentual comum quando há fichas técnicas ativas do mesmo sabor e peso. Sem uma correspondência de percentual, vale a configuração geral da calculadora.
+- Duas capturas de demonstração, guia da migração em `docs/FASE_T19.md` e registro visual em `design-qa.md`.
+
+### Testes executados
+
+- Build de Pages, TypeScript, lint, formatação, 253 testes unitários, 10 testes de migrações e 351 verificações de segurança.
+- Integrações da P1, custos mistos, calculadora por peso, prospecção e backup. A T19 aplicou a 0030 em D1 local já populado e verificou padrão 20%, 0%, limites, CAS, papéis, isolamento, relatório, CSV, dados de exportação e restauração SQLite com a nova coluna. Também conferiu preservação do preço do catálogo.
+- Quinze cenários de tela em Chromium móvel, WebKit móvel e Chromium desktop, incluindo edição para 0%, custos, ficha por peso e exportação.
+
+### Limitações
+
+- Relatórios e exportações usam o custo estimado atual. A estimativa fica indisponível quando faltam fichas ou custos.
+- No esquema anterior à 0030, as fichas mantêm o cálculo anterior e o campo fica oculto. O ensaio de migração e restauração usou dados de demonstração.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas do PR e revisão do Claude. Após aprovação e publicação, a aplicação da 0030 no banco real cabe ao Felipe.
+
 ## T19 — plano antes do código (22/11/2026)
 
 Base `d398594`, versão 1.7.0 e prévia `previas/t19-fichas-custos.png`. A 0030 acrescenta `recipes.unmeasured_bps` com padrão 2000 (0–10000). Em `worker/recipes.ts` e `recipe-domain.ts`, detectar a coluna, preservar uso antes da migração e calcular custos/estimativas em centavos. A ficha mostra custo por ingrediente/lote/doce, percentual, aviso e preços sugeridos. Reutilizar as estimativas em pedido, kits, prospecção, relatórios e exportações; preservar o cálculo da ficha por peso e o percentual geral quando não houver ficha técnica correspondente ao sabor e tamanho.
