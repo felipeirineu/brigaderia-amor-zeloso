@@ -1,4 +1,5 @@
 import { useConfirm } from '../../components/confirm-context';
+import { DisclosureSummary } from '../../components/DisclosureSummary';
 import { SkeletonList } from '../../components/Skeleton';
 import { ReminderAlerts, ReminderDelivery } from './ReminderAlerts';
 import { emptyAlert, editAlert, alertPayload } from './reminder-form';
@@ -32,7 +33,13 @@ const payload = (r: Reminder, done: boolean, active = true) => ({
   active,
   version: r.version,
 });
-export function TodayReminders({ day }: { day: string }) {
+export function TodayReminders({
+  day,
+  onCount,
+}: {
+  day: string;
+  onCount?: (summary: { day: string; count: number }) => void;
+}) {
   const view = useRemote<Reminder[]>('p1/reminders?through=' + day),
     [show, setShow] = useState(false),
     [completed, setCompleted] = useState<{
@@ -42,6 +49,10 @@ export function TodayReminders({ day }: { day: string }) {
     [notice, setNotice] = useState(''),
     [error, setError] = useState(''),
     [busy, setBusy] = useState(false);
+  const count = view.data?.length;
+  useEffect(() => {
+    if (count !== undefined) onCount?.({ day, count });
+  }, [count, day, onCount]);
   const refreshReminders = view.refresh;
   useEffect(() => {
     const refresh = () => {
@@ -109,10 +120,19 @@ export function TodayReminders({ day }: { day: string }) {
             <Circle size={24} aria-hidden="true" />
           </Button>
           <div>
-            <h3>{r.title}</h3>
-            <p>{relativeDateTime(r.due_at)}</p>
+            <div className="today-reminder-heading">
+              <h3>{r.title}</h3>
+              <p>{relativeDateTime(r.due_at)}</p>
+            </div>
             {r.notes && <p>{r.notes}</p>}
-            <ReminderDelivery reminder={r} />
+            {onCount ? (
+              <details className="desktop-reminder-delivery">
+                <DisclosureSummary>Avisos e calendário</DisclosureSummary>
+                <ReminderDelivery reminder={r} />
+              </details>
+            ) : (
+              <ReminderDelivery reminder={r} />
+            )}
           </div>
         </article>
       ))}

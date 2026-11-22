@@ -134,7 +134,7 @@ export function Tour({
     const menu = document.querySelector<HTMLButtonElement>(
       '.profile-menu-trigger',
     );
-    if (menu && matchMedia('(max-width:700px)').matches) menu.focus();
+    if (menu?.getClientRects().length) menu.focus();
     else trigger.current?.focus();
   }
   return (

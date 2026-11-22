@@ -59,3 +59,13 @@ Capturas de fixtures inspecionadas: `r14-depois-editor-misto.png` mostra composi
 ## R6-5 — 08/11
 
 Captura r6-depois-foto-perfil com imagem sintética de cor uniforme: prévia circular, controles em português com Button, estado de salvamento e remoção. Menu reutiliza estilo e disclosure compartilhados; iniciais permanecem como alternativa. E2E integral: 101 aprovados e um offline WebKit ignorado. Arquivo sintético valida câmera/galeria e recorte; câmera física e permissão do aparelho não foram ensaiadas.
+
+## T15 — gestão em computador (22/11/2026)
+
+Referência: `docs/colaboracao/previas/computador-hoje.png` (1912 × 1204). Comparei lado a lado com o Hoje de 1366 × 860, normalizando as duas capturas para a mesma largura. Usei o mesmo estado de navegação, três entregas, três linhas de produção e dois lembretes. Nomes, horários, montantes e quantidades das capturas são fictícios. As fotos dos sabores e o logo vêm dos recursos existentes da marca.
+
+- Na primeira captura, o item Hoje não ficava marcado em `/gestao`, a data da produção abria uma linha adicional e os lembretes exibiam todos os controles por padrão. A segunda captura confirma a seleção, data e quantidade na mesma linha, e controles de aviso e calendário em uma seção expansível.
+- O Hoje segue a referência nos agrupamentos e na hierarquia. Os cartões mantêm acesso a ações de entrega, recebimentos, proximidade e lembretes. Esses controles e os nomes fictícios fazem as linhas ficarem mais altas que na referência.
+- Conferi claro e escuro em Hoje, Pedidos, Clientes, Mais e Relatórios nas dez capturas `t15-*.png`. Em Pedidos, conferi a atualização da lista após mudar o status no detalhe. Em Clientes, a folha fica à direita. Em Relatórios, as quatro áreas de filtro ficam na mesma linha. O cenário automatizado confirmou navegação, abertura de folhas, ordem dos grupos, limites de 1023/1024 px e ausência de erros de execução no fluxo capturado.
+
+final result: passed

@@ -1,3 +1,32 @@
+## T15 — entrega para revisão (22/11/2026)
+
+### Produzido
+
+- Versão 1.3.0. A gestão em computador usa menu lateral com logo e **+ Novo** fixo, cabeçalho com data, calendário no Hoje, Ajuda e menu da conta. O menu Novo usa a folha existente.
+- O Hoje mostra saudação, contagem de entregas e lembretes, quatro indicadores em uma linha e avisos em largura total. Entregas ficam à esquerda. Produção e lembretes ficam à direita. Ações de entrega e avisos dos lembretes continuam acessíveis nas linhas expansíveis.
+- Pedidos abre o detalhe ao lado da lista e sincroniza a lista ao mudar o status. Clientes abre a edição à direita. Formulários ficam centralizados quando fora das colunas. Mais tem três colunas. Os filtros de Relatórios ficam em uma linha.
+- Dez capturas a 1366 × 860 mostram Hoje, Pedidos, Clientes, Mais e Relatórios nos dois temas. O comparativo com a prévia está registrado em `design-qa.md`.
+- Incorporei o `main` em `6436e5e` (1.2.1), preservando o lembrete de nome de exibição e a etapa do passeio.
+
+### Testes executados
+
+- Build, tipos, lint, formatação, 243 testes unitários e 349 verificações de segurança.
+- Na bateria móvel completa, passaram 225 cenários e 3 ficaram fora da execução pelos próprios testes. O cenário T3c falhou nos dois navegadores na primeira rodada ao redimensionar para 1024 px. Recoloquei o botão Atualizar Hoje e o cenário passou nos dois navegadores móveis e no Chromium desktop.
+- Ao todo, 16 cenários selecionados passaram na compilação final nos três navegadores. O E2E de computador verificou a navegação, quatro indicadores alinhados, as duas colunas, abertura de folhas, mudança de status na tela dividida, filtros e os limites de 1023/1024 px.
+- Após incorporar a 1.2.1, passaram novamente build, lint, formatação e 13 cenários de T15, R5, R9 e T3 nos três navegadores. As duas execuções do cenário exclusivo de computador nos projetos móveis foram puladas.
+
+### Limitações
+
+- O layout é aplicado à gestão com operações ativas, a partir de 1024 px. A verificação visual usou navegadores locais e dados fictícios em D1 descartável.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas do PR, seguidas da revisão do Claude. A entrega dispensa migração e alterações de configuração no Cloudflare.
+
+## T15 — plano antes do código (22/11/2026)
+
+Base `35c60b8` e prévia `previas/computador-hoje.png`. Em Management, CompactHeader e theme.css, montar navegação lateral e cabeçalho únicos a partir de 1024 px, compartilhando o menu Novo, a conta e o calendário existentes. Em Today, Finance, Reminders e Reports, colocar indicadores em uma linha, entregas e produção/lembretes em duas colunas, com avisos em largura total. Em Pedidos e Clientes, usar lista e detalhe/folha quando houver espaço. Conferir 1366×860, claro e escuro, e os limites 1023/1024. Rodar a bateria móvel e registrar dez capturas fictícias. Sem mudanças em API, banco ou Cloudflare.
+
 ## T17 — diagnóstico do WebKit (22/11/2026)
 
 Incorporados o `main` `5c51af7` e o branch do Claude `46c0c11`, com o vencimento no último dia para meses mais curtos. No trace do CI do PR #24 (`44984175967`), o primeiro GET de Pedidos é interceptado com o JSON inválido, a recarga recebe a resposta normal e o GET seguinte chega ao servidor real do teste sem passar pelo `page.route`. O DOM mostra Pedidos, sem erro de renderização para a barreira tratar.

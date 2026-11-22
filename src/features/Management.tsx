@@ -96,9 +96,22 @@ import { Finance, PixSettings, type Summary } from './finance/Finance';
 import { Account } from './finance/Account';
 import { CustomerProfile } from './finance/Profile';
 import { type B2BProfile } from '../../shared/finance';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { NavLink, Route, useNavigate, useSearchParams } from 'react-router-dom';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react';
+import {
+  NavLink,
+  Route,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 import { HelpTip } from '../components/HelpTip';
+import { useDesktopLayout } from '../components/useDesktopLayout';
 import { Icon, type IconName } from '../components/Icon';
 import { HelpCenter, Tour } from './help/HelpCenter';
 import { Today, OrderDetail, Recurring, MessageTemplates } from './Operations';
@@ -617,7 +630,7 @@ function Customers({
           </fieldset>
         </form>
       </dialog>
-      <label>
+      <label className="customer-search">
         Buscar por nome
         <input
           type="search"
@@ -783,10 +796,12 @@ const emptyVariant = (): Variant => ({
 function Products({
   mobile = false,
   flavorOnly = false,
+  desktopKits = false,
   role,
 }: {
   mobile?: boolean;
   flavorOnly?: boolean;
+  desktopKits?: boolean;
   role: 'owner' | 'operator';
 }) {
   const askConfirmation = useConfirm();
@@ -845,6 +860,11 @@ function Products({
   return (
     <>
       <h1 className="mobile-context-title">Produtos</h1>
+      {desktopKits && (
+        <Button to="/gestao/kits" variant="tonal">
+          Ver kits
+        </Button>
+      )}
       {mobile && <FlavorOrder products={list.data} />}
       <p>
         Preço por unidade de venda (por exemplo, uma caixa). Dados publicados
@@ -1116,11 +1136,15 @@ function Products({
     </>
   );
 }
+type OrderDetailPane = (onChanged: () => Promise<void>) => ReactNode;
+
 function Orders({
   mobile = false,
   role = 'owner',
+  detail,
   ...props
 }: {
+  detail?: OrderDetailPane;
   mobile?: boolean;
   role?: string;
   operational?: boolean;
@@ -1164,18 +1188,20 @@ function Orders({
           </>
         )}
       </div>
-      <FullOrders {...props} simple={mobile && mode.simple} />
+      <FullOrders {...props} simple={mobile && mode.simple} detail={detail} />
     </>
   );
 }
 function FullOrders({
   simple = false,
+  detail,
   metadata = false,
   kitOrders = false,
   operational = false,
   financial = false,
   mixed = false,
 }: {
+  detail?: OrderDetailPane;
   operational?: boolean;
   financial?: boolean;
   mixed?: boolean;
@@ -1345,7 +1371,7 @@ function FullOrders({
   );
   return (
     <>
-      <h1>Pedidos</h1>
+      <h1 className="orders-page-title">Pedidos</h1>
       <p>
         Pedidos. Quantidade se refere à embalagem/caixa cadastrada. Status e
         entrega ficam no detalhe do pedido quando a operação está ativa.
@@ -1360,325 +1386,346 @@ function FullOrders({
         }
       />
       <p role="status">{save.notice}</p>
-      {simple ? (
-        <Button
-          className="button primary-action"
-          to="/gestao/pedidos?novo=1"
-          variant="primary"
-        >
-          Novo pedido
-        </Button>
-      ) : (
-        <form className="data-form panel" onSubmit={submit}>
-          <h2>{editing ? 'Editar rascunho' : 'Novo pedido'}</h2>
-          <label>
-            Cliente
-            <select
-              required
-              value={customer}
-              onChange={(e) => void chooseCustomer(e.target.value)}
-            >
-              <option value="">Selecione</option>
-              {customers.data.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {defaults && !editing && (
-            <section>
-              <p>
-                Padrões do cliente:{' '}
-                {defaults.profile.address || 'Endereço a definir'} · janela{' '}
-                {defaults.profile.delivery_window || 'a definir'} · condição{' '}
-                {paymentModeLabels[
-                  defaults.profile.terms.mode
-                ].toLocaleLowerCase('pt-BR')}
-                . Tudo pode ser revisado.
-              </p>
-              {defaults.plans.length > 0 && (
+      <div className="desktop-order-layout">
+        {detail ? (
+          <section
+            className="desktop-order-detail"
+            aria-label="Detalhe do pedido"
+          >
+            {detail(orders.reload)}
+          </section>
+        ) : simple ? (
+          <Button
+            className="button primary-action"
+            to="/gestao/pedidos?novo=1"
+            variant="primary"
+          >
+            Novo pedido
+          </Button>
+        ) : (
+          <form
+            className="data-form panel desktop-order-editor"
+            onSubmit={submit}
+          >
+            <h2>{editing ? 'Editar rascunho' : 'Novo pedido'}</h2>
+            <label>
+              Cliente
+              <select
+                required
+                value={customer}
+                onChange={(e) => void chooseCustomer(e.target.value)}
+              >
+                <option value="">Selecione</option>
+                {customers.data.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+            {defaults && !editing && (
+              <section>
+                <p>
+                  Padrões do cliente:{' '}
+                  {defaults.profile.address || 'Endereço a definir'} · janela{' '}
+                  {defaults.profile.delivery_window || 'a definir'} · condição{' '}
+                  {paymentModeLabels[
+                    defaults.profile.terms.mode
+                  ].toLocaleLowerCase('pt-BR')}
+                  . Tudo pode ser revisado.
+                </p>
+                {defaults.plans.length > 0 && (
+                  <label>
+                    Pedido padrão para preencher
+                    <select
+                      value={template}
+                      onChange={(e) => {
+                        const p = defaults.plans.find(
+                          (p) => p.id === e.target.value,
+                        );
+                        if (p?.valid) applyTemplate(p);
+                      }}
+                    >
+                      <option value="">Escolha um modelo</option>
+                      {defaults.plans.map((p) => (
+                        <option key={p.id} value={p.id} disabled={!p.valid}>
+                          {p.name}
+                          {p.valid ? '' : ' — revisar itens inativos'}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </section>
+            )}
+            <label>
+              Data e hora combinadas (João Pessoa)
+              <input
+                required
+                type="datetime-local"
+                value={due}
+                onChange={(e) => setDue(e.target.value)}
+              />
+            </label>
+            {(kitCatalog.kits.length > 0 || kitItems.length > 0) && (
+              <KitItemsEditor
+                key={`${kitEditorEpoch}-${editing?.id ?? 'novo'}-${customer}`}
+                value={kitItems}
+                onChange={(value) => {
+                  setKitItems(value);
+                  if (value.length && items.every((i) => !i.variant_id))
+                    setItems([]);
+                }}
+                kits={kitCatalog.kits}
+                snapshots={kitSnapshots}
+                products={products.data}
+                limit={kitCatalog.limit}
+                mixed={mixed}
+                onEditingChange={setKitEditing}
+              />
+            )}
+            {items.map((i, index) => (
+              <fieldset key={index}>
+                <legend>Item {index + 1}</legend>
                 <label>
-                  Pedido padrão para preencher
+                  Sabor
                   <select
-                    value={template}
-                    onChange={(e) => {
-                      const p = defaults.plans.find(
-                        (p) => p.id === e.target.value,
-                      );
-                      if (p?.valid) applyTemplate(p);
-                    }}
+                    required
+                    value={i.variant_id}
+                    disabled={!!i.components}
+                    onChange={(e) =>
+                      setItems(
+                        items.map((v, j) =>
+                          j === index
+                            ? {
+                                variant_id: e.target.value,
+                                quantity: v.quantity,
+                              }
+                            : v,
+                        ),
+                      )
+                    }
                   >
-                    <option value="">Escolha um modelo</option>
-                    {defaults.plans.map((p) => (
-                      <option key={p.id} value={p.id} disabled={!p.valid}>
-                        {p.name}
-                        {p.valid ? '' : ' — revisar itens inativos'}
+                    <option value="">Selecione</option>
+                    {options.map((o) => (
+                      <option key={o.id} value={o.id}>
+                        {o.label}
                       </option>
                     ))}
+                    {editing?.items
+                      .filter(
+                        (o) => !options.some((v) => v.id === o.variant_id),
+                      )
+                      .map((o) => (
+                        <option key={o.variant_id} value={o.variant_id}>
+                          {o.product_name} — {o.variant_label} (histórico)
+                        </option>
+                      ))}
                   </select>
                 </label>
-              )}
-            </section>
-          )}
-          <label>
-            Data e hora combinadas (João Pessoa)
-            <input
-              required
-              type="datetime-local"
-              value={due}
-              onChange={(e) => setDue(e.target.value)}
-            />
-          </label>
-          {(kitCatalog.kits.length > 0 || kitItems.length > 0) && (
-            <KitItemsEditor
-              key={`${kitEditorEpoch}-${editing?.id ?? 'novo'}-${customer}`}
-              value={kitItems}
-              onChange={(value) => {
-                setKitItems(value);
-                if (value.length && items.every((i) => !i.variant_id))
-                  setItems([]);
-              }}
-              kits={kitCatalog.kits}
-              snapshots={kitSnapshots}
-              products={products.data}
-              limit={kitCatalog.limit}
-              mixed={mixed}
-              onEditingChange={setKitEditing}
-            />
-          )}
-          {items.map((i, index) => (
-            <fieldset key={index}>
-              <legend>Item {index + 1}</legend>
-              <label>
-                Sabor
-                <select
+                <CompositionEditor
+                  item={i}
+                  options={options}
+                  enabled={mixed}
+                  onChange={(value) =>
+                    setItems(items.map((v, j) => (j === index ? value : v)))
+                  }
+                />
+                <QuantityField
+                  label="Quantidade de embalagens"
                   required
-                  value={i.variant_id}
-                  disabled={!!i.components}
-                  onChange={(e) =>
+                  min="1"
+                  max="10000"
+                  value={i.quantity}
+                  onValueChange={(value) =>
                     setItems(
                       items.map((v, j) =>
-                        j === index
-                          ? { variant_id: e.target.value, quantity: v.quantity }
-                          : v,
+                        j === index ? { ...v, quantity: Number(value) } : v,
                       ),
                     )
                   }
-                >
-                  <option value="">Selecione</option>
-                  {options.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.label}
-                    </option>
-                  ))}
-                  {editing?.items
-                    .filter((o) => !options.some((v) => v.id === o.variant_id))
-                    .map((o) => (
-                      <option key={o.variant_id} value={o.variant_id}>
-                        {o.product_name} — {o.variant_label} (histórico)
-                      </option>
-                    ))}
-                </select>
-              </label>
-              <CompositionEditor
-                item={i}
-                options={options}
-                enabled={mixed}
-                onChange={(value) =>
-                  setItems(items.map((v, j) => (j === index ? value : v)))
-                }
+                />
+                {(items.length > 1 || i.components || kitItems.length > 0) && (
+                  <Button
+                    type="button"
+                    onClick={() =>
+                      setItems(
+                        items.length === 1
+                          ? [{ variant_id: '', quantity: 1 }]
+                          : items.filter((_, j) => j !== index),
+                      )
+                    }
+                  >
+                    Remover item {index + 1}
+                  </Button>
+                )}
+              </fieldset>
+            ))}
+            <Button
+              type="button"
+              disabled={items.length >= 50}
+              onClick={() =>
+                setItems([...items, { variant_id: '', quantity: 1 }])
+              }
+            >
+              Adicionar item
+            </Button>
+            {metadata && (
+              <OccasionPicker value={occasion} onChange={setOccasion} />
+            )}
+            <label>
+              Observações
+              <textarea
+                maxLength={2000}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
               />
-              <QuantityField
-                label="Quantidade de embalagens"
-                required
-                min="1"
-                max="10000"
-                value={i.quantity}
-                onValueChange={(value) =>
-                  setItems(
-                    items.map((v, j) =>
-                      j === index ? { ...v, quantity: Number(value) } : v,
-                    ),
-                  )
-                }
-              />
-              {(items.length > 1 || i.components || kitItems.length > 0) && (
-                <Button
-                  type="button"
-                  onClick={() =>
-                    setItems(
-                      items.length === 1
-                        ? [{ variant_id: '', quantity: 1 }]
-                        : items.filter((_, j) => j !== index),
-                    )
-                  }
-                >
-                  Remover item {index + 1}
-                </Button>
+            </label>
+            <p>
+              Prévia:{' '}
+              {money(
+                estimate +
+                  kitItems.reduce(
+                    (n, i) =>
+                      n +
+                      i.quantity *
+                        (kitItemPrice(i, kitCatalog.kits, kitSnapshots) ?? 0),
+                    0,
+                  ),
               )}
-            </fieldset>
-          ))}
-          <Button
-            type="button"
-            disabled={items.length >= 50}
-            onClick={() =>
-              setItems([...items, { variant_id: '', quantity: 1 }])
-            }
-          >
-            Adicionar item
-          </Button>
-          {metadata && (
-            <OccasionPicker value={occasion} onChange={setOccasion} />
-          )}
+              . O servidor confere o total ao salvar.
+            </p>
+            <div className="actions">
+              <Button
+                disabled={
+                  save.busy ||
+                  kitEditing ||
+                  (!items.length && !kitItems.length) ||
+                  items.some((i) => !compositionValid(i, options))
+                }
+                variant="primary"
+                loading={save.busy}
+              >
+                Salvar pedido
+              </Button>
+              <Button type="button" onClick={reset}>
+                {editing ? 'Cancelar edição' : 'Limpar campos'}
+              </Button>
+            </div>
+          </form>
+        )}
+        <div className="desktop-order-list">
           <label>
-            Observações
-            <textarea
-              maxLength={2000}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+            Buscar pedidos por cliente
+            <input
+              type="search"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
             />
           </label>
-          <p>
-            Prévia:{' '}
-            {money(
-              estimate +
-                kitItems.reduce(
-                  (n, i) =>
-                    n +
-                    i.quantity *
-                      (kitItemPrice(i, kitCatalog.kits, kitSnapshots) ?? 0),
-                  0,
-                ),
-            )}
-            . O servidor confere o total ao salvar.
-          </p>
-          <div className="actions">
-            <Button
-              disabled={
-                save.busy ||
-                kitEditing ||
-                (!items.length && !kitItems.length) ||
-                items.some((i) => !compositionValid(i, options))
-              }
-              variant="primary"
-              loading={save.busy}
-            >
-              Salvar pedido
-            </Button>
-            <Button type="button" onClick={reset}>
-              {editing ? 'Cancelar edição' : 'Limpar campos'}
-            </Button>
-          </div>
-        </form>
-      )}
-      <label>
-        Buscar pedidos por cliente
-        <input
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-      </label>
-      <Button onClick={() => void orders.reload()}>Atualizar pedidos</Button>
-      {orders.loading ? (
-        <SkeletonList label="Carregando pedidos…" />
-      ) : !orders.data.length ? (
-        <div className="mascot-empty">
-          <Mascot size={72} />
-          <p>Nenhum pedido encontrado.</p>
+          <Button onClick={() => void orders.reload()}>
+            Atualizar pedidos
+          </Button>
+          {orders.loading ? (
+            <SkeletonList label="Carregando pedidos…" />
+          ) : !orders.data.length ? (
+            <div className="mascot-empty">
+              <Mascot size={72} />
+              <p>Nenhum pedido encontrado.</p>
+            </div>
+          ) : (
+            <div className="record-list">
+              {orders.data.map((o) => (
+                <article className="panel" key={o.id}>
+                  <h2>{o.customer_name}</h2>
+                  {occasionLabel(o.occasion) && (
+                    <p>Ocasião: {occasionLabel(o.occasion)}</p>
+                  )}
+                  <p>
+                    {statusLabels[o.status] || 'Rascunho'} ·{' '}
+                    {dateTime(o.due_at)} · {money(o.total_cents)}
+                  </p>
+                  <ul>
+                    {o.items.map((i, index) => (
+                      <li key={i.id ?? index}>
+                        {i.quantity} ×{' '}
+                        {i.kit_id
+                          ? `${i.product_name} (${i.components?.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
+                          : i.components?.length
+                            ? `Caixa Mista (${i.components.map((c) => `${c.units} ${c.product_name ?? options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
+                            : `${i.product_name} — ${i.variant_label}`}{' '}
+                        · {money(i.unit_price_cents!)}
+                      </li>
+                    ))}
+                  </ul>
+                  {operational && (
+                    <Button
+                      className="button"
+                      to={`/gestao/pedidos/${o.id}`}
+                      variant="ghost"
+                    >
+                      Abrir pedido
+                    </Button>
+                  )}
+                  {['draft', 'awaiting_confirmation'].includes(o.status) && (
+                    <>
+                      <Button
+                        onClick={() => {
+                          if (simple) {
+                            navigate(`/gestao/pedidos/${o.id}/editar-simples`);
+                            return;
+                          }
+                          choice.current++;
+                          setDefaults(null);
+                          setTemplate('');
+                          setEditing(o);
+                          setCustomer(o.customer_id);
+                          setDue(
+                            new Date(new Date(o.due_at).getTime() - 3 * 3600000)
+                              .toISOString()
+                              .slice(0, 16),
+                          );
+                          setNotes(o.notes);
+                          setOccasion((o.occasion ?? '') as Occasion);
+                          setKitEditing(false);
+                          const savedKits = o.items.filter(
+                            (i) => i.kit_id,
+                          ) as unknown as KitItemSnapshot[];
+                          setKitSnapshots(savedKits);
+                          setKitItems(savedKits.map(kitSnapshotInput));
+                          setItems(o.items.filter((i) => !i.kit_id));
+                        }}
+                      >
+                        Editar pedido de {o.customer_name}
+                      </Button>
+                      <Button
+                        disabled={save.busy}
+                        onClick={async () => {
+                          if (
+                            await askConfirmation(
+                              'Arquivar rascunho? O registro e os itens serão preservados.',
+                              'Arquivar',
+                            )
+                          )
+                            void save.save(() =>
+                              api(`orders/${o.id}`, 'DELETE', {
+                                version: o.version,
+                              }),
+                            );
+                        }}
+                        variant="danger"
+                        loading={save.busy}
+                      >
+                        Arquivar pedido de {o.customer_name}
+                      </Button>
+                    </>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
         </div>
-      ) : (
-        <div className="record-list">
-          {orders.data.map((o) => (
-            <article className="panel" key={o.id}>
-              <h2>{o.customer_name}</h2>
-              {occasionLabel(o.occasion) && (
-                <p>Ocasião: {occasionLabel(o.occasion)}</p>
-              )}
-              <p>
-                {statusLabels[o.status] || 'Rascunho'} · {dateTime(o.due_at)} ·{' '}
-                {money(o.total_cents)}
-              </p>
-              <ul>
-                {o.items.map((i, index) => (
-                  <li key={i.id ?? index}>
-                    {i.quantity} ×{' '}
-                    {i.kit_id
-                      ? `${i.product_name} (${i.components?.map((c) => `${c.units} ${c.product_name}`).join(' + ')})`
-                      : i.components?.length
-                        ? `Caixa Mista (${i.components.map((c) => `${c.units} ${c.product_name ?? options.find((v) => v.id === c.variant_id)?.name ?? 'Sabor indisponível'}`).join(' + ')})`
-                        : `${i.product_name} — ${i.variant_label}`}{' '}
-                    · {money(i.unit_price_cents!)}
-                  </li>
-                ))}
-              </ul>
-              {operational && (
-                <Button
-                  className="button"
-                  to={`/gestao/pedidos/${o.id}`}
-                  variant="ghost"
-                >
-                  Abrir pedido
-                </Button>
-              )}
-              {['draft', 'awaiting_confirmation'].includes(o.status) && (
-                <>
-                  <Button
-                    onClick={() => {
-                      if (simple) {
-                        navigate(`/gestao/pedidos/${o.id}/editar-simples`);
-                        return;
-                      }
-                      choice.current++;
-                      setDefaults(null);
-                      setTemplate('');
-                      setEditing(o);
-                      setCustomer(o.customer_id);
-                      setDue(
-                        new Date(new Date(o.due_at).getTime() - 3 * 3600000)
-                          .toISOString()
-                          .slice(0, 16),
-                      );
-                      setNotes(o.notes);
-                      setOccasion((o.occasion ?? '') as Occasion);
-                      setKitEditing(false);
-                      const savedKits = o.items.filter(
-                        (i) => i.kit_id,
-                      ) as unknown as KitItemSnapshot[];
-                      setKitSnapshots(savedKits);
-                      setKitItems(savedKits.map(kitSnapshotInput));
-                      setItems(o.items.filter((i) => !i.kit_id));
-                    }}
-                  >
-                    Editar pedido de {o.customer_name}
-                  </Button>
-                  <Button
-                    disabled={save.busy}
-                    onClick={async () => {
-                      if (
-                        await askConfirmation(
-                          'Arquivar rascunho? O registro e os itens serão preservados.',
-                          'Arquivar',
-                        )
-                      )
-                        void save.save(() =>
-                          api(`orders/${o.id}`, 'DELETE', {
-                            version: o.version,
-                          }),
-                        );
-                    }}
-                    variant="danger"
-                    loading={save.busy}
-                  >
-                    Arquivar pedido de {o.customer_name}
-                  </Button>
-                </>
-              )}
-            </article>
-          ))}
-        </div>
-      )}
+      </div>
     </>
   );
 }
@@ -1791,6 +1838,10 @@ function Accesses() {
 }
 export function Management() {
   const [newVisit, setNewVisit] = useState(false);
+  const desktop = useDesktopLayout();
+  const { pathname } = useLocation();
+  const [desktopCalendar, setDesktopCalendar] =
+    useState<HTMLSpanElement | null>(null);
 
   const [session, setSession] = useState<Session | null>(null);
   const [error, setError] = useState('');
@@ -1891,6 +1942,27 @@ export function Management() {
         )}
       </section>
     );
+  const orders = (detail?: OrderDetailPane) => (
+    <Orders
+      metadata={session.customer_orders}
+      kitOrders={session.kit_orders}
+      mixed={session.mixed}
+      operational={session.operations}
+      financial={session.finance}
+      mobile={session.mobile}
+      role={session.role}
+      detail={detail}
+    />
+  );
+  const orderDetail = (onChanged?: () => Promise<void>) => (
+    <OrderDetail
+      key={pathname}
+      p1={session.p1}
+      onChanged={onChanged}
+      financial={session.finance}
+      mobile={session.mobile}
+    />
+  );
   const management = (
     <ConfirmProvider enabled={online}>
       <TestEnvironmentBanner />
@@ -1906,11 +1978,84 @@ export function Management() {
           <section
             className={`management ${session.operations ? 'operations-active' : ''}`}
           >
+            {desktop && session.operations && (
+              <aside className="desktop-sidebar">
+                <NavLink to="/gestao" className="private-brand">
+                  <img src="/brand/logo.webp" alt="" width={44} height={44} />
+                  <span>
+                    Amor Zeloso <small>Gestão</small>
+                  </span>
+                </NavLink>
+                <nav aria-label="Gestão privada">
+                  {(
+                    [
+                      ['', 'Hoje', 'inicio', 'today'],
+                      ['pedidos', 'Pedidos', 'pedidos', 'orders'],
+                      ['clientes', 'Clientes', 'clientes', 'customers'],
+                      ['produtos', 'Produtos e kits', 'produtos', 'products'],
+                      [
+                        'recorrentes',
+                        'Pedidos padrão',
+                        'recorrentes',
+                        'recurring',
+                      ],
+                      ...(session.p1
+                        ? [
+                            [
+                              'relatorios',
+                              'Relatórios',
+                              'financeiro',
+                              'reports',
+                            ],
+                          ]
+                        : []),
+                      ['mais', 'Mais', 'mais', 'more'],
+                    ] as [string, string, IconName, string][]
+                  ).map(([path, title, icon, tour]) => (
+                    <NavLink
+                      key={path}
+                      to={
+                        path
+                          ? `/gestao/${path}`
+                          : pathname === '/gestao/'
+                            ? pathname
+                            : '/gestao'
+                      }
+                      end={!path}
+                      data-tour={tour}
+                      onClick={
+                        !path
+                          ? () =>
+                              window.dispatchEvent(new Event('reset-workday'))
+                          : undefined
+                      }
+                    >
+                      <Icon name={icon} size={20} />
+                      {title}
+                    </NavLink>
+                  ))}
+                </nav>
+                <Button
+                  className="desktop-new"
+                  variant="primary"
+                  aria-label="Novo cadastro"
+                  disabled={!online}
+                  data-tour="new"
+                  onClick={() => quick.current?.showModal()}
+                  icon={<Icon name="novo" size={18} />}
+                >
+                  Novo
+                </Button>
+              </aside>
+            )}
             <CompactHeader
               role={session.role}
               developer={!!session.developer}
               online={online}
               operations={!!session.operations}
+              desktop={desktop && !!session.operations}
+              calendarSlot={setDesktopCalendar}
+              ownerAccess={session.role === 'owner'}
               onLogout={() => void logout()}
             />
             <header className="management-header">
@@ -2004,6 +2149,7 @@ export function Management() {
                       <Today
                         followup={session.prospect_followup}
                         role={session.role}
+                        calendarSlot={desktop ? desktopCalendar : null}
                         financial={session.finance}
                         p1={session.p1}
                         backupOrganizationId={
@@ -2033,23 +2179,13 @@ export function Management() {
                       role={session.role}
                       mobile={session.mobile}
                       flavorOnly={session.customer_orders && session.p1}
+                      desktopKits={
+                        desktop && !!session.operations && !!session.p1
+                      }
                     />
                   }
                 />
-                <Route
-                  path="pedidos"
-                  element={
-                    <Orders
-                      metadata={session.customer_orders}
-                      kitOrders={session.kit_orders}
-                      mixed={session.mixed}
-                      operational={session.operations}
-                      financial={session.finance}
-                      mobile={session.mobile}
-                      role={session.role}
-                    />
-                  }
-                />
+                <Route path="pedidos" element={orders()} />
                 {session.prospect_followup && (
                   <Route path="prospeccao" element={<ProspectReportPage />} />
                 )}
@@ -2171,13 +2307,7 @@ export function Management() {
                   <>
                     <Route
                       path="pedidos/:id"
-                      element={
-                        <OrderDetail
-                          p1={session.p1}
-                          financial={session.finance}
-                          mobile={session.mobile}
-                        />
-                      }
+                      element={desktop ? orders(orderDetail) : orderDetail()}
                     />
                     <Route
                       path="recorrentes"
