@@ -1,3 +1,9 @@
+## T20 — plano antes do código (22/11/2026)
+
+Base `4ae0bf1`, versão 1.6.0 e prévia `previas/t20-pedidos-em-lote.png`. Em Pedidos, acrescentar seleção por dia, folha de conferência e barra de ações. No servidor, usar pequenos lotes com a mesma validação de confirmação e saída do pedido individual. Por pedido, uma transação grava a mudança, todos os eventos, auditoria e recibo idempotente. Usar o registro existente de operações para permitir desfazer em 30 segundos com CAS e eventos compensatórios. O esquema da 0007 já fornece esse registro.
+
+Aceite: preservar cada horário no fuso do negócio, registrar a sequência completa inclusive retirada, recomputar vencimentos T17/T18, proteger sessão, organização e concorrência, exibir pulados e permitir desfazer somente a alteração original. Testar celular e computador, capturar estados da prévia com dados de demonstração e enviar o PR para revisão.
+
 ## T18 — retorno da revisão automática do PR #27 (22/11/2026)
 
 Em `worker/calendar.ts`, filtrar a condição por entregas antes do limite de perfis com fechamento por data. O cálculo de vencimentos continua vindo dos recebíveis. No teste de integração da T18, salvar a condição no cadastro e conferir Agenda e ICS antes e depois da entrega efetiva, junto de um cliente com fechamento semanal.
