@@ -5,9 +5,9 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T14** (tela de erro e Sugestões/Recebidas; prévia aprovada; detalhes abaixo). Versão **1.1.0** (o app virou **1.0.0** em 20/11, dia da entrega). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub. Base: main com 1.0.0 (modo escuro e passeio novos, feitos pelo Claude).
+`VEZ: CODEX` — tarefa **T17** (pedido já entregue no cadastro, pagamento "Na próxima entrega" e vencimento em dia fixo do mês; detalhes abaixo). Versão **1.2.0**. Base: main atual (1.0.10). **A T14 (PR #23) está sendo integrada pelo Claude em paralelo** e entra no main como 1.1.0 com a migração **0028**: antes de abrir o PR, incorpore o main atual; se a T17 precisar de migração, use o número seguinte ao último do main (0029 se a T14 já estiver lá). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
-**Pendências do Felipe (fora do código):** aplicar a migração **0027** (lembrete de backup) pela Homologação D1: PRE_CHECAGEM → APLICAR_PENDENTES. cadastrar os 12 kits + kit padrão (banco tem 0 kits em 17/11). Ativação das notificações: workflow "Ativar lembretes (manual)" já publicado (T8); passos em `docs/FASE_R6_LEMBRETES.md`.
+**Pendências do Felipe (fora do código):** quando o Claude publicar a 1.1.0 (T14), aplicar a migração **0028** pela Homologação D1 (backup → PRE_CHECAGEM → APLICAR_PENDENTES). Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
 
 
