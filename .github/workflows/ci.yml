@@ -1,9 +1,13 @@
 name: Validação da gestão
-# Repositório privado: o plano gratuito tem 2.000 minutos de Actions por mês.
 # - Mudanças só em documentação não rodam a bateria.
 # - Envio novo no mesmo branch cancela a execução anterior.
 # - Nos branches de trabalho, testes de tela só no Chromium móvel; no main,
 #   em pull requests e na execução manual, nos três navegadores.
+# - Interruptor E2E_SHARDS (GitHub → Settings → Secrets and variables →
+#   Actions → Variables): quantas máquinas dividem os testes de tela.
+#   Repositório público: 3 (mais rápido, minutos grátis). Repositório
+#   privado: 1 (gasta menos dos 2.000 minutos do plano gratuito). Sem a
+#   variável, vale 1.
 on:
   push:
     paths-ignore: ['docs/**', '**.md', '.zap/**']
@@ -15,10 +19,14 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 permissions:
   contents: read
+env:
+  # Testes de tela completos no main, em PR e na execução manual.
+  FULL_E2E: ${{ github.ref == 'refs/heads/main' || github.event_name != 'push' }}
 jobs:
+  # Verificações rápidas e testes de servidor (em paralelo com os de tela).
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -60,19 +68,63 @@ jobs:
       - run: npm run test:visit-entry
       - run: npm run test:security
       - run: npm run test:cleanup
+
+  # Lê o interruptor e monta a lista de partes dos testes de tela.
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      shards: ${{ steps.plan.outputs.shards }}
+      total: ${{ steps.plan.outputs.total }}
+    steps:
+      - id: plan
+        env:
+          WANTED: ${{ vars.E2E_SHARDS }}
+        run: |
+          n="${WANTED:-1}"
+          case "$n" in 1|2|3|4|5|6) ;; *) n=1 ;; esac
+          # Branch de trabalho (só Chromium móvel): uma máquina basta.
+          [ "$FULL_E2E" = "true" ] || n=1
+          echo "total=$n" >> "$GITHUB_OUTPUT"
+          echo "shards=[$(seq -s, 1 "$n")]" >> "$GITHUB_OUTPUT"
+          echo "Testes de tela em $n parte(s)."
+
+  e2e:
+    needs: plan
+    name: e2e (${{ matrix.shard }}/${{ needs.plan.outputs.total }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJSON(needs.plan.outputs.shards) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      # Navegadores do Playwright em cache pela versão travada no lock.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - run: npm run db:migrate:local
+      - run: npm run build:pages
       - name: Testes de tela (três navegadores)
-        if: github.ref == 'refs/heads/main' || github.event_name != 'push'
+        if: env.FULL_E2E == 'true'
         run: |
           npx playwright install --with-deps chromium webkit
-          npm run test:e2e
+          npm run test:e2e -- --shard=${{ matrix.shard }}/${{ needs.plan.outputs.total }}
       - name: Testes de tela (Chromium móvel, branch de trabalho)
-        if: github.ref != 'refs/heads/main' && github.event_name == 'push'
+        if: env.FULL_E2E != 'true'
         run: |
           npx playwright install --with-deps chromium
           npm run test:e2e -- --project=chromium-mobile
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: resultados-playwright
+          name: resultados-playwright-${{ matrix.shard }}
           path: test-results/
           retention-days: 7
