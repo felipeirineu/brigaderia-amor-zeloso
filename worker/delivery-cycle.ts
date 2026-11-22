@@ -95,22 +95,24 @@ export async function todayDeliveryCycles(
     throw new HttpError(409, 'Mais de 5000 entregas nas contas do dia.');
   const { positions } = resolveDeliveryCycles(rows, day);
   const orders = new Map(rows.map((row) => [row.order_id, row]));
-  return [...positions].map(([order_id, { cycle, position }]) => ({
-    customer_id: cycle.customer,
-    order_id,
-    order_ids: cycle.orders,
-    days: cycle.days,
-    position,
-    size: cycle.size,
-    due_on: cycle.due_on,
-    projected: cycle.projected,
-    total_cents: cycle.orders.reduce(
-      (sum, id) => sum + orders.get(id)!.total_cents,
-      0,
-    ),
-    balance_cents: cycle.orders.reduce(
-      (sum, id) => sum + orders.get(id)!.balance_cents,
-      0,
-    ),
-  }));
+  return [...positions]
+    .filter(([, { cycle, position }]) => cycle.days[position - 1] === day)
+    .map(([order_id, { cycle, position }]) => ({
+      customer_id: cycle.customer,
+      order_id,
+      order_ids: cycle.orders,
+      days: cycle.days,
+      position,
+      size: cycle.size,
+      due_on: cycle.due_on,
+      projected: cycle.projected,
+      total_cents: cycle.orders.reduce(
+        (sum, id) => sum + orders.get(id)!.total_cents,
+        0,
+      ),
+      balance_cents: cycle.orders.reduce(
+        (sum, id) => sum + orders.get(id)!.balance_cents,
+        0,
+      ),
+    }));
 }

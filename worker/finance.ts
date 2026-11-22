@@ -1,3 +1,4 @@
+import { childrenByParent } from './listing';
 import { resolveDeliveryCycles, todayDeliveryCycles } from './delivery-cycle';
 import {
   completionDay,
@@ -122,18 +123,21 @@ export async function accountView(
           : 0,
     };
   });
+  const enrichedById = new Map(enriched.map((order) => [order.id, order]));
   const deliveryCycles = [...positions].flatMap(([id, { cycle, position }]) =>
     cycle.due_on && position === cycle.size
       ? [
           {
             id,
             ...cycle,
-            total_cents: enriched
-              .filter((o) => cycle.orders.includes(o.id))
-              .reduce((sum, o) => sum + o.total_cents, 0),
-            balance_cents: enriched
-              .filter((o) => cycle.orders.includes(o.id))
-              .reduce((sum, o) => sum + o.balance_cents, 0),
+            total_cents: cycle.orders.reduce(
+              (sum, id) => sum + enrichedById.get(id)!.total_cents,
+              0,
+            ),
+            balance_cents: cycle.orders.reduce(
+              (sum, id) => sum + enrichedById.get(id)!.balance_cents,
+              0,
+            ),
           },
         ]
       : [],
@@ -644,10 +648,13 @@ export async function finance(
         .object({
           closing_id: z.uuid().optional(),
           order_id: z.uuid().optional(),
+          delivery_cycle_id: z.uuid().optional(),
         })
         .strict()
         .refine(
-          (d) => !(d.closing_id && d.order_id),
+          (d) =>
+            [d.closing_id, d.order_id, d.delivery_cycle_id].filter(Boolean)
+              .length <= 1,
           'Escolha pedido ou fechamento.',
         ),
     );
@@ -663,19 +670,33 @@ export async function finance(
       : null;
     if (d.order_id && !selectedOrder)
       throw new HttpError(404, 'Pedido não encontrado nesta conta.');
-    const balance = selectedOrder
-      ? selectedOrder.receivable_cents
-      : closing
-        ? Number(closing.balance_cents)
-        : view.receivable_cents;
+    const cycle = d.delivery_cycle_id
+      ? (view.delivery_cycles.find((c) => c.id === d.delivery_cycle_id) ??
+        (await todayDeliveryCycles(db, org, businessDay(), [id])).find(
+          (c) => c.order_id === d.delivery_cycle_id && c.position === c.size,
+        ))
+      : null;
+    if (d.delivery_cycle_id && !cycle)
+      throw new HttpError(
+        409,
+        'O ciclo mudou. Atualize as entregas antes de cobrar.',
+      );
+    const balance =
+      cycle?.balance_cents ??
+      (selectedOrder
+        ? selectedOrder.receivable_cents
+        : closing
+          ? Number(closing.balance_cents)
+          : view.receivable_cents);
     if (balance <= 0) throw new HttpError(400, 'Não há saldo para cobrar.');
     const settings = await db
       .prepare('SELECT data FROM payment_settings WHERE organization_id=?')
       .bind(org)
       .first<{ data: string }>();
-    const pix = settings
-      ? pixCode(pixSchema.parse(JSON.parse(settings.data)), balance)
-      : null;
+    const pix =
+      settings && !cycle?.projected
+        ? pixCode(pixSchema.parse(JSON.parse(settings.data)), balance)
+        : null;
     const brl = (c: number) =>
       new Intl.NumberFormat('pt-BR', {
         style: 'currency',
@@ -687,7 +708,34 @@ export async function finance(
         (!closing || o.closing_id === closing.id) &&
         (!selectedOrder || o.id === selectedOrder.id),
     );
-    const message = `Olá, ${customer.name}! Segue o resumo ${selectedOrder ? 'do pedido selecionado' : closing ? `do fechamento ${closing.period_start} a ${closing.period_end}` : 'da sua conta'}: ${lines.map((o) => `pedido ${'number' in o && o.number ? 'nº ' + String(o.number) : String(o.id).slice(0, 8)} (${o.business_date}): ${brl(o.receivable_cents)}`).join('; ')}. Saldo: ${brl(balance)}.${closing ? ` Vencimento: ${closing.due_on}.` : selectedOrder?.due_on ? ` Vencimento: ${selectedOrder.due_on}.` : selectedOrder?.terms.mode === 'next_delivery' ? ' Vencimento na próxima entrega.' : ''}${pix ? ` Pix copia e cola: ${pix}` : ''}`;
+    let message = `Olá, ${customer.name}! Segue o resumo ${selectedOrder ? 'do pedido selecionado' : closing ? `do fechamento ${closing.period_start} a ${closing.period_end}` : 'da sua conta'}: ${lines.map((o) => `pedido ${'number' in o && o.number ? 'nº ' + String(o.number) : String(o.id).slice(0, 8)} (${o.business_date}): ${brl(o.receivable_cents)}`).join('; ')}. Saldo: ${brl(balance)}.${closing ? ` Vencimento: ${closing.due_on}.` : selectedOrder?.due_on ? ` Vencimento: ${selectedOrder.due_on}.` : selectedOrder?.terms.mode === 'next_delivery' ? ' Vencimento na próxima entrega.' : ''}${pix ? ` Pix copia e cola: ${pix}` : ''}`;
+    if (cycle) {
+      const orderIds = 'order_ids' in cycle ? cycle.order_ids : cycle.orders;
+      const snapshots = await childrenByParent(db, org, 'orders', orderIds);
+      const orders = new Map(view.orders.map((o) => [o.id, o]));
+      const detail = orderIds.map((orderId, index) => {
+        const items = (snapshots.get(orderId) ?? [])
+          .map((item) => `${item.quantity}× ${item.product_name}`)
+          .join(', ');
+        const date = cycle.days[index].split('-').reverse().join('/');
+        return `• ${date} · ${items} · ${brl(orders.get(orderId)?.total_cents ?? 0)}`;
+      });
+      message = [
+        `Olá, ${customer.name}! Aqui é da Brigaderia Amor Zeloso.`,
+        cycle.projected
+          ? `Previsão para o fechamento após a entrega de hoje (${cycle.size} entregas):`
+          : `Fechamos as últimas ${cycle.size} entregas:`,
+        ...detail,
+        `Total: ${brl(cycle.total_cents)}.`,
+        ...(cycle.balance_cents !== cycle.total_cents
+          ? [`Saldo: ${brl(balance)}.`]
+          : []),
+        ...(cycle.due_on
+          ? [`Vencimento: ${cycle.due_on.split('-').reverse().join('/')}.`]
+          : []),
+        ...(pix ? [`Pix copia e cola: ${pix}`] : []),
+      ].join('\n');
+    }
     // Sem telefone cadastrado: a mensagem sai e o contato é escolhido no WhatsApp.
     if (
       hasPhone(customer.phone) &&
@@ -730,6 +778,7 @@ export async function finance(
     response: Record<string, unknown>,
     protectedOrders: { id: string; version: number; status: string }[] = [];
   const statements: D1PreparedStatement[] = [];
+  let protectedOrderCount: number | null = null;
   const nonce = crypto.randomUUID(),
     guard =
       'EXISTS(SELECT 1 FROM finance_accounts WHERE organization_id=? AND customer_id=? AND mutation_id=?)',
@@ -739,8 +788,20 @@ export async function finance(
     version = d.version;
     if (d.paid_on > businessDay())
       throw new HttpError(400, 'Recebimento não pode ter data futura.');
+    const cycle = d.delivery_cycle_id
+      ? view.delivery_cycles.find((c) => c.id === d.delivery_cycle_id)
+      : null;
+    if (d.delivery_cycle_id && !cycle)
+      throw new HttpError(
+        409,
+        'O ciclo mudou ou ainda não fechou. Atualize a conta.',
+      );
     let eligible = view.orders.filter((o) =>
-      d.order_id ? o.id === d.order_id : o.closing_id === d.closing_id,
+      cycle
+        ? cycle.orders.includes(o.id)
+        : d.order_id
+          ? o.id === d.order_id
+          : o.closing_id === d.closing_id,
     );
     if (!eligible.length)
       throw new HttpError(
@@ -763,14 +824,15 @@ export async function finance(
     const balance = eligible.reduce((n, o) => n + o.balance_cents, 0);
     if (d.amount_cents > balance)
       throw new HttpError(409, 'Valor excede o saldo.');
-    if (d.kind === 'deposit' && d.closing_id)
+    if (d.kind === 'deposit' && (d.closing_id || cycle))
       throw new HttpError(400, 'Sinal deve ser vinculado a um pedido.');
     eligible = eligible.sort(
       (a, b) =>
         String(a.due_at).localeCompare(String(b.due_at)) ||
         String(a.id).localeCompare(String(b.id)),
     );
-    protectedOrders = eligible;
+    protectedOrders = cycle ? view.orders : eligible;
+    if (cycle) protectedOrderCount = view.orders.length;
     let remaining = d.amount_cents;
     const allocations = [];
     for (const o of eligible) {
@@ -943,7 +1005,7 @@ export async function finance(
       .bind(org, id),
     db
       .prepare(
-        "UPDATE finance_accounts SET version=version+1,mutation_id=? WHERE organization_id=? AND customer_id=? AND version=? AND NOT EXISTS (SELECT 1 FROM json_each(?) j LEFT JOIN orders o ON o.organization_id=? AND o.id=json_extract(j.value,'$.id') WHERE o.id IS NULL OR o.version<>json_extract(j.value,'$.version') OR o.status<>json_extract(j.value,'$.status'))",
+        "UPDATE finance_accounts SET version=version+1,mutation_id=? WHERE organization_id=? AND customer_id=? AND version=? AND NOT EXISTS (SELECT 1 FROM json_each(?) j LEFT JOIN orders o ON o.organization_id=? AND o.id=json_extract(j.value,'$.id') WHERE o.id IS NULL OR o.version<>json_extract(j.value,'$.version') OR o.status<>json_extract(j.value,'$.status')) AND (? IS NULL OR (SELECT COUNT(*) FROM orders WHERE organization_id=? AND customer_id=?)=?)",
       )
       .bind(
         nonce,
@@ -958,6 +1020,10 @@ export async function finance(
           })),
         ),
         org,
+        protectedOrderCount,
+        org,
+        id,
+        protectedOrderCount,
       ),
     db
       .prepare(

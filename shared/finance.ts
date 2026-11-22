@@ -49,6 +49,24 @@ export function setTermsCycle(terms: Terms, cycle: Terms['cycle']): Terms {
     due_days: terms.due_day_of_month != null ? null : (terms.due_days ?? 0),
   };
 }
+export function setTermsMode(terms: Terms, mode: Terms['mode']): Terms {
+  if (mode === 'credit')
+    return {
+      ...terms,
+      mode,
+      due_days:
+        terms.cycle === 'deliveries' || terms.due_day_of_month != null
+          ? null
+          : (terms.due_days ?? 0),
+    };
+  return {
+    ...terms,
+    mode,
+    cycle: terms.cycle === 'deliveries' ? 'fixed_days' : terms.cycle,
+    every_deliveries: undefined,
+    due_day_of_month: undefined,
+  };
+}
 export function termsModeLabel(terms: Terms) {
   const count = deliveryCycleSize(terms);
   return count

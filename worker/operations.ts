@@ -1,3 +1,5 @@
+import { completedAt } from './order-completion';
+import { todayDeliveryCycles } from './delivery-cycle';
 import { requireSharedDelivery } from './shared-delivery';
 import { visitsReady, visitList, sampleProduction } from './visits';
 import { requireCustomer } from './prospects';
@@ -114,9 +116,14 @@ export async function operations(
     const rows = (
       await db
         .prepare(
-          `SELECT o.*,${orderNumber('o')}${financial ? ",COALESCE(json_extract(t.data,'$.mode'),'unset') AS payment_mode,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -pa.amount_cents ELSE pa.amount_cents END) FROM payment_allocations pa JOIN payment_events e ON e.organization_id=pa.organization_id AND e.id=pa.event_id WHERE pa.organization_id=o.organization_id AND pa.order_id=o.id),0) AS paid_cents" : ''} FROM orders o ${financial ? 'LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id' : ''} WHERE o.organization_id=? AND o.active=1 AND o.status<>'cancelled' AND o.due_at>=? AND o.due_at<? ORDER BY o.due_at,o.id LIMIT 201`,
+          `SELECT o.*,${orderNumber('o')}${financial ? ",COALESCE(json_extract(t.data,'$.mode'),'unset') AS payment_mode,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -pa.amount_cents ELSE pa.amount_cents END) FROM payment_allocations pa JOIN payment_events e ON e.organization_id=pa.organization_id AND e.id=pa.event_id WHERE pa.organization_id=o.organization_id AND pa.order_id=o.id),0) AS paid_cents" : ''} FROM orders o ${financial ? 'LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id' : ''} WHERE o.organization_id=?1 AND o.active=1 AND o.status<>'cancelled' AND ((o.due_at>=?2 AND o.due_at<?3)${financial ? ` OR (t.payment_mode='credit' AND json_extract(t.data,'$.cycle')='deliveries' AND o.status IN ('delivered','picked_up') AND ${completedAt}>=unixepoch(?2) AND ${completedAt}<unixepoch(?4))` : ''}) ORDER BY o.due_at,o.id LIMIT 201`,
         )
-        .bind(org, utcStart(day), utcStart(addDays(day, 2)))
+        .bind(
+          org,
+          utcStart(day),
+          utcStart(addDays(day, 2)),
+          ...(financial ? [utcStart(addDays(day, 1))] : []),
+        )
         .all<Row>()
     ).results;
     const truncated = rows.length > 200;
@@ -232,6 +239,15 @@ export async function operations(
       day,
       role: a.role,
       orders,
+      delivery_cycles: financial
+        ? await todayDeliveryCycles(db, org, day, [
+            ...new Set(
+              selected
+                .filter((o) => o.payment_mode === 'credit')
+                .map((o) => String(o.customer_id)),
+            ),
+          ])
+        : [],
       pending_orders,
       pending_truncated: pendingRows.length > 50,
       travel_week_cents,

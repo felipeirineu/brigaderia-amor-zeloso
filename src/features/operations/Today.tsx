@@ -1,3 +1,5 @@
+import { DeliveryCycleNotice } from '../finance/DeliveryCycleNotice';
+import type { DeliveryCycleCard } from '../../../shared/delivery-cycle';
 import { createPortal } from 'react-dom';
 import { paymentModeLabels, type Terms } from '../../../shared/finance';
 import { BackupReminderCard } from '../p1/BackupReminderCard';
@@ -105,7 +107,9 @@ export function Today({
         return false;
       }
     });
-  const [receipt, setReceipt] = useState<OperationalOrder | null>(null),
+  const [receipt, setReceipt] = useState<
+      (OperationalOrder & { deliveryCycle?: boolean }) | null
+    >(null),
     [combinedUndo, setCombinedUndo] = useState<
       (ReceiptResult & { customer_id: string }) | null
     >(null),
@@ -173,6 +177,7 @@ export function Today({
     orders: OperationalOrder[];
     pending_orders: OperationalOrder[];
     pending_truncated: boolean;
+    delivery_cycles?: DeliveryCycleCard[];
     travel_week_cents: number | null;
     production: {
       photo_key: string | null;
@@ -267,14 +272,19 @@ export function Today({
   );
   const salutation =
     greeting(now) + (ownProfile?.version ? ', ' + ownProfile.display_name : '');
+  const deliveryCycles = new Map(
+    view.data?.delivery_cycles?.map((cycle) => [cycle.order_id, cycle]),
+  );
   const dayOrders = (view.data?.orders ?? [])
     .filter(
       (o) =>
         (role !== 'owner' ||
           !['draft', 'awaiting_confirmation'].includes(o.status)) &&
         (day >= localDay() || ['delivered', 'picked_up'].includes(o.status)) &&
-        new Date(Date.parse(o.due_at) - 10800000).toISOString().slice(0, 10) ===
-          day,
+        (deliveryCycles.has(o.id) ||
+          new Date(Date.parse(o.due_at) - 10800000)
+            .toISOString()
+            .slice(0, 10) === day),
     )
     .sort((a, b) => {
       if (!near || !field?.data)
@@ -444,6 +454,7 @@ export function Today({
       {receipt && (
         <QuickReceipt
           order={receipt}
+          deliveryCycle={receipt.deliveryCycle}
           onClose={() => setReceipt(null)}
           onSaved={(result) => {
             if (result.undo_id)
@@ -709,6 +720,7 @@ export function Today({
               </div>
               <div className="record-list">
                 {dayOrders.map((order) => {
+                  const cycle = deliveryCycles.get(order.id);
                   const actions = (
                     <>
                       <div className="delivery-payment">
@@ -949,6 +961,14 @@ export function Today({
                           ),
                         )}
                       </div>
+                      {cycle && (
+                        <DeliveryCycleNotice
+                          cycle={cycle}
+                          onReceive={() =>
+                            setReceipt({ ...order, deliveryCycle: true })
+                          }
+                        />
+                      )}
                       {calendarSlot ? (
                         <details className="desktop-delivery-actions">
                           <DisclosureSummary>
@@ -963,14 +983,7 @@ export function Today({
                   );
                 })}
               </div>
-              {!view.data.orders.some(
-                (o) =>
-                  new Date(Date.parse(o.due_at) - 10800000)
-                    .toISOString()
-                    .slice(0, 10) === day &&
-                  (day >= localDay() ||
-                    ['delivered', 'picked_up'].includes(o.status)),
-              ) && (
+              {dayOrders.length === 0 && (
                 <section className="empty-state">
                   <Mascot size={88} />
                   <h2>Nenhuma entrega neste período.</h2>

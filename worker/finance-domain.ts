@@ -78,6 +78,7 @@ export const paymentSchema = z
     version: z.number().int().positive(),
     order_id: z.uuid().optional(),
     closing_id: z.uuid().optional(),
+    delivery_cycle_id: z.uuid().optional(),
     kind: z.enum(['payment', 'deposit']),
     amount_cents: z.number().int().positive().max(1000000000),
     method: z.enum(['pix', 'cash', 'debit', 'credit', 'transfer', 'other']),
@@ -85,7 +86,9 @@ export const paymentSchema = z
   })
   .strict()
   .refine(
-    (d) => !!d.order_id !== !!d.closing_id,
+    (d) =>
+      [d.order_id, d.closing_id, d.delivery_cycle_id].filter(Boolean).length ===
+      1,
     'Selecione pedido ou fechamento.',
   );
 /**

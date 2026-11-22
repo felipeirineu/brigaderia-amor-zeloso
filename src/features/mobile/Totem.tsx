@@ -1,3 +1,4 @@
+import { DeliveryCycleEditor } from '../finance/DeliveryCycleEditor';
 import { courierChoices, type Courier } from '../../../shared/courier';
 import { AlcoholTag } from '../../components/AlcoholTag';
 import { AvatarChip } from '../../components/AvatarChip';
@@ -64,6 +65,9 @@ import { deliveryAddress, emptyPlace } from '../../../shared/field';
 import {
   emptyTerms,
   paymentModeLabels,
+  setTermsCycle,
+  setTermsMode,
+  termsModeLabel,
   paymentMethods,
   dueDayLabel,
   type B2BProfile,
@@ -1889,19 +1893,10 @@ export function Totem({
                   aria-pressed={terms.mode === mode}
                   onClick={() =>
                     setTerms(
-                      mode === 'credit'
-                        ? defaults?.profile.terms.mode === 'credit'
-                          ? defaults.profile.terms
-                          : {
-                              ...terms,
-                              mode,
-                              cycle:
-                                terms.cycle === 'fourteen_days'
-                                  ? 'fixed_days'
-                                  : terms.cycle,
-                              due_days: terms.due_days ?? 0,
-                            }
-                        : { ...terms, mode, due_day_of_month: undefined },
+                      mode === 'credit' &&
+                        defaults?.profile.terms.mode === 'credit'
+                        ? defaults.profile.terms
+                        : setTermsMode(terms, mode),
                     )
                   }
                 >
@@ -1921,6 +1916,7 @@ export function Totem({
                     ['weekly', 'Semanal'],
                     ['fixed_days', 'Quinzenal (dia 15 e fim do mês)'],
                     ['monthly', 'Mensal'],
+                    ['deliveries', 'A cada X entregas'],
                   ] as const
                 ).map(([cycle, label]) => (
                   <Button
@@ -1928,79 +1924,88 @@ export function Totem({
                     variant="chip"
                     aria-pressed={terms.cycle === cycle}
                     onClick={() =>
-                      setTerms({
-                        ...terms,
-                        cycle,
-                        fixed_days:
-                          cycle === 'fixed_days' ? [15, 31] : terms.fixed_days,
-                      })
+                      setTerms(
+                        setTermsCycle(
+                          cycle === 'fixed_days'
+                            ? { ...terms, fixed_days: [15, 31] }
+                            : terms,
+                          cycle,
+                        ),
+                      )
                     }
                   >
                     {label}
                   </Button>
                 ))}
               </div>
-              <h3 className="order-section-label">Pagar</h3>
-              <div
-                className="chips"
-                role="group"
-                aria-label="Prazo após o fechamento"
-              >
-                {(
-                  [
-                    [0, 'No fechamento'],
-                    [7, '7 dias depois'],
-                    [15, '15 dias depois'],
-                  ] as const
-                ).map(([days, label]) => (
-                  <Button
-                    key={days}
-                    variant="chip"
-                    aria-pressed={
-                      terms.due_day_of_month == null && terms.due_days === days
-                    }
-                    onClick={() =>
-                      setTerms({
-                        ...terms,
-                        due_days: days,
-                        due_day_of_month: undefined,
-                      })
-                    }
+              {terms.cycle === 'deliveries' ? (
+                <DeliveryCycleEditor value={terms} onChange={setTerms} />
+              ) : (
+                <>
+                  <h3 className="order-section-label">Pagar</h3>
+                  <div
+                    className="chips"
+                    role="group"
+                    aria-label="Prazo após o fechamento"
                   >
-                    {label}
-                  </Button>
-                ))}
-                <Button
-                  variant="chip"
-                  aria-pressed={terms.due_day_of_month != null}
-                  onClick={() =>
-                    setTerms({
-                      ...terms,
-                      due_days: null,
-                      due_day_of_month: terms.due_day_of_month ?? 10,
-                    })
-                  }
-                >
-                  Dia do mês
-                </Button>
-              </div>
-              {terms.due_day_of_month != null && (
-                <label>
-                  Dia de vencimento (31 = último dia)
-                  <input
-                    type="number"
-                    min={1}
-                    max={31}
-                    required
-                    value={terms.due_day_of_month || ''}
-                    onChange={(e) =>
-                      setTerms({
-                        ...terms,
-                        due_day_of_month: Number(e.target.value),
-                      })
-                    }
-                  />
-                </label>
+                    {(
+                      [
+                        [0, 'No fechamento'],
+                        [7, '7 dias depois'],
+                        [15, '15 dias depois'],
+                      ] as const
+                    ).map(([days, label]) => (
+                      <Button
+                        key={days}
+                        variant="chip"
+                        aria-pressed={
+                          terms.due_day_of_month == null &&
+                          terms.due_days === days
+                        }
+                        onClick={() =>
+                          setTerms({
+                            ...terms,
+                            due_days: days,
+                            due_day_of_month: undefined,
+                          })
+                        }
+                      >
+                        {label}
+                      </Button>
+                    ))}
+                    <Button
+                      variant="chip"
+                      aria-pressed={terms.due_day_of_month != null}
+                      onClick={() =>
+                        setTerms({
+                          ...terms,
+                          due_days: null,
+                          due_day_of_month: terms.due_day_of_month ?? 10,
+                        })
+                      }
+                    >
+                      Dia do mês
+                    </Button>
+                  </div>
+                  {terms.due_day_of_month != null && (
+                    <label>
+                      Dia de vencimento (31 = último dia)
+                      <input
+                        type="number"
+                        min={1}
+                        max={31}
+                        required
+                        value={terms.due_day_of_month || ''}
+                        onChange={(e) =>
+                          setTerms({
+                            ...terms,
+                            due_day_of_month: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                  )}
+                </>
               )}
               <p className="wizard-hint">
                 Vale para este pedido. Para mudar o padrão do cliente, use a
@@ -2248,7 +2253,7 @@ export function Totem({
               <li>
                 <span>
                   <small>Pagamento</small>
-                  {paymentModeLabels[terms.mode]}
+                  {termsModeLabel(terms)}
                   {terms.mode === 'credit' &&
                     terms.due_day_of_month != null &&
                     ' · vence no ' + dueDayLabel(terms.due_day_of_month)}

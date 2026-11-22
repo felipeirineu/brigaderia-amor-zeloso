@@ -1,7 +1,7 @@
 import { courierChoices, type Courier } from '../../../shared/courier';
 import {
   dueDayLabel,
-  paymentModeLabels,
+  termsModeLabel,
   type Terms,
 } from '../../../shared/finance';
 import { WhatsAppLink } from '../../components/TestEnvironment';
@@ -147,7 +147,7 @@ export function OrderDetail({
           <h1>{order.customer_name}</h1>
           {financial && order.terms && order.terms.mode !== 'unset' && (
             <p>
-              Pagamento: {paymentModeLabels[order.terms.mode]}
+              Pagamento: {termsModeLabel(order.terms)}
               {order.terms.due_day_of_month != null &&
                 ' · vence no ' + dueDayLabel(order.terms.due_day_of_month)}
             </p>

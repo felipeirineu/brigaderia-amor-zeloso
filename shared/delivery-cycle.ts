@@ -64,3 +64,16 @@ export function deliveryCycles(entries: readonly CycleEntry[]) {
   }
   return { current, positions };
 }
+
+export interface DeliveryCycleCard {
+  order_id: string;
+  customer_id: string;
+  order_ids: string[];
+  days: string[];
+  size: number;
+  position: number;
+  projected: boolean;
+  due_on: string | null;
+  total_cents: number;
+  balance_cents: number;
+}
