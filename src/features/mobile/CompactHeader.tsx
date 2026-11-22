@@ -103,6 +103,7 @@ export function CompactHeader({
         <Button
           ref={trigger}
           className="profile-menu-trigger"
+          data-tour="profile"
           aria-label={'Abrir menu de ' + name}
           onClick={() => menu.current?.showModal()}
         >

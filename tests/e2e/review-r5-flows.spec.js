@@ -40,6 +40,11 @@ test('R5 telas móveis com ações compartilhadas', async ({
     await expect(
       p.getByRole('button', { name: 'Escolher dia', exact: true }),
     ).toBeVisible();
+    // Sem nome de exibição, o lembrete abre o Hoje; "Agora não" libera o topo.
+    await p
+      .getByRole('region', { name: 'Nome de exibição' })
+      .getByRole('button', { name: 'Agora não', exact: true })
+      .click();
     expect(
       (await p.locator('.order-card').first().boundingBox()).y,
     ).toBeLessThanOrEqual(200);

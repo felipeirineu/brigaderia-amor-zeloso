@@ -87,7 +87,14 @@ export function Today({
   const courierLabels = useCourierLabels(),
     field = useField();
   const [trip, setTrip] = useState<OperationalOrder | null>(null),
-    [near, setNear] = useState(false);
+    [near, setNear] = useState(false),
+    [nameLater, setNameLater] = useState(() => {
+      try {
+        return sessionStorage.getItem('az-name-later') === '1';
+      } catch {
+        return false;
+      }
+    });
   const [receipt, setReceipt] = useState<OperationalOrder | null>(null),
     [combinedUndo, setCombinedUndo] = useState<
       (ReceiptResult & { customer_id: string }) | null
@@ -255,22 +262,46 @@ export function Today({
                   ? 'Planejamento'
                   : 'Entregas'}
             </h2>
-            {day === localDay() &&
-              field?.data &&
-              !field.data.staff.find((s) => s.id === field.data!.user_id)
-                ?.version && (
-                <Button
-                  to="/gestao/preferencias"
-                  variant="tonal"
-                  className="name-tip"
-                >
-                  Defina seu nome
-                </Button>
-              )}
           </div>
         </div>
         <DayCalendar day={day} onSelect={setDay} />
       </div>
+      {day === localDay() &&
+        field?.data &&
+        !field.data.staff.find((s) => s.id === field.data!.user_id)?.version &&
+        !nameLater && (
+          <section
+            className="panel name-reminder"
+            aria-label="Nome de exibição"
+          >
+            <Mascot size={64} />
+            <div>
+              <h2>Como a equipe te chama?</h2>
+              <p>
+                Escolha seu nome de exibição. Ele aparece nas entregas e assina
+                as mensagens.
+              </p>
+            </div>
+            <div className="name-reminder-actions">
+              <Button to="/gestao/preferencias#nome" variant="primary">
+                Escolher meu nome
+              </Button>
+              <Button
+                onClick={() => {
+                  // Some até a próxima abertura do app.
+                  try {
+                    sessionStorage.setItem('az-name-later', '1');
+                  } catch {
+                    /* Sem armazenamento: some só nesta tela. */
+                  }
+                  setNameLater(true);
+                }}
+              >
+                Agora não
+              </Button>
+            </div>
+          </section>
+        )}
       {role === 'owner' && day === localDay() && backupOrganizationId && (
         <BackupReminderCard organizationId={backupOrganizationId} />
       )}

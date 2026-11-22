@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.2.1',
+    items: [
+      'Lembrete no Hoje para escolher seu nome de exibição.',
+      'O passeio termina mostrando onde escolher o nome.',
+    ],
+  },
+  {
     version: '1.2.0',
     items: [
       'Na revisão, registre pedidos já entregues e o que foi recebido.',

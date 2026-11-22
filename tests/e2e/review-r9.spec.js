@@ -82,10 +82,36 @@ test('R9 calendário sem zeros e cabeçalho alinhado', async ({
       .getByRole('button', { name: 'Fechar menu', exact: true })
       .click();
     await expect(
-      p.getByRole('link', { name: 'Defina seu nome', exact: true }),
+      p.getByRole('link', { name: 'Escolher meu nome', exact: true }),
     ).toBeVisible();
     await capture(p, 'defina-seu-nome', info);
-    await p.getByRole('link', { name: 'Defina seu nome', exact: true }).click();
+    // Passeio: sem nome salvo, o último passo pede o nome e leva ao campo.
+    await p.evaluate(() => window.dispatchEvent(new Event('start-tour')));
+    const tour = p.getByRole('dialog', { name: 'Passeio guiado' });
+    await expect(tour).toContainText('Passo 1 de 6');
+    for (let i = 0; i < 5; i++)
+      await tour.getByRole('button', { name: 'Próximo', exact: true }).click();
+    await expect(
+      tour.getByRole('heading', { name: 'Como a equipe te chama?' }),
+    ).toBeVisible();
+    await tour
+      .getByRole('button', { name: 'Escolher meu nome', exact: true })
+      .click();
+    await expect(p).toHaveURL(/\/gestao\/preferencias#nome$/);
+    await expect(
+      p.getByLabel('Nome de exibição', { exact: true }),
+    ).toBeFocused();
+    await p.goto(t.url + '/gestao');
+    await p
+      .getByRole('link', { name: 'Escolher meu nome', exact: true })
+      .click();
+    // Abre Preferências já no campo do nome, vazio enquanto não definido.
+    await expect(
+      p.getByLabel('Nome de exibição', { exact: true }),
+    ).toBeFocused();
+    await expect(p.getByLabel('Nome de exibição', { exact: true })).toHaveValue(
+      '',
+    );
     await p
       .getByLabel('Nome de exibição', { exact: true })
       .fill('Equipe DEMONSTRAÇÃO R9');
@@ -100,7 +126,7 @@ test('R9 calendário sem zeros e cabeçalho alinhado', async ({
       'Equipe DEMONSTRAÇÃO R9',
     );
     await expect(
-      p.getByRole('link', { name: 'Defina seu nome', exact: true }),
+      p.getByRole('link', { name: 'Escolher meu nome', exact: true }),
     ).toHaveCount(0);
     const before = p.url();
     await p.getByRole('button', { name: 'Novo lembrete', exact: true }).click();
