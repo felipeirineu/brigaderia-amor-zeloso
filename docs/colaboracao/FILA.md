@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T17** (pedido já entregue no cadastro, pagamento "Na próxima entrega" e vencimento em dia fixo do mês; detalhes abaixo). Versão **1.2.0**. Base: main atual (1.0.10). **A T14 (PR #23) está sendo integrada pelo Claude em paralelo** e entra no main como 1.1.0 com a migração **0028**: antes de abrir o PR, incorpore o main atual; se a T17 precisar de migração, use o número seguinte ao último do main (0029 se a T14 já estiver lá). Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
+`VEZ: CODEX` — tarefa **T17** (pedido já entregue no cadastro, pagamento "Na próxima entrega" e vencimento em dia fixo do mês; detalhes abaixo). Versão **1.2.0**. Base: main atual (1.0.10). **A T14 já está no main como 1.1.0** (migração **0028**): antes de abrir o PR, incorpore o main atual; se a T17 precisar de migração, use a **0029**. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
 
 **Pendências do Felipe (fora do código):** quando o Claude publicar a 1.1.0 (T14), aplicar a migração **0028** pela Homologação D1 (backup → PRE_CHECAGEM → APLICAR_PENDENTES). Ambiente de teste: rodar ATUALIZAR_APP para o segredo `DEVELOPER_EMAILS` valer lá.
 
@@ -76,7 +76,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T11 | Lembrete de backup (Hoje + celular) e pasta fixa no computador | **publicada** 18/11 (PR #20) como **0.23.0** — migração **0027** pendente (Felipe) |
 | T12 | Exportar como planilha (.xlsx) e PDF, CSV como opção secundária | **publicada** 18/11 (PR #21) como **0.24.0** |
 | T13 | Ambiente de teste: banco próprio, cópia do real, faixa de aviso, prévias fora do banco real | **publicada** 19/11 (PR #22) como **0.25.0** — configuração do Felipe pendente |
-| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | PR #23 entregue; **integração pelo Claude** — versão **1.1.0** — migração 0028 (Felipe aplica) |
+| T14 | Tela de erro amigável + Sugestões e problemas + Recebidas (A+B) | **publicada** 22/11 (PR #23, integrada pelo Claude) como **1.1.0** — migração **0028** pendente (Felipe) |
 | T17 | Pedido já entregue no cadastro + pagamento "Na próxima entrega" | **depois da T14** (Felipe pediu antes da T15 em 22/11) — versão **1.2.0** |
 | T15 | Versão de computador caprichada (Hoje e demais telas em tela larga) | prévia **aprovada** 20/11; **depois da T17** — versão **1.3.0** |
 | T16 | Entrega feita pelos dois (Tiago e Alda) | **depois da T15** — versão **1.4.0** — migração (Felipe aplica) |
@@ -659,6 +659,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| **1.1.0** | 22/11 | **T14** (PR #23): tela de erro amigável (recarregar, voltar ao Hoje, contar o que houve), Sugestões e problemas no menu Mais e Recebidas para o administrador. Migração **0028** (Felipe aplica; sem ela o canal fica oculto). Integração: `z.config({ jitless: true })` em `src/zod-csp.ts`, importado primeiro em `main.tsx` (a T14 usava schema antes de `order-draft.ts` e violava a CSP). |
 | 1.0.10 | 22/11 | Fechamento explicado como a fatura do cartão: resumo com exemplo no (?) de Fechamento (pedido a prazo) e no Financeiro; seção "Fechamento e prazos" em Ajuda → Rotinas e financeiro (antes "Rotinas P1"; aparece com financeiro ou P1), aberta direto pelo link "Ver explicação completa". Fila: T17 antes da T15; vencimento em dia fixo do mês entrou na T17. |
 | 1.0.9 | 22/11 | Folha de ajuda (?) com "Fechar" escrito embaixo (antes: X em botão largo no topo). Kit no Hoje com o texto centralizado no fundo destacado (Chrome novo reservava espaço para a lista oculta). |
 | 1.0.8 | 21/11 | Papel Desenvolvedor: segredo `DEVELOPER_EMAILS` (Cloudflare, Production e Preview) marca o administrador de suporte técnico. Mantém permissões, aparece como "Desenvolvedor", sai das iniciais/escolhas de equipe para os outros e continua visível em Acessos como "Desenvolvedor (suporte técnico)". Sem o segredo, nada muda. Segredo cadastrado pelo Felipe em 22/11 (republicado para valer). |
