@@ -445,8 +445,9 @@ export function HelpCenter({
             <p>
               Em <strong>Dia do mês</strong>, o vencimento é a primeira
               ocorrência após o fechamento. Se fechou dia 15 e o dia escolhido é
-              10, a conta vence no dia 10 do mês seguinte. O dia 31 sempre
-              representa o último dia do mês.
+              10, a conta vence no dia 10 do mês seguinte. Se o mês não tiver o
+              dia escolhido (como 30 em fevereiro), vence no último dia do mês,
+              como na fatura do cartão.
             </p>
             <p>
               <strong>Na próxima entrega:</strong> a cobrança é por pedido. O

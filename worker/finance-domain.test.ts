@@ -116,7 +116,10 @@ it('dia fixo é posterior ao fechamento, inclusive em fevereiro e na virada de a
   ).toBe('2026-12-15');
   expect(
     closingPeriod('2027-02-01', { ...t, due_day_of_month: 30 }).due_on,
-  ).toBe('2027-03-30');
+  ).toBe('2027-02-28');
+  expect(
+    closingPeriod('2028-02-01', { ...t, due_day_of_month: 30 }).due_on,
+  ).toBe('2028-02-29');
   expect(termsSchema.safeParse(t).success).toBe(true);
   expect(termsSchema.safeParse({ ...t, due_days: 7 }).success).toBe(false);
   expect(termsSchema.safeParse({ ...t, due_day_of_month: 32 }).success).toBe(
