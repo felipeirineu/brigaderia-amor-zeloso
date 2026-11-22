@@ -74,9 +74,11 @@ export function fixedDueDate(after: string, day: number) {
   let month = after.slice(0, 8) + '01';
   for (;;) {
     const last = monthEnd(month);
-    const date = day === 31 ? last : day;
+    // Como a fatura do cartão: dia que não existe no mês vira o último dia
+    // (dia 30 em fevereiro vence em 28/29, não em março).
+    const date = Math.min(day, last);
     const candidate = month.slice(0, 8) + String(date).padStart(2, '0');
-    if (date <= last && candidate > after) return candidate;
+    if (candidate > after) return candidate;
     month = shift(month, last);
   }
 }
