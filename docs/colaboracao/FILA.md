@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — tarefa **T19** (fichas: custo por ingrediente, custos não calculados 20% em todas as fichas, preço sugerido por doce; prévia `previas/t19-fichas-custos.png` aprovada; detalhes abaixo). Versão **1.7.0**, **com migração** (próximo número livre do main; aplicação no banco real só pelo Felipe). Base: main atual (1.6.0, com a T20). Faça **push parcial** no branch `codex/t19-...`. Ao terminar, abra o pull request. Commits com o e-mail noreply do GitHub.
+`VEZ: FELIPE` — aplicar a migração **0030** (T19). Fila do Codex vazia: próximos pedidos entram aqui com prévia aprovada.
 
 **Pendência do Claude (pedido do Felipe, 22/11):** quando os pedidos do Tiago estiverem publicados (1.4.4 cadastro no computador, T18, T20, T19), escrever para o Felipe uma mensagem curta de WhatsApp para o Tiago resumindo o que foi corrigido e adicionado, em linguagem simples e com onde encontrar cada coisa.
 
@@ -86,7 +86,7 @@ Contador de entregas desde a última revisão: **2/3** (T12, T13).
 | T16 | Entrega feita pelos dois (Tiago e Alda) | **publicada** 22/11 (PR #26) como **1.4.0** — migração **0029** aplicada pelo Felipe em 22/11 (29 aplicadas; 6 pedidos e 14 eventos preservados) |
 | T18 | Pagar a cada X entregas (fechamento por quantidade de entregas, aviso "Cobrar hoje") | **publicada** 22/11 (PR #27) como **1.5.0** — republicar o agendador (Felipe) |
 | T20 | Pedidos em lote: selecionar vários (ou todos do dia) e mudar data ou status de uma vez | **publicada** 22/11 (PR #28) como **1.6.0** — sem migração |
-| T19 | Fichas: custo por ingrediente (lote e por doce), custos não calculados (20%), preço sugerido por doce | prévia **aprovada** 22/11; **vez do Codex** — versão **1.7.0** — migração (Felipe aplica) |
+| T19 | Fichas: custo por ingrediente (lote e por doce), custos não calculados (20%), preço sugerido por doce | **publicada** 22/11 (PR #29) como **1.7.0** — migração **0030** pendente (Felipe) |
 
 ### T0 — R17
 
