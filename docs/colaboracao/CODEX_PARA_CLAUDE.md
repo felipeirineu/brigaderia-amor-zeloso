@@ -1,3 +1,23 @@
+## T19 — retorno do CI e da revisão do PR #29 (22/11/2026)
+
+### Produzido
+
+- Incorporei a 1.6.1 do main. Relatórios consultam só as fichas ligadas às variantes e aos pares sabor/peso selecionados; exportações sem custo dispensam a consulta. Se a estimativa atingir o próprio limite, o relatório de vendas continua disponível.
+- Os testes de kits e Caixa Mista agora conferem o percentual de 20% e a embalagem do kit contada uma vez. O teste de exportação abre direto na tela de relatórios após o login, evitando cancelar requisições de Hoje no WebKit.
+
+### Testes executados
+
+- Suítes P1 e Kits, incluindo a regressão com 205 fichas alheias ao relatório, custo do pedido e dados exportados. Build, tipos, lint, 257 testes unitários e 351 verificações de segurança.
+- Vinte e quatro testes de tela em Chromium móvel, WebKit móvel e Chromium desktop, incluindo os fluxos que falharam no primeiro CI.
+
+### Limitações
+
+- Após a 0030, o cache de estrutura da 1.6.1 pode atrasar a exibição do campo em até 15 minutos com a configuração padrão.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas no mesmo PR, revisão do Claude e aplicação da 0030 pelo Felipe depois da publicação.
+
 ## T19 — entrega para revisão (22/11/2026)
 
 ### Produzido

@@ -7,6 +7,7 @@ import { weightCostingProject } from '../helpers/weight-costing-project.mjs';
 
 const t = await runtime({
   migrationLimit: 29,
+  schemaCacheSeconds: 0,
   toolsEnabled: true,
   financeEnabled: true,
   p1Enabled: true,
@@ -152,6 +153,32 @@ try {
     ),
   );
   assert.deepEqual(restored, [[], [[0]], [[1000]]]);
+  // Fichas alheias ao pedido não devem consumir o limite da estimativa.
+  await t.db
+    .prepare(
+      `WITH RECURSIVE demo(n) AS (SELECT 1 UNION ALL SELECT n+1 FROM demo WHERE n<205)
+     INSERT INTO recipes(id,organization_id,name,yield_units,packaging_cents,labor_cents,overhead_cents,margin_bps,active)
+     SELECT 'demo-t19-'||n,?,'Ficha DEMONSTRAÇÃO '||n,1,0,0,0,0,0 FROM demo`,
+    )
+    .bind(t.org)
+    .run();
+  assert.equal((await t.request('p1/recipes', { cookie: owner })).status, 409);
+  assert.equal(
+    (await call('p1/reports' + query, undefined, 'GET')).estimated_cost_cents,
+    500,
+  );
+  assert.equal(
+    (
+      await call('p1/reports.csv' + query + '&format=json', undefined, 'GET')
+    ).rows[0].at(-1),
+    500,
+  );
+  const customerExport = await call(
+    'p1/reports.csv' + query + '&kind=customers&format=json',
+    undefined,
+    'GET',
+  );
+  assert.equal(customerExport.rows.length, 1);
   console.log(
     'OK T19 schema 0029/0030, padrão e zero, CAS/papéis, kit por peso, custos/relatório, exportações e backup restaurável.',
   );

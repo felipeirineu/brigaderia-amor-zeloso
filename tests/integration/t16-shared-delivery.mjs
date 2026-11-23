@@ -13,6 +13,8 @@ const day = new Intl.DateTimeFormat('en-CA', {
 }).format(new Date());
 const due = day + 'T13:00:00.000Z';
 const t = await runtime({
+  // Aplica a 0029 no meio do teste: sem cache de estrutura.
+  schemaCacheSeconds: 0,
   migrationLimit: 28,
   financeEnabled: true,
   p1Enabled: true,

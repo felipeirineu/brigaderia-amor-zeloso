@@ -54,7 +54,7 @@ export async function estimateOrderCosts(
 ) {
   const results = new Map<string, ReturnType<typeof orderEstimate>>();
   if (!ids.length) return results;
-  const recipes = await readRecipes(db, org);
+  const recipes = await readRecipes(db, org, { lines });
   const linesByOrder = groupByOrder(lines);
   const kits = lines.some((line) => line.kit_id)
     ? await readKitItems(db, org, ids)

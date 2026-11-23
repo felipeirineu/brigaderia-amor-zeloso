@@ -9,6 +9,19 @@ test('T12 relatórios, fluxo e entregas baixam planilha, PDF e CSV conforme os f
   test.setTimeout(60_000);
   const t = await runtime({
     browserHTTP: true,
+    browserResponse: (url, method, response) => {
+      if (
+        url.pathname !== '/api/access/start' ||
+        method !== 'GET' ||
+        response.status !== 303
+      )
+        return response;
+      // A sessão vem do login real. O cenário começa no relatório para
+      // evitar cancelar os carregamentos de Hoje ao trocar de página.
+      const headers = new Headers(response.headers);
+      headers.set('Location', new URL('/gestao/relatorios', url).href);
+      return new Response(null, { status: 303, headers });
+    },
     financeEnabled: true,
     p1Enabled: true,
     fieldEnabled: true,
@@ -74,7 +87,8 @@ test('T12 relatórios, fluxo e entregas baixam planilha, PDF e CSV conforme os f
         data: /Cliente DEMONSTRAÇÃO P1/,
       },
     ]) {
-      await page.goto(t.url + '/gestao/' + screen.route);
+      if (screen.route !== 'relatorios')
+        await page.goto(t.url + '/gestao/' + screen.route);
       if (screen.route === 'relatorios') {
         await page.getByLabel('Vendas de', { exact: true }).fill(day);
         await page.getByLabel('Vendas até', { exact: true }).fill(day);

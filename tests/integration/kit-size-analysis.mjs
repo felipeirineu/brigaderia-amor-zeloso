@@ -157,8 +157,8 @@ try {
   assert.deepEqual(costs.missing, []);
   assert.equal(
     costs.estimated_cost_cents,
-    1571,
-    '500+108 em ingredientes,3 embalagens de321; não repetir999 da ficha',
+    1683,
+    'ingredientes por peso com 20%, mais 3 embalagens de 321; sem repetir 999 da ficha',
   );
   const shopping = await call(
     `p1/shopping?from=${day}&to=${day}`,

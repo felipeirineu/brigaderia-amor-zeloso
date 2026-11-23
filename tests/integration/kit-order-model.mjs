@@ -190,13 +190,13 @@ try {
   assert.deepEqual(cost.missing, []);
   assert.equal(
     cost.items.find((i) => i.item_id === items[0].id).estimated_cost_cents,
-    1100,
-    '500 ingredientes + 600 embalagens, sem os 999 da ficha',
+    1200,
+    '500 ingredientes + 20% + 600 embalagens, sem os 999 da ficha',
   );
   assert.equal(
     cost.estimated_cost_cents,
-    1320,
-    'item legado mantém a fórmula anterior',
+    1464,
+    'item de variante também recebe o percentual da ficha',
   );
   const alternateVariant = crypto.randomUUID();
   await t.db
@@ -225,8 +225,8 @@ try {
   assert.equal(
     ambiguousCost.items.find((i) => i.item_id !== items[0].id)
       .estimated_cost_cents,
-    220,
-    'legado mantém seleção e cálculo anteriores',
+    264,
+    'pedido de variante mantém sua própria ficha com 20%',
   );
   await t.db
     .prepare('UPDATE recipes SET active=0 WHERE organization_id=? AND id=?')

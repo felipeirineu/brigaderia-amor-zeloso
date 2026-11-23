@@ -126,11 +126,11 @@ test('R11-5 custo misto informa falta de ficha e compras usa unidades de cada sa
       .click();
     await expect(
       panel.getByRole('heading', {
-        name: 'Custo estimado: R$ 7,98',
+        name: 'Custo estimado: R$ 9,48',
         exact: true,
       }),
     ).toBeVisible();
-    await expect(panel).toContainText('2 unidades · R$ 0,74');
+    await expect(panel).toContainText('2 unidades · R$ 0,86');
     await panel.scrollIntoViewIfNeeded();
     if (
       process.env.R11_CAPTURE === '1' &&

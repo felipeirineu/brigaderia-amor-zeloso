@@ -1,3 +1,5 @@
+import { schemaCacheSeconds, withSchemaCache } from './schema-cache';
+import { safeErrorText } from './safe-error';
 import { feedback } from './feedback';
 import { prospectReport, prospectVisitTools } from './prospect-costs';
 import { visits } from './visits';
@@ -29,7 +31,12 @@ import { management } from './management';
 import { z } from 'zod';
 export type { Env } from './security';
 export default {
-  async fetch(req: Request, env: Env): Promise<Response> {
+  async fetch(req: Request, rawEnv: Env): Promise<Response> {
+    // Perguntas sobre a estrutura do banco ficam guardadas (ver schema-cache).
+    const env: Env = {
+      ...rawEnv,
+      DB: withSchemaCache(rawEnv.DB, schemaCacheSeconds(rawEnv)),
+    };
     try {
       const { pathname } = new URL(req.url);
       if (
@@ -185,7 +192,14 @@ export default {
           409,
         );
       if (e instanceof HttpError) return json({ error: e.message }, e.status);
-      // Não registrar requisições, JWT, cookies ou dados pessoais.
+      // Não registrar requisições, JWT, cookies ou dados pessoais: só o caminho
+      // (sem consulta) e o tipo do erro, com textos entre aspas, e-mails e
+      // números removidos, para diagnosticar falhas inesperadas.
+      console.error(
+        'erro_inesperado',
+        new URL(req.url).pathname.replace(/\/[0-9a-f-]{8,}/gi, '/:id'),
+        safeErrorText(e),
+      );
       return json(
         { error: 'Não foi possível concluir a operação. Tente novamente.' },
         500,

@@ -1,6 +1,6 @@
 import { weightCostingReady, weightSupplyInUse } from './weight-costing';
 import { readKitItems } from './kit-order-items';
-import { flavorLines } from './flavor-lines';
+import { flavorLines, type FlavorLine } from './flavor-lines';
 import { z } from 'zod';
 import { recipeUnmeasuredReady } from './recipe-percent';
 import { HttpError, json, type Actor } from './security';
@@ -34,19 +34,60 @@ interface Recipe {
 export async function readRecipes(
   db: D1Database,
   org: string,
-  unmeasured?: boolean,
+  options: { unmeasured?: boolean; lines?: FlavorLine[] } = {},
 ) {
-  const ready = unmeasured ?? (await recipeUnmeasuredReady(db));
+  const { lines } = options;
+  if (lines?.length === 0) return [];
+  const ready = options.unmeasured ?? (await recipeUnmeasuredReady(db));
+  const variantIds = lines
+    ? [
+        ...new Set(
+          lines.filter((line) => !line.kit_id).map((line) => line.variant_id),
+        ),
+      ]
+    : [];
+  const kitWeights = lines
+    ? [
+        ...new Set(
+          lines.flatMap((line) =>
+            line.kit_id && line.product_id
+              ? [JSON.stringify([line.product_id, line.weight_grams])]
+              : [],
+          ),
+        ),
+      ].map((pair) => JSON.parse(pair))
+    : [];
+  const scope = lines
+    ? `AND r.active=1 AND (r.variant_id IN (SELECT value FROM json_each(?))
+      OR r.variant_id IN (
+        SELECT pv.id FROM json_each(?) k
+        JOIN product_variants pv ON pv.organization_id=?
+          AND pv.product_id=json_extract(k.value,'$[0]')
+          AND pv.weight_grams=json_extract(k.value,'$[1]')
+      ))`
+    : '';
+  const limit = lines ? 1000 : 200;
   const rows = (
     await db
       .prepare(
-        `SELECT r.id,r.name,r.variant_id,r.yield_units,r.packaging_cents,r.labor_cents,r.overhead_cents,r.margin_bps,r.active,r.version,v.units_per_box,v.product_id,v.weight_grams,${ready ? 'r.unmeasured_bps' : 'NULL'} AS unmeasured_bps FROM recipes r LEFT JOIN product_variants v ON v.organization_id=r.organization_id AND v.id=r.variant_id WHERE r.organization_id=? ORDER BY r.active DESC,r.name LIMIT 201`,
+        `SELECT r.id,r.name,r.variant_id,r.yield_units,r.packaging_cents,r.labor_cents,r.overhead_cents,r.margin_bps,r.active,r.version,v.units_per_box,v.product_id,v.weight_grams,${ready ? 'r.unmeasured_bps' : 'NULL'} AS unmeasured_bps FROM recipes r LEFT JOIN product_variants v ON v.organization_id=r.organization_id AND v.id=r.variant_id WHERE r.organization_id=? ${scope} ORDER BY r.active DESC,r.name LIMIT ${limit + 1}`,
       )
-      .bind(org)
+      .bind(
+        org,
+        ...(lines
+          ? [JSON.stringify(variantIds), JSON.stringify(kitWeights), org]
+          : []),
+      )
       .all<Omit<Recipe, 'components'>>()
   ).results;
-  if (rows.length > 200)
-    throw new HttpError(409, 'Mais de 200 fichas; implemente paginação.');
+  if (rows.length > limit)
+    throw new HttpError(
+      409,
+      lines
+        ? 'Mais de 1000 fichas no cálculo; reduza o período.'
+        : 'Mais de 200 fichas; implemente paginação.',
+    );
+  if (!rows.length) return [];
   const components = (
     await db
       .prepare(
@@ -85,7 +126,7 @@ export async function recipes(
       return json({ role: a.role, items: rows });
     }
     const ready = await recipeUnmeasuredReady(db);
-    const rows = await readRecipes(db, org, ready);
+    const rows = await readRecipes(db, org, { unmeasured: ready });
     if (resource === 'recipes')
       return json({
         role: a.role,

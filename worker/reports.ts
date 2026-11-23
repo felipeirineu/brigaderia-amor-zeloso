@@ -27,6 +27,18 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     (customer && !z.uuid().safeParse(customer).success)
   )
     throw new HttpError(400, 'Filtro inválido.');
+  const kind = url.pathname.endsWith('.csv')
+    ? z
+        .enum([
+          'orders',
+          'customers',
+          'products',
+          'aging',
+          'weeks',
+          'without_deliveries',
+        ])
+        .parse(url.searchParams.get('kind') || 'orders')
+    : null;
   const all = (await receivables(db, org)).filter(
     (o) =>
       (mode === 'all' || o.terms.mode === mode) &&
@@ -135,7 +147,14 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     group.push(item);
     linesByOrder.set(item.order_id, group);
   }
-  const estimates = await estimateOrderCosts(db, org, selected, items);
+  // Um limite da estimativa informa custo indisponível sem impedir o relatório.
+  const estimates =
+    kind && kind !== 'orders'
+      ? null
+      : await estimateOrderCosts(db, org, selected, items).catch((error) => {
+          if (error instanceof HttpError && error.status === 409) return null;
+          throw error;
+        });
   const orders = sold.map((o) => ({
     id: o.id,
     customer_name: o.customer_name,
@@ -147,7 +166,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     condition: o.terms.mode,
     cycle: o.terms.cycle,
     every_deliveries: o.terms.every_deliveries ?? null,
-    estimated_cost_cents: estimates.get(o.id)?.estimated_cost_cents ?? null,
+    estimated_cost_cents: estimates?.get(o.id)?.estimated_cost_cents ?? null,
   }));
   const days =
       Math.round(
@@ -235,17 +254,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     })),
     aging: ageing,
   };
-  if (!url.pathname.endsWith('.csv')) return json(result);
-  const kind = z
-    .enum([
-      'orders',
-      'customers',
-      'products',
-      'aging',
-      'weeks',
-      'without_deliveries',
-    ])
-    .parse(url.searchParams.get('kind') || 'orders');
+  if (!kind) return json(result);
   const datasets: Record<typeof kind, ExportTable> = {
     orders: {
       columns: [

@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { runtime } from '../helpers/runtime.mjs';
-const t = await runtime({ migrationLimit: 2, financeEnabled: true });
+const t = await runtime({
+  // Aplica/remove migrações no meio do teste: sem cache de estrutura.
+  schemaCacheSeconds: 0,
+  migrationLimit: 2,
+  financeEnabled: true,
+});
 try {
   const client = crypto.randomUUID(),
     product = crypto.randomUUID(),

@@ -12,4 +12,4 @@ Pedidos, relatórios e exportações mostram uma estimativa com as fichas e insu
 2. Aplique somente pelo procedimento autorizado para esse banco. A 0030 acrescenta `recipes.unmeasured_bps` com padrão 2000 e preserva os IDs, versões e demais campos. A aplicação no banco real cabe exclusivamente ao responsável.
 3. Confirme que a coluna existe, as contagens de fichas e insumos permanecem iguais e `PRAGMA foreign_key_check` continua vazio. Abra **Fichas técnicas**, confira o aviso e o percentual de 20% numa ficha existente. Se houver divergência, mantenha as gravações pausadas e compare com o backup antes de outras alterações.
 
-Antes da 0030, a versão mantém a leitura e a edição da ficha pelo esquema anterior. O campo novo aparece após aplicar a migração e reabrir a tela.
+Antes da 0030, a versão mantém a leitura e a edição da ficha pelo esquema anterior. Após aplicar a migração, o campo pode levar até 15 minutos para aparecer por causa do cache de estrutura do banco. Depois desse prazo, reabra a tela para conferir.
