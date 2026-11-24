@@ -691,6 +691,20 @@ Pedido do Tiago. Siga a prévia.
 - Testes: unitários do cálculo (incluindo 0% e arredondamento), integração (CAS, papéis, backup/restauração com a coluna nova, schema antigo sem a coluna) e E2E da ficha. Capturas `t19-*.png` só com DEMONSTRAÇÃO.
 - Versão **1.7.0**.
 
+### T21 — Ficha: quantidade "no lote" ou "por doce" (prévia `previas/t21-quantidade-por-doce.png` — **aguardando aprovação do Felipe**)
+
+Pedido do Tiago (24/11): colocou 1 uva "no lote" pensando em 1 por doce, e o custo saiu errado. Siga a prévia.
+
+1. Em cada componente da ficha, escolha **"No lote inteiro" | "Por doce"** (ChoiceChips). O rótulo do campo muda: "Quantidade no lote (un.)" / "Quantidade por doce (un.)".
+2. Abaixo do campo, linha de conferência ao vivo: por doce → "= 16 un. no lote (1 × 16 doces) · R$ 4,48 no lote"; no lote → "= 1,9 g por doce · R$ 0,42 no lote" (sem preço quando o insumo não tem preço).
+3. **Guardar a forma escolhida** (migração: coluna `quantity_basis` em `recipe_components`, `'batch'` padrão, ou `'unit'`), mantendo a quantidade digitada. Custo no lote = quantidade × rendimento quando `'unit'`. Se o rendimento mudar, componentes "por doce" acompanham. Fichas existentes ficam "No lote inteiro" (nada muda nelas).
+4. Consulta da ficha: "1 un. por doce · 16 un. no lote" para componentes por doce; os demais continuam "30 g no lote".
+5. Todos os lugares que usam o custo/consumo da ficha (custo do pedido, relatórios, peso/kit, estoque, exportação, backup/restauração) passam a usar a quantidade no lote calculada. Schema antigo sem a coluna = tudo "no lote".
+6. Ajuda (?) curta no campo: "No lote inteiro: total usado na receita toda. Por doce: quanto vai em cada doce; o app multiplica pelo rendimento."
+- **Migração** (próximo número livre); aplicação no banco real só pelo Felipe.
+- Testes: unitários da conversão (inclusive frações e rendimento alterado), integração (CAS, papéis, backup com a coluna, schema antigo) e E2E da ficha. Capturas `t21-*.png` só com DEMONSTRAÇÃO.
+- Versão **1.8.0**.
+
 ## Versões do app
 
 Formato **MAIOR.MENOR.CORREÇÃO**. Quem sobe o número é o **Claude**, ao publicar:
