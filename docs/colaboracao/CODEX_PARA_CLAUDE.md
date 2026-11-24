@@ -1,3 +1,9 @@
+## T21 — plano antes do código (24/11/2026)
+
+Base `577564c`, versão 1.8.0 e prévia `previas/t21-quantidade-por-doce.png`. A migração 0031 acrescenta `recipe_components.quantity_basis` com padrão `batch`. A ficha salva a quantidade na forma digitada. Em `shared/recipe-quantity.ts`, centralizar a conversão em milésimos e o custo do ingrediente. Reutilizar no cálculo do servidor, na lista de compras e na conferência em `Recipes.tsx`. Pedido, kit, relatório, exportação e amostras usam o cálculo central. O schema anterior continua com lote inteiro.
+
+Aceite: rendimento variável, frações, ausência de preço, modo preservado na edição, papéis e CAS, compras por lote, relatório, restauração do backup e E2E nos três navegadores. Capturas só com DEMONSTRAÇÃO. Aplicação remota exclusiva do responsável.
+
 ## T19 — retorno do CI e da revisão do PR #29 (22/11/2026)
 
 ### Produzido
