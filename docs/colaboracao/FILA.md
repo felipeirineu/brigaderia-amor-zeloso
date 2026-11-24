@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: CODEX` — **T21** (ficha: quantidade "no lote" ou "por doce"; prévia aprovada pelo Felipe em 24/11).
+`VEZ: FELIPE` — aplicar a migração **0031** (T21) pelo "Homologação D1 (manual)". Fila do Codex vazia: próximos pedidos entram aqui com prévia aprovada.
 
 **Pendência do Claude (pedido do Felipe, 22/11):** quando os pedidos do Tiago estiverem publicados (1.4.4 cadastro no computador, T18, T20, T19), escrever para o Felipe uma mensagem curta de WhatsApp para o Tiago resumindo o que foi corrigido e adicionado, em linguagem simples e com onde encontrar cada coisa.
 
@@ -717,6 +717,7 @@ Cada versão ganha uma linha neste histórico, com o que mudou em linguagem simp
 
 | Versão | Data | O que mudou |
 |---|---|---|
+| **1.8.0** | 24/11 | **T21** (PR #30): ficha com quantidade "No lote inteiro" ou "Por doce" por ingrediente, conferência ao vivo ("= 16 un. no lote · R$ 4,48"), consulta mostra as duas; custo, lista de compras e estimativas usam a quantidade no lote calculada. Fichas existentes ficam "no lote". **Migração 0031** (`recipe_components.quantity_basis`); antes dela, salvar "por doce" é recusado com aviso. Pedido do Tiago (uva). CI completo do próprio PR usado para publicar. |
 | 1.6.1 | 22/11 | **Incidente 22/11 ~20h:** o D1 bloqueou leituras ao passar de 5 milhões de linhas lidas no dia (plano gratuito), derrubando o login até 00:00 UTC. Causa: ~29 verificações de estrutura (`sqlite_schema`/`pragma_*`) em toda requisição e em cada rodada do agendador (sessão lia ~7 mil linhas; Hoje ~4 mil; agendador ~900). Correção: `worker/schema-cache.ts` guarda por isolate, por 15 min (`SCHEMA_CACHE_SECONDS`, 0 desliga), só respostas de consultas cujas fontes são todas `sqlite_schema`/`sqlite_master`/`pragma_*`; medido: sessão 7.118→4, agendador 899→14. **Efeito colateral:** após aplicar uma migração, o recurso novo pode levar até 15 min para aparecer (ou republicar). Também: erros inesperados passam a registrar só o tipo do erro (`worker/safe-error.ts`). Agendador precisa ser republicado para pegar o cache. |
 | **1.6.0** | 22/11 | **T20** (PR #28): pedidos em lote — Selecionar (ou toque longo), Todos do dia, Mudar data (mantém o horário), Avançar etapa, Marcar entregue (registra cada etapa; retirada vira Retirado), pulados com motivo, Desfazer por 30 s; recalcula vencimentos T17/T18. Celular e computador. Sem migração. CI completo do próprio PR usado para publicar. |
 | **1.5.0** | 22/11 | **T18** (PR #27): a prazo "A cada X entregas" (2 a 12), vencimento na última entrega efetiva, ciclo recomeça mesmo com saldo aberto; troca de condição fecha o ciclo incompleto na primeira entrega sob a regra nova; Hoje com "Nª de X" e "Cobrar hoje" (WhatsApp assistido e recebimento do ciclo); conta com progresso; aviso da manhã (requer REPUBLICAR_AGENDADOR); Agenda/ICS corrigidos; menos espaço ao abrir "ver sabores". Sem migração. Claude: `useSave` mostra "Alteração salva no servidor" logo após o servidor confirmar (antes esperava a recarga da lista — teste `kit-orders` instável). Teste de rolagem no computador (`t15-desktop-scroll`). |
