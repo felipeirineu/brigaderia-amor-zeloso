@@ -719,48 +719,50 @@ function RecipeQuantityPreview({
   yieldUnits: number;
 }) {
   if (!quantity.trim() || !yieldUnits) return null;
+  let input: number;
+  let batch: number;
   try {
-    const input = parseMilli(quantity);
-    const batch = recipeBatchQuantity(input, basis, yieldUnits);
-    const unit = unitName(supply.unit);
-    const perSweet = batch / yieldUnits / 1000;
-    const displayed =
-      perSweet < 0.001
-        ? '<0,001'
-        : perSweet.toLocaleString('pt-BR', {
-            maximumFractionDigits: perSweet < 0.1 ? 3 : 1,
-          });
-    const cost =
-      supply.pack_cost_cents === null || !supply.active
-        ? null
-        : Number(
-            recipeIngredientCost(
-              batch,
-              supply.pack_quantity_milli,
-              supply.pack_cost_cents,
-            ),
-          );
-    return (
-      <p className="recipe-quantity-preview">
-        ={' '}
-        {basis === 'unit' ? (
-          <>
-            <strong>
-              {quantityInput(batch)} {unit} no lote
-            </strong>{' '}
-            ({quantityInput(input)} × {yieldUnits} doces)
-          </>
-        ) : (
-          <>
-            {displayed} {unit} por doce
-          </>
-        )}
-        {cost !== null &&
-          Number.isSafeInteger(cost) &&
-          ' · ' + money(cost) + ' no lote'}
-      </p>
-    );
+    input = parseMilli(quantity);
+    batch = recipeBatchQuantity(input, basis, yieldUnits);
   } catch {
     return null;
   }
+  const unit = unitName(supply.unit);
+  const perSweet = batch / yieldUnits / 1000;
+  const displayed =
+    perSweet < 0.001
+      ? '<0,001'
+      : perSweet.toLocaleString('pt-BR', {
+          maximumFractionDigits: perSweet < 0.1 ? 3 : 1,
+        });
+  const cost =
+    supply.pack_cost_cents === null || !supply.active
+      ? null
+      : Number(
+          recipeIngredientCost(
+            batch,
+            supply.pack_quantity_milli,
+            supply.pack_cost_cents,
+          ),
+        );
+  return (
+    <p className="recipe-quantity-preview">
+      ={' '}
+      {basis === 'unit' ? (
+        <>
+          <strong>
+            {quantityInput(batch)} {unit} no lote
+          </strong>{' '}
+          ({quantityInput(input)} × {yieldUnits} doces)
+        </>
+      ) : (
+        <>
+          {displayed} {unit} por doce
+        </>
+      )}
+      {cost !== null &&
+        Number.isSafeInteger(cost) &&
+        ' · ' + money(cost) + ' no lote'}
+    </p>
+  );
 }
