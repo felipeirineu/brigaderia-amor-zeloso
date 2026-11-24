@@ -1,3 +1,26 @@
+## T21 — entrega para revisão (24/11/2026)
+
+### Produzido
+
+- Versão 1.8.0. Cada ingrediente da ficha aceita **No lote inteiro** ou **Por doce**, com rótulo correspondente e conferência ao vivo da quantidade e do custo do lote. Com preço ausente, a conferência mostra somente a quantidade.
+- A migração 0031 guarda a forma de entrada. Os componentes existentes começam em **No lote inteiro**. O rendimento recalcula a quantidade do lote e o custo dos componentes por doce, que alimentam compras, custos de pedidos e kits, relatórios e exportações.
+- A consulta distingue as duas formas de entrada. A ajuda explica a multiplicação pelo rendimento e foi testada dentro do editor sem submeter o formulário. Duas capturas de demonstração e instruções em `docs/FASE_T21.md`.
+
+### Testes executados
+
+- Build de Pages, TypeScript, lint, formatação, 259 testes unitários, 351 verificações de segurança e 10 testes de migrações.
+- Integrações P1, kits, calculadora por peso e backup. O cenário T21 conferiu schema anterior, padrão após migrar, modo persistido, mudança de rendimento, compras, custo do pedido, exportação, CAS, autorização e restauração com a nova coluna.
+- Nove testes de tela no Chromium móvel, WebKit móvel e Chromium desktop, incluindo o fluxo T21 com ajuda, insumo sem preço, salvamento e edição do rendimento.
+
+### Limitações
+
+- A escolha fica oculta até a 0031. Após a aplicação, o cache de estrutura pode levar até 15 minutos para liberar o campo com a configuração padrão.
+- A migração e a restauração foram testadas com dados de demonstração em D1 local.
+
+### Pendências
+
+- Revisão do Claude e Validação da gestão e Segurança automáticas do PR. Após publicação, a aplicação da 0031 no banco real cabe ao Felipe.
+
 ## T21 — plano antes do código (24/11/2026)
 
 Base `577564c`, versão 1.8.0 e prévia `previas/t21-quantidade-por-doce.png`. A migração 0031 acrescenta `recipe_components.quantity_basis` com padrão `batch`. A ficha salva a quantidade na forma digitada. Em `shared/recipe-quantity.ts`, centralizar a conversão em milésimos e o custo do ingrediente. Reutilizar no cálculo do servidor, na lista de compras e na conferência em `Recipes.tsx`. Pedido, kit, relatório, exportação e amostras usam o cálculo central. O schema anterior continua com lote inteiro.
