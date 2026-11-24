@@ -1,3 +1,10 @@
+import { ChoiceChips } from '../../components/ChoiceChips';
+import { HelpTip } from '../../components/HelpTip';
+import {
+  recipeBatchQuantity,
+  recipeIngredientCost,
+  type RecipeQuantityBasis,
+} from '../../../shared/recipe-quantity';
 import type { RecipeEstimate } from '../../../worker/recipe-domain';
 import { SkeletonList } from '../../components/Skeleton';
 import { Button } from '../../components/Button';
@@ -34,11 +41,17 @@ interface Recipe {
     name: string;
     unit: string;
     quantity_milli: number;
+    quantity_basis: RecipeQuantityBasis;
   }[];
   unmeasured_bps: number | null;
   units_per_box: number | null;
   estimate: RecipeEstimate;
 }
+const emptyComponent = () => ({
+  supply_id: '',
+  quantity: '',
+  basis: 'batch' as RecipeQuantityBasis,
+});
 const empty = () => ({
   name: '',
   variant: '',
@@ -206,6 +219,7 @@ export function Recipes({
       role: string;
       items: Recipe[];
       unmeasured_supported: boolean;
+      quantity_basis_supported: boolean;
     }>('p1/recipes'),
     supplies = useRemote<{ items: Supply[] }>('p1/supplies'),
     products = useRemote<
@@ -219,7 +233,7 @@ export function Recipes({
     [editing, setEditing] = useState<Recipe | null>(null),
     [form, setForm] = useState(empty),
     [simulation, setSimulation] = useState(''),
-    [components, setComponents] = useState([{ supply_id: '', quantity: '' }]);
+    [components, setComponents] = useState(() => [emptyComponent()]);
   const formRef = useRef<HTMLFormElement>(null);
   const options =
     products.data?.flatMap((p) =>
@@ -230,7 +244,7 @@ export function Recipes({
   function reset() {
     setEditing(null);
     setForm(empty());
-    setComponents([{ supply_id: '', quantity: '' }]);
+    setComponents([emptyComponent()]);
   }
   return (
     <>
@@ -280,6 +294,9 @@ export function Recipes({
                   components: components.map((c) => ({
                     supply_id: c.supply_id,
                     quantity_milli: parseMilli(c.quantity),
+                    ...(view.data?.quantity_basis_supported
+                      ? { quantity_basis: c.basis }
+                      : {}),
                   })),
                   ...(editing ? { version: editing.version } : {}),
                 },
@@ -328,69 +345,101 @@ export function Recipes({
             value={form.yield}
             onValueChange={(value) => setForm({ ...form, yield: value })}
           />
-          {components.map((c, i) => (
-            <fieldset key={i}>
-              <legend>Componente {i + 1}</legend>
-              <label>
-                Insumo
-                <select
-                  required
-                  value={c.supply_id}
-                  onChange={(e) =>
-                    setComponents(
-                      components.map((c, j) =>
-                        j === i ? { ...c, supply_id: e.target.value } : c,
-                      ),
-                    )
-                  }
-                >
-                  <option value="">Selecione</option>
-                  {supplies.data?.items.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({unitName(s.unit)})
-                      {s.active ? '' : ' — inativo'}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Quantidade no lote (
-                {unitName(
-                  supplies.data?.items.find((s) => s.id === c.supply_id)
-                    ?.unit || 'unit',
+          {components.map((c, i) => {
+            const supply = supplies.data?.items.find(
+              (s) => s.id === c.supply_id,
+            );
+            const unit = unitName(supply?.unit || 'unit');
+            return (
+              <fieldset key={i}>
+                <legend>Componente {i + 1}</legend>
+                <label>
+                  Insumo
+                  <select
+                    required
+                    value={c.supply_id}
+                    onChange={(e) =>
+                      setComponents(
+                        components.map((c, j) =>
+                          j === i ? { ...c, supply_id: e.target.value } : c,
+                        ),
+                      )
+                    }
+                  >
+                    <option value="">Selecione</option>
+                    {supplies.data?.items.map((s) => (
+                      <option key={s.id} value={s.id}>
+                        {s.name} ({unitName(s.unit)})
+                        {s.active ? '' : ' — inativo'}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {view.data?.quantity_basis_supported && (
+                  <div className="recipe-quantity-basis">
+                    <ChoiceChips
+                      label="Como você vai informar?"
+                      value={c.basis}
+                      options={[
+                        ['batch', 'No lote inteiro'],
+                        ['unit', 'Por doce'],
+                      ]}
+                      onChange={(basis) =>
+                        setComponents(
+                          components.map((row, j) =>
+                            j === i
+                              ? { ...row, basis: basis as RecipeQuantityBasis }
+                              : row,
+                          ),
+                        )
+                      }
+                    />
+                    <HelpTip topic="recipeQuantity" />
+                  </div>
                 )}
-                )
-                <input
-                  required
-                  inputMode="decimal"
-                  value={c.quantity}
-                  onChange={(e) =>
-                    setComponents(
-                      components.map((c, j) =>
-                        j === i ? { ...c, quantity: e.target.value } : c,
-                      ),
-                    )
-                  }
-                />
-              </label>
-              {components.length > 1 && (
-                <Button
-                  type="button"
-                  onClick={() =>
-                    setComponents(components.filter((_, j) => j !== i))
-                  }
-                >
-                  Remover componente {i + 1}
-                </Button>
-              )}
-            </fieldset>
-          ))}
+                <label>
+                  {c.basis === 'unit'
+                    ? 'Quantidade por doce'
+                    : 'Quantidade no lote'}{' '}
+                  ({unit})
+                  <input
+                    required
+                    inputMode="decimal"
+                    value={c.quantity}
+                    onChange={(e) =>
+                      setComponents(
+                        components.map((c, j) =>
+                          j === i ? { ...c, quantity: e.target.value } : c,
+                        ),
+                      )
+                    }
+                  />
+                </label>
+                {view.data?.quantity_basis_supported && supply && (
+                  <RecipeQuantityPreview
+                    supply={supply}
+                    quantity={c.quantity}
+                    basis={c.basis}
+                    yieldUnits={Number(form.yield)}
+                  />
+                )}
+                {components.length > 1 && (
+                  <Button
+                    type="button"
+                    onClick={() =>
+                      setComponents(components.filter((_, j) => j !== i))
+                    }
+                  >
+                    Remover componente {i + 1}
+                  </Button>
+                )}
+              </fieldset>
+            );
+          })}
           <Button
             type="button"
             disabled={components.length >= 50}
-            onClick={() =>
-              setComponents([...components, { supply_id: '', quantity: '' }])
-            }
+            onClick={() => setComponents([...components, emptyComponent()])}
           >
             Adicionar componente
           </Button>
@@ -516,6 +565,7 @@ export function Recipes({
                   r.components.map((c) => ({
                     supply_id: c.supply_id,
                     quantity: quantityInput(c.quantity_milli),
+                    basis: c.quantity_basis,
                   })),
                 );
               }}
@@ -574,6 +624,19 @@ function RecipeCostTable({ recipe: r }: { recipe: Recipe }) {
                   {c.name}
                   <small>
                     {quantityInput(c.quantity_milli)} {unitName(c.unit)}
+                    {c.quantity_basis === 'unit'
+                      ? ' por doce · ' +
+                        quantityInput(
+                          recipeBatchQuantity(
+                            c.quantity_milli,
+                            'unit',
+                            r.yield_units,
+                          ),
+                        ) +
+                        ' ' +
+                        unitName(c.unit) +
+                        ' no lote'
+                      : ' no lote'}
                   </small>
                 </th>
                 <td>{amount(cost?.batch_cents ?? null)}</td>
@@ -642,4 +705,62 @@ function RecipeCostTable({ recipe: r }: { recipe: Recipe }) {
       )}
     </>
   );
+}
+
+function RecipeQuantityPreview({
+  supply,
+  quantity,
+  basis,
+  yieldUnits,
+}: {
+  supply: Supply;
+  quantity: string;
+  basis: RecipeQuantityBasis;
+  yieldUnits: number;
+}) {
+  if (!quantity.trim() || !yieldUnits) return null;
+  try {
+    const input = parseMilli(quantity);
+    const batch = recipeBatchQuantity(input, basis, yieldUnits);
+    const unit = unitName(supply.unit);
+    const perSweet = batch / yieldUnits / 1000;
+    const displayed =
+      perSweet < 0.001
+        ? '<0,001'
+        : perSweet.toLocaleString('pt-BR', {
+            maximumFractionDigits: perSweet < 0.1 ? 3 : 1,
+          });
+    const cost =
+      supply.pack_cost_cents === null || !supply.active
+        ? null
+        : Number(
+            recipeIngredientCost(
+              batch,
+              supply.pack_quantity_milli,
+              supply.pack_cost_cents,
+            ),
+          );
+    return (
+      <p className="recipe-quantity-preview">
+        ={' '}
+        {basis === 'unit' ? (
+          <>
+            <strong>
+              {quantityInput(batch)} {unit} no lote
+            </strong>{' '}
+            ({quantityInput(input)} × {yieldUnits} doces)
+          </>
+        ) : (
+          <>
+            {displayed} {unit} por doce
+          </>
+        )}
+        {cost !== null &&
+          Number.isSafeInteger(cost) &&
+          ' · ' + money(cost) + ' no lote'}
+      </p>
+    );
+  } catch {
+    return null;
+  }
 }

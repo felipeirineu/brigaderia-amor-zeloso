@@ -1,3 +1,7 @@
+import {
+  recipeBatchQuantity,
+  type RecipeQuantityBasis,
+} from '../shared/recipe-quantity';
 import { weightCostingReady, weightSupplyInUse } from './weight-costing';
 import { readKitItems } from './kit-order-items';
 import { flavorLines, type FlavorLine } from './flavor-lines';
@@ -31,10 +35,17 @@ interface Recipe {
   unmeasured_bps: number | null;
   components: (CostComponent & { unit: string })[];
 }
+async function recipeQuantityBasisReady(db: D1Database) {
+  return !!(await db
+    .prepare(
+      "SELECT 1 FROM pragma_table_info('recipe_components') WHERE name='quantity_basis'",
+    )
+    .first());
+}
 export async function readRecipes(
   db: D1Database,
   org: string,
-  options: { unmeasured?: boolean; lines?: FlavorLine[] } = {},
+  options: { unmeasured?: boolean; basis?: boolean; lines?: FlavorLine[] } = {},
 ) {
   const { lines } = options;
   if (lines?.length === 0) return [];
@@ -88,10 +99,11 @@ export async function readRecipes(
         : 'Mais de 200 fichas; implemente paginação.',
     );
   if (!rows.length) return [];
+  const basis = options.basis ?? (await recipeQuantityBasisReady(db));
   const components = (
     await db
       .prepare(
-        'SELECT c.recipe_id,c.supply_id,c.quantity_milli,s.name,s.unit,s.pack_quantity_milli,s.pack_cost_cents,s.active AS supply_active FROM recipe_components c JOIN supplies s ON s.organization_id=c.organization_id AND s.id=c.supply_id WHERE c.organization_id=? AND c.recipe_id IN(SELECT value FROM json_each(?))',
+        `SELECT c.recipe_id,c.supply_id,c.quantity_milli,${basis ? 'c.quantity_basis' : "'batch'"} AS quantity_basis,s.name,s.unit,s.pack_quantity_milli,s.pack_cost_cents,s.active AS supply_active FROM recipe_components c JOIN supplies s ON s.organization_id=c.organization_id AND s.id=c.supply_id WHERE c.organization_id=? AND c.recipe_id IN(SELECT value FROM json_each(?))`,
       )
       .bind(org, JSON.stringify(rows.map((r) => r.id)))
       .all<CostComponent & { recipe_id: string; unit: string }>()
@@ -125,12 +137,16 @@ export async function recipes(
         throw new HttpError(409, 'Mais de 500 insumos; implemente paginação.');
       return json({ role: a.role, items: rows });
     }
-    const ready = await recipeUnmeasuredReady(db);
-    const rows = await readRecipes(db, org, { unmeasured: ready });
+    const [ready, basis] = await Promise.all([
+      recipeUnmeasuredReady(db),
+      recipeQuantityBasisReady(db),
+    ]);
+    const rows = await readRecipes(db, org, { unmeasured: ready, basis });
     if (resource === 'recipes')
       return json({
         role: a.role,
         unmeasured_supported: ready,
+        quantity_basis_supported: basis,
         items: rows.map((r) => ({
           ...r,
           estimate: estimateRecipe(r, r.components),
@@ -242,7 +258,14 @@ export async function recipes(
         };
         previous.required_milli = safeQuantity(
           BigInt(previous.required_milli) +
-            BigInt(count) * BigInt(c.quantity_milli),
+            BigInt(count) *
+              BigInt(
+                recipeBatchQuantity(
+                  c.quantity_milli,
+                  c.quantity_basis ?? 'batch',
+                  recipe.yield_units,
+                ),
+              ),
         );
         totals.set(c.supply_id, previous);
       }
@@ -460,6 +483,34 @@ export async function recipes(
         .first())
     )
       throw new HttpError(400, 'Variante não pertence à organização.');
+    const basis = await recipeQuantityBasisReady(db);
+    if (!basis && d.components.some((c) => c.quantity_basis === 'unit'))
+      throw new HttpError(409, 'Quantidade por doce aguarda a migração 0031.');
+    const previous =
+      basis && id && d.components.some((c) => c.quantity_basis === undefined)
+        ? (
+            await db
+              .prepare(
+                'SELECT supply_id,quantity_basis FROM recipe_components WHERE organization_id=? AND recipe_id=?',
+              )
+              .bind(org, id)
+              .all<{ supply_id: string; quantity_basis: RecipeQuantityBasis }>()
+          ).results
+        : [];
+    const previousBasis = new Map(
+      previous.map((c) => [c.supply_id, c.quantity_basis]),
+    );
+    const components = d.components.map((c) => ({
+      ...c,
+      quantity_basis:
+        c.quantity_basis ?? previousBasis.get(c.supply_id) ?? 'batch',
+    }));
+    try {
+      for (const c of components)
+        recipeBatchQuantity(c.quantity_milli, c.quantity_basis, d.yield_units);
+    } catch (error) {
+      throw new HttpError(400, (error as Error).message);
+    }
     const found = (
       await db
         .prepare(
@@ -521,9 +572,9 @@ export async function recipes(
           .bind(org, entity, ...args),
         db
           .prepare(
-            `INSERT INTO recipe_components(organization_id,recipe_id,supply_id,quantity_milli) SELECT ?,?,json_extract(value,'$.supply_id'),json_extract(value,'$.quantity_milli') FROM json_each(?) WHERE ${g}`,
+            `INSERT INTO recipe_components(organization_id,recipe_id,supply_id,quantity_milli${basis ? ',quantity_basis' : ''}) SELECT ?,?,json_extract(value,'$.supply_id'),json_extract(value,'$.quantity_milli')${basis ? ",json_extract(value,'$.quantity_basis')" : ''} FROM json_each(?) WHERE ${g}`,
           )
-          .bind(org, entity, JSON.stringify(d.components), ...args),
+          .bind(org, entity, JSON.stringify(components), ...args),
       ],
     };
   });

@@ -1,3 +1,8 @@
+import {
+  recipeBatchQuantity,
+  recipeIngredientCost,
+  type RecipeQuantityBasis,
+} from '../shared/recipe-quantity';
 import { priceForMargin } from '../shared/costing';
 import { z } from 'zod';
 const cents = z.number().int().min(0).max(100000000),
@@ -26,7 +31,13 @@ export const recipeSchema = z
     version: z.number().int().positive().optional(),
     components: z
       .array(
-        z.object({ supply_id: z.uuid(), quantity_milli: quantity }).strict(),
+        z
+          .object({
+            supply_id: z.uuid(),
+            quantity_milli: quantity,
+            quantity_basis: z.enum(['batch', 'unit']).optional(),
+          })
+          .strict(),
       )
       .min(1)
       .max(50),
@@ -51,6 +62,7 @@ export interface CostComponent {
   supply_id: string;
   name: string;
   quantity_milli: number;
+  quantity_basis?: RecipeQuantityBasis;
   pack_quantity_milli: number;
   pack_cost_cents: number | null;
   supply_active: number;
@@ -82,9 +94,14 @@ export function estimateRecipe(
       missing.push(c.name);
       return { supply_id: c.supply_id, batch_cents: null, unit_cents: null };
     }
-    const batch = ceilDivide(
-      BigInt(c.quantity_milli) * BigInt(c.pack_cost_cents),
-      BigInt(c.pack_quantity_milli),
+    const batch = recipeIngredientCost(
+      recipeBatchQuantity(
+        c.quantity_milli,
+        c.quantity_basis ?? 'batch',
+        recipe.yield_units,
+      ),
+      c.pack_quantity_milli,
+      c.pack_cost_cents,
     );
     ingredientTotal += batch;
     return {

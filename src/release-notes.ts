@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.8.0',
+    items: [
+      'Na ficha, informe cada ingrediente para o lote inteiro ou por doce.',
+      'A conferência mostra o consumo do lote e o custo antes de salvar.',
+    ],
+  },
+  {
     version: '1.7.0',
     items: [
       'A ficha mostra o custo de cada ingrediente por lote e por doce, com os dois preços sugeridos.',

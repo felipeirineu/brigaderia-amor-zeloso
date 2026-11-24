@@ -3025,3 +3025,25 @@ body:has(.mix-sheet) {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+
+.recipe-quantity-basis {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--az-space-2);
+}
+.recipe-quantity-basis .choice-chips {
+  min-inline-size: 0;
+}
+.recipe-quantity-basis .choice-chips .az-button {
+  padding-inline: var(--az-space-2);
+  font-size: 0.875rem;
+}
+.recipe-quantity-preview {
+  margin: var(--az-space-2) 0 0;
+  padding: var(--az-space-2) var(--az-space-3);
+  border-radius: var(--az-radius-field);
+  background: var(--az-tonal);
+  color: var(--az-ink);
+  font-size: 0.87rem;
+}

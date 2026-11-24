@@ -54,6 +54,7 @@ export function HelpTip({
           </Button>
           {/* "Fechar" escrito e embaixo, como nas outras folhas. */}
           <Button
+            type="button"
             className="sheet-close"
             aria-label="Fechar ajuda"
             onClick={() => dialog.current?.close()}
