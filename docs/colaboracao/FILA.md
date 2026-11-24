@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: FELIPE` — aplicar a migração **0030** (T19). Fila do Codex vazia: próximos pedidos entram aqui com prévia aprovada.
+`VEZ: CODEX` — **T21** (ficha: quantidade "no lote" ou "por doce"; prévia aprovada pelo Felipe em 24/11).
 
 **Pendência do Claude (pedido do Felipe, 22/11):** quando os pedidos do Tiago estiverem publicados (1.4.4 cadastro no computador, T18, T20, T19), escrever para o Felipe uma mensagem curta de WhatsApp para o Tiago resumindo o que foi corrigido e adicionado, em linguagem simples e com onde encontrar cada coisa.
 
@@ -691,7 +691,7 @@ Pedido do Tiago. Siga a prévia.
 - Testes: unitários do cálculo (incluindo 0% e arredondamento), integração (CAS, papéis, backup/restauração com a coluna nova, schema antigo sem a coluna) e E2E da ficha. Capturas `t19-*.png` só com DEMONSTRAÇÃO.
 - Versão **1.7.0**.
 
-### T21 — Ficha: quantidade "no lote" ou "por doce" (prévia `previas/t21-quantidade-por-doce.png` — **aguardando aprovação do Felipe**)
+### T21 — Ficha: quantidade "no lote" ou "por doce" (prévia `previas/t21-quantidade-por-doce.png` — **aprovada pelo Felipe em 24/11**)
 
 Pedido do Tiago (24/11): colocou 1 uva "no lote" pensando em 1 por doce, e o custo saiu errado. Siga a prévia.
 
