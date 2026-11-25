@@ -1,3 +1,27 @@
+## T22 — entrega para revisão (25/11/2026)
+
+### Produzido
+
+- Versão 1.9.0. **Teve troca de doces?** permite informar os recolhidos no celular e no computador. **Editar troca de doces** permite ajustar um pedido em aberto, com auditoria, CAS e proteção do valor já recebido.
+- O desconto usa os doces avulsos mais baratos do pedido. Kits ficam fora. O resumo, Hoje, detalhe, conta, recebimentos, mensagens e arquivos usam o valor líquido. As ações em lote preservam a troca e **Repetir último pedido** abre com a troca zerada.
+- Produção e consumo previsto contam as unidades físicas. Relatórios contam as unidades cobradas e mostram perdas por troca, com custo estimado quando as fichas estão completas. Quatro capturas usam dados de demonstração.
+- O teste do formulário de computador revelou que um item com composição vazia era reaberto como Caixa Mista. Normalizei esse caso para que seja possível editar e salvar o pedido comum.
+
+### Testes executados
+
+- Build de Pages, TypeScript, lint, formatação, 261 testes unitários, 353 verificações de segurança e 10 testes de migrações.
+- Integrações de Financeiro, Operação, P1, Kits e Backup. O cenário T22 conferiu a migração local, limite, kits fora da troca, escrita clássica e móvel, CAS, sessão e organização, proteção de recebimentos, produção física, lote T20, vencimento T18, relatório, exportação e restauração.
+- Treze cenários de tela em Chromium móvel, WebKit móvel e Chromium desktop, incluindo edição de troca no formulário de computador e regressões de T17, T18 e T20.
+
+### Limitações
+
+- A opção fica oculta antes da 0032. O cache de estrutura pode levar até 15 minutos para habilitar os controles após a aplicação com a configuração padrão.
+- O custo da perda é uma estimativa pelas fichas atuais, com base nos itens usados para calcular a reposição. O fluxo registra somente a quantidade recolhida.
+
+### Pendências
+
+- Validação da gestão e Segurança automáticas no PR, seguidas da revisão do Claude. A aplicação da 0032 no banco real fica com o Felipe após a publicação. Veja `docs/FASE_T22.md`.
+
 ## T22 — plano antes do código (25/11/2026)
 
 Base `c08d262`, versão 1.9.0 e prévia `previas/t22-troca-de-doces.png`. A migração 0032 guarda quantidade e desconto no pedido. Um cálculo compartilhado em `shared/order-exchange.ts` rateia o preço da embalagem por unidade e escolhe os doces mais baratos. O servidor valida pelos snapshots; caixas vendidas como itens comuns participam, kits ficam fora. Catálogo, estoque e produção operam sobre as quantidades físicas. Financeiro usa o total líquido, e Relatórios separam unidades cobradas e perdas estimadas.
