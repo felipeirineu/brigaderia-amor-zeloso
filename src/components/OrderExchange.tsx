@@ -1,18 +1,7 @@
-import {
-  calculateExchange,
-  exchangeLabel,
-  type ExchangeLine,
-  type ExchangeOrder,
-} from '../../shared/order-exchange';
+import { exchangeLabel, type ExchangeOrder } from '../../shared/order-exchange';
 import { money } from '../features/api';
 import { Button } from './Button';
 import { HelpTip } from './HelpTip';
-
-export function exchangePreview(lines: ExchangeLine[], units: number) {
-  const eligible = lines.reduce((total, line) => total + line.units, 0);
-  const collected = Math.min(units, eligible);
-  return { ...calculateExchange(lines, collected), collected };
-}
 
 export function ExchangeEditor({
   quantity,

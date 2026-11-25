@@ -508,6 +508,11 @@ export function Account() {
                   Total: {money(c.total_cents)} · saldo {money(c.balance_cents)}{' '}
                   · vence {civilDate(c.due_on!)}
                 </p>
+                {data.orders
+                  .filter((o) => o.exchange_units && c.orders.includes(o.id))
+                  .map((o) => (
+                    <ExchangeBadge key={o.id} order={o} />
+                  ))}
                 {c.balance_cents > 0 && (
                   <>
                     <Button
@@ -549,6 +554,11 @@ export function Account() {
                   {money(c.total_cents - c.balance_cents)} · saldo{' '}
                   {money(c.balance_cents)} · vence {civilDate(c.due_on)}
                 </p>
+                {data.orders
+                  .filter((o) => o.exchange_units && o.closing_id === c.id)
+                  .map((o) => (
+                    <ExchangeBadge key={o.id} order={o} />
+                  ))}
                 <Button
                   disabled={busy || c.balance_cents <= 0}
                   onClick={() => void charge(c.id)}

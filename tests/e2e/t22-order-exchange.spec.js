@@ -19,7 +19,24 @@ test('T22 registra troca no novo pedido, detalhe e relatório', async ({
     },
   });
   try {
-    const { call, operator, customer } = await demoProject(t);
+    const { call, operator, customer, variant } = await demoProject(t);
+    const supply = await call('p1/supplies', {
+      name: 'Insumo DEMONSTRAÇÃO T22',
+      unit: 'unit',
+      pack_quantity_milli: 1000,
+      pack_cost_cents: 86,
+    });
+    await call('p1/recipes', {
+      name: 'Ficha DEMONSTRAÇÃO T22',
+      variant_id: variant,
+      yield_units: 1,
+      packaging_cents: 0,
+      labor_cents: 0,
+      overhead_cents: 0,
+      margin_bps: 0,
+      unmeasured_bps: 0,
+      components: [{ supply_id: supply.id, quantity_milli: 1000 }],
+    });
     const page = await context.newPage();
     await page.goto(t.url + '/api/access/start');
     await page.goto(t.url + '/gestao/pedidos?novo=1');
@@ -128,11 +145,19 @@ test('T22 registra troca no novo pedido, detalhe e relatório', async ({
     const losses = page.getByText('Perdas por troca · 1 doce', {
       exact: false,
     });
-    await expect(losses).toBeVisible();
+    await expect(losses).toContainText('custo estimado R$ 0,86');
     await expect(page.getByText('Doces vendidos: 5')).toBeVisible();
     await capture('relatorio', losses);
     await page.goto(t.url + '/gestao/financeiro/' + customer);
     await expect(page.locator('.exchange-badge')).toContainText('cobrados 5');
+    await page.goto(t.url + '/gestao/pedidos?novo=1');
+    await page
+      .getByRole('button', { name: 'Cliente DEMONSTRAÇÃO P1', exact: true })
+      .click();
+    await page.getByRole('button', { name: 'Repetir último pedido' }).click();
+    await expect(
+      page.getByRole('switch', { name: 'Teve troca de doces?' }),
+    ).not.toBeChecked();
   } finally {
     await context.close();
     await t.dispose();
@@ -167,11 +192,15 @@ test('T22 salva e edita a troca também no formulário de computador', async ({
       .getByRole('button', { name: 'Lista completa', exact: true })
       .click();
     const form = page.locator('form.desktop-order-editor');
-    await form.getByLabel('Cliente', { exact: true }).selectOption(customer);
+    await form
+      .getByRole('combobox', { name: 'Cliente', exact: true })
+      .selectOption(customer);
     await form
       .getByLabel('Data e hora combinadas (João Pessoa)')
       .fill('2031-01-07T14:00');
-    await form.getByLabel('Sabor', { exact: true }).selectOption(variant);
+    await form
+      .getByRole('combobox', { name: 'Sabor', exact: true })
+      .selectOption(variant);
     await form.getByRole('switch', { name: 'Teve troca de doces?' }).check();
     await expect(form.locator('.exchange-summary')).toContainText('5,00');
     await form.getByRole('button', { name: 'Salvar pedido' }).click();

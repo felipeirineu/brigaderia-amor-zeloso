@@ -1,7 +1,7 @@
+import { exchangePreview } from '../../../shared/order-exchange';
 import {
   ExchangeEditor,
   ExchangeSummary,
-  exchangePreview,
 } from '../../components/OrderExchange';
 import { DeliveryCycleEditor } from '../finance/DeliveryCycleEditor';
 import { courierChoices, type Courier } from '../../../shared/courier';

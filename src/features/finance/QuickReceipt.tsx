@@ -1,3 +1,4 @@
+import type { ExchangeOrder } from '../../../shared/order-exchange';
 import { ExchangeBadge } from '../../components/OrderExchange';
 import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
@@ -26,14 +27,18 @@ export function QuickReceipt({
 }) {
   const view = useRemote<{
       version: number;
-      delivery_cycles?: { id: string; balance_cents: number }[];
-      orders: {
+      delivery_cycles?: {
+        id: string;
+        balance_cents: number;
+        orders: string[];
+      }[];
+      orders: (ExchangeOrder & {
         id: string;
         version: number;
         balance_cents: number;
         status: string;
         terms: Terms;
-      }[];
+      })[];
     }>(`finance/customers/${order.customer_id}`),
     dialog = useRef<HTMLDialogElement>(null),
     trigger = useRef<HTMLElement | null>(null),
@@ -120,7 +125,15 @@ export function QuickReceipt({
     >
       <div className="sheet-body">
         <h2>Recebi R$ · {order.customer_name}</h2>
-        {!deliveryCycle && <ExchangeBadge order={order} />}
+        {deliveryCycle ? (
+          view.data?.orders
+            .filter(
+              (item) => cycle?.orders.includes(item.id) && item.exchange_units,
+            )
+            .map((item) => <ExchangeBadge key={item.id} order={item} />)
+        ) : (
+          <ExchangeBadge order={order} />
+        )}
         <Failure message={error || view.error} />
         {current ? (
           <form

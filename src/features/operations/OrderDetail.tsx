@@ -1,8 +1,8 @@
+import { exchangePreview } from '../../../shared/order-exchange';
 import {
   ExchangeBadge,
   ExchangeEditor,
   ExchangeSummary,
-  exchangePreview,
 } from '../../components/OrderExchange';
 import { courierChoices, type Courier } from '../../../shared/courier';
 import {

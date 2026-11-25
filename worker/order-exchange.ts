@@ -43,7 +43,7 @@ export async function prepareOrderExchange(
   const ready = write && (await orderExchangeReady(db));
   if (!ready && collected)
     throw new HttpError(409, 'Troca de doces aguarda a migração 0032.');
-  let discount = 0;
+  let discount: number;
   try {
     discount = calculateExchange(
       items.map((item) => ({

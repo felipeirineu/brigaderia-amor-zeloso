@@ -1,8 +1,8 @@
+import { exchangePreview } from '../../shared/order-exchange';
 import {
   ExchangeBadge,
   ExchangeEditor,
   ExchangeSummary,
-  exchangePreview,
 } from '../components/OrderExchange';
 import { BatchOrders } from './operations/BatchOrders';
 import { paymentModeLabels } from '../../shared/finance';
@@ -1491,7 +1491,16 @@ function FullOrders({
                   ) as unknown as KitItemSnapshot[];
                   setKitSnapshots(savedKits);
                   setKitItems(savedKits.map(kitSnapshotInput));
-                  setItems(o.items.filter((i) => !i.kit_id));
+                  setItems(
+                    o.items
+                      .filter((i) => !i.kit_id)
+                      .map((i) => ({
+                        ...i,
+                        components: i.components?.length
+                          ? i.components
+                          : undefined,
+                      })),
+                  );
                 }}
               >
                 Editar pedido de {o.customer_name}

@@ -32,6 +32,12 @@ export function calculateExchange(lines: ExchangeLine[], collected: number) {
   return { eligible, discount, replacements };
 }
 
+export function exchangePreview(lines: ExchangeLine[], units: number) {
+  const eligible = lines.reduce((total, line) => total + line.units, 0);
+  const collected = Math.min(units, eligible);
+  return { ...calculateExchange(lines, collected), collected };
+}
+
 export interface ExchangeOrder {
   exchange_units?: number;
   exchange_discount_cents?: number;
