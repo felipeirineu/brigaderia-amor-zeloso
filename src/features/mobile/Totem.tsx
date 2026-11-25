@@ -298,7 +298,9 @@ export function Totem({
         ? {
             customer_id: customer.id,
             order_id: id ?? null,
-            ...(orderExchange ? { exchange_units: exchangeUnits } : {}),
+            ...(orderExchange && exchangeUnits > 0
+              ? { exchange_units: exchangeUnits }
+              : {}),
             items: [
               ...Object.entries(counts)
                 .filter(([, n]) => n > 0)
