@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: FELIPE` — aplicar a migração **0032** (T22) pelo "Homologação D1 (manual)". Fila do Codex vazia: próximos pedidos entram aqui com prévia aprovada.
+`VEZ: FELIPE` — migração 0032 aplicada em 25/11. Fila do Codex vazia: próximos pedidos entram aqui com prévia aprovada.
 
 **Pendência do Claude (pedido do Felipe, 22/11):** quando os pedidos do Tiago estiverem publicados (1.4.4 cadastro no computador, T18, T20, T19), escrever para o Felipe uma mensagem curta de WhatsApp para o Tiago resumindo o que foi corrigido e adicionado, em linguagem simples e com onde encontrar cada coisa.
 
