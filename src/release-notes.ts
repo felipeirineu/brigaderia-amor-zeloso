@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.8.1',
+    items: [
+      'O botão Atualizar volta a responder: se o app não recarregar sozinho, recarrega em poucos segundos.',
+      'Mudanças só de documentação não mostram mais o aviso de nova versão.',
+    ],
+  },
+  {
     version: '1.8.0',
     items: [
       'Na ficha, informe cada ingrediente para o lote inteiro ou por doce.',

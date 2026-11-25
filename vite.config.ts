@@ -41,10 +41,26 @@ const version = JSON.parse(
 ).version;
 let build = 'desenvolvimento';
 try {
-  const sha = execFileSync('git', ['rev-parse', '--short=7', 'HEAD'], {
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'ignore'],
-  }).trim();
+  // Último commit que muda o app (documentação não conta): publicar só
+  // documentação gera o mesmo pacote e não dispara "Nova versão disponível".
+  const [sha, stamp] = execFileSync(
+    'git',
+    [
+      'log',
+      '-1',
+      '--format=%h %ct',
+      '--abbrev=7',
+      '--',
+      '.',
+      ':!docs',
+      ':!*.md',
+      ':!.zap',
+    ],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+  )
+    .trim()
+    .split(' ');
+  if (!sha || !stamp) throw new Error('sem git');
   const parts = new Intl.DateTimeFormat('pt-BR', {
     timeZone: 'America/Fortaleza',
     day: '2-digit',
@@ -52,7 +68,7 @@ try {
     hour: '2-digit',
     minute: '2-digit',
     hourCycle: 'h23',
-  }).formatToParts(new Date());
+  }).formatToParts(new Date(Number(stamp) * 1000));
   const part = (key: Intl.DateTimeFormatPartTypes) =>
     parts.find((p) => p.type === key)?.value;
   build = `${part('day')}/${part('month')} ${part('hour')}h${part('minute')} · ${sha}`;

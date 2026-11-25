@@ -9,13 +9,20 @@ import { Button } from './Button';
  */
 export function AppUpdate() {
   const [apply, setApply] = useState<(() => void) | null>(null);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
     let timer: ReturnType<typeof setInterval> | undefined;
     let check: (() => void) | undefined;
     const update = registerSW({
       onNeedRefresh() {
-        setApply(() => () => void update(true));
+        setApply(() => () => {
+          setBusy(true);
+          void update(true);
+          // Se o app não recarregar sozinho (outra janela aberta, aparelho
+          // lento), recarrega para não deixar o toque sem resposta.
+          setTimeout(() => window.location.reload(), 4000);
+        });
       },
       onRegisteredSW(_url, registration) {
         if (!registration) return;
@@ -38,7 +45,7 @@ export function AppUpdate() {
   return (
     <div className="app-update" aria-live="polite">
       <span>Nova versão do app disponível.</span>
-      <Button variant="primary" onClick={apply}>
+      <Button variant="primary" onClick={apply} loading={busy} disabled={busy}>
         Atualizar
       </Button>
     </div>
