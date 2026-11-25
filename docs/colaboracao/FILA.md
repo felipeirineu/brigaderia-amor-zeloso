@@ -5,7 +5,7 @@
 
 ## VEZ
 
-`VEZ: FELIPE` — migração 0031 aplicada em 24/11. Fila do Codex vazia: próximos pedidos entram aqui com prévia aprovada.
+`VEZ: CODEX` — **T22** (troca de doces sem cobrança; prévia aprovada pelo Felipe em 25/11).
 
 **Pendência do Claude (pedido do Felipe, 22/11):** quando os pedidos do Tiago estiverem publicados (1.4.4 cadastro no computador, T18, T20, T19), escrever para o Felipe uma mensagem curta de WhatsApp para o Tiago resumindo o que foi corrigido e adicionado, em linguagem simples e com onde encontrar cada coisa.
 
@@ -704,6 +704,20 @@ Pedido do Tiago (24/11): colocou 1 uva "no lote" pensando em 1 por doce, e o cus
 - **Migração** (próximo número livre); aplicação no banco real só pelo Felipe.
 - Testes: unitários da conversão (inclusive frações e rendimento alterado), integração (CAS, papéis, backup com a coluna, schema antigo) e E2E da ficha. Capturas `t21-*.png` só com DEMONSTRAÇÃO.
 - Versão **1.8.0**.
+
+### T22 — Troca de doces sem cobrança (prévia `previas/t22-troca-de-doces.png` **aprovada pelo Felipe em 25/11**)
+
+Pedido do Tiago: ao entregar, às vezes recolhem doces vencendo no cliente e repõem com novos; cobram só os que não são reposição (ex.: 6 entregues, 2 recolhidos → cobra 4). Siga a prévia.
+
+1. **Novo pedido e edição do pedido** (celular e computador): bloco "Teve troca de doces?" (interruptor) com "Doces recolhidos" (passo − / +, de 1 até o total de doces avulsos do pedido). Só a **quantidade** (decisão do Felipe: sem escolher sabores). Ajuda (?) curta.
+2. **Valor:** total cobrado = itens − desconto da troca. Desconto = preço unitário dos doces do próprio pedido, **os mais baratos primeiro** quando houver preços diferentes (decisão do Felipe). Kits ficam fora da troca nesta versão (só doces avulsos); explique no texto se o pedido só tiver kits.
+3. **Resumo do pedido:** "Entregues 6 doces · Troca (sem cobrar) −2 doces · −R$ X · Cobrar 4 doces · R$ Y". Detalhe do pedido, Hoje, conta/fatura, recebimentos e exportações mostram "Troca: N doces · 6 entregues · cobrados 4" e usam o valor já descontado (inclusive vencimentos T17/T18 e mensagens de cobrança).
+4. **Produção e estoque:** "Produzir hoje e amanhã", embalagens e consumo da ficha continuam contando **todos** os doces entregues.
+5. **Relatórios:** linha "Perdas por troca" no período: doces recolhidos e custo estimado pela ficha (quando houver; sem ficha, só a quantidade). Doces vendidos/faturamento contam apenas os cobrados.
+6. **Lote (T20) e duplicar pedido** preservam ou zeram a troca de forma explícita (duplicar: **zera**).
+- **Migração** (próximo número livre): coluna da quantidade recolhida no pedido (padrão 0) e o desconto calculado guardado em centavos; schema antigo = sem troca (salvar troca antes da migração é recusado com aviso). Backup/restauração com a coluna nova.
+- Testes: unitários do desconto (preços diferentes, limite, zero), integração (CAS, papéis, valores na conta/vencimento, backup, schema antigo) e E2E (novo pedido com troca, detalhe, relatório). Capturas `t22-*.png` só com DEMONSTRAÇÃO.
+- Versão **1.9.0**.
 
 ## Versões do app
 
