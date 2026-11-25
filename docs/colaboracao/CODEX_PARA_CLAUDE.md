@@ -1,3 +1,9 @@
+## T22 — plano antes do código (25/11/2026)
+
+Base `c08d262`, versão 1.9.0 e prévia `previas/t22-troca-de-doces.png`. A migração 0032 guarda quantidade e desconto no pedido. Um cálculo compartilhado em `shared/order-exchange.ts` rateia o preço da embalagem por unidade e escolhe os doces mais baratos. O servidor valida pelos snapshots; caixas vendidas como itens comuns participam, kits ficam fora. Catálogo, estoque e produção operam sobre as quantidades físicas. Financeiro usa o total líquido, e Relatórios separam unidades cobradas e perdas estimadas.
+
+Aceite: formulário móvel e desktop, limite e kits, CAS, edição e repetição, compatibilidade schema antigo, T17/T18, relatórios e arquivos, restauração e capturas de demonstração. Operações remotas do banco ficam com o responsável.
+
 ## T21 — entrega para revisão (24/11/2026)
 
 ### Produzido
