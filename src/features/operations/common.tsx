@@ -23,6 +23,8 @@ interface Item {
   unit_price_cents: number;
 }
 export interface OperationalOrder {
+  exchange_units?: number;
+  exchange_discount_cents?: number;
   occasion?: string;
   id: string;
   customer_id: string;

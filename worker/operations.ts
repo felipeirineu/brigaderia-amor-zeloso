@@ -1,3 +1,5 @@
+import { adjustOrderExchange } from './order-exchange';
+import { exchangeLabel } from '../shared/order-exchange';
 import { validateOrderStatus } from './order-status';
 import { batchOrders } from './batch-orders';
 import { completedAt } from './order-completion';
@@ -770,6 +772,8 @@ export async function operations(
     .bind(org, id)
     .first<Row>();
   if (!order) throw new HttpError(404, 'Pedido não encontrado.');
+  if (action === 'exchange' && req.method === 'PUT')
+    return adjustOrderExchange(req, db, a, order);
   if (action === 'history' && req.method === 'GET')
     return json(
       (
@@ -1053,6 +1057,14 @@ export async function operations(
     }
     if (occasionLabel(order.occasion))
       message += `\nOcasião: ${occasionLabel(order.occasion)}.`;
+    const replacement = exchangeLabel({
+      exchange_units: Number(order.exchange_units ?? 0),
+      items: items.map((item) => ({
+        quantity: Number(item.quantity),
+        units_per_box: Number(item.units_per_box ?? item.units_per_kit ?? 0),
+      })),
+    });
+    if (replacement) message += '\n' + replacement + '.';
     return json({ message, phone: visiblePhone(customer.phone) });
   }
   if (action === 'contact' && req.method === 'POST') {

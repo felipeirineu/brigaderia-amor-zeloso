@@ -1,3 +1,4 @@
+import { exchangeUnitsSchema, prepareOrderExchange } from './order-exchange';
 import { requireSharedDelivery } from './shared-delivery';
 import { prospectsSchema, requireCustomer } from './prospects';
 import { customerType, occasionValues } from '../shared/customer-order';
@@ -40,6 +41,7 @@ import { businessDay, deliverySchema, nextStatuses } from './operations-domain';
 const schema = z
   .object({
     customer_id: z.uuid(),
+    exchange_units: exchangeUnitsSchema,
     occasion: z.enum(occasionValues).optional(),
     version: z.number().int().positive().optional(),
     due_at: z.iso
@@ -341,12 +343,19 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       old as unknown as ItemSnapshot[],
       d.composition_version,
     );
-    const total = [...items, ...kitItems].reduce(
+    const exchange = await prepareOrderExchange(
+      db,
+      d.exchange_units ?? Number(prior?.exchange_units ?? 0),
+      items,
+      !!(d.exchange_units || prior?.exchange_units),
+    );
+    const gross = [...items, ...kitItems].reduce(
       (n, i) => n + i.quantity * Number(i.unit_price_cents),
       0,
     );
-    if (!Number.isSafeInteger(total) || total > 1000000000)
+    if (!Number.isSafeInteger(gross) || gross > 1000000000)
       throw new HttpError(400, 'Total excede limite.');
+    const total = gross - exchange.discount;
     const financial = await financeReady(env);
     if (!financial && d.terms)
       throw new HttpError(503, 'Condições financeiras ainda não ativadas.');
@@ -446,12 +455,13 @@ export async function mobile(req: Request, env: Env, a: Actor) {
       first: id
         ? db
             .prepare(
-              "UPDATE orders SET due_at=?,notes=?,total_cents=?,delivery_type=?,delivery_address=?,courier=?,courier_name=?,courier_fee_cents=?,status='confirmed',version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?",
+              `UPDATE orders SET due_at=?,notes=?,total_cents=?${exchange.update},delivery_type=?,delivery_address=?,courier=?,courier_name=?,courier_fee_cents=?,status='confirmed',version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?`,
             )
             .bind(
               d.due_at,
               d.notes,
               total,
+              ...exchange.values,
               d.delivery.delivery_type,
               d.delivery.delivery_address,
               d.delivery.courier,
@@ -464,7 +474,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
             )
         : db
             .prepare(
-              'INSERT INTO orders(id,organization_id,customer_id,customer_name,due_at,notes,total_cents,request_key,request_hash,mutation_id,status,delivery_type,delivery_address,courier,courier_name,courier_fee_cents) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+              `INSERT INTO orders(id,organization_id,customer_id,customer_name,due_at,notes,total_cents,request_key,request_hash,mutation_id,status,delivery_type,delivery_address,courier,courier_name,courier_fee_cents${exchange.columns}) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?${exchange.placeholders})`,
             )
             .bind(
               order,
@@ -483,6 +493,7 @@ export async function mobile(req: Request, env: Env, a: Actor) {
               d.delivery.courier,
               d.delivery.courier_name,
               d.delivery.courier_fee_cents,
+              ...exchange.values,
             ),
       rest: (g, args) => [
         ...occasionWrites,

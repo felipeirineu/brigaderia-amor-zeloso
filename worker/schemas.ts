@@ -1,3 +1,4 @@
+import { exchangeUnitsSchema } from './order-exchange';
 import { customerTypes, occasionValues } from '../shared/customer-order';
 import { kitItemSchema } from './kit-order-domain';
 import { itemInputSchema, uniqueItems } from './mixed-domain';
@@ -66,6 +67,7 @@ export const productSchema = z
 export const orderSchema = z
   .object({
     customer_id: z.uuid(),
+    exchange_units: exchangeUnitsSchema,
     template_id: z.uuid().optional(),
     occasion: z.enum(occasionValues).optional(),
     due_at: z.iso

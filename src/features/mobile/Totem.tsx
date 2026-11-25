@@ -1,3 +1,8 @@
+import { exchangePreview } from '../../../shared/order-exchange';
+import {
+  ExchangeEditor,
+  ExchangeSummary,
+} from '../../components/OrderExchange';
 import { DeliveryCycleEditor } from '../finance/DeliveryCycleEditor';
 import { courierChoices, type Courier } from '../../../shared/courier';
 import { AlcoholTag } from '../../components/AlcoholTag';
@@ -145,6 +150,7 @@ interface Defaults {
   } | null;
 }
 interface EditOrder {
+  exchange_units?: number;
   occasion?: Occasion;
   id: string;
   customer_id: string;
@@ -162,6 +168,7 @@ interface EditOrder {
     kit_id?: string;
     variant_id: string;
     quantity: number;
+    units_per_box?: number;
     product_name: string;
     variant_label: string;
     unit_price_cents: number;
@@ -177,12 +184,14 @@ export function Totem({
   metadata = false,
   kitOrders = false,
   sharedDelivery = false,
+  orderExchange = false,
 }: {
   financial?: boolean;
   mixed?: boolean;
   metadata?: boolean;
   kitOrders?: boolean;
   sharedDelivery?: boolean;
+  orderExchange?: boolean;
 }) {
   const {
     scope: draftScope,
@@ -202,6 +211,7 @@ export function Totem({
     };
   }, []);
   const [resumeNotice, setResumeNotice] = useState('');
+  const [exchangeUnits, setExchangeUnits] = useState(0);
   const kitCatalog = useKitCatalog(financial && kitOrders);
   const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
     [kitSnapshots, setKitSnapshots] = useState<KitItemSnapshot[]>([]),
@@ -288,6 +298,7 @@ export function Totem({
         ? {
             customer_id: customer.id,
             order_id: id ?? null,
+            ...(orderExchange ? { exchange_units: exchangeUnits } : {}),
             items: [
               ...Object.entries(counts)
                 .filter(([, n]) => n > 0)
@@ -312,7 +323,7 @@ export function Totem({
             })),
           }
         : null,
-    [customer, id, counts, mixes, kitItems],
+    [customer, id, counts, mixes, kitItems, orderExchange, exchangeUnits],
   );
   useEffect(() => {
     if (
@@ -437,6 +448,7 @@ export function Totem({
         setKitItems(savedKits.map(kitSnapshotInput));
         o = { ...o, items: o.items.filter((i) => !i.kit_id) };
         setEditing(o);
+        setExchangeUnits(o.exchange_units ?? 0);
         setCustomer({ id: o.customer_id, name: o.customer_name });
         setCounts(
           Object.fromEntries(
@@ -501,6 +513,7 @@ export function Totem({
     };
   }, [id, financial, setDue]);
   function applyPlanItems(items: Plan['items'], kits: KitItemInput[] = []) {
+    setExchangeUnits(0);
     setKitItems(
       kits.map((i) => ({
         ...i,
@@ -547,6 +560,7 @@ export function Totem({
     const serial = ++choice.current;
     setKitEditing(false);
     setCustomer(c);
+    setExchangeUnits(0);
     setKitItems([]);
     setKitSnapshots([]);
     setCounts({});
@@ -623,6 +637,7 @@ export function Totem({
         label: i.variant_label,
         active: 1,
         price_cents: i.unit_price_cents,
+        units_per_box: i.units_per_box,
         product_name: i.product_name,
         photo_key: null,
         alcohol: containsAlcohol(null, i.product_name, i.variant_label),
@@ -630,8 +645,8 @@ export function Totem({
   const all = [...options, ...historical],
     selected = all.filter((v) => counts[v.id] > 0),
     price = (v: (typeof all)[number]) =>
-      editing?.items.find((i) => i.variant_id === v.id)?.unit_price_cents ??
-      v.price_cents,
+      editing?.items.find((i) => i.variant_id === v.id && !i.components?.length)
+        ?.unit_price_cents ?? v.price_cents,
     mixPrice = (m: Mix) =>
       editing?.items.find((i) => i.id === m.item_id)?.unit_price_cents ??
       all.find((v) => v.id === m.base)?.price_cents ??
@@ -656,7 +671,37 @@ export function Totem({
       !!scheduleDay(due.slice(0, 10)) &&
       due.slice(0, 10) >= fortalezaDay() &&
       /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(due.slice(11, 16)),
-    total =
+    swap = exchangePreview(
+      [
+        ...selected.map((v) => ({
+          id: v.id,
+          units:
+            counts[v.id] *
+            (editing?.items.find(
+              (item) => item.variant_id === v.id && !item.components?.length,
+            )?.units_per_box ??
+              v.units_per_box ??
+              1),
+          cents: counts[v.id] * price(v),
+        })),
+        ...mixes.map((m) => ({
+          id: m.key,
+          units: m.qty * Object.values(m.comp).reduce((sum, n) => sum + n, 0),
+          cents: m.qty * mixPrice(m),
+        })),
+      ],
+      orderExchange ? exchangeUnits : 0,
+    ),
+    deliveredUnits =
+      swap.eligible +
+      kitItems.reduce(
+        (sum, item) =>
+          sum +
+          item.quantity *
+            item.components.reduce((n, component) => n + component.units, 0),
+        0,
+      ),
+    gross =
       selected.reduce((n, v) => n + counts[v.id] * price(v), 0) +
       mixes.reduce((n, m) => n + m.qty * mixPrice(m), 0) +
       kitItems.reduce(
@@ -665,6 +710,7 @@ export function Totem({
           i.quantity * (kitItemPrice(i, kitCatalog.kits, kitSnapshots) ?? 0),
         0,
       ),
+    total = gross - swap.discount,
     flavorName = (id: string) => {
       const v = all.find((x) => x.id === id);
       if (!v) return 'Sabor';
@@ -750,6 +796,7 @@ export function Totem({
         throw Error('Informe um dia de vencimento de 1 a 31.');
       const data = {
           customer_id: customer.id,
+          ...(orderExchange ? { exchange_units: swap.collected } : {}),
           occasion: metadata ? occasion : undefined,
           ...(editing ? { version: editing.version } : {}),
           due_at:
@@ -937,6 +984,7 @@ export function Totem({
           }),
       );
       setKitItems(d.kit_items);
+      setExchangeUnits(d.exchange_units ?? 0);
       // Snapshots do pedido editado foram relidos do servidor; não vêm do storage.
       if (!id) setKitSnapshots([]);
       setDue('');
@@ -1595,6 +1643,19 @@ export function Totem({
                 </article>
               ))}
           </LegacyItemsSection>
+          {orderExchange && hasItems && (
+            <ExchangeEditor
+              quantity={swap.collected}
+              limit={swap.eligible}
+              onChange={setExchangeUnits}
+            />
+          )}
+          <ExchangeSummary
+            delivered={deliveredUnits}
+            collected={swap.collected}
+            discount={swap.discount}
+            total={total}
+          />
         </>
       )}
       {step === WHEN && (
@@ -2216,6 +2277,12 @@ export function Totem({
             <OccasionPicker value={occasion} onChange={setOccasion} />
           )}
           {occasionLabel(occasion) && <p>Ocasião: {occasionLabel(occasion)}</p>}
+          <ExchangeSummary
+            delivered={deliveredUnits}
+            collected={swap.collected}
+            discount={swap.discount}
+            total={total}
+          />
           <ul className="order-summary" aria-label="Resumo do pedido">
             <li>
               <span>

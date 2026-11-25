@@ -1,3 +1,4 @@
+import { ExchangeBadge } from '../../components/OrderExchange';
 import type { DeliveryCycle } from '../../../shared/delivery-cycle';
 import {
   deliveryCycleSize,
@@ -26,6 +27,9 @@ interface LedgerOrder {
   version: number;
   number?: number;
   total_cents: number;
+  exchange_units?: number;
+  exchange_discount_cents?: number;
+  exchange_delivered_units?: number;
   paid_cents: number;
   balance_cents: number;
   receivable_cents: number;
@@ -400,6 +404,7 @@ export function Account() {
                   Total {money(o.total_cents)} · recebido {money(o.paid_cents)}{' '}
                   · saldo do pedido {money(o.balance_cents)}.
                 </p>
+                <ExchangeBadge order={o} />
                 <p>
                   {o.due_on
                     ? `Vencimento: ${civilDate(o.due_on)}`
@@ -503,6 +508,11 @@ export function Account() {
                   Total: {money(c.total_cents)} · saldo {money(c.balance_cents)}{' '}
                   · vence {civilDate(c.due_on!)}
                 </p>
+                {data.orders
+                  .filter((o) => o.exchange_units && c.orders.includes(o.id))
+                  .map((o) => (
+                    <ExchangeBadge key={o.id} order={o} />
+                  ))}
                 {c.balance_cents > 0 && (
                   <>
                     <Button
@@ -544,6 +554,11 @@ export function Account() {
                   {money(c.total_cents - c.balance_cents)} · saldo{' '}
                   {money(c.balance_cents)} · vence {civilDate(c.due_on)}
                 </p>
+                {data.orders
+                  .filter((o) => o.exchange_units && o.closing_id === c.id)
+                  .map((o) => (
+                    <ExchangeBadge key={o.id} order={o} />
+                  ))}
                 <Button
                   disabled={busy || c.balance_cents <= 0}
                   onClick={() => void charge(c.id)}

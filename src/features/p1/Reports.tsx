@@ -18,6 +18,8 @@ interface Report {
   without_deliveries: { id: string; name: string; last_delivery: string }[];
   sales_cents: number;
   orders_count: number;
+  sold_units: number;
+  exchange_losses: { units: number; estimated_cost_cents: number | null };
   estimated_cost_cents: number | null;
   cost_missing_orders: number;
   received_cents: number;
@@ -182,6 +184,16 @@ export function Reports({ followup = false }: { followup?: boolean }) {
               {view.data.orders_count} pedidos pela data efetiva de
               entrega/retirada.
             </p>
+            <p>Doces vendidos: {view.data.sold_units}</p>
+            {view.data.exchange_losses.units > 0 && (
+              <p className="exchange-badge">
+                Perdas por troca · {view.data.exchange_losses.units}{' '}
+                {view.data.exchange_losses.units === 1 ? 'doce' : 'doces'}
+                {view.data.exchange_losses.estimated_cost_cents !== null &&
+                  ' · custo estimado ' +
+                    money(view.data.exchange_losses.estimated_cost_cents)}
+              </p>
+            )}
             {view.data.orders_count > 0 && (
               <p>
                 Custo estimado atual:{' '}

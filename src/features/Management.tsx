@@ -1,3 +1,9 @@
+import { exchangePreview } from '../../shared/order-exchange';
+import {
+  ExchangeBadge,
+  ExchangeEditor,
+  ExchangeSummary,
+} from '../components/OrderExchange';
 import { BatchOrders } from './operations/BatchOrders';
 import { paymentModeLabels } from '../../shared/finance';
 import {
@@ -138,6 +144,7 @@ interface Session {
   weight_costing?: boolean;
   customer_orders?: boolean;
   kit_orders?: boolean;
+  order_exchange?: boolean;
   kit_recurring?: boolean;
   user_id: string;
   organization_id: string;
@@ -194,8 +201,12 @@ interface Item {
   product_name?: string;
   variant_label?: string;
   unit_price_cents?: number;
+  units_per_box?: number;
+  units_per_kit?: number;
 }
 interface Order {
+  exchange_units?: number;
+  exchange_discount_cents?: number;
   occasion?: Occasion;
   status: Status;
   id: string;
@@ -1159,6 +1170,7 @@ function Orders({
   mixed?: boolean;
   metadata?: boolean;
   kitOrders?: boolean;
+  orderExchange?: boolean;
 }) {
   const [search] = useSearchParams(),
     mode = useOrderMode(role);
@@ -1174,6 +1186,7 @@ function Orders({
         mixed={props.mixed}
         metadata={props.metadata}
         kitOrders={props.kitOrders}
+        orderExchange={props.orderExchange}
       />
     );
   return (
@@ -1205,6 +1218,7 @@ function FullOrders({
   detail,
   metadata = false,
   kitOrders = false,
+  orderExchange = false,
   operational = false,
   financial = false,
   mixed = false,
@@ -1216,11 +1230,13 @@ function FullOrders({
   simple?: boolean;
   metadata?: boolean;
   kitOrders?: boolean;
+  orderExchange?: boolean;
 }) {
   const askConfirmation = useConfirm();
 
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const [exchangeUnits, setExchangeUnits] = useState(0);
   const orders = useList<Order>(`orders?q=${encodeURIComponent(query)}`);
   const kitCatalog = useKitCatalog(financial && kitOrders);
   const [kitItems, setKitItems] = useState<KitItemInput[]>([]),
@@ -1258,6 +1274,7 @@ function FullOrders({
       setKitSnapshots([]);
     }
     if (!financial || !id || editing) return;
+    setExchangeUnits(0);
     setItems([{ variant_id: '', quantity: 1 }]);
     setDue('');
     setNotes('');
@@ -1275,6 +1292,7 @@ function FullOrders({
     }
   }
   function applyTemplate(plan: NonNullable<typeof defaults>['plans'][number]) {
+    setExchangeUnits(0);
     setKitItems(plan.kit_items ?? []);
     setKitSnapshots([]);
     setTemplate(plan.id);
@@ -1307,6 +1325,7 @@ function FullOrders({
   );
   function reset() {
     setEditing(null);
+    setExchangeUnits(0);
     setKitItems([]);
     setKitSnapshots([]);
     setKitEditing(false);
@@ -1336,6 +1355,7 @@ function FullOrders({
           editing ? 'PUT' : 'POST',
           {
             customer_id: customer,
+            ...(orderExchange ? { exchange_units: swap.collected } : {}),
             ...(!editing && template ? { template_id: template } : {}),
             due_at: new Date(`${due}:00-03:00`).toISOString(),
             notes,
@@ -1362,21 +1382,46 @@ function FullOrders({
       reset,
     );
   }
-  const estimate = items.reduce(
-    (sum, i) =>
-      sum +
-      i.quantity *
-        (editing?.items.find((o) =>
-          i.id || i.item_id
-            ? o.id === (i.id ?? i.item_id)
-            : o.variant_id === i.variant_id &&
-              !o.components?.length &&
-              !i.components?.length,
-        )?.unit_price_cents ??
-          options.find((o) => o.id === i.variant_id)?.price ??
-          0),
-    0,
+  const exchangeLines = items.flatMap((item, index) => {
+    const saved = editing?.items.find((old) =>
+      item.id || item.item_id
+        ? old.id === (item.id ?? item.item_id)
+        : old.variant_id === item.variant_id &&
+          !old.components?.length &&
+          !item.components?.length,
+    );
+    const option = options.find((row) => row.id === item.variant_id);
+    if (!item.variant_id || !item.quantity || (!saved && !option)) return [];
+    return [
+      {
+        id: item.id ?? item.item_id ?? String(index),
+        units:
+          item.quantity * (saved?.units_per_box ?? option?.units_per_box ?? 1),
+        cents: item.quantity * (saved?.unit_price_cents ?? option?.price ?? 0),
+      },
+    ];
+  });
+  const swap = exchangePreview(
+    exchangeLines,
+    orderExchange ? exchangeUnits : 0,
   );
+  const deliveredUnits =
+    swap.eligible +
+    kitItems.reduce(
+      (sum, item) =>
+        sum + item.quantity * item.components.reduce((n, c) => n + c.units, 0),
+      0,
+    );
+  const estimate =
+    exchangeLines.reduce((sum, line) => sum + line.cents, 0) +
+    kitItems.reduce(
+      (sum, item) =>
+        sum +
+        item.quantity *
+          (kitItemPrice(item, kitCatalog.kits, kitSnapshots) ?? 0),
+      0,
+    ) -
+    swap.discount;
   const orderRecords = orders.loading ? (
     <SkeletonList label="Carregando pedidos…" />
   ) : !orders.data.length ? (
@@ -1396,6 +1441,7 @@ function FullOrders({
             {statusLabels[o.status] || 'Rascunho'} · {dateTime(o.due_at)} ·{' '}
             {money(o.total_cents)}
           </p>
+          <ExchangeBadge order={o} />
           <ul>
             {o.items.map((i, index) => (
               <li key={i.id ?? index}>
@@ -1430,6 +1476,7 @@ function FullOrders({
                   setDefaults(null);
                   setTemplate('');
                   setEditing(o);
+                  setExchangeUnits(o.exchange_units ?? 0);
                   setCustomer(o.customer_id);
                   setDue(
                     new Date(new Date(o.due_at).getTime() - 3 * 3600000)
@@ -1444,7 +1491,16 @@ function FullOrders({
                   ) as unknown as KitItemSnapshot[];
                   setKitSnapshots(savedKits);
                   setKitItems(savedKits.map(kitSnapshotInput));
-                  setItems(o.items.filter((i) => !i.kit_id));
+                  setItems(
+                    o.items
+                      .filter((i) => !i.kit_id)
+                      .map((i) => ({
+                        ...i,
+                        components: i.components?.length
+                          ? i.components
+                          : undefined,
+                      })),
+                  );
                 }}
               >
                 Editar pedido de {o.customer_name}
@@ -1687,19 +1743,21 @@ function FullOrders({
                 onChange={(e) => setNotes(e.target.value)}
               />
             </label>
+            {orderExchange && (swap.eligible > 0 || kitItems.length > 0) && (
+              <ExchangeEditor
+                quantity={swap.collected}
+                limit={swap.eligible}
+                onChange={setExchangeUnits}
+              />
+            )}
+            <ExchangeSummary
+              delivered={deliveredUnits}
+              collected={swap.collected}
+              discount={swap.discount}
+              total={estimate}
+            />
             <p>
-              Prévia:{' '}
-              {money(
-                estimate +
-                  kitItems.reduce(
-                    (n, i) =>
-                      n +
-                      i.quantity *
-                        (kitItemPrice(i, kitCatalog.kits, kitSnapshots) ?? 0),
-                    0,
-                  ),
-              )}
-              . O servidor confere o total ao salvar.
+              Prévia: {money(estimate)}. O servidor confere o total ao salvar.
             </p>
             <div className="actions">
               <Button
@@ -1964,6 +2022,7 @@ export function Management() {
     <Orders
       metadata={session.customer_orders}
       kitOrders={session.kit_orders}
+      orderExchange={session.order_exchange}
       mixed={session.mixed}
       operational={session.operations}
       financial={session.finance}
@@ -1975,6 +2034,7 @@ export function Management() {
   );
   const orderDetail = (onChanged?: () => Promise<void>) => (
     <OrderDetail
+      orderExchange={session.order_exchange}
       key={pathname}
       p1={session.p1}
       onChanged={onChanged}
@@ -2245,6 +2305,7 @@ export function Management() {
                       <Totem
                         sharedDelivery={session.shared_delivery}
                         kitOrders={session.kit_orders}
+                        orderExchange={session.order_exchange}
                         financial={session.finance}
                         mixed={session.mixed}
                         metadata={session.customer_orders}

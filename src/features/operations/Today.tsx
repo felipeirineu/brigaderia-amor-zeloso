@@ -1,3 +1,4 @@
+import { ExchangeBadge } from '../../components/OrderExchange';
 import { DeliveryCycleNotice } from '../finance/DeliveryCycleNotice';
 import type { DeliveryCycleCard } from '../../../shared/delivery-cycle';
 import {
@@ -773,6 +774,7 @@ export function Today({
                               : courierLabels[order.courier]}
                           </span>
                         )}
+                      <ExchangeBadge order={order} />
                       <DeliveryActions order={order} />
                       <div className="actions">
                         {day === localDay() &&

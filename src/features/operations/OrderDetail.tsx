@@ -1,3 +1,9 @@
+import { exchangePreview } from '../../../shared/order-exchange';
+import {
+  ExchangeBadge,
+  ExchangeEditor,
+  ExchangeSummary,
+} from '../../components/OrderExchange';
 import { courierChoices, type Courier } from '../../../shared/courier';
 import {
   dueDayLabel,
@@ -47,12 +53,14 @@ export function OrderDetail({
   p1 = false,
   onChanged,
   sharedDelivery = false,
+  orderExchange = false,
 }: {
   financial?: boolean;
   mobile?: boolean;
   p1?: boolean;
   onChanged?: () => Promise<void>;
   sharedDelivery?: boolean;
+  orderExchange?: boolean;
 }) {
   const askConfirmation = useConfirm();
   const askPrompt = usePrompt();
@@ -161,6 +169,17 @@ export function OrderDetail({
                     ')'
                   : '')}
           </p>
+          <ExchangeBadge order={order} />
+          {orderExchange && !final && (
+            <ExchangeAdjustment
+              key={order.id + ':' + order.version}
+              order={order}
+              onSaved={async () => {
+                await view.refresh();
+                await onChanged?.();
+              }}
+            />
+          )}
           <p className={`status-tag status-${order.status}`}>
             {statusLabels[order.status]} <HelpTip topic="status" />
           </p>
@@ -580,6 +599,92 @@ export function OrderDetail({
           <SkeletonList label="Carregando pedido…" count={1} kind="delivery" />
         )
       )}
+    </>
+  );
+}
+
+function ExchangeAdjustment({
+  order,
+  onSaved,
+}: {
+  order: OperationalOrder;
+  onSaved: () => Promise<void>;
+}) {
+  const [quantity, setQuantity] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const ordinary = order.items.filter((item) => !item.kit_id);
+  if (!ordinary.length) return null;
+  if (quantity === null)
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        onClick={() => setQuantity(order.exchange_units ?? 0)}
+      >
+        Editar troca de doces
+      </Button>
+    );
+  const swap = exchangePreview(
+    ordinary.map((item, index) => ({
+      id: String(index),
+      units: item.quantity * item.units_per_box,
+      cents: item.quantity * item.unit_price_cents,
+    })),
+    quantity,
+  );
+  const gross = order.total_cents + (order.exchange_discount_cents ?? 0);
+  const delivered = order.items.reduce(
+    (n, item) => n + item.quantity * item.units_per_box,
+    0,
+  );
+  return (
+    <>
+      <ExchangeEditor
+        quantity={swap.collected}
+        limit={swap.eligible}
+        onChange={setQuantity}
+      />
+      <ExchangeSummary
+        delivered={delivered}
+        collected={swap.collected}
+        discount={swap.discount}
+        total={gross - swap.discount}
+      />
+      <Failure message={error} />
+      <div className="actions">
+        <Button
+          type="button"
+          variant="primary"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            setError('');
+            try {
+              await api('orders/' + order.id + '/exchange', 'PUT', {
+                version: order.version,
+                exchange_units: swap.collected,
+              });
+              setQuantity(null);
+              await onSaved();
+            } catch (e) {
+              setError((e as Error).message);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          Salvar troca
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={busy}
+          onClick={() => setQuantity(null)}
+        >
+          Cancelar troca
+        </Button>
+      </div>
     </>
   );
 }

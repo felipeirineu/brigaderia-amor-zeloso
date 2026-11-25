@@ -1,3 +1,4 @@
+import { orderExchangeReady, prepareOrderExchange } from './order-exchange';
 import { sharedDeliveryReady } from './shared-delivery';
 import { readTerms } from './finance-domain';
 import { feedbackReady } from './feedback';
@@ -70,6 +71,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       weight_costing: await weightCostingReady(db),
       customer_orders: await customerOrderFieldsReady(db),
       kit_orders: await kitOrdersReady(db),
+      order_exchange: await orderExchangeReady(db),
       kit_recurring: await kitOrdersReady(db, 'recurring'),
       mixed: await mixedReady(env),
       recurring_mixed:
@@ -568,12 +570,19 @@ export async function management(req: Request, env: Env, a: Actor) {
       old,
       d.composition_version,
     );
-    const total = [...items, ...kitItems].reduce(
+    const exchange = await prepareOrderExchange(
+      db,
+      d.exchange_units ?? Number(previous?.exchange_units ?? 0),
+      items,
+      !!(d.exchange_units || previous?.exchange_units),
+    );
+    const gross = [...items, ...kitItems].reduce(
       (sum, i) => sum + i.quantity * i.unit_price_cents,
       0,
     );
-    if (!Number.isSafeInteger(total) || total > 1000000000)
+    if (!Number.isSafeInteger(gross) || gross > 1000000000)
       throw new HttpError(400, 'Total excede o limite permitido.');
+    const total = gross - exchange.discount;
     const financial = await financeReady(env);
     if (financial && id) {
       if (
@@ -610,7 +619,7 @@ export async function management(req: Request, env: Env, a: Actor) {
       id
         ? db
             .prepare(
-              'UPDATE orders SET customer_id=?,customer_name=?,due_at=?,notes=?,total_cents=?,version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?',
+              `UPDATE orders SET customer_id=?,customer_name=?,due_at=?,notes=?,total_cents=?${exchange.update},version=version+1,mutation_id=? WHERE organization_id=? AND id=? AND version=?`,
             )
             .bind(
               d.customer_id,
@@ -618,6 +627,7 @@ export async function management(req: Request, env: Env, a: Actor) {
               d.due_at,
               d.notes,
               total,
+              ...exchange.values,
               mutation,
               org,
               entityId,
@@ -625,7 +635,7 @@ export async function management(req: Request, env: Env, a: Actor) {
             )
         : db
             .prepare(
-              'INSERT INTO orders(id,organization_id,customer_id,customer_name,due_at,notes,total_cents,request_key,request_hash,mutation_id) VALUES(?,?,?,?,?,?,?,?,?,?)',
+              `INSERT INTO orders(id,organization_id,customer_id,customer_name,due_at,notes,total_cents,request_key,request_hash,mutation_id${exchange.columns}) VALUES(?,?,?,?,?,?,?,?,?,?${exchange.placeholders})`,
             )
             .bind(
               entityId,
@@ -638,6 +648,7 @@ export async function management(req: Request, env: Env, a: Actor) {
               requestKey,
               fingerprint,
               mutation,
+              ...exchange.values,
             ),
     );
     statements.push(
