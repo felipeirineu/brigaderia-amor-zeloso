@@ -1,3 +1,5 @@
+import { exchangeLabel } from '../shared/order-exchange';
+import { exchangeReportLines } from './exchange-report';
 import { estimateOrderCosts } from './order-costs';
 import { paymentModeLabels } from '../shared/finance';
 import { flavorLines, flavorItemTexts } from './flavor-lines';
@@ -54,6 +56,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     );
   const selected = sold.map((o) => o.id),
     items = await flavorLines(db, org, selected);
+  const exchange = exchangeReportLines(items, sold);
   const clients = new Map<
       string,
       { id: string; name: string; orders: number; total_cents: number }
@@ -88,7 +91,7 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
       (conditions.get(o.terms.mode) || 0) + o.total_cents,
     );
   }
-  for (const i of items) {
+  for (const i of exchange.sold) {
     const key = JSON.stringify([
         i.product_name,
         i.variant_label,
@@ -155,6 +158,24 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
           if (error instanceof HttpError && error.status === 409) return null;
           throw error;
         });
+  const replacementIds = [
+    ...new Set(exchange.losses.map((line) => line.order_id)),
+  ];
+  const replacementCosts =
+    !kind || kind === 'orders'
+      ? await estimateOrderCosts(
+          db,
+          org,
+          replacementIds,
+          exchange.losses,
+        ).catch((error) => {
+          if (error instanceof HttpError && error.status === 409) return null;
+          throw error;
+        })
+      : null;
+  const lossCosts = replacementIds.map(
+    (id) => replacementCosts?.get(id)?.estimated_cost_cents ?? null,
+  );
   const orders = sold.map((o) => ({
     id: o.id,
     customer_name: o.customer_name,
@@ -167,6 +188,11 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     cycle: o.terms.cycle,
     every_deliveries: o.terms.every_deliveries ?? null,
     estimated_cost_cents: estimates?.get(o.id)?.estimated_cost_cents ?? null,
+    exchange_units: o.exchange_units ?? 0,
+    exchange_discount_cents: o.exchange_discount_cents ?? 0,
+    exchange_label: exchangeLabel(o),
+    exchange_cost_cents:
+      replacementCosts?.get(o.id)?.estimated_cost_cents ?? null,
   }));
   const days =
       Math.round(
@@ -228,6 +254,14 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     position_day: businessDay(),
     sales_cents: sold.reduce((n, o) => n + o.total_cents, 0),
     orders_count: sold.length,
+    sold_units: exchange.sold.reduce((sum, line) => sum + line.units, 0),
+    exchange_losses: {
+      units: sold.reduce((sum, o) => sum + (o.exchange_units ?? 0), 0),
+      estimated_cost_cents:
+        lossCosts.length && lossCosts.every((cost) => cost !== null)
+          ? lossCosts.reduce<number>((sum, value) => sum + (value ?? 0), 0)
+          : null,
+    },
     revenue_allocation: 'unidades por sabor; maior resto por item',
     received_cents: received?.cents ?? 0,
     received_scope:
@@ -267,6 +301,9 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         moneyColumn('Saldo atual'),
         label('Condição'),
         label('Periodicidade'),
+        label('Troca de doces'),
+        moneyColumn('Desconto da troca'),
+        moneyColumn('Custo estimado da troca'),
         moneyColumn('Custo estimado atual'),
       ],
       rows: orders.map((o) => [
@@ -283,6 +320,9 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
         o.cycle === 'deliveries'
           ? `A cada ${o.every_deliveries} entregas`
           : o.cycle,
+        o.exchange_label,
+        o.exchange_units ? o.exchange_discount_cents : null,
+        o.exchange_cost_cents,
         o.estimated_cost_cents,
       ]),
     },
@@ -353,8 +393,20 @@ export async function reports(req: Request, db: D1Database, a: Actor) {
     },
   };
   const table = datasets[kind];
-  if (kind === 'orders')
+  if (kind === 'orders') {
     table.summary = [{ label: 'Pedidos', value: table.rows.length }];
+    if (result.exchange_losses.units)
+      table.summary.push({
+        label: 'Doces recolhidos',
+        value: result.exchange_losses.units,
+      });
+    if (result.exchange_losses.estimated_cost_cents !== null)
+      table.summary.push({
+        label: 'Custo estimado das trocas',
+        value: result.exchange_losses.estimated_cost_cents,
+        type: 'money',
+      });
+  }
   if (kind === 'customers')
     table.summary = [{ label: 'Clientes', value: table.rows.length }];
   return exportResponse(req, table, `relatorio-${kind}.csv`);

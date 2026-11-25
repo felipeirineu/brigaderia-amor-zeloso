@@ -1,3 +1,5 @@
+import { exchangeLabel } from '../shared/order-exchange';
+import { orderExchangeColumns, orderExchangeReady } from './order-exchange';
 import { childrenByParent } from './listing';
 import { resolveDeliveryCycles, todayDeliveryCycles } from './delivery-cycle';
 import {
@@ -52,12 +54,13 @@ export async function accountView(
     )
     .bind(org, customer)
     .first<{ version: number }>();
+  const exchange = orderExchangeColumns(await orderExchangeReady(db));
   const orders = (
     await db
       .prepare(
         `${completionDates(true)} SELECT o.id,` +
           orderNumber('o') +
-          `,o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,${completedAt} AS completed_at,${completionSequence} AS completion_sequence,d.next_delivery_on,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents FROM orders o LEFT JOIN completion_dates d ON d.id=o.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=?1 AND o.customer_id=?2 ORDER BY o.due_at,o.id LIMIT 1001`,
+          `,o.customer_name,o.status,o.version,o.total_cents,o.due_at,o.active,${completedAt} AS completed_at,${completionSequence} AS completion_sequence,d.next_delivery_on,t.data AS terms,co.closing_id,c.due_on AS closing_due_on,COALESCE((SELECT SUM(CASE WHEN e.kind='reversal' THEN -a.amount_cents ELSE a.amount_cents END) FROM payment_allocations a JOIN payment_events e ON e.organization_id=a.organization_id AND e.id=a.event_id WHERE a.organization_id=o.organization_id AND a.order_id=o.id),0) AS paid_cents${exchange} FROM orders o LEFT JOIN completion_dates d ON d.id=o.id LEFT JOIN order_terms t ON t.organization_id=o.organization_id AND t.order_id=o.id LEFT JOIN closing_orders co ON co.organization_id=o.organization_id AND co.order_id=o.id LEFT JOIN closings c ON c.organization_id=co.organization_id AND c.id=co.closing_id WHERE o.organization_id=?1 AND o.customer_id=?2 ORDER BY o.due_at,o.id LIMIT 1001`,
       )
       .bind(org, customer)
       .all<Row>()
@@ -103,6 +106,9 @@ export async function accountView(
       version: Number(o.version),
       total_cents: Number(o.total_cents),
       paid_cents: Number(o.paid_cents),
+      exchange_units: Number(o.exchange_units ?? 0),
+      exchange_discount_cents: Number(o.exchange_discount_cents ?? 0),
+      exchange_delivered_units: Number(o.exchange_delivered_units ?? 0),
       due_at: String(o.due_at),
       customer_name: String(o.customer_name),
       closing_id: o.closing_id as string | null,
@@ -702,7 +708,7 @@ export async function finance(
         (!closing || o.closing_id === closing.id) &&
         (!selectedOrder || o.id === selectedOrder.id),
     );
-    let message = `Olá, ${customer.name}! Segue o resumo ${selectedOrder ? 'do pedido selecionado' : closing ? `do fechamento ${closing.period_start} a ${closing.period_end}` : 'da sua conta'}: ${lines.map((o) => `pedido ${'number' in o && o.number ? 'nº ' + String(o.number) : String(o.id).slice(0, 8)} (${o.business_date}): ${brl(o.receivable_cents)}`).join('; ')}. Saldo: ${brl(balance)}.${closing ? ` Vencimento: ${closing.due_on}.` : selectedOrder?.due_on ? ` Vencimento: ${selectedOrder.due_on}.` : selectedOrder?.terms.mode === 'next_delivery' ? ' Vencimento na próxima entrega.' : ''}${pix ? ` Pix copia e cola: ${pix}` : ''}`;
+    let message = `Olá, ${customer.name}! Segue o resumo ${selectedOrder ? 'do pedido selecionado' : closing ? `do fechamento ${closing.period_start} a ${closing.period_end}` : 'da sua conta'}: ${lines.map((o) => `pedido ${'number' in o && o.number ? 'nº ' + String(o.number) : String(o.id).slice(0, 8)} (${o.business_date}): ${brl(o.receivable_cents)}${o.exchange_units ? ` (${exchangeLabel(o)})` : ''}`).join('; ')}. Saldo: ${brl(balance)}.${closing ? ` Vencimento: ${closing.due_on}.` : selectedOrder?.due_on ? ` Vencimento: ${selectedOrder.due_on}.` : selectedOrder?.terms.mode === 'next_delivery' ? ' Vencimento na próxima entrega.' : ''}${pix ? ` Pix copia e cola: ${pix}` : ''}`;
     if (cycle) {
       const orderIds = 'order_ids' in cycle ? cycle.order_ids : cycle.orders;
       const snapshots = await childrenByParent(db, org, 'orders', orderIds);
@@ -712,7 +718,15 @@ export async function finance(
           .map((item) => `${item.quantity}× ${item.product_name}`)
           .join(', ');
         const date = cycle.days[index].split('-').reverse().join('/');
-        return `• ${date} · ${items} · ${brl(orders.get(orderId)?.total_cents ?? 0)}`;
+        const order = orders.get(orderId);
+        return [
+          `• ${date}`,
+          items,
+          brl(order?.total_cents ?? 0),
+          order ? exchangeLabel(order) : '',
+        ]
+          .filter(Boolean)
+          .join(' · ');
       });
       message = [
         `Olá, ${customer.name}! Aqui é da Brigaderia Amor Zeloso.`,

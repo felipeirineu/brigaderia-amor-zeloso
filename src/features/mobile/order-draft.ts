@@ -8,6 +8,7 @@ export const orderDraftSchema = z
   .object({
     customer_id: z.uuid(),
     order_id: z.uuid().nullable(),
+    exchange_units: z.number().int().min(0).max(500000000).optional(),
     items: z
       .array(
         z

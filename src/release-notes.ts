@@ -1,6 +1,13 @@
 // Fonte única do histórico exibido no app. Até três itens, sem dados comerciais.
 export const releaseNotes = [
   {
+    version: '1.9.0',
+    items: [
+      'Registre doces recolhidos no pedido. O app desconta as reposições da cobrança.',
+      'A produção conta todos os doces entregues e Relatórios mostra as perdas por troca.',
+    ],
+  },
+  {
     version: '1.8.0',
     items: [
       'Na ficha, informe cada ingrediente para o lote inteiro ou por doce.',

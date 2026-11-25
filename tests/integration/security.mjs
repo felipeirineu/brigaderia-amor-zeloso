@@ -647,6 +647,7 @@ try {
     ['orders', 'POST'],
     ['orders-batch', 'POST'],
     ['orders/' + order, 'PUT'],
+    ['orders/' + order + '/exchange', 'PUT'],
     ['mobile/orders', 'POST'],
     ['field/reverse', 'POST'],
     ['finance/customers/' + customer + '/payments', 'POST'],
@@ -785,6 +786,7 @@ try {
       },
     ],
     ['orders/' + order + '/status', 'POST', { version: 3, to: 'cancelled' }],
+    ['orders/' + order + '/exchange', 'PUT', { version: 3, exchange_units: 1 }],
     [
       'finance/customers/' + customer + '/payments',
       'POST',

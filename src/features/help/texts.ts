@@ -99,6 +99,10 @@ export const helpTexts = {
     title: 'Quantidade da ficha',
     text: 'No lote inteiro: total usado na receita toda. Por doce: quanto vai em cada doce; o app multiplica pelo rendimento.',
   },
+  orderExchange: {
+    title: 'Troca de doces',
+    text: 'Informe quantos doces foram recolhidos. Os doces novos da reposição ficam sem cobrança. O desconto usa os doces avulsos mais baratos do pedido primeiro. Kits ficam fora da troca.',
+  },
   orderCost: {
     title: 'Custo estimado do pedido',
     text: 'Administrador e operador podem consultar esta estimativa. Usa fichas e preços de insumos atuais, com arredondamento por unidade e composição de cada caixa. Não é custo histórico nem lucro apurado; entrega e despesas fora da ficha não entram. Sem ficha ou custo conhecido, fica indisponível. Não cria despesas nem movimenta estoque.',

@@ -1,3 +1,4 @@
+import { ExchangeBadge } from '../../components/OrderExchange';
 import { Button } from '../../components/Button';
 import { MoneyField } from '../../components/NumericInputs';
 import { useEffect, useRef, useState } from 'react';
@@ -119,6 +120,7 @@ export function QuickReceipt({
     >
       <div className="sheet-body">
         <h2>Recebi R$ · {order.customer_name}</h2>
+        {!deliveryCycle && <ExchangeBadge order={order} />}
         <Failure message={error || view.error} />
         {current ? (
           <form
